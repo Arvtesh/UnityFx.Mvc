@@ -22,12 +22,8 @@
 
 	<ItemGroup>
 		<Reference Include="UnityEngine">
-			<HintPath>Dependencies\UnityEngine.dll</HintPath>
+			<HintPath>..\Dependencies\UnityEngine.dll</HintPath>
 		</Reference>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="UnityFx\Core\" />
 	</ItemGroup>
 
 </Project>
