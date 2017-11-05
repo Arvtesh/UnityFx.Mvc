@@ -2,8 +2,8 @@
 
 Channel  | Branch | UnityFx.AppStates |
 ---------|--------|-------------------|
-AppVeyor ([home](https://ci.appveyor.com/project/Arvtesh/unityfx-appstates)) | master | [![Build status](https://ci.appveyor.com/api/projects/status/hfmq9vow53al7tpd/branch/master?svg=true)](https://ci.appveyor.com/project/Arvtesh/unityfx-appstates/branch/master)
-AppVeyor | develop | [![Build status](https://ci.appveyor.com/api/projects/status/hfmq9vow53al7tpd/branch/develop?svg=true)](https://ci.appveyor.com/project/Arvtesh/unityfx-appstates/branch/develop)
+AppVeyor ([home](https://ci.appveyor.com/project/Arvtesh/unityfx-appstates)) | master | [![Build status](https://ci.appveyor.com/api/projects/status/6pj9v6j37xlu98h5/branch/master?svg=true)](https://ci.appveyor.com/project/Arvtesh/unityfx-appstates/branch/master)
+AppVeyor | develop | [![Build status](https://ci.appveyor.com/api/projects/status/6pj9v6j37xlu98h5/branch/develop?svg=true)](https://ci.appveyor.com/project/Arvtesh/unityfx-appstates/branch/develop)
 
 ## Synopsis
 
@@ -11,7 +11,6 @@ Unity3d application states. The library provides a set of classes and interfaces
 
 Please see [CHANGELOG](CHANGELOG.md) for information on recent changes.
 
-Unity Asset Store [link](https://www.assetstore.unity3d.com/#!/content/96696).
 
 ## Documentation
 Please see the links below for extended information on the product:
