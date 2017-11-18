@@ -35,20 +35,20 @@ namespace UnityFx.App
 		/// </summary>
 		/// <param name="args">State-specific arguments.</param>
 		/// <typeparam name="T">The state type.</typeparam>
-		Task<T> SetStateAsync<T>(object args = null) where T : class, IAppStateController;
+		Task<IAppState> SetStateAsync<T>(object args = null) where T : class, IAppStateController;
 
 		/// <summary>
-		/// Removes all states from the stack and pushes instance of <paramref name="stateType"/> type.
+		/// Removes all states from the stack and pushes a new state controlled by an instance of <paramref name="controllerType"/> type.
 		/// </summary>
-		/// <param name="stateType">Type of the new state.</param>
+		/// <param name="controllerType">Type of the new state.</param>
 		/// <param name="args">State arguments.</param>
-		void SetState(Type stateType, object args = null);
+		void SetState(Type controllerType, object args = null);
 
 		/// <summary>
-		/// Removes all states from the stack and pushes instance of <paramref name="stateType"/> type.
+		/// Removes all states from the stack and pushes a new state controlled by an instance of <paramref name="controllerType"/> type.
 		/// </summary>
-		/// <param name="stateType">Type of the new state.</param>
+		/// <param name="controllerType">Type of the new state.</param>
 		/// <param name="args">State arguments.</param>
-		Task<IAppState> SetStateAsync(Type stateType, object args = null);
+		Task<IAppState> SetStateAsync(Type controllerType, object args = null);
 	}
 }

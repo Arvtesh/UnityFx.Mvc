@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace UnityFx.App
 {
 	/// <summary>
-	/// Returns a stack of the <see cref="IAppState"/> instances.
+	/// Returns a read-only stack of the <see cref="IAppState"/> instances.
 	/// </summary>
 	public interface IAppStateStack : IReadOnlyCollection<IAppState>
 	{

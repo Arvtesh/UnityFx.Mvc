@@ -7,9 +7,10 @@ using UnityEngine;
 namespace UnityFx.App
 {
 	/// <summary>
-	/// Represents <see cref="IAppState"/>-related data/information.
+	/// Represents <see cref="IAppState"/>-related stuff. This is shared between <see cref="IAppState"/> and <see cref="IAppStateContext"/>.
 	/// </summary>
 	/// <seealso cref="IAppState"/>
+	/// <seealso cref="IAppStateContext"/>
 	public interface IAppStateInfo
 	{
 		/// <summary>
@@ -28,7 +29,12 @@ namespace UnityFx.App
 		string Name { get; }
 
 		/// <summary>
-		/// Returns user specified state arguments. Read only.
+		/// Returns the qualified state name. Read only.
+		/// </summary>
+		string FullName { get; }
+
+		/// <summary>
+		/// Returns user-specified state arguments. Read only.
 		/// </summary>
 		object Args { get; }
 
@@ -50,6 +56,6 @@ namespace UnityFx.App
 		/// <summary>
 		/// Returns a view instance attached to the state. Read only.
 		/// </summary>
-		IAppStateView View { get; }
+		IAppView View { get; }
 	}
 }

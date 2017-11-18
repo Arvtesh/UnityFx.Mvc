@@ -24,7 +24,7 @@ namespace UnityFx.App
 		/// <summary>
 		/// Returns child states enumerator. Read only.
 		/// </summary>
-		IEnumerable<IAppState> Children { get; }
+		IReadOnlyCollection<IAppState> Children { get; }
 
 		/// <summary>
 		/// Returns a user-defined view controller instance attached to the state. Read only.

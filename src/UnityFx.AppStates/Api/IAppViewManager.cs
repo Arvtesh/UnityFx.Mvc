@@ -2,20 +2,29 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Collections;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityFx.App
 {
 	/// <summary>
-	/// A controller for the <see cref="IAppStateView"/> hierarchy.
+	/// A collection of <see cref="IAppView"/>.
 	/// </summary>
-	internal interface IAppViewManager
+	public interface IAppViewManager : IReadOnlyCollection<IAppView>
 	{
 		/// <summary>
-		/// Loads a view for the specified controller.
+		/// Creates an empty view with the specified name.
 		/// </summary>
-		Task<IAppStateViewProxy> LoadViewAsync(object viewController);
+		IAppView AddView(string name, object userData = null);
+
+		/// <summary>
+		/// Removes the specified view from the manager.
+		/// </summary>
+		bool RemoveView(IAppView view);
+
+		/// <summary>
+		/// Removes all views.
+		/// </summary>
+		void Clear();
 	}
 }
