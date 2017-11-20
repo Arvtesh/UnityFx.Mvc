@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace UnityFx.App
 {
 	/// <summary>
-	/// A generic application state controller.
+	/// A state manager interface .
 	/// </summary>
 	/// <seealso cref="IAppState"/>
 	internal interface IAppStateManagerInternal : IAppStateManager
@@ -22,6 +22,16 @@ namespace UnityFx.App
 		/// Returns the parent state. Read only.
 		/// </summary>
 		IAppState ParentState { get; }
+
+		/// <summary>
+		/// Creates a new instance of <see cref="IAppStateManager"/> for the specified state's children.
+		/// </summary>
+		IAppStateManager CreateSubstateManager(IAppState state);
+
+		/// <summary>
+		/// Create s a new view for the specified state.
+		/// </summary>
+		IAppView CreateView(IAppState state);
 
 		/// <summary>
 		/// Pushes a new state on the state stack.

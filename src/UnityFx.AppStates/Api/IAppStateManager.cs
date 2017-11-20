@@ -19,9 +19,14 @@ namespace UnityFx.App
 		IAppStateStack States { get; }
 
 		/// <summary>
-		/// Enumerates child states recursively. Read only.
+		/// Enumerates child states recursively.
 		/// </summary>
-		IEnumerable<IAppState> StatesRecursive { get; }
+		IEnumerable<IAppState> GetStatesRecursive();
+
+		/// <summary>
+		/// Enumerates child states recursively.
+		/// </summary>
+		void GetStatesRecursive(ICollection<IAppState> states);
 
 		/// <summary>
 		/// Removes all states from the stack and pushes <typeparamref name="T"/> instance.

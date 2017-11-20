@@ -10,7 +10,7 @@ namespace UnityFx.App
 	/// <summary>
 	/// A generic application view.
 	/// </summary>
-	/// <seealso cref="IAppViewManager"/>
+	/// <seealso cref="IAppViewFactory"/>
 	public interface IAppView : ICollection<GameObject>, IDisposable
 	{
 		/// <summary>
@@ -29,11 +29,6 @@ namespace UnityFx.App
 		Bounds Bounds { get; }
 
 		/// <summary>
-		/// Gets or sets view position.
-		/// </summary>
-		Vector3 Position { get; set; }
-
-		/// <summary>
 		/// Enabled or disapbes the view (enabled views are visible, disabled are not visible and not interactable).
 		/// </summary>
 		bool Enabled { get; set; }
@@ -42,10 +37,5 @@ namespace UnityFx.App
 		/// Enabled or disapbes input processing for the view.
 		/// </summary>
 		bool Interactable { get; set; }
-
-		/// <summary>
-		/// Gets or sets view z-order priority. This influences render order of views.
-		/// </summary>
-		int Priority { get; set; }
 	}
 }

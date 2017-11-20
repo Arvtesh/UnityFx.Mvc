@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace UnityFx.App
 {
@@ -17,6 +17,6 @@ namespace UnityFx.App
 		/// <summary>
 		/// Asyncronously loads state-related content. State is not activated until this operation is finished.
 		/// </summary>
-		Task LoadContent();
+		Task<GameObject[]> LoadContent();
 	}
 }

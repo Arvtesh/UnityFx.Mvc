@@ -20,10 +20,12 @@ namespace UnityFx.App
 		private const int _maxStackOperationsCount = 16;
 		private const string _serviceName = "StateManager";
 
-		private List<IAppState> _states = new List<IAppState>();
+		private TraceSource _console;
+
+		private AppStateStack<AppState> _states = new AppStateStack<AppState>();
 		private Queue<AppStateStackOperation> _stackOperations = new Queue<AppStateStackOperation>();
 
-		private IAppViewManager _viewManager;
+		private IAppViewFactory _viewManager;
 		private IAppState _parentState;
 		private object _appContext;
 		private bool _disposed;
@@ -32,8 +34,16 @@ namespace UnityFx.App
 
 		#region interface
 
-		public void Initialize(IAppState parentState, IAppViewManager viewManager, object appContext)
+		public void Initialize(IAppViewFactory viewManager, object appContext, SourceLevels traceLevel)
 		{
+			_console = new TraceSource(_serviceName, traceLevel);
+			_viewManager = viewManager;
+			_appContext = appContext;
+		}
+
+		public void Initialize(IAppState parentState, TraceSource console, IAppViewFactory viewManager, object appContext)
+		{
+			_console = console;
 			_viewManager = viewManager;
 			_parentState = parentState;
 			_appContext = appContext;
@@ -55,7 +65,7 @@ namespace UnityFx.App
 
 		private void OnDestroy()
 		{
-			
+			_console.Close();
 		}
 
 		private void Update()
@@ -72,11 +82,24 @@ namespace UnityFx.App
 
 		public IAppStateStack States => this;
 
-		public IEnumerable<IAppState> StatesRecursive
+		public IEnumerable<IAppState> GetStatesRecursive()
 		{
-			get
+			var list = new List<IAppState>();
+			GetStatesRecursive(list);
+			return list;
+		}
+
+		public void GetStatesRecursive(ICollection<IAppState> states)
+		{
+			if (states == null)
 			{
-				throw new NotImplementedException();
+				throw new ArgumentNullException(nameof(states));
+			}
+
+			foreach (var state in _states)
+			{
+				states.Add(state);
+				state.GetStatesRecursive(states);
 			}
 		}
 
@@ -107,6 +130,18 @@ namespace UnityFx.App
 		public object Context => _appContext;
 
 		public IAppState ParentState => _parentState;
+
+		public IAppStateManager CreateSubstateManager(IAppState state)
+		{
+			var result = state.Go.AddComponent<AppStateManager>();
+			result.Initialize(state, _console, _viewManager, _appContext);
+			return result;
+		}
+
+		public IAppView CreateView(IAppState state)
+		{
+			return _viewManager.CreateView(state.Name, null, state);
+		}
 
 		public void PushState(IAppState ownerState, Type controllerType, PushOptions options, object stateArgs)
 		{
@@ -150,9 +185,11 @@ namespace UnityFx.App
 
 		public IAppState Peek()
 		{
-			if (_states.TryPeek(out var result))
+			var n = _states.Count;
+
+			if (n > 0)
 			{
-				return result.State;
+				return _states[n - 1];
 			}
 
 			return null;

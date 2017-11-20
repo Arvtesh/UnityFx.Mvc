@@ -18,7 +18,6 @@ namespace UnityFx.App
 	{
 		#region data
 
-		private IAppViewManager _viewManager;
 		private IAppStateManagerInternal _parentStateManager;
 		private IAppStateManager _substateManager;
 		private IAppStateController _controller;
@@ -33,21 +32,27 @@ namespace UnityFx.App
 		private bool _disposed;
 		private bool _isActive;
 		private bool _isActivated;
-		private bool _isLoaded;
 
 		#endregion
 
 		#region interface
 
-		public void Initialize(IAppStateManagerInternal parentStateManager, IAppViewManager viewManager, IAppState owner, object args)
+		public void Initialize(IAppStateManagerInternal parentStateManager, IAppState owner, object args)
 		{
-			_viewManager = viewManager;
 			_parentStateManager = parentStateManager;
 			_parentState = _parentStateManager.ParentState;
 			_ownerState = owner;
 			_appContext = _parentStateManager.Context;
 			_name = string.Empty;
 			_stateArgs = args;
+		}
+
+		public void GetStatesRecursive(ICollection<IAppState> states)
+		{
+			if (_substateManager != null)
+			{
+				_substateManager.GetStatesRecursive(states);
+			}
 		}
 
 		#endregion
@@ -57,7 +62,6 @@ namespace UnityFx.App
 		private void OnDestroy()
 		{
 			_view?.Dispose();
-			_view = null;
 		}
 
 		#endregion
@@ -80,9 +84,7 @@ namespace UnityFx.App
 			{
 				if (_substateManager == null)
 				{
-					var substateManager = gameObject.AddComponent<AppStateManager>();
-					substateManager.Initialize(this, _viewManager, _appContext);
-					_substateManager = substateManager;
+					_substateManager = _parentStateManager.CreateSubstateManager(this);
 				}
 
 				return _substateManager;
@@ -115,7 +117,7 @@ namespace UnityFx.App
 			{
 				if (_view == null)
 				{
-					_view = _viewManager.AddView(_name, this);
+					_view = _parentStateManager.CreateView(this);
 				}
 
 				return _view;
