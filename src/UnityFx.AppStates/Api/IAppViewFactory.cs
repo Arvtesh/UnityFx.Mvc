@@ -13,6 +13,6 @@ namespace UnityFx.App
 		/// <summary>
 		/// Creates an empty view with the specified name.
 		/// </summary>
-		IAppView CreateView(string name, IAppView insertAfter, object userData);
+		IAppView CreateView(string name, bool exclusive, IAppView insertAfter, object userData);
 	}
 }

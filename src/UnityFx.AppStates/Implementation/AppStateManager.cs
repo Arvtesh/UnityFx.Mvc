@@ -22,7 +22,7 @@ namespace UnityFx.App
 
 		private TraceSource _console;
 
-		private AppStateStack<AppState> _states = new AppStateStack<AppState>();
+		private List<AppState> _states = new List<AppState>();
 		private Queue<AppStateStackOperation> _stackOperations = new Queue<AppStateStackOperation>();
 
 		private IAppViewFactory _viewManager;
@@ -140,7 +140,11 @@ namespace UnityFx.App
 
 		public IAppView CreateView(IAppState state)
 		{
-			return _viewManager.CreateView(state.Name, null, state);
+			var exclusive = !state.Flags.HasFlag(AppStateFlags.Popup);
+			var insertAfterView = default(IAppView);
+
+			// TODO
+			return _viewManager.CreateView(state.Name, exclusive, insertAfterView, state);
 		}
 
 		public void PushState(IAppState ownerState, Type controllerType, PushOptions options, object stateArgs)

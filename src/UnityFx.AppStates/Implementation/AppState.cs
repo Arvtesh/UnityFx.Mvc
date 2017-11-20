@@ -25,26 +25,28 @@ namespace UnityFx.App
 		private IAppState _ownerState;
 		private IAppView _view;
 
-		private object _appContext;
-		private object _stateArgs;
 		private string _name;
+		private AppStateFlags _flags;
+		private int _layer;
+		private object _stateArgs;
 
-		private bool _disposed;
 		private bool _isActive;
 		private bool _isActivated;
+		private bool _disposed;
 
 		#endregion
 
 		#region interface
 
-		public void Initialize(IAppStateManagerInternal parentStateManager, IAppState owner, object args)
+		public void Initialize(IAppStateManagerInternal parentStateManager, IAppState owner, object args, IAppStateController controller)
 		{
 			_parentStateManager = parentStateManager;
+			_controller = controller;
 			_parentState = _parentStateManager.ParentState;
 			_ownerState = owner;
-			_appContext = _parentStateManager.Context;
-			_name = string.Empty;
 			_stateArgs = args;
+
+			InitStateParams();
 		}
 
 		public void GetStatesRecursive(ICollection<IAppState> states)
@@ -61,7 +63,17 @@ namespace UnityFx.App
 
 		private void OnDestroy()
 		{
-			_view?.Dispose();
+			try
+			{
+				if (_controller is IDisposable d)
+				{
+					d.Dispose();
+				}
+			}
+			finally
+			{
+				_view?.Dispose();
+			}
 		}
 
 		#endregion
@@ -76,7 +88,7 @@ namespace UnityFx.App
 
 		#region IAppStateContext
 
-		public object AppContext => _appContext;
+		public object AppContext => _parentStateManager.Context;
 
 		public IAppStateManager SubstateManager
 		{
@@ -102,6 +114,10 @@ namespace UnityFx.App
 		public string Name => _name;
 
 		public string FullName => _parentState?.FullName + '.' + _name ?? _name;
+
+		public AppStateFlags Flags => _flags;
+
+		public int Layer => _layer;
 
 		public object Args => _stateArgs;
 
@@ -202,12 +218,55 @@ namespace UnityFx.App
 
 		#region implementation
 
+		private void InitStateParams()
+		{
+			if (Attribute.GetCustomAttribute(_controller.GetType(), typeof(AppStateParamsAttribute)) is AppStateParamsAttribute paramsAttr)
+			{
+				if (string.IsNullOrEmpty(paramsAttr.Name))
+				{
+					_name = GenerateStateName(_controller);
+				}
+				else
+				{
+					_name = paramsAttr.Name;
+				}
+
+				_flags = paramsAttr.Flags;
+				_layer = paramsAttr.Layer;
+			}
+			else if (_parentState != null)
+			{
+				_name = GenerateStateName(_controller);
+				_flags = AppStateFlags.Popup;
+			}
+			else
+			{
+				_name = GenerateStateName(_controller);
+			}
+		}
+
 		private void ThrowIfDisposed()
 		{
 			if (_disposed || !this)
 			{
 				throw new ObjectDisposedException(_name);
 			}
+		}
+
+		private static string GenerateStateName(object obj)
+		{
+			var name = obj.GetType().Name;
+
+			if (name.EndsWith("State"))
+			{
+				name = name.Substring(0, name.Length - 5);
+			}
+			else if (name.EndsWith("Controller"))
+			{
+				name = name.Substring(0, name.Length - 10);
+			}
+
+			return name;
 		}
 
 		#endregion

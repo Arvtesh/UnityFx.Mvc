@@ -7,6 +7,23 @@ using UnityEngine;
 namespace UnityFx.App
 {
 	/// <summary>
+	/// Enumerates state-related flags.
+	/// </summary>
+	[Flags]
+	public enum AppStateFlags
+	{
+		/// <summary>
+		/// No flags.
+		/// </summary>
+		None = 0,
+
+		/// <summary>
+		/// If set, the view of a state under this one is rendered. Typically set for states that implement popup windows.
+		/// </summary>
+		Popup = 1
+	}
+
+	/// <summary>
 	/// Represents <see cref="IAppState"/>-related stuff. This is shared between <see cref="IAppState"/> and <see cref="IAppStateContext"/>.
 	/// </summary>
 	/// <seealso cref="IAppState"/>
@@ -32,6 +49,16 @@ namespace UnityFx.App
 		/// Returns the qualified state name. Read only.
 		/// </summary>
 		string FullName { get; }
+
+		/// <summary>
+		/// Returns state flags. Read only.
+		/// </summary>
+		AppStateFlags Flags { get; }
+
+		/// <summary>
+		/// Returns the state layer. Read only.
+		/// </summary>
+		int Layer { get; }
 
 		/// <summary>
 		/// Returns user-specified state arguments. Read only.

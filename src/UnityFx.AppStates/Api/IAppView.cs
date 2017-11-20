@@ -29,13 +29,25 @@ namespace UnityFx.App
 		Bounds Bounds { get; }
 
 		/// <summary>
-		/// Enabled or disapbes the view (enabled views are visible, disabled are not visible and not interactable).
+		/// Returns <c>true</c> if the view should cover all screen (views under it are not visible); <c>false</c> otherwise. Read only.
 		/// </summary>
+		bool IsExclusive { get; }
+
+		/// <summary>
+		/// Enabled or disables the view (enabled views are visible, disabled are not visible and not interactable).
+		/// </summary>
+		/// <remarks>
+		/// If value of the property is <c>true</c> the view may or may not be visible. For example, if any view above this one
+		/// has <see cref="IsExclusive"/> flag set the view will not be rendered.
+		/// </remarks>
+		/// <seealso cref="Interactable"/>
+		/// <seealso cref="IsExclusive"/>
 		bool Enabled { get; set; }
 
 		/// <summary>
 		/// Enabled or disapbes input processing for the view.
 		/// </summary>
+		/// <seealso cref="Enabled"/>
 		bool Interactable { get; set; }
 	}
 }
