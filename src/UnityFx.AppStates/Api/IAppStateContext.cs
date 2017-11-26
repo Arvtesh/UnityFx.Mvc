@@ -6,16 +6,30 @@ using System;
 namespace UnityFx.App
 {
 	/// <summary>
-	/// Represents <see cref="IAppState"/> context.
+	/// Represents <see cref="IAppStateController"/> context.
 	/// </summary>
 	/// <seealso cref="IAppState"/>
-	/// <seealso cref="IAppStateEvents"/>
-	public interface IAppStateContext : IAppStateInfo, IAppStateStackController
+	public interface IAppStateContext
 	{
 		/// <summary>
 		/// Returns the user-defined application context data. Read only.
 		/// </summary>
 		object AppContext { get; }
+
+		/// <summary>
+		/// Returns parent state. Read only.
+		/// </summary>
+		IAppState State { get; }
+
+		/// <summary>
+		/// Returns a view attached to the state. Read only.
+		/// </summary>
+		IAppView View { get; }
+
+		/// <summary>
+		/// Returns the parent state manager. Never returns <c>null</c>. Read only.
+		/// </summary>
+		IAppStateManager StateManager { get; }
 
 		/// <summary>
 		/// Returns the substate manager for this state. Never returns <c>null</c>. Read only.

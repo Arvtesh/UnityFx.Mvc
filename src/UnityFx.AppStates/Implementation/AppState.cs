@@ -80,33 +80,6 @@ namespace UnityFx.App
 
 		#region IAppState
 
-		public IReadOnlyCollection<IAppState> Children => this;
-
-		public IAppStateController Controller => _controller;
-
-		#endregion
-
-		#region IAppStateContext
-
-		public object AppContext => _parentStateManager.Context;
-
-		public IAppStateManager SubstateManager
-		{
-			get
-			{
-				if (_substateManager == null)
-				{
-					_substateManager = _parentStateManager.CreateSubstateManager(this);
-				}
-
-				return _substateManager;
-			}
-		}
-
-		#endregion
-
-		#region IAppStateInfo
-
 		public GameObject Go => gameObject;
 
 		public Bounds Bounds => _view?.Bounds ?? new Bounds(transform.position, Vector3.zero);
@@ -127,6 +100,8 @@ namespace UnityFx.App
 
 		public IAppState Owner => _ownerState;
 
+		public IReadOnlyCollection<IAppState> ChildStates => this;
+
 		public IAppView View
 		{
 			get
@@ -140,44 +115,41 @@ namespace UnityFx.App
 			}
 		}
 
-		#endregion
+		public IAppStateController Controller => _controller;
 
-		#region IAppStateStackController
-
-		public void PushState<T>(PushOptions options, object args) where T : class, IAppStateController
-		{
-			ThrowIfDisposed();
-			_parentStateManager.PushState(this, typeof(T), options, args);
-		}
-
-		public Task<IAppState> PushStateAsync<T>(PushOptions options, object args) where T : class, IAppStateController
-		{
-			ThrowIfDisposed();
-			return _parentStateManager.PushStateAsync(this, typeof(T), options, args);
-		}
-
-		public void PushState(Type controllerType, PushOptions options, object args)
-		{
-			ThrowIfDisposed();
-			_parentStateManager.PushState(this, controllerType, options, args);
-		}
-
-		public Task<IAppState> PushStateAsync(Type controllerType, PushOptions options, object args)
-		{
-			ThrowIfDisposed();
-			return _parentStateManager.PushStateAsync(this, controllerType, options, args);
-		}
-
-		public void PopState()
+		public void Close()
 		{
 			ThrowIfDisposed();
 			_parentStateManager.PopState(this);
 		}
 
-		public Task PopStateAsync()
+		public Task CloseAsync()
 		{
 			ThrowIfDisposed();
 			return _parentStateManager.PopStateAsync(this);
+		}
+
+		#endregion
+
+		#region IAppStateContext
+
+		public object AppContext => _parentStateManager.AppContext;
+
+		public IAppState State => this;
+
+		public IAppStateManager StateManager => _parentStateManager;
+
+		public IAppStateManager SubstateManager
+		{
+			get
+			{
+				if (_substateManager == null)
+				{
+					_substateManager = _parentStateManager.CreateSubstateManager(this);
+				}
+
+				return _substateManager;
+			}
 		}
 
 		#endregion
@@ -209,6 +181,7 @@ namespace UnityFx.App
 			if (!_disposed && this)
 			{
 				_disposed = true;
+				_parentStateManager.ReleaseState(this);
 				Destroy(gameObject);
 				GC.SuppressFinalize(this);
 			}

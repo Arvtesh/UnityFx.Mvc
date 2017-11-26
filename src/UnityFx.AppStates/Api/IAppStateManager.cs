@@ -8,8 +8,46 @@ using System.Threading.Tasks;
 namespace UnityFx.App
 {
 	/// <summary>
-	/// A generic application state controller.
+	/// Enumerates <see cref="IAppStateController"/> push options.
 	/// </summary>
+	public enum PushOptions
+	{
+		/// <summary>
+		/// No options.
+		/// </summary>
+		None,
+
+		/// <summary>
+		/// Pushes new state onto the stack instead of the previous one.
+		/// </summary>
+		Set,
+
+		/// <summary>
+		/// Pushes new state onto the stack instead of all other states.
+		/// </summary>
+		Reset
+	}
+
+	/// <summary>
+	/// Enumerates state operations.
+	/// </summary>
+	public enum StackOperation
+	{
+		/// <summary>
+		/// Push a new state on top of the previous one.
+		/// </summary>
+		Push,
+
+		/// <summary>
+		/// Removes the state from the stack.
+		/// </summary>
+		Pop,
+	}
+
+	/// <summary>
+	/// A generic application state manager.
+	/// </summary>
+	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso cref="IAppState"/>
 	public interface IAppStateManager
 	{
@@ -29,31 +67,35 @@ namespace UnityFx.App
 		void GetStatesRecursive(ICollection<IAppState> states);
 
 		/// <summary>
-		/// Removes all states from the stack and pushes <typeparamref name="T"/> instance.
+		/// Pushes a <typeparamref name="TStateController"/> instance on top of the states stack.
 		/// </summary>
+		/// <param name="options">Push options.</param>
 		/// <param name="args">State-specific arguments.</param>
-		/// <typeparam name="T">The state type.</typeparam>
-		void SetState<T>(object args = null) where T : class, IAppStateController;
+		/// <typeparam name="TStateController">Type of the state controller.</typeparam>
+		void PushState<TStateController>(PushOptions options = PushOptions.None, object args = null) where TStateController : class, IAppStateController;
 
 		/// <summary>
-		/// Removes all states from the stack and pushes <typeparamref name="T"/> instance.
+		/// Pushes a <typeparamref name="TStateController"/> instance on top of the states stack.
 		/// </summary>
+		/// <param name="options">Push options.</param>
 		/// <param name="args">State-specific arguments.</param>
-		/// <typeparam name="T">The state type.</typeparam>
-		Task<IAppState> SetStateAsync<T>(object args = null) where T : class, IAppStateController;
+		/// <typeparam name="TStateController">Type of the state controller.</typeparam>
+		Task<IAppState> PushStateAsync<TStateController>(PushOptions options = PushOptions.None, object args = null) where TStateController : class, IAppStateController;
 
 		/// <summary>
-		/// Removes all states from the stack and pushes a new state controlled by an instance of <paramref name="controllerType"/> type.
+		/// Pushes a <paramref name="controllerType"/> instance on top of the states stack.
 		/// </summary>
-		/// <param name="controllerType">Type of the new state.</param>
+		/// <param name="controllerType">Type of the state controller.</param>
+		/// <param name="options">Push options.</param>
 		/// <param name="args">State arguments.</param>
-		void SetState(Type controllerType, object args = null);
+		void PushState(Type controllerType, PushOptions options = PushOptions.None, object args = null);
 
 		/// <summary>
-		/// Removes all states from the stack and pushes a new state controlled by an instance of <paramref name="controllerType"/> type.
+		/// Pushes a <paramref name="controllerType"/> instance on top of the states stack.
 		/// </summary>
-		/// <param name="controllerType">Type of the new state.</param>
+		/// <param name="controllerType">Type of the state controller.</param>
+		/// <param name="options">Push options.</param>
 		/// <param name="args">State arguments.</param>
-		Task<IAppState> SetStateAsync(Type controllerType, object args = null);
+		Task<IAppState> PushStateAsync(Type controllerType, PushOptions options = PushOptions.None, object args = null);
 	}
 }

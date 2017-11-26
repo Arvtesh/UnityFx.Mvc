@@ -16,7 +16,7 @@ namespace UnityFx.App
 		/// <summary>
 		/// Returns the application context. Read only.
 		/// </summary>
-		object Context { get; }
+		object AppContext { get; }
 
 		/// <summary>
 		/// Returns the parent state. Read only.
@@ -53,5 +53,9 @@ namespace UnityFx.App
 		/// </summary>
 		Task PopStateAsync(IAppState state);
 
+		/// <summary>
+		/// Instantly removes the specified state from the stack. Called when disposing a state.
+		/// </summary>
+		void ReleaseState(IAppState state);
 	}
 }

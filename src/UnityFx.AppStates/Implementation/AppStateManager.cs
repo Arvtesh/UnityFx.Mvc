@@ -103,31 +103,35 @@ namespace UnityFx.App
 			}
 		}
 
-		public void SetState<T>(object args) where T : class, IAppStateController
+		public void PushState<T>(PushOptions options, object args) where T : class, IAppStateController
 		{
-			PushState(null, typeof(T), PushOptions.Set, args);
+			ThrowIfDisposed();
+			PushState(null, typeof(T), options, args);
 		}
 
-		public Task<IAppState> SetStateAsync<T>(object args) where T : class, IAppStateController
+		public Task<IAppState> PushStateAsync<T>(PushOptions options, object args) where T : class, IAppStateController
 		{
-			return PushStateAsync(null, typeof(T), PushOptions.Set, args);
+			ThrowIfDisposed();
+			return PushStateAsync(null, typeof(T), options, args);
 		}
 
-		public void SetState(Type controllerType, object args)
+		public void PushState(Type controllerType, PushOptions options, object args)
 		{
-			PushState(null, controllerType, PushOptions.Set, args);
+			ThrowIfDisposed();
+			PushState(null, controllerType, options, args);
 		}
 
-		public Task<IAppState> SetStateAsync(Type controllerType, object args)
+		public Task<IAppState> PushStateAsync(Type controllerType, PushOptions options, object args)
 		{
-			return PushStateAsync(null, controllerType, PushOptions.Set, args);
+			ThrowIfDisposed();
+			return PushStateAsync(null, controllerType, options, args);
 		}
 
 		#endregion
 
 		#region IAppStateManagerInternal
 
-		public object Context => _appContext;
+		public object AppContext => _appContext;
 
 		public IAppState ParentState => _parentState;
 
@@ -181,6 +185,11 @@ namespace UnityFx.App
 			var op = new AppStateStackOperation(state);
 			AddStackOperation(op);
 			return op.Task;
+		}
+
+		public void ReleaseState(IAppState state)
+		{
+			// TODO
 		}
 
 		#endregion
