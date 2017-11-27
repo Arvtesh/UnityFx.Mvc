@@ -11,5 +11,9 @@ namespace UnityFx.App
 	/// <seealso cref="IAppState"/>
 	public interface IAppStateService : IAppStateManager, IDisposable
 	{
+		/// <summary>
+		/// Returns the service settings. Read only.
+		/// </summary>
+		IAppStateServiceSettings Settings { get; }
 	}
 }

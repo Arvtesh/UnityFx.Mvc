@@ -13,7 +13,7 @@ namespace UnityFx.App
 	/// <summary>
 	/// Implementation of <see cref="IAppStateService"/>.
 	/// </summary>
-	internal sealed class AppStateManager : MonoBehaviour, IAppStateService, IAppStateStack, IAppStateManagerInternal
+	internal sealed class AppStateManager : MonoBehaviour, IAppStateService, IAppStateServiceSettings, IAppStateStack, IAppStateManagerInternal
 	{
 		#region data
 
@@ -65,7 +65,6 @@ namespace UnityFx.App
 
 		private void OnDestroy()
 		{
-			_console.Close();
 		}
 
 		private void Update()
@@ -76,6 +75,17 @@ namespace UnityFx.App
 		#endregion
 
 		#region IAppStateService
+
+		public IAppStateServiceSettings Settings => this;
+
+		#endregion
+
+		#region IAppStateServiceSettings
+
+		public SourceSwitch TraceSwitch { get => _console.Switch; set => _console.Switch = value; }
+
+		public TraceListenerCollection TraceListeners => _console.Listeners;
+
 		#endregion
 
 		#region IAppStateManager
