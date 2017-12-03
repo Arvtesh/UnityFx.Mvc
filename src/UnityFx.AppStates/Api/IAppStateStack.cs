@@ -12,8 +12,19 @@ namespace UnityFx.App
 	public interface IAppStateStack : IReadOnlyCollection<IAppState>
 	{
 		/// <summary>
-		/// Returns the top state. Note that the top state is not always the active one.
+		/// Returns the state at the top of the stack without removing it.
 		/// </summary>
+		/// <exception cref="InvalidOperationException">Thrown if the stack is empty.</exception>
 		IAppState Peek();
+
+		/// <summary>
+		/// Returns the state at the top of the stack without removing it. Returns <c>false</c> if the stack is empty.
+		/// </summary>
+		bool TryPeek(out IAppState result);
+
+		/// <summary>
+		/// Determines whether the specified state is in the stack.
+		/// </summary>
+		bool Contains(IAppState state);
 	}
 }

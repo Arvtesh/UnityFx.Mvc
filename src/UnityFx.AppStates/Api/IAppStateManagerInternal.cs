@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 namespace UnityFx.App
 {
 	/// <summary>
-	/// A state manager interface .
+	/// A state manager interface consumed by <see cref="AppState"/>.
 	/// </summary>
-	/// <seealso cref="IAppState"/>
 	internal interface IAppStateManagerInternal : IAppStateManager
 	{
 		/// <summary>
@@ -21,41 +20,41 @@ namespace UnityFx.App
 		/// <summary>
 		/// Returns the parent state. Read only.
 		/// </summary>
-		IAppState ParentState { get; }
+		IAppStateInternal ParentState { get; }
 
 		/// <summary>
 		/// Creates a new instance of <see cref="IAppStateManager"/> for the specified state's children.
 		/// </summary>
-		IAppStateManager CreateSubstateManager(IAppState state);
+		IAppStateManagerInternal CreateSubstateManager(IAppStateInternal state);
 
 		/// <summary>
 		/// Create s a new view for the specified state.
 		/// </summary>
-		IAppView CreateView(IAppState state);
+		IAppView CreateView(IAppStateInternal state);
 
 		/// <summary>
 		/// Pushes a new state on the state stack.
 		/// </summary>
-		void PushState(IAppState ownerState, Type controllerType, PushOptions options, object stateArgs);
+		void PushState(IAppStateInternal ownerState, Type controllerType, PushOptions options, object stateArgs);
 
 		/// <summary>
 		/// Pushes a new state on the state stack.
 		/// </summary>
-		Task<IAppState> PushStateAsync(IAppState ownerState, Type controllerType, PushOptions options, object stateArgs);
+		Task<IAppState> PushStateAsync(IAppStateInternal ownerState, Type controllerType, PushOptions options, object stateArgs);
 
 		/// <summary>
 		/// Pops an existing state from the state stack.
 		/// </summary>
-		void PopState(IAppState state);
+		void PopState(IAppStateInternal state);
 
 		/// <summary>
 		/// Pops an existing state from the state stack.
 		/// </summary>
-		Task PopStateAsync(IAppState state);
+		Task PopStateAsync(IAppStateInternal state);
 
 		/// <summary>
-		/// Instantly removes the specified state from the stack. Called when disposing a state.
+		/// Clears the state stack.
 		/// </summary>
-		void ReleaseState(IAppState state);
+		void PopAll();
 	}
 }

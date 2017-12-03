@@ -11,16 +11,19 @@ using UnityEngine;
 
 namespace UnityFx.App
 {
+	using Debug = System.Diagnostics.Debug;
+
 	/// <summary>
 	/// Implementation of <see cref="IAppState"/>.
 	/// </summary>
-	internal sealed class AppState : MonoBehaviour, IAppState, IAppStateContext, IReadOnlyCollection<IAppState>
+	internal sealed class AppState : MonoBehaviour, IAppState, IAppStateInternal, IAppStateContext, IReadOnlyCollection<IAppState>
 	{
 		#region data
 
 		private IAppStateManagerInternal _parentStateManager;
-		private IAppStateManager _substateManager;
+		private IAppStateManagerInternal _substateManager;
 		private IAppStateController _controller;
+		private IAppStateEvents _controllerEvents;
 		private IAppState _parentState;
 		private IAppState _ownerState;
 		private IAppView _view;
@@ -42,19 +45,12 @@ namespace UnityFx.App
 		{
 			_parentStateManager = parentStateManager;
 			_controller = controller;
+			_controllerEvents = controller as IAppStateEvents;
 			_parentState = _parentStateManager.ParentState;
 			_ownerState = owner;
 			_stateArgs = args;
 
 			InitStateParams();
-		}
-
-		public void GetStatesRecursive(ICollection<IAppState> states)
-		{
-			if (_substateManager != null)
-			{
-				_substateManager.GetStatesRecursive(states);
-			}
 		}
 
 		#endregion
@@ -73,6 +69,115 @@ namespace UnityFx.App
 			finally
 			{
 				_view?.Dispose();
+			}
+		}
+
+		#endregion
+
+		#region IAppStateInternal
+
+		public bool Activate()
+		{
+			Debug.Assert(!_disposed);
+
+			if (!_isActive)
+			{
+				try
+				{
+					// TODO: Log event.
+
+					if (_view != null)
+					{
+						_view.Interactable = true;
+					}
+
+					_isActive = true;
+					_controllerEvents?.OnActivate(!_isActivated);
+					return true;
+				}
+				catch (Exception e)
+				{
+					// TODO: Log error.
+				}
+				finally
+				{
+					_isActivated = true;
+				}
+			}
+
+			return false;
+		}
+
+		public bool Deactivate()
+		{
+			Debug.Assert(!_disposed);
+
+			if (_isActive)
+			{
+				try
+				{
+					// TODO: Log event.
+					_controllerEvents?.OnDeactivate();
+					return true;
+				}
+				catch (Exception e)
+				{
+					// TODO: Log error.
+				}
+				finally
+				{
+					if (_view != null)
+					{
+						_view.Interactable = false;
+					}
+
+					_isActive = false;
+				}
+			}
+
+			return false;
+		}
+
+		public void Push()
+		{
+			Debug.Assert(!_disposed);
+
+			try
+			{
+				// TODO: Log event.
+				_controllerEvents?.OnPush();
+			}
+			catch (Exception e)
+			{
+				// TODO: Log error.
+			}
+		}
+
+		public void Pop()
+		{
+			Debug.Assert(!_disposed);
+
+			try
+			{
+				// TODO: Log event.
+				_substateManager?.PopAll();
+				_controllerEvents?.OnPop();
+			}
+			catch (Exception e)
+			{
+				// TODO: Log error.
+			}
+
+			// NOTE: The _go is destroyed by the caller.
+		}
+
+		public void GetStatesRecursive(ICollection<IAppState> states)
+		{
+			Debug.Assert(!_disposed);
+
+			if (_substateManager != null)
+			{
+				_substateManager.GetStatesRecursive(states);
 			}
 		}
 
@@ -106,6 +211,8 @@ namespace UnityFx.App
 		{
 			get
 			{
+				ThrowIfDisposed();
+
 				if (_view == null)
 				{
 					_view = _parentStateManager.CreateView(this);
@@ -143,6 +250,8 @@ namespace UnityFx.App
 		{
 			get
 			{
+				ThrowIfDisposed();
+
 				if (_substateManager == null)
 				{
 					_substateManager = _parentStateManager.CreateSubstateManager(this);
@@ -181,9 +290,7 @@ namespace UnityFx.App
 			if (!_disposed && this)
 			{
 				_disposed = true;
-				_parentStateManager.ReleaseState(this);
 				Destroy(gameObject);
-				GC.SuppressFinalize(this);
 			}
 		}
 

@@ -10,23 +10,26 @@ using UnityEngine;
 
 namespace UnityFx.App
 {
+	using Debug = System.Diagnostics.Debug;
+
 	/// <summary>
 	/// Implementation of <see cref="IAppStateService"/>.
 	/// </summary>
-	internal sealed class AppStateManager : MonoBehaviour, IAppStateService, IAppStateServiceSettings, IAppStateStack, IAppStateManagerInternal
+	internal sealed class AppStateManager : MonoBehaviour, IAppStateService, IAppStateServiceSettings, IAppStateManagerInternal
 	{
 		#region data
 
-		private const int _maxStackOperationsCount = 16;
+		private const int _maxStackOperationsCount = 32;
 		private const string _serviceName = "StateManager";
 
 		private TraceSource _console;
 
-		private List<AppState> _states = new List<AppState>();
-		private Queue<AppStateStackOperation> _stackOperations = new Queue<AppStateStackOperation>();
+		private AppStateStack _states;
+		private Queue<AppStateStackOperation> _stackOperations;
+		private IEnumerator _worker;
 
 		private IAppViewFactory _viewManager;
-		private IAppState _parentState;
+		private IAppStateInternal _parentState;
 		private object _appContext;
 		private bool _disposed;
 
@@ -34,16 +37,20 @@ namespace UnityFx.App
 
 		#region interface
 
-		public void Initialize(IAppViewFactory viewManager, object appContext, SourceLevels traceLevel)
+		public void Initialize(IAppViewFactory viewManager, object appContext)
 		{
-			_console = new TraceSource(_serviceName, traceLevel);
+			_console = new TraceSource(_serviceName);
+			_states = new AppStateStack(transform);
+			_stackOperations = new Queue<AppStateStackOperation>();
 			_viewManager = viewManager;
 			_appContext = appContext;
 		}
 
-		public void Initialize(IAppState parentState, TraceSource console, IAppViewFactory viewManager, object appContext)
+		public void Initialize(IAppStateInternal parentState, TraceSource console, IAppViewFactory viewManager, object appContext)
 		{
 			_console = console;
+			_states = new AppStateStack(transform);
+			_stackOperations = new Queue<AppStateStackOperation>();
 			_viewManager = viewManager;
 			_parentState = parentState;
 			_appContext = appContext;
@@ -55,12 +62,20 @@ namespace UnityFx.App
 
 		private void OnEnable()
 		{
-			
+			if (_worker != null)
+			{
+				// Resume the coroutine stopped when the behavious was disabled.
+				StartCoroutine(_worker);
+			}
+			else
+			{
+				ActivateTopState();
+			}
 		}
 
 		private void OnDisable()
 		{
-			
+			DeactivateTopState();
 		}
 
 		private void OnDestroy()
@@ -69,7 +84,12 @@ namespace UnityFx.App
 
 		private void Update()
 		{
-			
+			// Start worker coroutine if there are any operatinos in the stack.
+			if (_worker == null && _stackOperations.Count > 0)
+			{
+				_worker = ProcessStackOperations(true);
+				StartCoroutine(_worker);
+			}
 		}
 
 		#endregion
@@ -90,7 +110,7 @@ namespace UnityFx.App
 
 		#region IAppStateManager
 
-		public IAppStateStack States => this;
+		public IAppStateStack States => _states;
 
 		public IEnumerable<IAppState> GetStatesRecursive()
 		{
@@ -116,25 +136,25 @@ namespace UnityFx.App
 		public void PushState<T>(PushOptions options, object args) where T : class, IAppStateController
 		{
 			ThrowIfDisposed();
-			PushState(null, typeof(T), options, args);
+			PushState(_parentState, typeof(T), options, args);
 		}
 
 		public Task<IAppState> PushStateAsync<T>(PushOptions options, object args) where T : class, IAppStateController
 		{
 			ThrowIfDisposed();
-			return PushStateAsync(null, typeof(T), options, args);
+			return PushStateAsync(_parentState, typeof(T), options, args);
 		}
 
 		public void PushState(Type controllerType, PushOptions options, object args)
 		{
 			ThrowIfDisposed();
-			PushState(null, controllerType, options, args);
+			PushState(_parentState, controllerType, options, args);
 		}
 
 		public Task<IAppState> PushStateAsync(Type controllerType, PushOptions options, object args)
 		{
 			ThrowIfDisposed();
-			return PushStateAsync(null, controllerType, options, args);
+			return PushStateAsync(_parentState, controllerType, options, args);
 		}
 
 		#endregion
@@ -143,17 +163,21 @@ namespace UnityFx.App
 
 		public object AppContext => _appContext;
 
-		public IAppState ParentState => _parentState;
+		public IAppStateInternal ParentState => _parentState;
 
-		public IAppStateManager CreateSubstateManager(IAppState state)
+		public IAppStateManagerInternal CreateSubstateManager(IAppStateInternal state)
 		{
+			ThrowIfDisposed();
+
 			var result = state.Go.AddComponent<AppStateManager>();
 			result.Initialize(state, _console, _viewManager, _appContext);
 			return result;
 		}
 
-		public IAppView CreateView(IAppState state)
+		public IAppView CreateView(IAppStateInternal state)
 		{
+			ThrowIfDisposed();
+
 			var exclusive = !state.Flags.HasFlag(AppStateFlags.Popup);
 			var insertAfterView = default(IAppView);
 
@@ -161,7 +185,7 @@ namespace UnityFx.App
 			return _viewManager.CreateView(state.Name, exclusive, insertAfterView, state);
 		}
 
-		public void PushState(IAppState ownerState, Type controllerType, PushOptions options, object stateArgs)
+		public void PushState(IAppStateInternal ownerState, Type controllerType, PushOptions options, object stateArgs)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
@@ -170,7 +194,7 @@ namespace UnityFx.App
 			AddStackOperation(op);
 		}
 
-		public Task<IAppState> PushStateAsync(IAppState ownerState, Type controllerType, PushOptions options, object stateArgs)
+		public Task<IAppState> PushStateAsync(IAppStateInternal ownerState, Type controllerType, PushOptions options, object stateArgs)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
@@ -180,7 +204,7 @@ namespace UnityFx.App
 			return op.Task;
 		}
 
-		public void PopState(IAppState state)
+		public void PopState(IAppStateInternal state)
 		{
 			ThrowIfDisposed();
 
@@ -188,7 +212,7 @@ namespace UnityFx.App
 			AddStackOperation(op);
 		}
 
-		public Task PopStateAsync(IAppState state)
+		public Task PopStateAsync(IAppStateInternal state)
 		{
 			ThrowIfDisposed();
 
@@ -197,40 +221,21 @@ namespace UnityFx.App
 			return op.Task;
 		}
 
-		public void ReleaseState(IAppState state)
+		public void PopAll()
 		{
-			// TODO
-		}
+			ThrowIfDisposed();
 
-		#endregion
-
-		#region IAppStateStack
-
-		public IAppState Peek()
-		{
-			var n = _states.Count;
-
-			if (n > 0)
+			if (_states.TryPeekEx(out var topState))
 			{
-				return _states[n - 1];
+				topState.Deactivate();
+
+				foreach (var state in _states.ToArray())
+				{
+					state.Pop();
+					state.Dispose();
+				}
 			}
-
-			return null;
 		}
-
-		#endregion
-
-		#region IReadOnlyCollection
-
-		public int Count => _states.Count;
-
-		#endregion
-
-		#region IEnumerable
-
-		public IEnumerator<IAppState> GetEnumerator() => _states.GetEnumerator();
-
-		IEnumerator IEnumerable.GetEnumerator() => _states.GetEnumerator();
 
 		#endregion
 
@@ -251,6 +256,171 @@ namespace UnityFx.App
 		#region implementation
 
 		private void AddStackOperation(AppStateStackOperation op)
+		{
+			lock (_stackOperations)
+			{
+				if (_stackOperations.Count > _maxStackOperationsCount)
+				{
+					throw new InvalidOperationException($"Operation cannot be scheduled because maximum number of simultaneous stack operations ({_maxStackOperationsCount}) is exceeded.");
+				}
+
+				if (_stackOperations.Count > 0)
+				{
+					if (op.Operation == StackOperation.Push)
+					{
+						// TODO
+					}
+					else if (op.Operation == StackOperation.Pop)
+					{
+						// TODO
+					}
+				}
+
+				_stackOperations.Enqueue(op);
+			}
+
+			InvokeOperationInitiated(op);
+		}
+
+		private IEnumerator ProcessStackOperations(bool calledFromUpdate)
+		{
+			if (calledFromUpdate)
+			{
+				yield return new WaitForEndOfFrame();
+			}
+
+			if (_stackOperations.Count > 0)
+			{
+				var firstOp = true;
+
+				// NOTE: _stackOperations may be modified from inside the loop, cannot use iterators.
+				while (_stackOperations.Count > 0)
+				{
+					AppStateStackOperation op;
+
+					lock (_stackOperations)
+					{
+						op = _stackOperations.Dequeue();
+					}
+
+					if (CanExecuteOperation(op))
+					{
+						if (firstOp)
+						{
+							firstOp = false;
+							DeactivateTopState();
+						}
+
+						if (op.Operation == StackOperation.Push)
+						{
+							
+						}
+						else if (op.Operation == StackOperation.Pop)
+						{
+							// TODO: Play transition animation.
+							PopStateInternal(op.State, op);
+						}
+					}
+				}
+
+				// Disable all states that are invisible (covered by the top exclusive state).
+				//UpdateStateStack();
+
+				// Activate top state if no popups are active.
+				if (calledFromUpdate)
+				{
+					ActivateTopState();
+				}
+
+				// Reset the coroutine reference.
+				_worker = null;
+			}
+		}
+
+		private bool CanExecuteOperation(AppStateStackOperation op)
+		{
+			// TODO
+			return true;
+		}
+
+		private void PopDependentStates(IAppStateInternal state)
+		{
+			foreach (var s in _states.ToArray())
+			{
+				if (s.Owner == state)
+				{
+					state.Pop();
+					state.Dispose();
+				}
+			}
+		}
+
+		private void PopStateInternal(IAppStateInternal state, TaskCompletionSource<IAppState> tcs)
+		{
+			// 1) Pop all dependent states (states that was pushed onto the stack by the state).
+			PopDependentStates(state);
+
+			// 2) Release the state (and its substates). This will also remove state from the stack.
+			state.Pop();
+			state.Dispose();
+
+			// 3) Set operation result.
+			tcs.SetResult(null);
+		}
+
+		private void ActivateTopState()
+		{
+			if (_states.TryPeekEx(out var state))
+			{
+				if (state.Activate())
+				{
+					InvokeStateActivated(state);
+				}
+			}
+		}
+
+		private void DeactivateTopState()
+		{
+			if (_states.TryPeekEx(out var state))
+			{
+				if (state.Deactivate())
+				{
+					InvokeStateDeactivated(state);
+				}
+			}
+		}
+
+		private void InvokeOperationInitiated(AppStateStackOperation op)
+		{
+			// TODO
+		}
+
+		private void InvokeOperationComplete(AppStateStackOperation op)
+		{
+			// TODO
+		}
+
+		private void InvokeOperationFailed(AppStateStackOperation op)
+		{
+			// TODO
+		}
+
+		private void InvokeStatePushed(IAppState state)
+		{
+			// TODO
+		}
+
+		private void InvokeStateActivated(IAppState state)
+		{
+			// TODO
+		}
+
+		private void InvokeStateDeactivated(IAppState state)
+		{
+			// TODO
+		}
+
+		private void InvokeStatePopped(IAppState state)
 		{
 			// TODO
 		}

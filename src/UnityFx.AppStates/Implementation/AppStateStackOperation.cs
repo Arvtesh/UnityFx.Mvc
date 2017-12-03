@@ -21,25 +21,27 @@ namespace UnityFx.App
 
 		public PushOptions Options { get; }
 
-		public IAppState OwnerState { get; }
+		public IAppStateTransition Transition { get; }
+
+		public IAppStateInternal State { get; }
 
 		public Type StateType { get; }
 
 		public object StateArgs { get; }
 
-		public AppStateStackOperation(PushOptions options, IAppState owner, Type stateType, object stateArgs)
+		public AppStateStackOperation(PushOptions options, IAppStateInternal owner, Type stateType, object stateArgs)
 		{
 			Operation = StackOperation.Push;
 			Options = options;
-			OwnerState = owner;
+			State = owner;
 			StateType = stateType;
 			StateArgs = stateArgs;
 		}
 
-		public AppStateStackOperation(IAppState owner)
+		public AppStateStackOperation(IAppStateInternal state)
 		{
 			Operation = StackOperation.Pop;
-			OwnerState = owner;
+			State = state;
 		}
 
 		#endregion
