@@ -190,7 +190,7 @@ namespace UnityFx.App
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
-			var op = new AppStateStackOperation(options, ownerState, controllerType, stateArgs);
+			var op = new AppStateStackOperation(options, ownerState, null, controllerType, stateArgs);
 			AddStackOperation(op);
 		}
 
@@ -199,7 +199,7 @@ namespace UnityFx.App
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
-			var op = new AppStateStackOperation(options, ownerState, controllerType, stateArgs);
+			var op = new AppStateStackOperation(options, ownerState, null, controllerType, stateArgs);
 			AddStackOperation(op);
 			return op.Task;
 		}
@@ -311,14 +311,24 @@ namespace UnityFx.App
 							DeactivateTopState();
 						}
 
-						if (op.Operation == StackOperation.Push)
+						var task = ProcessStackOperation(op);
+
+						while (!task.IsCompleted)
 						{
-							
+							yield return null;
 						}
-						else if (op.Operation == StackOperation.Pop)
+
+						if (task.IsFaulted)
 						{
-							// TODO: Play transition animation.
-							PopStateInternal(op.State, op);
+							op.SetException(task.Exception);
+						}
+						else if (task.IsCanceled)
+						{
+							op.SetCanceled();
+						}
+						else
+						{
+							op.SetResult(task.Result);
 						}
 					}
 				}
@@ -337,10 +347,121 @@ namespace UnityFx.App
 			}
 		}
 
+		private async Task<IAppState> ProcessStackOperation(AppStateStackOperation op)
+		{
+			IAppState result = null;
+
+			try
+			{
+				if (op.Operation == StackOperation.Push)
+				{
+					// Replace the specified state with the new one.
+					if (op.Options.HasFlag(PushOptions.Set))
+					{
+						result = await PushStateInternal(op.State?.Owner, op.ControllerType, op.ControllerArgs, op.Options);
+
+						if (op.Transition != null)
+						{
+							if (op.State != null)
+							{
+								await op.Transition.PlaySetTransition(op.State, result);
+							}
+							else
+							{
+								await op.Transition.PlayPushTransition(result);
+							}
+						}
+
+						PopStateInternal(op.State);
+					}
+					// Remove all states from the stack and push the new one.
+					else if (op.Options.HasFlag(PushOptions.Reset))
+					{
+						PopAllStates();
+
+						result = await PushStateInternal(null, op.ControllerType, op.ControllerArgs, op.Options);
+
+						if (op.Transition != null)
+						{
+							await op.Transition.PlayPushTransition(result);
+						}
+					}
+					// Just push the new state onto the stack.
+					else
+					{
+						result = await PushStateInternal(op.State, op.ControllerType, op.ControllerArgs, op.Options);
+
+						if (op.Transition != null)
+						{
+							if (op.State != null)
+							{
+								await op.Transition.PlayPushTransition(op.State, result);
+							}
+							else
+							{
+								await op.Transition.PlayPushTransition(result);
+							}
+						}
+					}
+				}
+				else if (op.Operation == StackOperation.Pop)
+				{
+					if (op.State != null)
+					{
+						if (op.Transition != null)
+						{
+							await op.Transition.PlayPopTransition(op.State);
+						}
+
+						PopStateInternal(op.State);
+					}
+					else
+					{
+						PopAllStates();
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				result?.Dispose();
+				throw;
+			}
+
+			return result;
+		}
+
 		private bool CanExecuteOperation(AppStateStackOperation op)
 		{
 			// TODO
 			return true;
+		}
+
+		private async Task<IAppState> PushStateInternal(IAppState owner, Type controllerType, object controllerArgs, PushOptions options)
+		{
+			var stateGo = new GameObject(string.Empty);
+			stateGo.transform.SetParent(transform, false);
+			stateGo.tag = "GameController";
+
+			var state = stateGo.AddComponent<AppState>();
+			state.Initialize(this, owner, controllerType, controllerArgs);
+			state.Push();
+
+			if (state.Controller is IAppStateContent sc)
+			{
+				await sc.LoadContent();
+			}
+
+			return state;
+		}
+
+		private void PopStateInternal(IAppStateInternal state)
+		{
+			// Pop all dependent states (states that was pushed onto the stack by the state).
+			PopDependentStates(state);
+
+			// Release the state (and its substates). This will also remove state from the stack.
+			state.Pop();
+			state.Dispose();
 		}
 
 		private void PopDependentStates(IAppStateInternal state)
@@ -349,23 +470,19 @@ namespace UnityFx.App
 			{
 				if (s.Owner == state)
 				{
-					state.Pop();
-					state.Dispose();
+					s.Pop();
+					s.Dispose();
 				}
 			}
 		}
 
-		private void PopStateInternal(IAppStateInternal state, TaskCompletionSource<IAppState> tcs)
+		private void PopAllStates()
 		{
-			// 1) Pop all dependent states (states that was pushed onto the stack by the state).
-			PopDependentStates(state);
-
-			// 2) Release the state (and its substates). This will also remove state from the stack.
-			state.Pop();
-			state.Dispose();
-
-			// 3) Set operation result.
-			tcs.SetResult(null);
+			foreach (var s in _states.ToArray())
+			{
+				s.Pop();
+				s.Dispose();
+			}
 		}
 
 		private void ActivateTopState()

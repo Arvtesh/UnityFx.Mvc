@@ -17,6 +17,6 @@ namespace UnityFx.App
 		/// <summary>
 		/// Asyncronously loads state-related content. State is not activated until this operation is finished.
 		/// </summary>
-		Task<GameObject[]> LoadContent();
+		Task LoadContent();
 	}
 }

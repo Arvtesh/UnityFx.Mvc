@@ -22,6 +22,7 @@ namespace UnityFx.App
 
 		private IAppStateManagerInternal _parentStateManager;
 		private IAppStateManagerInternal _substateManager;
+		private IAppStateTransition _transition;
 		private IAppStateController _controller;
 		private IAppStateEvents _controllerEvents;
 		private IAppState _parentState;
@@ -41,16 +42,15 @@ namespace UnityFx.App
 
 		#region interface
 
-		public void Initialize(IAppStateManagerInternal parentStateManager, IAppState owner, object args, IAppStateController controller)
+		public void Initialize(IAppStateManagerInternal parentStateManager, IAppState owner, Type controllerType, object args)
 		{
 			_parentStateManager = parentStateManager;
-			_controller = controller;
-			_controllerEvents = controller as IAppStateEvents;
 			_parentState = _parentStateManager.ParentState;
 			_ownerState = owner;
 			_stateArgs = args;
 
 			InitStateParams();
+			InitController(controllerType);
 		}
 
 		#endregion
@@ -75,6 +75,8 @@ namespace UnityFx.App
 		#endregion
 
 		#region IAppStateInternal
+
+		public IAppStateTransition Transition => _transition;
 
 		public bool Activate()
 		{
@@ -323,6 +325,21 @@ namespace UnityFx.App
 			{
 				_name = GenerateStateName(_controller);
 			}
+		}
+
+		private void InitController(Type controllerType)
+		{
+			if (controllerType.IsSubclassOf(typeof(Component)))
+			{
+				_controller = gameObject.AddComponent(controllerType) as IAppStateController;
+			}
+			else
+			{
+				_controller = Activator.CreateInstance(controllerType) as IAppStateController;
+			}
+
+			_controllerEvents = _controller as IAppStateEvents;
+			_controllerEvents?.OnInitialize(this);
 		}
 
 		private void ThrowIfDisposed()

@@ -3,15 +3,32 @@
 
 using System;
 using System.Threading.Tasks;
-using UnityEngine;
 
 namespace UnityFx.App
 {
-
 	/// <summary>
 	/// A transition animation that is played during states switching.
 	/// </summary>
 	public interface IAppStateTransition
 	{
+		/// <summary>
+		/// 
+		/// </summary>
+		Task PlayPushTransition(IAppState toState);
+
+		/// <summary>
+		/// 
+		/// </summary>
+		Task PlayPushTransition(IAppState fromState, IAppState toState);
+
+		/// <summary>
+		/// 
+		/// </summary>
+		Task PlaySetTransition(IAppState fromState, IAppState toState);
+
+		/// <summary>
+		/// 
+		/// </summary>
+		Task PlayPopTransition(IAppState state);
 	}
 }

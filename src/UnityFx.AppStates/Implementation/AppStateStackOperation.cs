@@ -2,11 +2,8 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
+using System.Text;
 using System.Threading.Tasks;
-using UnityEngine;
 
 namespace UnityFx.App
 {
@@ -25,23 +22,69 @@ namespace UnityFx.App
 
 		public IAppStateInternal State { get; }
 
-		public Type StateType { get; }
+		public Type ControllerType { get; }
 
-		public object StateArgs { get; }
+		public object ControllerArgs { get; }
 
-		public AppStateStackOperation(PushOptions options, IAppStateInternal owner, Type stateType, object stateArgs)
+		public AppStateStackOperation(PushOptions options, IAppStateInternal owner, IAppStateTransition transition, Type controllerType, object controllerArgs)
 		{
 			Operation = StackOperation.Push;
 			Options = options;
+			Transition = transition;
 			State = owner;
-			StateType = stateType;
-			StateArgs = stateArgs;
+			ControllerType = controllerType;
+			ControllerArgs = controllerArgs;
 		}
 
 		public AppStateStackOperation(IAppStateInternal state)
 		{
 			Operation = StackOperation.Pop;
 			State = state;
+		}
+
+		#endregion
+
+		#region Object
+
+		public override string ToString()
+		{
+			var text = new StringBuilder();
+
+			if (Operation == StackOperation.Push)
+			{
+				if (Options.HasFlag(PushOptions.Set))
+				{
+					text.Append("SetState");
+				}
+				else if (Options.HasFlag(PushOptions.Reset))
+				{
+					text.Append("ResetState");
+				}
+				else
+				{
+					text.Append("PushState");
+				}
+			}
+			else
+			{
+				text.Append("PopState");
+			}
+
+			if (ControllerType != null)
+			{
+				text.Append('<');
+				text.Append(ControllerType.Name);
+				text.Append('>');
+			}
+
+			if (ControllerArgs != null)
+			{
+				text.Append('(');
+				text.Append(ControllerArgs.ToString());
+				text.Append(')');
+			}
+
+			return text.ToString();
 		}
 
 		#endregion

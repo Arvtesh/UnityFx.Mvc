@@ -16,6 +16,11 @@ namespace UnityFx.App
 		/// <summary>
 		/// 
 		/// </summary>
+		IAppStateTransition Transition { get; }
+
+		/// <summary>
+		/// 
+		/// </summary>
 		bool Activate();
 
 		/// <summary>
