@@ -319,13 +319,15 @@ namespace UnityFx.App
 							op.SetResult(null);
 						}
 					}
-					catch (OperationCanceledException)
+					catch (OperationCanceledException e)
 					{
-						op.SetCanceled();
+						op.TrySetCanceled();
+						_console.TraceData(TraceEventType.Verbose, 0, e);
 					}
 					catch (Exception e)
 					{
-						op.SetException(e);
+						op.TrySetException(e);
+						_console.TraceData(TraceEventType.Error, 0, e);
 					}
 				}
 			}
@@ -351,9 +353,13 @@ namespace UnityFx.App
 
 			try
 			{
+				var stateName = AppState.GetStateName(op.ControllerType);
+
 				// Replace the specified state with the new one.
 				if (op.Options.HasFlag(PushOptions.Set))
 				{
+					_console.TraceInformation("Set " + stateName);
+
 					result = await PushStateInternal(op.OwnerState.Owner, op.ControllerType, op.ControllerArgs, op.Options, op.CancellationToken);
 
 					if (op.Transition != null)
@@ -366,6 +372,8 @@ namespace UnityFx.App
 				// Remove all states from the stack and push the new one.
 				else if (op.Options.HasFlag(PushOptions.Reset))
 				{
+					_console.TraceInformation("Reset " + stateName);
+
 					await PopAllStates(op.CancellationToken);
 
 					result = await PushStateInternal(null, op.ControllerType, op.ControllerArgs, op.Options, op.CancellationToken);
@@ -378,6 +386,8 @@ namespace UnityFx.App
 				// Just push the new state onto the stack.
 				else
 				{
+					_console.TraceInformation("Push " + stateName);
+
 					result = await PushStateInternal(op.OwnerState, op.ControllerType, op.ControllerArgs, op.Options, op.CancellationToken);
 
 					if (op.Transition != null)
@@ -408,6 +418,8 @@ namespace UnityFx.App
 
 			if (op.State != null)
 			{
+				_console.TraceInformation("Pop " + op.State.Name);
+
 				if (op.Transition != null)
 				{
 					await op.Transition.PlayPopTransition(op.State, op.CancellationToken);
@@ -417,6 +429,8 @@ namespace UnityFx.App
 			}
 			else
 			{
+				_console.TraceInformation("PopAll");
+
 				await PopAllStates(op.CancellationToken);
 			}
 		}

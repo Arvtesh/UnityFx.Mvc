@@ -78,7 +78,7 @@ namespace UnityFx.App
 			{
 				if (string.IsNullOrEmpty(paramsAttr.Name))
 				{
-					_name = GenerateStateName(controllerType);
+					_name = GetStateName(controllerType);
 				}
 				else
 				{
@@ -90,12 +90,12 @@ namespace UnityFx.App
 			}
 			else if (_parentState != null)
 			{
-				_name = GenerateStateName(controllerType);
+				_name = GetStateName(controllerType);
 				_flags = AppStateFlags.Popup;
 			}
 			else
 			{
-				_name = GenerateStateName(controllerType);
+				_name = GetStateName(controllerType);
 			}
 
 			if (controllerType.IsSubclassOf(typeof(Component)))
@@ -253,6 +253,22 @@ namespace UnityFx.App
 			}
 		}
 
+		internal static string GetStateName(Type controllerType)
+		{
+			var name = controllerType.Name;
+
+			if (name.EndsWith("State"))
+			{
+				name = name.Substring(0, name.Length - 5);
+			}
+			else if (name.EndsWith("Controller"))
+			{
+				name = name.Substring(0, name.Length - 10);
+			}
+
+			return name;
+		}
+
 		#endregion
 
 		#region IAppState
@@ -393,22 +409,6 @@ namespace UnityFx.App
 			{
 				throw new ObjectDisposedException(_name);
 			}
-		}
-
-		private static string GenerateStateName(Type controllerType)
-		{
-			var name = controllerType.Name;
-
-			if (name.EndsWith("State"))
-			{
-				name = name.Substring(0, name.Length - 5);
-			}
-			else if (name.EndsWith("Controller"))
-			{
-				name = name.Substring(0, name.Length - 10);
-			}
-
-			return name;
 		}
 
 		#endregion
