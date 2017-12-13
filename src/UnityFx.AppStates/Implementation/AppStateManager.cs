@@ -16,63 +16,154 @@ namespace UnityFx.App
 	/// <summary>
 	/// Implementation of <see cref="IAppStateService"/>.
 	/// </summary>
-	internal sealed class AppStateManager : MonoBehaviour, IAppStateService, IAppStateServiceSettings, IAppStateManagerInternal
+	internal sealed class AppStateManager : IAppStateService, IAppStateServiceSettings
 	{
 		#region data
 
 		private const int _maxStackOperationsCount = 32;
 		private const string _serviceName = "StateManager";
 
-		private TraceSource _console;
+		private readonly AppStateStack _states = new AppStateStack();
+		private readonly Queue<AppStateStackOperation> _stackOperations = new Queue<AppStateStackOperation>();
+		private readonly CancellationTokenSource _cancellationSource = new CancellationTokenSource();
 
-		private AppStateStack _states;
-		private Queue<AppStateStackOperation> _stackOperations;
-		private CancellationTokenSource _cancellationSource;
+		private readonly TraceSource _console;
+		private readonly AppState _parentState;
+		private readonly IAppViewFactory _viewManager;
+		private readonly object _appContext;
+		private readonly GameObject _go;
+
 		private Task _stackOperationsProcessor;
-
-		private IAppViewFactory _viewManager;
-		private AppState _parentState;
-		private object _appContext;
 		private bool _disposed;
 
 		#endregion
 
 		#region interface
 
-		public void Initialize(IAppViewFactory viewManager, object appContext)
+		internal object AppContext => _appContext;
+
+		internal AppStateStack StatesEx => _states;
+
+		internal AppState ParentState => _parentState;
+
+		internal AppStateManager(IAppViewFactory viewManager, object appContext)
 		{
+			Debug.Assert(viewManager != null);
+
 			_console = new TraceSource(_serviceName);
-			_states = new AppStateStack();
-			_stackOperations = new Queue<AppStateStackOperation>();
-			_cancellationSource = new CancellationTokenSource();
 			_viewManager = viewManager;
 			_appContext = appContext;
 		}
 
-		public void Initialize(AppState parentState, TraceSource console, IAppViewFactory viewManager, object appContext)
+		internal AppStateManager(GameObject go, IAppViewFactory viewManager, object appContext)
 		{
+			Debug.Assert(go != null);
+			Debug.Assert(viewManager != null);
+
+			_console = new TraceSource(_serviceName);
+			_viewManager = viewManager;
+			_appContext = appContext;
+			_go = go;
+		}
+
+		internal AppStateManager(AppState parentState, TraceSource console, IAppViewFactory viewManager, object appContext)
+		{
+			Debug.Assert(parentState != null);
+			Debug.Assert(console != null);
+			Debug.Assert(viewManager != null);
+
 			_console = console;
-			_states = new AppStateStack();
-			_stackOperations = new Queue<AppStateStackOperation>();
-			_cancellationSource = new CancellationTokenSource();
 			_viewManager = viewManager;
 			_parentState = parentState;
 			_appContext = appContext;
+			_go = parentState.Go;
 		}
 
-		#endregion
-
-		#region MonoBehaviour
-
-		private void OnDestroy()
+		internal AppStateManager CreateSubstateManager(AppState state)
 		{
+			Debug.Assert(state != null);
+			ThrowIfDisposed();
+
+			var result = new AppStateManager(state, _console, _viewManager, _appContext);
+			return result;
 		}
 
-		private void LateUpdate()
+		internal IAppView CreateView(AppState state)
 		{
-			if (_stackOperationsProcessor == null && _stackOperations.Count > 0 && !_cancellationSource.IsCancellationRequested)
+			Debug.Assert(state != null);
+			ThrowIfDisposed();
+
+			var exclusive = !state.Flags.HasFlag(AppStateFlags.Popup);
+			var insertAfterView = default(IAppView);
+
+			// TODO
+			return _viewManager.CreateView(state.Name, exclusive, insertAfterView, state);
+		}
+
+		internal Task<IAppState> PushState(AppState ownerState, Type controllerType, PushOptions options, object stateArgs)
+		{
+			ThrowIfDisposed();
+			ThrowIfInvalidControllerType(controllerType);
+
+			var op = new AppStatePushOperation(options, ownerState, null, _cancellationSource.Token, controllerType, stateArgs);
+			AddStackOperation(op);
+			return op.Task;
+		}
+
+		internal Task PopState(AppState state)
+		{
+			Debug.Assert(state != null);
+			ThrowIfDisposed();
+
+			var op = new AppStatePopOperation(state, null, _cancellationSource.Token);
+			AddStackOperation(op);
+			return op.Task;
+		}
+
+		internal async Task PopAll()
+		{
+			ThrowIfDisposed();
+
+			// Signal all pending operations should complete asap.
+			_cancellationSource.Cancel();
+
+			// Wait for the current operatino to finish.
+			if (_stackOperationsProcessor != null)
 			{
-				_stackOperationsProcessor = ProcessStackOperations();
+				await _stackOperationsProcessor;
+			}
+
+			// Pop all states from the stack.
+			if (_states.TryPeek(out var topState))
+			{
+				topState.Deactivate();
+
+				foreach (var state in _states.ToArray())
+				{
+					await state.Pop(_cancellationSource.Token);
+				}
+			}
+		}
+
+		internal void ActivateTopState()
+		{
+			if (_states.TryPeek(out var state))
+			{
+				if (state.Activate())
+				{
+					InvokeStateActivated(state);
+				}
+			}
+		}
+
+		internal void DeactivateTopState()
+		{
+			if (_states.TryPeek(out var state))
+			{
+				if (state.Deactivate())
+				{
+					InvokeStateDeactivated(state);
+				}
 			}
 		}
 
@@ -143,117 +234,32 @@ namespace UnityFx.App
 
 		#endregion
 
-		#region IAppStateManagerInternal
-
-		public object AppContext => _appContext;
-
-		public AppStateStack StatesEx => _states;
-
-		public AppState ParentState => _parentState;
-
-		public IAppStateManagerInternal CreateSubstateManager(AppState state)
-		{
-			ThrowIfDisposed();
-
-			var result = state.Go.AddComponent<AppStateManager>();
-			result.Initialize(state, _console, _viewManager, _appContext);
-			return result;
-		}
-
-		public IAppView CreateView(AppState state)
-		{
-			ThrowIfDisposed();
-
-			var exclusive = !state.Flags.HasFlag(AppStateFlags.Popup);
-			var insertAfterView = default(IAppView);
-
-			// TODO
-			return _viewManager.CreateView(state.Name, exclusive, insertAfterView, state);
-		}
-
-		public Task<IAppState> PushState(AppState ownerState, Type controllerType, PushOptions options, object stateArgs)
-		{
-			ThrowIfDisposed();
-			ThrowIfInvalidControllerType(controllerType);
-
-			var op = new AppStatePushOperation(options, ownerState, null, _cancellationSource.Token, controllerType, stateArgs);
-			AddStackOperation(op);
-			return op.Task;
-		}
-
-		public Task PopState(AppState state)
-		{
-			ThrowIfDisposed();
-
-			var op = new AppStatePopOperation(state, null, _cancellationSource.Token);
-			AddStackOperation(op);
-			return op.Task;
-		}
-
-		public async Task PopAll()
-		{
-			ThrowIfDisposed();
-
-			// Signal all pending operations should complete asap.
-			_cancellationSource.Cancel();
-
-			// Wait for the current operatino to finish.
-			if (_stackOperationsProcessor != null)
-			{
-				await _stackOperationsProcessor;
-			}
-
-			// Pop all states from the stack.
-			if (_states.TryPeek(out var topState))
-			{
-				topState.Deactivate();
-
-				foreach (var state in _states.ToArray())
-				{
-					await state.Pop(_cancellationSource.Token);
-				}
-			}
-		}
-
-		public void ActivateTopState()
-		{
-			if (_states.TryPeek(out var state))
-			{
-				if (state.Activate())
-				{
-					InvokeStateActivated(state);
-				}
-			}
-		}
-
-		public void DeactivateTopState()
-		{
-			if (_states.TryPeek(out var state))
-			{
-				if (state.Deactivate())
-				{
-					InvokeStateDeactivated(state);
-				}
-			}
-		}
-
-		#endregion
-
 		#region IDisposable
 
 		public void Dispose()
 		{
-			if (!_disposed && this)
+			if (!_disposed)
 			{
 				_disposed = true;
-				Destroy(gameObject);
-				GC.SuppressFinalize(this);
+
+				if (_go)
+				{
+					GameObject.Destroy(_go);
+				}
 			}
 		}
 
 		#endregion
 
 		#region implementation
+
+		private void RunOpProcessor()
+		{
+			if (_stackOperationsProcessor == null && _stackOperations.Count > 0 && !_cancellationSource.IsCancellationRequested)
+			{
+				_stackOperationsProcessor = ProcessStackOperations();
+			}
+		}
 
 		private void AddStackOperation(AppStateStackOperation op)
 		{
@@ -447,9 +453,14 @@ namespace UnityFx.App
 
 		private async Task<AppState> PushStateInternal(IAppState owner, Type controllerType, object controllerArgs, PushOptions options, CancellationToken cancellationToken)
 		{
-			var stateGo = new GameObject(string.Empty);
-			stateGo.transform.SetParent(transform, false);
-			stateGo.tag = "GameController";
+			GameObject stateGo = null;
+
+			if (_go)
+			{
+				stateGo = new GameObject(string.Empty);
+				stateGo.transform.SetParent(_go.transform, false);
+				stateGo.tag = "GameController";
+			}
 
 			var state = new AppState(stateGo, _console, this, owner, controllerType, controllerArgs);
 			await state.Push(cancellationToken);
@@ -550,7 +561,7 @@ namespace UnityFx.App
 
 		private void ThrowIfDisposed()
 		{
-			if (_disposed || !this)
+			if (_disposed)
 			{
 				throw new ObjectDisposedException(GetFullName());
 			}

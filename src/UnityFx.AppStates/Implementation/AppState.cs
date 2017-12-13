@@ -32,7 +32,7 @@ namespace UnityFx.App
 	{
 		#region data
 
-		private readonly IAppStateManagerInternal _parentStateManager;
+		private readonly AppStateManager _parentStateManager;
 		private readonly IAppStateController _controller;
 		private readonly IAppStateEvents _controllerEvents;
 		private readonly IAppState _parentState;
@@ -46,8 +46,8 @@ namespace UnityFx.App
 		private readonly int _layer;
 		private readonly object _stateArgs;
 
+		private AppStateManager _substateManager;
 		private IAppStateTransition _transition;
-		private IAppStateManagerInternal _substateManager;
 		private IAppView _view;
 
 		private AppStateState _state;
@@ -60,7 +60,7 @@ namespace UnityFx.App
 
 		internal IAppStateTransition Transition => _transition;
 
-		internal AppState(GameObject go, TraceSource console, IAppStateManagerInternal parentStateManager, IAppState owner, Type controllerType, object args)
+		internal AppState(GameObject go, TraceSource console, AppStateManager parentStateManager, IAppState owner, Type controllerType, object args)
 		{
 			Debug.Assert(console != null);
 			Debug.Assert(parentStateManager != null);

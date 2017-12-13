@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net46;;netstandard20</TargetFrameworks>
+		<TargetFrameworks>net46;netstandard2.0</TargetFrameworks>
 		<Description>Application states for Unity3d.</Description>
 		<Company />
 		<Authors>Alexander Bogarsukov</Authors>
