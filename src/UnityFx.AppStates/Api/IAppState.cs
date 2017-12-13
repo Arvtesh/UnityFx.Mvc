@@ -37,7 +37,7 @@ namespace UnityFx.App
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
 	/// <seealso cref="IAppStateController"/>
-	public interface IAppState : IDisposable
+	public interface IAppState
 	{
 		/// <summary>
 		/// Returns the <see cref="GameObject"/> this state is attached to. Read only.

@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace UnityFx.App
@@ -17,48 +16,54 @@ namespace UnityFx.App
 	{
 		#region data
 
-		private readonly Transform _rootTransform;
+		private List<AppState> _states;
 
 		#endregion
 
 		#region interface
 
-		public AppStateStack(Transform t)
+		public IEnumerator<AppState> GetEnumerator() => GetEnumeratorInternal();
+
+		public void Add(AppState state)
 		{
-			_rootTransform = t;
-		}
-
-		public IAppStateInternal this[int index] => GetState(index);
-
-		public IEnumerator<IAppStateInternal> GetEnumerator() => GetEnumeratorInternal();
-
-		public IAppStateInternal GetState(int index)
-		{
-			return _rootTransform.GetChild(index).GetComponent<IAppStateInternal>();
-		}
-
-		public bool TryPeekEx(out IAppStateInternal result)
-		{
-			var childCount = _rootTransform.childCount;
-
-			if (childCount > 0)
+			if (_states == null)
 			{
-				result = GetState(childCount - 1);
-				return result != null;
+				_states = new List<AppState>();
+			}
+
+			_states.Add(state);
+		}
+
+		public void Remove(AppState state)
+		{
+			_states?.Remove(state);
+		}
+
+		public bool TryPeek(out AppState result)
+		{
+			if (_states != null)
+			{
+				var childCount = _states.Count;
+
+				if (childCount > 0)
+				{
+					result = _states[childCount - 1];
+					return result != null;
+				}
 			}
 
 			result = null;
 			return false;
 		}
 
-		public IAppStateInternal[] ToArray()
+		public AppState[] ToArray()
 		{
-			var childCount = _rootTransform.childCount;
-			var result = new IAppStateInternal[childCount];
+			var childCount = _states?.Count ?? 0;
+			var result = new AppState[childCount];
 
 			for (var i = 0; i < childCount; ++i)
 			{
-				result[i] = GetState(childCount - i - 1);
+				result[i] = _states[childCount - i - 1];
 			}
 
 			return result;
@@ -68,33 +73,39 @@ namespace UnityFx.App
 
 		#region IAppStateStack
 
-		public IAppState Peek()
+		IAppState IAppStateStack.Peek()
 		{
 			ThrowIfEmpty();
-			return GetState(_rootTransform.childCount - 1);
+			return _states[_states.Count - 1];
 		}
 
-		public bool TryPeek(out IAppState result)
+		bool IAppStateStack.TryPeek(out IAppState result)
 		{
-			var childCount = _rootTransform.childCount;
-
-			if (childCount > 0)
+			if (_states != null)
 			{
-				result = GetState(childCount - 1);
-				return result != null;
+				var childCount = _states.Count;
+
+				if (childCount > 0)
+				{
+					result = _states[childCount - 1];
+					return true;
+				}
 			}
 
 			result = null;
 			return false;
 		}
 
-		public bool Contains(IAppState state)
+		bool IAppStateStack.Contains(IAppState state)
 		{
-			foreach (Transform t in _rootTransform)
+			if (_states != null)
 			{
-				if (t.GetComponent<IAppState>() == state)
+				foreach (var s in _states)
 				{
-					return true;
+					if (s == state)
+					{
+						return true;
+					}
 				}
 			}
 
@@ -105,7 +116,7 @@ namespace UnityFx.App
 
 		#region IReadOnlyColection
 
-		public int Count => _rootTransform.childCount;
+		public int Count => _states?.Count ?? 0;
 
 		#endregion
 
@@ -119,19 +130,19 @@ namespace UnityFx.App
 
 		#region implementation
 
-		public IEnumerator<IAppStateInternal> GetEnumeratorInternal()
+		public IEnumerator<AppState> GetEnumeratorInternal()
 		{
-			var n = _rootTransform.childCount - 1;
+			var n = _states?.Count - 1 ?? -1;
 
 			while (n >= 0)
 			{
-				yield return GetState(n--);
+				yield return _states[n--];
 			}
 		}
 
 		public void ThrowIfEmpty()
 		{
-			if (_rootTransform.childCount == 0)
+			if (_states == null || _states.Count == 0)
 			{
 				throw new InvalidOperationException("The stack is empty.");
 			}

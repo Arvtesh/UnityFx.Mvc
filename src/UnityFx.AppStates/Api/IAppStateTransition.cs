@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace UnityFx.App
@@ -14,21 +15,21 @@ namespace UnityFx.App
 		/// <summary>
 		/// 
 		/// </summary>
-		Task PlayPushTransition(IAppState toState);
+		Task PlayPushTransition(IAppState toState, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// 
 		/// </summary>
-		Task PlayPushTransition(IAppState fromState, IAppState toState);
+		Task PlayPushTransition(IAppState fromState, IAppState toState, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// 
 		/// </summary>
-		Task PlaySetTransition(IAppState fromState, IAppState toState);
+		Task PlaySetTransition(IAppState fromState, IAppState toState, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// 
 		/// </summary>
-		Task PlayPopTransition(IAppState state);
+		Task PlayPopTransition(IAppState state, CancellationToken cancellationToken);
 	}
 }

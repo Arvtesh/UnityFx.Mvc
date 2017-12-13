@@ -2,13 +2,13 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net46</TargetFrameworks>
-		<Description>Application states for Unity3d.</Description>
+		<Description>Application tools for Unity3d.</Description>
 		<Company />
 		<Authors>Alexander Bogarsukov</Authors>
 		<PackageProjectUrl>https://github.com/Arvtesh/UnityFx.AppStates</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Arvtesh/UnityFx.AppStates</RepositoryUrl>
 		<RepositoryType>Git</RepositoryType>
-		<PackageTags>Unity3d;FSM;Application;States</PackageTags>
+		<PackageTags>Unity3d;Application</PackageTags>
 		<PackageLicenseUrl>https://opensource.org/licenses/mit-license.php</PackageLicenseUrl>
 		<Version>0.2.0</Version>
 		<AssemblyVersion>0.2.0.0</AssemblyVersion>
@@ -19,10 +19,6 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NeutralLanguage>en-US</NeutralLanguage>
 	</PropertyGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\UnityFx.App\UnityFx.App.csproj" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<Reference Include="UnityEngine">

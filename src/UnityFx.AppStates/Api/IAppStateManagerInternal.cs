@@ -18,43 +18,48 @@ namespace UnityFx.App
 		object AppContext { get; }
 
 		/// <summary>
+		/// Returns app states. Read only.
+		/// </summary>
+		AppStateStack StatesEx { get; }
+
+		/// <summary>
 		/// Returns the parent state. Read only.
 		/// </summary>
-		IAppStateInternal ParentState { get; }
+		AppState ParentState { get; }
 
 		/// <summary>
 		/// Creates a new instance of <see cref="IAppStateManager"/> for the specified state's children.
 		/// </summary>
-		IAppStateManagerInternal CreateSubstateManager(IAppStateInternal state);
+		IAppStateManagerInternal CreateSubstateManager(AppState state);
 
 		/// <summary>
 		/// Create s a new view for the specified state.
 		/// </summary>
-		IAppView CreateView(IAppStateInternal state);
+		IAppView CreateView(AppState state);
 
 		/// <summary>
-		/// Pushes a new state on the state stack.
+		/// Pushes a new state onto the state stack.
 		/// </summary>
-		void PushState(IAppStateInternal ownerState, Type controllerType, PushOptions options, object stateArgs);
-
-		/// <summary>
-		/// Pushes a new state on the state stack.
-		/// </summary>
-		Task<IAppState> PushStateAsync(IAppStateInternal ownerState, Type controllerType, PushOptions options, object stateArgs);
+		Task<IAppState> PushState(AppState ownerState, Type controllerType, PushOptions options, object stateArgs);
 
 		/// <summary>
 		/// Pops an existing state from the state stack.
 		/// </summary>
-		void PopState(IAppStateInternal state);
-
-		/// <summary>
-		/// Pops an existing state from the state stack.
-		/// </summary>
-		Task PopStateAsync(IAppStateInternal state);
+		Task PopState(AppState state);
 
 		/// <summary>
 		/// Clears the state stack.
 		/// </summary>
-		void PopAll();
+		Task PopAll();
+
+		/// <summary>
+		/// 
+		/// </summary>
+		void ActivateTopState();
+
+		/// <summary>
+		/// 
+		/// </summary>
+		void DeactivateTopState();
 	}
 }

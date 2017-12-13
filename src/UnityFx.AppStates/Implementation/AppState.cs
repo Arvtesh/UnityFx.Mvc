@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -14,117 +15,166 @@ namespace UnityFx.App
 	using Debug = System.Diagnostics.Debug;
 
 	/// <summary>
+	/// Enumerates states of <see cref="AppState"/>.
+	/// </summary>
+	internal enum AppStateState
+	{
+		Created,
+		Pushed,
+		Popped,
+		Disposed
+	}
+
+	/// <summary>
 	/// Implementation of <see cref="IAppState"/>.
 	/// </summary>
-	internal sealed class AppState : MonoBehaviour, IAppState, IAppStateInternal, IAppStateContext, IReadOnlyCollection<IAppState>
+	internal sealed class AppState : IAppState, IAppStateContext, IReadOnlyCollection<IAppState>, IDisposable
 	{
 		#region data
 
-		private IAppStateManagerInternal _parentStateManager;
-		private IAppStateManagerInternal _substateManager;
+		private readonly IAppStateManagerInternal _parentStateManager;
+		private readonly IAppStateController _controller;
+		private readonly IAppStateEvents _controllerEvents;
+		private readonly IAppState _parentState;
+		private readonly IAppState _ownerState;
+
+		private readonly TraceSource _console;
+		private readonly AppStateStack _stack;
+		private readonly GameObject _go;
+		private readonly string _name;
+		private readonly AppStateFlags _flags;
+		private readonly int _layer;
+		private readonly object _stateArgs;
+
 		private IAppStateTransition _transition;
-		private IAppStateController _controller;
-		private IAppStateEvents _controllerEvents;
-		private IAppState _parentState;
-		private IAppState _ownerState;
+		private IAppStateManagerInternal _substateManager;
 		private IAppView _view;
 
-		private string _name;
-		private AppStateFlags _flags;
-		private int _layer;
-		private object _stateArgs;
-
+		private AppStateState _state;
 		private bool _isActive;
 		private bool _isActivated;
-		private bool _disposed;
 
 		#endregion
 
 		#region interface
 
-		public void Initialize(IAppStateManagerInternal parentStateManager, IAppState owner, Type controllerType, object args)
+		internal IAppStateTransition Transition => _transition;
+
+		internal AppState(GameObject go, TraceSource console, IAppStateManagerInternal parentStateManager, IAppState owner, Type controllerType, object args)
 		{
+			Debug.Assert(console != null);
+			Debug.Assert(parentStateManager != null);
+			Debug.Assert(controllerType != null);
+
 			_parentStateManager = parentStateManager;
 			_parentState = _parentStateManager.ParentState;
 			_ownerState = owner;
 			_stateArgs = args;
+			_console = console;
+			_stack = _parentStateManager.StatesEx;
+			_go = go;
 
-			InitStateParams();
-			InitController(controllerType);
-		}
-
-		#endregion
-
-		#region MonoBehaviour
-
-		private void OnDestroy()
-		{
-			try
+			if (Attribute.GetCustomAttribute(controllerType, typeof(AppStateParamsAttribute)) is AppStateParamsAttribute paramsAttr)
 			{
-				if (_controller is IDisposable d)
+				if (string.IsNullOrEmpty(paramsAttr.Name))
 				{
-					d.Dispose();
+					_name = GenerateStateName(controllerType);
+				}
+				else
+				{
+					_name = paramsAttr.Name;
+				}
+
+				_flags = paramsAttr.Flags;
+				_layer = paramsAttr.Layer;
+			}
+			else if (_parentState != null)
+			{
+				_name = GenerateStateName(controllerType);
+				_flags = AppStateFlags.Popup;
+			}
+			else
+			{
+				_name = GenerateStateName(controllerType);
+			}
+
+			if (controllerType.IsSubclassOf(typeof(Component)))
+			{
+				if (_go)
+				{
+					_controller = _go.AddComponent(controllerType) as IAppStateController;
+				}
+				else
+				{
+					throw new ArgumentNullException(nameof(go));
 				}
 			}
-			finally
+			else
 			{
-				_view?.Dispose();
+				_controller = Activator.CreateInstance(controllerType) as IAppStateController;
+			}
+
+			_controllerEvents = _controller as IAppStateEvents;
+
+			try
+			{
+				_controllerEvents?.OnInitialize(this);
+			}
+			catch (Exception e)
+			{
+				_console.TraceData(TraceEventType.Error, 0, e);
 			}
 		}
 
-		#endregion
-
-		#region IAppStateInternal
-
-		public IAppStateTransition Transition => _transition;
-
-		public bool Activate()
+		internal bool Activate()
 		{
-			Debug.Assert(!_disposed);
+			Debug.Assert(_state == AppStateState.Pushed);
 
 			if (!_isActive)
 			{
+				_console.TraceEvent(TraceEventType.Verbose, 0, "ActivateState " + _name);
+
+				if (_view != null)
+				{
+					_view.Interactable = true;
+				}
+
+				_isActive = true;
+
 				try
 				{
-					// TODO: Log event.
-
-					if (_view != null)
-					{
-						_view.Interactable = true;
-					}
-
-					_isActive = true;
 					_controllerEvents?.OnActivate(!_isActivated);
-					return true;
 				}
 				catch (Exception e)
 				{
-					// TODO: Log error.
+					_console.TraceData(TraceEventType.Error, 0, e);
 				}
-				finally
-				{
-					_isActivated = true;
-				}
+
+				_isActivated = true;
+				_substateManager?.ActivateTopState();
+				return true;
 			}
 
 			return false;
 		}
 
-		public bool Deactivate()
+		internal bool Deactivate()
 		{
-			Debug.Assert(!_disposed);
+			Debug.Assert(_state == AppStateState.Pushed);
 
 			if (_isActive)
 			{
+				_console.TraceData(TraceEventType.Verbose, 0, "DeactivateState " + _name);
+				_substateManager?.DeactivateTopState();
+
 				try
 				{
-					// TODO: Log event.
 					_controllerEvents?.OnDeactivate();
 					return true;
 				}
 				catch (Exception e)
 				{
-					// TODO: Log error.
+					_console.TraceData(TraceEventType.Error, 0, e);
 				}
 				finally
 				{
@@ -140,42 +190,62 @@ namespace UnityFx.App
 			return false;
 		}
 
-		public void Push()
+		internal async Task Push(CancellationToken cancellationToken)
 		{
-			Debug.Assert(!_disposed);
+			Debug.Assert(_state == AppStateState.Created);
+
+			_state = AppStateState.Pushed;
+			_console.TraceData(TraceEventType.Verbose, 0, "PushState " + _name);
+			_stack.Add(this);
 
 			try
 			{
-				// TODO: Log event.
 				_controllerEvents?.OnPush();
 			}
 			catch (Exception e)
 			{
-				// TODO: Log error.
+				_console.TraceData(TraceEventType.Error, 0, e);
+			}
+
+			// Load state content if any.
+			if (_controller is IAppStateContent sc)
+			{
+				await sc.LoadContent(cancellationToken);
 			}
 		}
 
-		public void Pop()
+		internal async Task Pop(CancellationToken cancellationToken)
 		{
-			Debug.Assert(!_disposed);
+			Debug.Assert(_state == AppStateState.Pushed);
 
 			try
 			{
-				// TODO: Log event.
-				_substateManager?.PopAll();
-				_controllerEvents?.OnPop();
-			}
-			catch (Exception e)
-			{
-				// TODO: Log error.
-			}
+				_state = AppStateState.Popped;
+				_console.TraceData(TraceEventType.Verbose, 0, "PopState " + _name);
 
-			// NOTE: The _go is destroyed by the caller.
+				if (_substateManager != null)
+				{
+					await _substateManager.PopAll();
+				}
+
+				try
+				{
+					_controllerEvents?.OnPop();
+				}
+				catch (Exception e)
+				{
+					_console.TraceData(TraceEventType.Error, 0, e);
+				}
+			}
+			finally
+			{
+				Dispose();
+			}
 		}
 
-		public void GetStatesRecursive(ICollection<IAppState> states)
+		internal void GetStatesRecursive(ICollection<IAppState> states)
 		{
-			Debug.Assert(!_disposed);
+			Debug.Assert(_state != AppStateState.Disposed);
 
 			if (_substateManager != null)
 			{
@@ -187,9 +257,9 @@ namespace UnityFx.App
 
 		#region IAppState
 
-		public GameObject Go => gameObject;
+		public GameObject Go => _go;
 
-		public Bounds Bounds => _view?.Bounds ?? new Bounds(transform.position, Vector3.zero);
+		public Bounds Bounds => View.Bounds;
 
 		public string Name => _name;
 
@@ -235,7 +305,7 @@ namespace UnityFx.App
 		public Task CloseAsync()
 		{
 			ThrowIfDisposed();
-			return _parentStateManager.PopStateAsync(this);
+			return _parentStateManager.PopState(this);
 		}
 
 		#endregion
@@ -289,10 +359,27 @@ namespace UnityFx.App
 
 		public void Dispose()
 		{
-			if (!_disposed && this)
+			if (_state != AppStateState.Disposed)
 			{
-				_disposed = true;
-				Destroy(gameObject);
+				_state = AppStateState.Disposed;
+				_stack.Remove(this);
+
+				try
+				{
+					if (_controller is IDisposable d)
+					{
+						d.Dispose();
+					}
+				}
+				finally
+				{
+					if (_go)
+					{
+						GameObject.Destroy(_go);
+					}
+
+					_view?.Dispose();
+				}
 			}
 		}
 
@@ -300,59 +387,17 @@ namespace UnityFx.App
 
 		#region implementation
 
-		private void InitStateParams()
-		{
-			if (Attribute.GetCustomAttribute(_controller.GetType(), typeof(AppStateParamsAttribute)) is AppStateParamsAttribute paramsAttr)
-			{
-				if (string.IsNullOrEmpty(paramsAttr.Name))
-				{
-					_name = GenerateStateName(_controller);
-				}
-				else
-				{
-					_name = paramsAttr.Name;
-				}
-
-				_flags = paramsAttr.Flags;
-				_layer = paramsAttr.Layer;
-			}
-			else if (_parentState != null)
-			{
-				_name = GenerateStateName(_controller);
-				_flags = AppStateFlags.Popup;
-			}
-			else
-			{
-				_name = GenerateStateName(_controller);
-			}
-		}
-
-		private void InitController(Type controllerType)
-		{
-			if (controllerType.IsSubclassOf(typeof(Component)))
-			{
-				_controller = gameObject.AddComponent(controllerType) as IAppStateController;
-			}
-			else
-			{
-				_controller = Activator.CreateInstance(controllerType) as IAppStateController;
-			}
-
-			_controllerEvents = _controller as IAppStateEvents;
-			_controllerEvents?.OnInitialize(this);
-		}
-
 		private void ThrowIfDisposed()
 		{
-			if (_disposed || !this)
+			if (_state == AppStateState.Disposed)
 			{
 				throw new ObjectDisposedException(_name);
 			}
 		}
 
-		private static string GenerateStateName(object obj)
+		private static string GenerateStateName(Type controllerType)
 		{
-			var name = obj.GetType().Name;
+			var name = controllerType.Name;
 
 			if (name.EndsWith("State"))
 			{
