@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using UnityEngine;
 
 namespace UnityFx.App
 {
@@ -39,16 +38,6 @@ namespace UnityFx.App
 	/// <seealso cref="IAppStateController"/>
 	public interface IAppState
 	{
-		/// <summary>
-		/// Returns the <see cref="GameObject"/> this state is attached to. Read only.
-		/// </summary>
-		GameObject Go { get; }
-
-		/// <summary>
-		/// Returns state bounds (in world space) based on its content. Read only.
-		/// </summary>
-		Bounds Bounds { get; }
-
 		/// <summary>
 		/// Returns the state name. Read only.
 		/// </summary>

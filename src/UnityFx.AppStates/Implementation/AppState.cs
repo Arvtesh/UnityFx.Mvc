@@ -8,12 +8,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEngine;
 
 namespace UnityFx.App
 {
-	using Debug = System.Diagnostics.Debug;
-
 	/// <summary>
 	/// Enumerates states of <see cref="AppState"/>.
 	/// </summary>
@@ -40,7 +37,6 @@ namespace UnityFx.App
 
 		private readonly TraceSource _console;
 		private readonly AppStateStack _stack;
-		private readonly GameObject _go;
 		private readonly string _name;
 		private readonly AppStateFlags _flags;
 		private readonly int _layer;
@@ -60,7 +56,7 @@ namespace UnityFx.App
 
 		internal IAppStateTransition Transition => _transition;
 
-		internal AppState(GameObject go, TraceSource console, AppStateManager parentStateManager, IAppState owner, Type controllerType, object args)
+		internal AppState(TraceSource console, AppStateManager parentStateManager, IAppState owner, Type controllerType, object args)
 		{
 			Debug.Assert(console != null);
 			Debug.Assert(parentStateManager != null);
@@ -72,9 +68,8 @@ namespace UnityFx.App
 			_stateArgs = args;
 			_console = console;
 			_stack = _parentStateManager.StatesEx;
-			_go = go;
 
-			if (Attribute.GetCustomAttribute(controllerType, typeof(AppStateParamsAttribute)) is AppStateParamsAttribute paramsAttr)
+			if (Attribute.GetCustomAttribute(controllerType, typeof(AppStateControllerAttribute)) is AppStateControllerAttribute paramsAttr)
 			{
 				if (string.IsNullOrEmpty(paramsAttr.Name))
 				{
@@ -98,32 +93,8 @@ namespace UnityFx.App
 				_name = GetStateName(controllerType);
 			}
 
-			if (controllerType.IsSubclassOf(typeof(Component)))
-			{
-				if (_go)
-				{
-					_controller = _go.AddComponent(controllerType) as IAppStateController;
-				}
-				else
-				{
-					throw new ArgumentNullException(nameof(go));
-				}
-			}
-			else
-			{
-				_controller = Activator.CreateInstance(controllerType) as IAppStateController;
-			}
-
+			_controller = CreateController(controllerType);
 			_controllerEvents = _controller as IAppStateEvents;
-
-			try
-			{
-				_controllerEvents?.OnInitialize(this);
-			}
-			catch (Exception e)
-			{
-				_console.TraceData(TraceEventType.Error, 0, e);
-			}
 		}
 
 		internal bool Activate()
@@ -273,10 +244,6 @@ namespace UnityFx.App
 
 		#region IAppState
 
-		public GameObject Go => _go;
-
-		public Bounds Bounds => View.Bounds;
-
 		public string Name => _name;
 
 		public string FullName => _parentState?.FullName + '.' + _name ?? _name;
@@ -328,11 +295,23 @@ namespace UnityFx.App
 
 		#region IAppStateContext
 
-		public object AppContext => _parentStateManager.AppContext;
+		public IAppState State
+		{
+			get
+			{
+				ThrowIfDisposed();
+				return this;
+			}
+		}
 
-		public IAppState State => this;
-
-		public IAppStateManager StateManager => _parentStateManager;
+		public IAppStateManager StateManager
+		{
+			get
+			{
+				ThrowIfDisposed();
+				return _parentStateManager;
+			}
+		}
 
 		public IAppStateManager SubstateManager
 		{
@@ -361,6 +340,7 @@ namespace UnityFx.App
 
 		public IEnumerator<IAppState> GetEnumerator()
 		{
+			ThrowIfDisposed();
 			return _substateManager?.States.GetEnumerator() ?? Enumerable.Empty<IAppState>().GetEnumerator();
 		}
 
@@ -389,11 +369,6 @@ namespace UnityFx.App
 				}
 				finally
 				{
-					if (_go)
-					{
-						GameObject.Destroy(_go);
-					}
-
 					_view?.Dispose();
 				}
 			}
@@ -409,6 +384,12 @@ namespace UnityFx.App
 			{
 				throw new ObjectDisposedException(_name);
 			}
+		}
+
+		private IAppStateController CreateController(Type controllerType)
+		{
+			// TODO: use IServiceProvider to resolve controller constructor parameters
+			return Activator.CreateInstance(controllerType) as IAppStateController;
 		}
 
 		#endregion

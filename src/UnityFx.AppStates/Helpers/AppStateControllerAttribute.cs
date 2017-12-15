@@ -9,7 +9,7 @@ namespace UnityFx.App
 	/// Stores static parameters applicable to <see cref="IAppStateController"/> implementation.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class)]
-	public sealed class AppStateParamsAttribute : Attribute
+	public sealed class AppStateControllerAttribute : Attribute
 	{
 		/// <summary>
 		/// Returns the state name. Read only.
@@ -27,9 +27,9 @@ namespace UnityFx.App
 		public int Layer { get; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="AppStateParamsAttribute"/> class.
+		/// Initializes a new instance of the <see cref="AppStateControllerAttribute"/> class.
 		/// </summary>
-		public AppStateParamsAttribute(string name, AppStateFlags flags = AppStateFlags.None, int layer = 0)
+		public AppStateControllerAttribute(string name, AppStateFlags flags = AppStateFlags.None, int layer = 0)
 		{
 			Name = name;
 			Flags = flags;

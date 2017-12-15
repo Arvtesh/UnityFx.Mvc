@@ -24,10 +24,4 @@
 	  <ProjectReference Include="..\UnityFx.App\UnityFx.App.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Reference Include="UnityEngine">
-			<HintPath>..\Dependencies\UnityEngine.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-
 </Project>

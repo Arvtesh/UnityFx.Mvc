@@ -12,17 +12,12 @@ namespace UnityFx.App
 	public interface IAppStateContext
 	{
 		/// <summary>
-		/// Returns the user-defined application context data. Read only.
-		/// </summary>
-		object AppContext { get; }
-
-		/// <summary>
-		/// Returns parent state. Read only.
+		/// Returns parent state. Never returns <c>null</c>. Read only.
 		/// </summary>
 		IAppState State { get; }
 
 		/// <summary>
-		/// Returns a view attached to the state. Read only.
+		/// Returns a view attached to the state. Never returns <c>null</c>. Read only.
 		/// </summary>
 		IAppView View { get; }
 

@@ -7,12 +7,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEngine;
 
 namespace UnityFx.App
 {
-	using Debug = System.Diagnostics.Debug;
-
 	/// <summary>
 	/// Implementation of <see cref="IAppStateService"/>.
 	/// </summary>
@@ -30,8 +27,7 @@ namespace UnityFx.App
 		private readonly TraceSource _console;
 		private readonly AppState _parentState;
 		private readonly IAppViewFactory _viewManager;
-		private readonly object _appContext;
-		private readonly GameObject _go;
+		private readonly IServiceProvider _services;
 
 		private Task _stackOperationsProcessor;
 		private bool _disposed;
@@ -40,43 +36,33 @@ namespace UnityFx.App
 
 		#region interface
 
-		internal object AppContext => _appContext;
+		internal IServiceProvider Services => _services;
 
 		internal AppStateStack StatesEx => _states;
 
 		internal AppState ParentState => _parentState;
 
-		internal AppStateManager(IAppViewFactory viewManager, object appContext)
+		internal AppStateManager(IAppViewFactory viewManager, IServiceProvider services)
 		{
 			Debug.Assert(viewManager != null);
+			Debug.Assert(services != null);
 
 			_console = new TraceSource(_serviceName);
 			_viewManager = viewManager;
-			_appContext = appContext;
+			_services = services;
 		}
 
-		internal AppStateManager(GameObject go, IAppViewFactory viewManager, object appContext)
-		{
-			Debug.Assert(go != null);
-			Debug.Assert(viewManager != null);
-
-			_console = new TraceSource(_serviceName);
-			_viewManager = viewManager;
-			_appContext = appContext;
-			_go = go;
-		}
-
-		internal AppStateManager(AppState parentState, TraceSource console, IAppViewFactory viewManager, object appContext)
+		internal AppStateManager(AppState parentState, TraceSource console, IAppViewFactory viewManager, IServiceProvider services)
 		{
 			Debug.Assert(parentState != null);
 			Debug.Assert(console != null);
 			Debug.Assert(viewManager != null);
+			Debug.Assert(services != null);
 
 			_console = console;
 			_viewManager = viewManager;
 			_parentState = parentState;
-			_appContext = appContext;
-			_go = parentState.Go;
+			_services = services;
 		}
 
 		internal AppStateManager CreateSubstateManager(AppState state)
@@ -84,8 +70,7 @@ namespace UnityFx.App
 			Debug.Assert(state != null);
 			ThrowIfDisposed();
 
-			var result = new AppStateManager(state, _console, _viewManager, _appContext);
-			return result;
+			return new AppStateManager(state, _console, _viewManager, _services);
 		}
 
 		internal IAppView CreateView(AppState state)
@@ -242,10 +227,7 @@ namespace UnityFx.App
 			{
 				_disposed = true;
 
-				if (_go)
-				{
-					GameObject.Destroy(_go);
-				}
+				// TODO
 			}
 		}
 
@@ -453,18 +435,8 @@ namespace UnityFx.App
 
 		private async Task<AppState> PushStateInternal(IAppState owner, Type controllerType, object controllerArgs, PushOptions options, CancellationToken cancellationToken)
 		{
-			GameObject stateGo = null;
-
-			if (_go)
-			{
-				stateGo = new GameObject(string.Empty);
-				stateGo.transform.SetParent(_go.transform, false);
-				stateGo.tag = "GameController";
-			}
-
-			var state = new AppState(stateGo, _console, this, owner, controllerType, controllerArgs);
+			var state = new AppState(_console, this, owner, controllerType, controllerArgs);
 			await state.Push(cancellationToken);
-
 			return state;
 		}
 

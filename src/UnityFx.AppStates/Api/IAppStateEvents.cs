@@ -13,11 +13,6 @@ namespace UnityFx.App
 	public interface IAppStateEvents
 	{
 		/// <summary>
-		/// Called right after the state has been created.
-		/// </summary>
-		void OnInitialize(IAppStateContext context);
-
-		/// <summary>
 		/// Called right after the state has been pushed onto the stack.
 		/// </summary>
 		void OnPush();
@@ -36,10 +31,5 @@ namespace UnityFx.App
 		/// Called when the state is about to become inactive.
 		/// </summary>
 		void OnDeactivate();
-
-		/// <summary>
-		/// Called when view content have been loaded (before the state becomes active).
-		/// </summary>
-		void OnViewLoaded();
 	}
 }
