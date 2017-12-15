@@ -70,32 +70,16 @@ namespace UnityFx.App
 		/// Pushes a <typeparamref name="TStateController"/> instance on top of the states stack.
 		/// </summary>
 		/// <param name="options">Push options.</param>
-		/// <param name="args">State-specific arguments.</param>
+		/// <param name="args">Controller-specific arguments.</param>
 		/// <typeparam name="TStateController">Type of the state controller.</typeparam>
-		void PushState<TStateController>(PushOptions options = PushOptions.None, object args = null) where TStateController : class, IAppStateController;
-
-		/// <summary>
-		/// Pushes a <typeparamref name="TStateController"/> instance on top of the states stack.
-		/// </summary>
-		/// <param name="options">Push options.</param>
-		/// <param name="args">State-specific arguments.</param>
-		/// <typeparam name="TStateController">Type of the state controller.</typeparam>
-		Task<IAppState> PushStateAsync<TStateController>(PushOptions options = PushOptions.None, object args = null) where TStateController : class, IAppStateController;
+		Task<IAppState> PushStateAsync<TStateController>(PushOptions options, object args) where TStateController : class, IAppStateController;
 
 		/// <summary>
 		/// Pushes a <paramref name="controllerType"/> instance on top of the states stack.
 		/// </summary>
 		/// <param name="controllerType">Type of the state controller.</param>
 		/// <param name="options">Push options.</param>
-		/// <param name="args">State arguments.</param>
-		void PushState(Type controllerType, PushOptions options = PushOptions.None, object args = null);
-
-		/// <summary>
-		/// Pushes a <paramref name="controllerType"/> instance on top of the states stack.
-		/// </summary>
-		/// <param name="controllerType">Type of the state controller.</param>
-		/// <param name="options">Push options.</param>
-		/// <param name="args">State arguments.</param>
-		Task<IAppState> PushStateAsync(Type controllerType, PushOptions options = PushOptions.None, object args = null);
+		/// <param name="args">Controller arguments.</param>
+		Task<IAppState> PushStateAsync(Type controllerType, PushOptions options, object args);
 	}
 }

@@ -193,22 +193,10 @@ namespace UnityFx.App
 			}
 		}
 
-		public void PushState<T>(PushOptions options, object args) where T : class, IAppStateController
-		{
-			ThrowIfDisposed();
-			PushState(_parentState, typeof(T), options, args);
-		}
-
 		public Task<IAppState> PushStateAsync<T>(PushOptions options, object args) where T : class, IAppStateController
 		{
 			ThrowIfDisposed();
 			return PushState(_parentState, typeof(T), options, args);
-		}
-
-		public void PushState(Type controllerType, PushOptions options, object args)
-		{
-			ThrowIfDisposed();
-			PushState(_parentState, controllerType, options, args);
 		}
 
 		public Task<IAppState> PushStateAsync(Type controllerType, PushOptions options, object args)

@@ -94,11 +94,6 @@ namespace UnityFx.App
 		IAppStateController Controller { get; }
 
 		/// <summary>
-		/// Pops the state from the state stack. This call just initiates asynchronous pop operation.
-		/// </summary>
-		void Close();
-
-		/// <summary>
 		/// Pops the state from the state stack.
 		/// </summary>
 		Task CloseAsync();

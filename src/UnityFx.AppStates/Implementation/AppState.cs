@@ -279,12 +279,6 @@ namespace UnityFx.App
 
 		public IAppStateController Controller => _controller;
 
-		public void Close()
-		{
-			ThrowIfDisposed();
-			_parentStateManager.PopState(this);
-		}
-
 		public Task CloseAsync()
 		{
 			ThrowIfDisposed();
