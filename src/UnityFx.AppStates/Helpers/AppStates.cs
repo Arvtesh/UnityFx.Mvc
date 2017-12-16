@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Threading;
 
 namespace UnityFx.App
 {
@@ -25,7 +26,7 @@ namespace UnityFx.App
 				throw new ArgumentNullException(nameof(serviceProvider));
 			}
 
-			return new AppStateManager(viewFactory, serviceProvider);
+			return new AppStateManager(SynchronizationContext.Current, viewFactory, serviceProvider);
 		}
 	}
 }

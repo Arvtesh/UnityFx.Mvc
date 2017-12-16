@@ -12,11 +12,46 @@ namespace UnityFx.App.Tests
 	/// </summary>
 	public class AppStateManager : IDisposable
 	{
+		#region helper types
+
 		private class TestController : IAppStateController
 		{
 		}
 
+		private class TestControllerEvents : IAppStateController, IAppStateEvents
+		{
+			private int _counter = 0;
+
+			public void OnActivate(bool firstTime)
+			{
+				Assert.Equal(2, ++_counter);
+			}
+
+			public void OnDeactivate()
+			{
+				Assert.Equal(3, ++_counter);
+			}
+
+			public void OnPop()
+			{
+				Assert.Equal(4, ++_counter);
+			}
+
+			public void OnPush()
+			{
+				Assert.Equal(1, ++_counter);
+			}
+		}
+
+		#endregion
+
+		#region data
+
 		private readonly IAppStateService _stateManager;
+
+		#endregion
+
+		#region interface
 
 		public AppStateManager()
 		{
@@ -29,6 +64,10 @@ namespace UnityFx.App.Tests
 		{
 			_stateManager.Dispose();
 		}
+
+		#endregion
+
+		#region construction/disposing tests
 
 		[Fact]
 		public void InitialStateIsCorrect()
@@ -50,13 +89,29 @@ namespace UnityFx.App.Tests
 			_stateManager.Dispose();
 		}
 
+		#endregion
+
+		#region push/pop tests
+
 		[Fact]
 		public async void PushStateSucceeds()
 		{
 			var state = await _stateManager.PushStateAsync<TestController>(PushOptions.None, null);
 
 			Assert.NotNull(state);
+			Assert.Equal("Test", state.Name);
 			Assert.Contains(state, _stateManager.States);
 		}
+
+		[Fact]
+		public async void PushStateRaisesControllerEvents()
+		{
+			var state = await _stateManager.PushStateAsync<TestControllerEvents>(PushOptions.None, null);
+			await state.CloseAsync();
+
+			Assert.Empty(_stateManager.States);
+		}
+
+		#endregion
 	}
 }

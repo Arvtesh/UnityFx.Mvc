@@ -25,6 +25,7 @@ namespace UnityFx.App
 		private readonly CancellationTokenSource _cancellationSource = new CancellationTokenSource();
 
 		private readonly TraceSource _console;
+		private readonly SynchronizationContext _synchronizationContext;
 		private readonly AppState _parentState;
 		private readonly IAppViewFactory _viewManager;
 		private readonly IServiceProvider _services;
@@ -42,24 +43,28 @@ namespace UnityFx.App
 
 		internal AppState ParentState => _parentState;
 
-		internal AppStateManager(IAppViewFactory viewManager, IServiceProvider services)
+		internal AppStateManager(SynchronizationContext syncContext, IAppViewFactory viewManager, IServiceProvider services)
 		{
+			Debug.Assert(syncContext != null);
 			Debug.Assert(viewManager != null);
 			Debug.Assert(services != null);
 
 			_console = new TraceSource(_serviceName);
+			_synchronizationContext = syncContext;
 			_viewManager = viewManager;
 			_services = services;
 		}
 
-		internal AppStateManager(AppState parentState, TraceSource console, IAppViewFactory viewManager, IServiceProvider services)
+		internal AppStateManager(AppState parentState, TraceSource console, SynchronizationContext syncContext, IAppViewFactory viewManager, IServiceProvider services)
 		{
 			Debug.Assert(parentState != null);
 			Debug.Assert(console != null);
+			Debug.Assert(syncContext != null);
 			Debug.Assert(viewManager != null);
 			Debug.Assert(services != null);
 
 			_console = console;
+			_synchronizationContext = syncContext;
 			_viewManager = viewManager;
 			_parentState = parentState;
 			_services = services;
@@ -70,7 +75,7 @@ namespace UnityFx.App
 			Debug.Assert(state != null);
 			ThrowIfDisposed();
 
-			return new AppStateManager(state, _console, _viewManager, _services);
+			return new AppStateManager(state, _console, _synchronizationContext, _viewManager, _services);
 		}
 
 		internal IAppView CreateView(AppState state)
@@ -92,6 +97,7 @@ namespace UnityFx.App
 
 			var op = new AppStatePushOperation(options, ownerState, null, _cancellationSource.Token, controllerType, stateArgs);
 			AddStackOperation(op);
+			RunStackOperation(op);
 			return op.Task;
 		}
 
@@ -102,6 +108,7 @@ namespace UnityFx.App
 
 			var op = new AppStatePopOperation(state, null, _cancellationSource.Token);
 			AddStackOperation(op);
+			RunStackOperation(op);
 			return op.Task;
 		}
 
@@ -223,7 +230,7 @@ namespace UnityFx.App
 
 		#region implementation
 
-		private void RunOpProcessor()
+		private void RunOpProcessor(object state)
 		{
 			if (_stackOperationsProcessor == null && _stackOperations.Count > 0 && !_cancellationSource.IsCancellationRequested)
 			{
@@ -256,6 +263,18 @@ namespace UnityFx.App
 			}
 
 			InvokeOperationInitiated(op);
+		}
+
+		private void RunStackOperation(AppStateStackOperation op)
+		{
+			if (_synchronizationContext != null)
+			{
+				_synchronizationContext.Post(RunOpProcessor, null);
+			}
+			else
+			{
+				RunOpProcessor(null);
+			}
 		}
 
 		private async Task ProcessStackOperations()
