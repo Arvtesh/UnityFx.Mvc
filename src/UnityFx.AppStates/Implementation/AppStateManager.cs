@@ -45,7 +45,6 @@ namespace UnityFx.App
 
 		internal AppStateManager(SynchronizationContext syncContext, IAppViewFactory viewManager, IServiceProvider services)
 		{
-			Debug.Assert(syncContext != null);
 			Debug.Assert(viewManager != null);
 			Debug.Assert(services != null);
 
@@ -59,7 +58,6 @@ namespace UnityFx.App
 		{
 			Debug.Assert(parentState != null);
 			Debug.Assert(console != null);
-			Debug.Assert(syncContext != null);
 			Debug.Assert(viewManager != null);
 			Debug.Assert(services != null);
 
@@ -163,7 +161,14 @@ namespace UnityFx.App
 
 		#region IAppStateService
 
-		public IAppStateServiceSettings Settings => this;
+		public IAppStateServiceSettings Settings
+		{
+			get
+			{
+				ThrowIfDisposed();
+				return this;
+			}
+		}
 
 		#endregion
 
@@ -177,10 +182,19 @@ namespace UnityFx.App
 
 		#region IAppStateManager
 
-		public IAppStateStack States => _states;
+		public IAppStateStack States
+		{
+			get
+			{
+				ThrowIfDisposed();
+				return _states;
+			}
+		}
 
 		public IEnumerable<IAppState> GetStatesRecursive()
 		{
+			ThrowIfDisposed();
+
 			var list = new List<IAppState>();
 			GetStatesRecursive(list);
 			return list;
@@ -188,6 +202,8 @@ namespace UnityFx.App
 
 		public void GetStatesRecursive(ICollection<IAppState> states)
 		{
+			ThrowIfDisposed();
+
 			if (states == null)
 			{
 				throw new ArgumentNullException(nameof(states));
@@ -234,7 +250,12 @@ namespace UnityFx.App
 		{
 			if (_stackOperationsProcessor == null && _stackOperations.Count > 0 && !_cancellationSource.IsCancellationRequested)
 			{
-				_stackOperationsProcessor = ProcessStackOperations();
+				var task = ProcessStackOperations();
+
+				if (!task.IsCompleted)
+				{
+					_stackOperationsProcessor = task;
+				}
 			}
 		}
 
@@ -279,65 +300,69 @@ namespace UnityFx.App
 
 		private async Task ProcessStackOperations()
 		{
-			var firstOp = true;
-
-			// NOTE: _stackOperations may be modified from inside the loop, cannot use iterators.
-			while (_stackOperations.Count > 0)
+			try
 			{
-				AppStateStackOperation op;
+				var firstOp = true;
 
-				lock (_stackOperations)
+				// NOTE: _stackOperations may be modified from inside the loop, cannot use iterators.
+				while (_stackOperations.Count > 0)
 				{
-					op = _stackOperations.Dequeue();
+					AppStateStackOperation op;
+
+					lock (_stackOperations)
+					{
+						op = _stackOperations.Dequeue();
+					}
+
+					if (CanExecuteOperation(op))
+					{
+						if (firstOp)
+						{
+							firstOp = false;
+							DeactivateTopState();
+						}
+
+						try
+						{
+							op.CancellationToken.ThrowIfCancellationRequested();
+
+							if (op.Operation == StackOperation.Push)
+							{
+								var state = await ProcessPushOperation(op as AppStatePushOperation);
+								op.SetResult(state);
+							}
+							else if (op.Operation == StackOperation.Pop)
+							{
+								await ProcessPopOperation(op as AppStatePopOperation);
+								op.SetResult(null);
+							}
+						}
+						catch (OperationCanceledException e)
+						{
+							op.TrySetCanceled();
+							_console.TraceData(TraceEventType.Verbose, 0, e);
+						}
+						catch (Exception e)
+						{
+							op.TrySetException(e);
+							_console.TraceData(TraceEventType.Error, 0, e);
+						}
+					}
 				}
 
-				if (CanExecuteOperation(op))
+				if (!_cancellationSource.IsCancellationRequested)
 				{
-					if (firstOp)
-					{
-						firstOp = false;
-						DeactivateTopState();
-					}
+					// Disable all states that are invisible (covered by the top exclusive state).
+					//UpdateStateStack();
 
-					try
-					{
-						op.CancellationToken.ThrowIfCancellationRequested();
-
-						if (op.Operation == StackOperation.Push)
-						{
-							var state = await ProcessPushOperation(op as AppStatePushOperation);
-							op.SetResult(state);
-						}
-						else if (op.Operation == StackOperation.Pop)
-						{
-							await ProcessPopOperation(op as AppStatePopOperation);
-							op.SetResult(null);
-						}
-					}
-					catch (OperationCanceledException e)
-					{
-						op.TrySetCanceled();
-						_console.TraceData(TraceEventType.Verbose, 0, e);
-					}
-					catch (Exception e)
-					{
-						op.TrySetException(e);
-						_console.TraceData(TraceEventType.Error, 0, e);
-					}
+					// Activate top state if no popups are active.
+					ActivateTopState();
 				}
 			}
-
-			if (!_cancellationSource.IsCancellationRequested)
+			finally
 			{
-				// Disable all states that are invisible (covered by the top exclusive state).
-				//UpdateStateStack();
-
-				// Activate top state if no popups are active.
-				ActivateTopState();
+				_stackOperationsProcessor = null;
 			}
-
-			// Reset the task reference.
-			_stackOperationsProcessor = null;
 		}
 
 		private async Task<IAppState> ProcessPushOperation(AppStatePushOperation op)

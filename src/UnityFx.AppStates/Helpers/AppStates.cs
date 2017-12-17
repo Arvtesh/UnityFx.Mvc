@@ -14,7 +14,7 @@ namespace UnityFx.App
 		/// <summary>
 		/// 
 		/// </summary>
-		public static IAppStateService CreateStateManager(IAppViewFactory viewFactory, IServiceProvider serviceProvider)
+		public static IAppStateService CreateStateManager(SynchronizationContext syncContext, IAppViewFactory viewFactory, IServiceProvider serviceProvider)
 		{
 			if (viewFactory == null)
 			{
@@ -26,7 +26,15 @@ namespace UnityFx.App
 				throw new ArgumentNullException(nameof(serviceProvider));
 			}
 
-			return new AppStateManager(SynchronizationContext.Current, viewFactory, serviceProvider);
+			return new AppStateManager(syncContext, viewFactory, serviceProvider);
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public static IAppStateService CreateStateManager(IAppViewFactory viewFactory, IServiceProvider serviceProvider)
+		{
+			return CreateStateManager(null, viewFactory, serviceProvider);
 		}
 	}
 }

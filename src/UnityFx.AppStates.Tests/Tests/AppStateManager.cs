@@ -2,8 +2,11 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Xunit;
 using NSubstitute;
+using System.Threading;
 
 namespace UnityFx.App.Tests
 {
@@ -12,39 +15,6 @@ namespace UnityFx.App.Tests
 	/// </summary>
 	public class AppStateManager : IDisposable
 	{
-		#region helper types
-
-		private class TestController : IAppStateController
-		{
-		}
-
-		private class TestControllerEvents : IAppStateController, IAppStateEvents
-		{
-			private int _counter = 0;
-
-			public void OnActivate(bool firstTime)
-			{
-				Assert.Equal(2, ++_counter);
-			}
-
-			public void OnDeactivate()
-			{
-				Assert.Equal(3, ++_counter);
-			}
-
-			public void OnPop()
-			{
-				Assert.Equal(4, ++_counter);
-			}
-
-			public void OnPush()
-			{
-				Assert.Equal(1, ++_counter);
-			}
-		}
-
-		#endregion
-
 		#region data
 
 		private readonly IAppStateService _stateManager;
@@ -67,7 +37,7 @@ namespace UnityFx.App.Tests
 
 		#endregion
 
-		#region construction/disposing tests
+		#region tests
 
 		[Fact]
 		public void InitialStateIsCorrect()
@@ -83,33 +53,23 @@ namespace UnityFx.App.Tests
 		}
 
 		[Fact]
+		public void AllMethodsThrowWhenDisposed()
+		{
+			_stateManager.Dispose();
+
+			Assert.Throws<ObjectDisposedException>(() => _stateManager.GetStatesRecursive());
+			Assert.Throws<ObjectDisposedException>(() => _stateManager.GetStatesRecursive(new List<IAppState>()));
+			Assert.Throws<ObjectDisposedException>(() => _stateManager.Settings);
+			Assert.Throws<ObjectDisposedException>(() => _stateManager.States);
+			Assert.Throws<ObjectDisposedException>(() => _stateManager.PushStateAsync<TestController_Minimal>(PushOptions.None, null).Wait());
+			Assert.Throws<ObjectDisposedException>(() => _stateManager.PushStateAsync(typeof(TestController_Minimal), PushOptions.None, null).Wait());
+		}
+
+		[Fact]
 		public void DisposeCanBeCalledMultipleTimes()
 		{
 			_stateManager.Dispose();
 			_stateManager.Dispose();
-		}
-
-		#endregion
-
-		#region push/pop tests
-
-		[Fact]
-		public async void PushStateSucceeds()
-		{
-			var state = await _stateManager.PushStateAsync<TestController>(PushOptions.None, null);
-
-			Assert.NotNull(state);
-			Assert.Equal("Test", state.Name);
-			Assert.Contains(state, _stateManager.States);
-		}
-
-		[Fact]
-		public async void PushStateRaisesControllerEvents()
-		{
-			var state = await _stateManager.PushStateAsync<TestControllerEvents>(PushOptions.None, null);
-			await state.CloseAsync();
-
-			Assert.Empty(_stateManager.States);
 		}
 
 		#endregion
