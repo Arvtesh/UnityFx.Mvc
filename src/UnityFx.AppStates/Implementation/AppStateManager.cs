@@ -117,7 +117,7 @@ namespace UnityFx.App
 			// Signal all pending operations should complete asap.
 			_cancellationSource.Cancel();
 
-			// Wait for the current operatino to finish.
+			// Wait for the current operation to finish.
 			if (_stackOperationsProcessor != null)
 			{
 				await _stackOperationsProcessor;
@@ -380,7 +380,8 @@ namespace UnityFx.App
 				{
 					_console.TraceInformation("Set " + stateName);
 
-					result = await PushStateInternal(op.OwnerState.Owner, op.ControllerType, op.ControllerArgs, op.Options, op.CancellationToken);
+					result = new AppState(_console, this, op.OwnerState.Owner, op.ControllerType, op.ControllerArgs);
+					await result.Push(op.CancellationToken);
 
 					if (op.Transition != null)
 					{
@@ -396,7 +397,8 @@ namespace UnityFx.App
 
 					await PopAllStates(op.CancellationToken);
 
-					result = await PushStateInternal(null, op.ControllerType, op.ControllerArgs, op.Options, op.CancellationToken);
+					result = new AppState(_console, this, null, op.ControllerType, op.ControllerArgs);
+					await result.Push(op.CancellationToken);
 
 					if (op.Transition != null)
 					{
@@ -408,7 +410,8 @@ namespace UnityFx.App
 				{
 					_console.TraceInformation("Push " + stateName);
 
-					result = await PushStateInternal(op.OwnerState, op.ControllerType, op.ControllerArgs, op.Options, op.CancellationToken);
+					result = new AppState(_console, this, op.OwnerState, op.ControllerType, op.ControllerArgs);
+					await result.Push(op.CancellationToken);
 
 					if (op.Transition != null)
 					{
@@ -463,13 +466,6 @@ namespace UnityFx.App
 			}
 
 			return true;
-		}
-
-		private async Task<AppState> PushStateInternal(IAppState owner, Type controllerType, object controllerArgs, PushOptions options, CancellationToken cancellationToken)
-		{
-			var state = new AppState(_console, this, owner, controllerType, controllerArgs);
-			await state.Push(cancellationToken);
-			return state;
 		}
 
 		private async Task PopStateInternal(AppState state, CancellationToken cancellationToken)

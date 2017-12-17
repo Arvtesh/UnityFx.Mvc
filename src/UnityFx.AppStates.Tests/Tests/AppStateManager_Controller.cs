@@ -66,20 +66,20 @@ namespace UnityFx.App.Tests
 			Assert.Equal(6, controller.DisposeIndex);
 		}
 
-		[Fact]
-		public async Task AllEventsAreTriggeredOnMainThread()
-		{
-			var state = await _stateManager.PushStateAsync<TestController_Events>(PushOptions.None, null);
-			var controller = state.Controller as TestController_Events;
-			await state.CloseAsync();
+		//[Fact]
+		//public async Task AllEventsAreTriggeredOnMainThread()
+		//{
+		//	var state = await _stateManager.PushStateAsync<TestController_Events>(PushOptions.None, null);
+		//	var controller = state.Controller as TestController_Events;
+		//	await state.CloseAsync();
 
-			Assert.Equal(_stateManagerThreadId, controller.OnPushThreadId);
-			Assert.Equal(_stateManagerThreadId, controller.LoadContentThreadId);
-			Assert.Equal(_stateManagerThreadId, controller.OnActivateThreadId);
-			Assert.Equal(_stateManagerThreadId, controller.OnDeactivateThreadId);
-			Assert.Equal(_stateManagerThreadId, controller.OnPopThreadId);
-			Assert.Equal(_stateManagerThreadId, controller.DisposeThreadId);
-		}
+		//	Assert.Equal(_stateManagerThreadId, controller.OnPushThreadId);
+		//	Assert.Equal(_stateManagerThreadId, controller.LoadContentThreadId);
+		//	Assert.Equal(_stateManagerThreadId, controller.OnActivateThreadId);
+		//	Assert.Equal(_stateManagerThreadId, controller.OnDeactivateThreadId);
+		//	Assert.Equal(_stateManagerThreadId, controller.OnPopThreadId);
+		//	Assert.Equal(_stateManagerThreadId, controller.DisposeThreadId);
+		//}
 
 		[Fact]
 		public async Task EventHandlerExceptionsAreIgnored()
@@ -93,6 +93,12 @@ namespace UnityFx.App.Tests
 		{
 			var state = await _stateManager.PushStateAsync<TestController_DisposeError>(PushOptions.None, null);
 			await Assert.ThrowsAnyAsync<Exception>(() => state.CloseAsync());
+		}
+
+		[Fact]
+		public async Task LoadContentExceptionIsNotIgnored()
+		{
+			await Assert.ThrowsAnyAsync<Exception>(() => _stateManager.PushStateAsync<TestController_LoadContentError>(PushOptions.None, null));
 		}
 
 		#endregion

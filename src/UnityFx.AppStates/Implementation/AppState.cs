@@ -161,7 +161,7 @@ namespace UnityFx.App
 			return false;
 		}
 
-		internal async Task Push(CancellationToken cancellationToken)
+		internal Task Push(CancellationToken cancellationToken)
 		{
 			Debug.Assert(_state == AppStateState.Created);
 
@@ -178,11 +178,12 @@ namespace UnityFx.App
 				_console.TraceData(TraceEventType.Error, 0, e);
 			}
 
-			// Load state content if any.
 			if (_controller is IAppStateContent sc)
 			{
-				await sc.LoadContent(cancellationToken);
+				return sc.LoadContent(cancellationToken);
 			}
+
+			return Task.CompletedTask;
 		}
 
 		internal async Task Pop(CancellationToken cancellationToken)
@@ -191,13 +192,13 @@ namespace UnityFx.App
 
 			try
 			{
-				_state = AppStateState.Popped;
-				_console.TraceData(TraceEventType.Verbose, 0, "PopState " + _name);
-
 				if (_substateManager != null)
 				{
 					await _substateManager.PopAll();
 				}
+
+				_state = AppStateState.Popped;
+				_console.TraceData(TraceEventType.Verbose, 0, "PopState " + _name);
 
 				try
 				{
@@ -260,7 +261,14 @@ namespace UnityFx.App
 
 		public IAppState Owner => _ownerState;
 
-		public IReadOnlyCollection<IAppState> ChildStates => this;
+		public IReadOnlyCollection<IAppState> ChildStates
+		{
+			get
+			{
+				ThrowIfDisposed();
+				return this;
+			}
+		}
 
 		public IAppView View
 		{
@@ -277,7 +285,14 @@ namespace UnityFx.App
 			}
 		}
 
-		public IAppStateController Controller => _controller;
+		public IAppStateController Controller
+		{
+			get
+			{
+				ThrowIfDisposed();
+				return _controller;
+			}
+		}
 
 		public Task CloseAsync()
 		{

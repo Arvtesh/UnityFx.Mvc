@@ -29,7 +29,6 @@ namespace UnityFx.App.Tests
 			LoadContentIndex = ++_counter;
 			LoadContentThreadId = Thread.CurrentThread.ManagedThreadId;
 			return Task.Delay(100);
-			//return Task.CompletedTask;
 		}
 
 		public void OnActivate(bool firstTime)
