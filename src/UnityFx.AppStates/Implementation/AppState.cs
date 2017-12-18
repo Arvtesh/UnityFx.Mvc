@@ -161,7 +161,7 @@ namespace UnityFx.App
 			return false;
 		}
 
-		internal Task Push(CancellationToken cancellationToken)
+		internal async Task Push(CancellationToken cancellationToken)
 		{
 			Debug.Assert(_state == AppStateState.Created);
 
@@ -180,10 +180,8 @@ namespace UnityFx.App
 
 			if (_controller is IAppStateContent sc)
 			{
-				return sc.LoadContent(cancellationToken);
+				await sc.LoadContent(cancellationToken).ConfigureAwait(false);
 			}
-
-			return Task.CompletedTask;
 		}
 
 		internal async Task Pop(CancellationToken cancellationToken)
