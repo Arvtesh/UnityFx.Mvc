@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ namespace UnityFx.App
 		private const string _serviceName = "StateManager";
 
 		private readonly AppStateStack _states = new AppStateStack();
-		private readonly Queue<AppStateStackOperation> _stackOperations = new Queue<AppStateStackOperation>();
+		private readonly ConcurrentQueue<AppStateStackOperation> _stackOperations = new ConcurrentQueue<AppStateStackOperation>();
 		private readonly CancellationTokenSource _cancellationSource = new CancellationTokenSource();
 
 		private readonly TraceSource _console;
@@ -248,7 +249,7 @@ namespace UnityFx.App
 
 		private void RunOpProcessor(object state)
 		{
-			if (_stackOperationsProcessor == null && _stackOperations.Count > 0 && !_cancellationSource.IsCancellationRequested)
+			if (_stackOperationsProcessor == null && !_stackOperations.IsEmpty && !_cancellationSource.IsCancellationRequested)
 			{
 				var task = ProcessStackOperations();
 
@@ -261,28 +262,12 @@ namespace UnityFx.App
 
 		private void AddStackOperation(AppStateStackOperation op)
 		{
-			lock (_stackOperations)
+			if (_stackOperations.Count > _maxStackOperationsCount)
 			{
-				if (_stackOperations.Count > _maxStackOperationsCount)
-				{
-					throw new InvalidOperationException($"Operation cannot be scheduled because maximum number of simultaneous stack operations ({_maxStackOperationsCount}) is exceeded.");
-				}
-
-				if (_stackOperations.Count > 0)
-				{
-					if (op.Operation == StackOperation.Push)
-					{
-						// TODO
-					}
-					else if (op.Operation == StackOperation.Pop)
-					{
-						// TODO
-					}
-				}
-
-				_stackOperations.Enqueue(op);
+				throw new InvalidOperationException($"Operation cannot be scheduled because maximum number of simultaneous stack operations ({_maxStackOperationsCount}) is exceeded.");
 			}
 
+			_stackOperations.Enqueue(op);
 			InvokeOperationInitiated(op);
 		}
 
@@ -304,16 +289,8 @@ namespace UnityFx.App
 			{
 				var firstOp = true;
 
-				// NOTE: _stackOperations may be modified from inside the loop, cannot use iterators.
-				while (_stackOperations.Count > 0)
+				while (_stackOperations.TryDequeue(out var op))
 				{
-					AppStateStackOperation op;
-
-					lock (_stackOperations)
-					{
-						op = _stackOperations.Dequeue();
-					}
-
 					if (CanExecuteOperation(op))
 					{
 						if (firstOp)
