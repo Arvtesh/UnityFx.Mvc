@@ -14,15 +14,12 @@ namespace UnityFx.App
 	{
 		#region interface
 
-		public StackOperation Operation { get; }
-
 		public IAppStateTransition Transition { get; }
 
 		public CancellationToken CancellationToken { get; }
 
-		public AppStateStackOperation(StackOperation op, IAppStateTransition transition, CancellationToken ct)
+		public AppStateStackOperation(IAppStateTransition transition, CancellationToken ct)
 		{
-			Operation = op;
 			Transition = transition;
 			CancellationToken = ct;
 		}

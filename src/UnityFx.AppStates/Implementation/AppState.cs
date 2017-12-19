@@ -180,7 +180,7 @@ namespace UnityFx.App
 
 			if (_controller is IAppStateContent sc)
 			{
-				await sc.LoadContent(cancellationToken).ConfigureAwait(false);
+				await sc.LoadContent(cancellationToken);
 			}
 		}
 

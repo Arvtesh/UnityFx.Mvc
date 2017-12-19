@@ -24,7 +24,7 @@ namespace UnityFx.App
 		public object ControllerArgs { get; }
 
 		public AppStatePushOperation(PushOptions options, AppState owner, IAppStateTransition t, CancellationToken ct, Type controllerType, object controllerArgs)
-			: base(StackOperation.Push, t, ct)
+			: base(t, ct)
 		{
 			Options = options;
 			OwnerState = owner;
@@ -40,24 +40,17 @@ namespace UnityFx.App
 		{
 			var text = new StringBuilder();
 
-			if (Operation == StackOperation.Push)
+			if (Options.HasFlag(PushOptions.Set))
 			{
-				if (Options.HasFlag(PushOptions.Set))
-				{
-					text.Append("SetState");
-				}
-				else if (Options.HasFlag(PushOptions.Reset))
-				{
-					text.Append("ResetState");
-				}
-				else
-				{
-					text.Append("PushState");
-				}
+				text.Append("SetState");
+			}
+			else if (Options.HasFlag(PushOptions.Reset))
+			{
+				text.Append("ResetState");
 			}
 			else
 			{
-				text.Append("PopState");
+				text.Append("PushState");
 			}
 
 			if (ControllerType != null)

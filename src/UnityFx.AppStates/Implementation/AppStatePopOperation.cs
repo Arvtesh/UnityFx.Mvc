@@ -18,7 +18,7 @@ namespace UnityFx.App
 		public AppState State { get; }
 
 		public AppStatePopOperation(AppState state, IAppStateTransition t, CancellationToken ct)
-			: base(StackOperation.Pop, t, ct)
+			: base(t, ct)
 		{
 			State = state;
 		}
