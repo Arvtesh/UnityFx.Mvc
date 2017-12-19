@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -395,8 +396,15 @@ namespace UnityFx.App
 
 		private IAppStateController CreateController(Type controllerType)
 		{
-			// TODO: use IServiceProvider to resolve controller constructor parameters
-			return Activator.CreateInstance(controllerType) as IAppStateController;
+			try
+			{
+				// TODO: use IServiceProvider to resolve controller constructor parameters
+				return Activator.CreateInstance(controllerType) as IAppStateController;
+			}
+			catch (TargetInvocationException e)
+			{
+				throw e.InnerException;
+			}
 		}
 
 		#endregion

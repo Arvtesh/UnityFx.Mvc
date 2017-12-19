@@ -34,7 +34,7 @@ namespace UnityFx.App
 		/// </summary>
 		public static IAppStateService CreateStateManager(IAppViewFactory viewFactory, IServiceProvider serviceProvider)
 		{
-			return CreateStateManager(null, viewFactory, serviceProvider);
+			return CreateStateManager(SynchronizationContext.Current, viewFactory, serviceProvider);
 		}
 	}
 }

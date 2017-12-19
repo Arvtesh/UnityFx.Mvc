@@ -66,21 +66,6 @@ namespace UnityFx.App.Tests
 			Assert.Equal(6, controller.DisposeIndex);
 		}
 
-		//[Fact]
-		//public async Task AllEventsAreTriggeredOnMainThread()
-		//{
-		//	var state = await _stateManager.PushStateAsync<TestController_Events>(PushOptions.None, null);
-		//	var controller = state.Controller as TestController_Events;
-		//	await state.CloseAsync();
-
-		//	Assert.Equal(_stateManagerThreadId, controller.OnPushThreadId);
-		//	Assert.Equal(_stateManagerThreadId, controller.LoadContentThreadId);
-		//	Assert.Equal(_stateManagerThreadId, controller.OnActivateThreadId);
-		//	Assert.Equal(_stateManagerThreadId, controller.OnDeactivateThreadId);
-		//	Assert.Equal(_stateManagerThreadId, controller.OnPopThreadId);
-		//	Assert.Equal(_stateManagerThreadId, controller.DisposeThreadId);
-		//}
-
 		[Fact]
 		public async Task EventHandlerExceptionsAreIgnored()
 		{
@@ -89,16 +74,24 @@ namespace UnityFx.App.Tests
 		}
 
 		[Fact]
-		public async Task DisposeExceptionIsNotIgnored()
+		public async Task DisposeExceptionIsForwarded()
 		{
 			var state = await _stateManager.PushStateAsync<TestController_DisposeError>(PushOptions.None, null);
-			await Assert.ThrowsAnyAsync<Exception>(() => state.CloseAsync());
+			await Assert.ThrowsAsync<Exception>(() => state.CloseAsync());
 		}
 
 		[Fact]
-		public async Task LoadContentExceptionIsNotIgnored()
+		public async Task LoadContentExceptionIsForwarded()
 		{
-			await Assert.ThrowsAnyAsync<Exception>(() => _stateManager.PushStateAsync<TestController_LoadContentError>(PushOptions.None, null));
+			await Assert.ThrowsAsync<Exception>(() => _stateManager.PushStateAsync<TestController_LoadContentError>(PushOptions.None, null));
+			Assert.Empty(_stateManager.States);
+		}
+
+		[Fact]
+		public async Task ConstructorExceptionIsForwarded()
+		{
+			await Assert.ThrowsAsync<Exception>(() => _stateManager.PushStateAsync<TestController_ConstructorError>(PushOptions.None, null));
+			Assert.Empty(_stateManager.States);
 		}
 
 		#endregion
