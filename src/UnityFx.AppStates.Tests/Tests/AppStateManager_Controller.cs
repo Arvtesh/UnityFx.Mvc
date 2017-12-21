@@ -17,6 +17,8 @@ namespace UnityFx.App.Tests
 	{
 		#region data
 
+		private readonly IAppViewFactory _viewFactory;
+		private readonly IServiceProvider _serviceProvider;
 		private readonly IAppStateService _stateManager;
 		private readonly int _stateManagerThreadId;
 
@@ -26,9 +28,9 @@ namespace UnityFx.App.Tests
 
 		public AppStateManager_Controller()
 		{
-			var viewFactory = Substitute.For<IAppViewFactory>();
-			var serviceProvider = Substitute.For<IServiceProvider>();
-			_stateManager = AppStates.CreateStateManager(viewFactory, serviceProvider);
+			_viewFactory = Substitute.For<IAppViewFactory>();
+			_serviceProvider = Substitute.For<IServiceProvider>();
+			_stateManager = AppStates.CreateStateManager(_viewFactory, _serviceProvider);
 			_stateManagerThreadId = Thread.CurrentThread.ManagedThreadId;
 		}
 
@@ -47,7 +49,25 @@ namespace UnityFx.App.Tests
 			var state = await _stateManager.PushStateAsync<TestController_Minimal>(PushOptions.None, null);
 
 			Assert.NotNull(state);
+			Assert.NotNull(state.Controller);
+			Assert.IsType<TestController_Minimal>(state.Controller);
 			Assert.Contains(state, _stateManager.States);
+		}
+
+		[Fact]
+		public async Task MultipleConstructorArgumentsSupported()
+		{
+			var testDependency = new object();
+			_serviceProvider.GetService(typeof(object)).Returns(testDependency);
+
+			var state = await _stateManager.PushStateAsync<TestController_ConstructorWithMultipleArguments>(PushOptions.None, null);
+			var controller = state.Controller as TestController_ConstructorWithMultipleArguments;
+
+			Assert.NotNull(state);
+			Assert.NotNull(controller);
+			Assert.Equal(_serviceProvider, controller.ServiceProvider);
+			Assert.Equal((object)state, (object)controller.Context);
+			Assert.Equal(testDependency, controller.Obj);
 		}
 
 		[Fact]

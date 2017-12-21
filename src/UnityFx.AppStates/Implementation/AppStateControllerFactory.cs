@@ -21,8 +21,25 @@ namespace UnityFx.App
 		{
 			try
 			{
-				// TODO: use IServiceProvider to resolve controller constructor parameters
-				return Activator.CreateInstance(controllerType) as IAppStateController;
+				var constructors = controllerType.GetConstructors(BindingFlags.Instance | BindingFlags.Public);
+
+				if (constructors.Length > 0)
+				{
+					var c = constructors[0];
+					var parameters = c.GetParameters();
+					var args = new object[parameters.Length];
+
+					for (int i = 0; i < args.Length; i++)
+					{
+						args[i] = GetServiceInstance(parameters[i].ParameterType, stateContext, serviceProvider);
+					}
+
+					return (IAppStateController)c.Invoke(args);
+				}
+				else
+				{
+					return Activator.CreateInstance(controllerType) as IAppStateController;
+				}
 			}
 			catch (TargetInvocationException e)
 			{
@@ -33,6 +50,21 @@ namespace UnityFx.App
 		#endregion
 
 		#region implementation
+
+		private object GetServiceInstance(Type serviceType, IAppStateContext stateContext, IServiceProvider serviceProvider)
+		{
+			if (serviceType == typeof(IAppStateContext))
+			{
+				return stateContext;
+			}
+			else if (serviceType == typeof(IServiceProvider))
+			{
+				return serviceProvider;
+			}
+
+			return serviceProvider.GetService(serviceType);
+		}
+
 		#endregion
 	}
 }
