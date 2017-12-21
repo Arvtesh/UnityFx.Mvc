@@ -5,25 +5,23 @@ using System;
 
 namespace UnityFx.App.Tests
 {
-	internal class TestController_EventErrors : IAppStateController, IAppStateEvents
+	internal class TestController_OnPushError : IAppStateController, IAppStateEvents
 	{
 		public void OnActivate(bool firstTime)
 		{
-			throw new Exception();
 		}
 
 		public void OnDeactivate()
 		{
-			throw new Exception();
 		}
 
 		public void OnPop()
 		{
-			throw new Exception();
 		}
 
 		public void OnPush()
 		{
+			throw new Exception();
 		}
 	}
 }

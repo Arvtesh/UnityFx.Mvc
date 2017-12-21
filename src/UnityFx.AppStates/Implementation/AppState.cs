@@ -73,7 +73,7 @@ namespace UnityFx.App
 			{
 				if (string.IsNullOrEmpty(paramsAttr.Name))
 				{
-					_name = GetStateName(controllerType);
+					_name = GetStateNameSimple(controllerType);
 				}
 				else
 				{
@@ -83,14 +83,15 @@ namespace UnityFx.App
 				_flags = paramsAttr.Flags;
 				_layer = paramsAttr.Layer;
 			}
-			else if (_parentState != null)
-			{
-				_name = GetStateName(controllerType);
-				_flags = AppStateFlags.Popup;
-			}
 			else
 			{
-				_name = GetStateName(controllerType);
+				_name = GetStateNameSimple(controllerType);
+			}
+
+			// Force AppStateFlags.Popup flag for child states.
+			if (_parentState != null)
+			{
+				_flags |= AppStateFlags.Popup;
 			}
 
 			_controller = parentStateManager.CreateStateController(this, controllerType);
@@ -172,15 +173,16 @@ namespace UnityFx.App
 			try
 			{
 				_controllerEvents?.OnPush();
+
+				if (_controller is IAppStateContent sc)
+				{
+					await sc.LoadContent(cancellationToken);
+				}
 			}
 			catch (Exception e)
 			{
 				_console.TraceData(TraceEventType.Error, 0, e);
-			}
-
-			if (_controller is IAppStateContent sc)
-			{
-				await sc.LoadContent(cancellationToken);
+				throw;
 			}
 		}
 
@@ -224,6 +226,23 @@ namespace UnityFx.App
 		}
 
 		internal static string GetStateName(Type controllerType)
+		{
+			if (Attribute.GetCustomAttribute(controllerType, typeof(AppStateControllerAttribute)) is AppStateControllerAttribute attr)
+			{
+				if (string.IsNullOrEmpty(attr.Name))
+				{
+					return GetStateNameSimple(controllerType);
+				}
+				else
+				{
+					return attr.Name;
+				}
+			}
+
+			return GetStateNameSimple(controllerType);
+		}
+
+		internal static string GetStateNameSimple(Type controllerType)
 		{
 			var name = controllerType.Name;
 

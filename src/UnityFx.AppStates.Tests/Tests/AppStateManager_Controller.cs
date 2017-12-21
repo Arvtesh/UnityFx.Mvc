@@ -66,7 +66,7 @@ namespace UnityFx.App.Tests
 			Assert.NotNull(state);
 			Assert.NotNull(controller);
 			Assert.Equal(_serviceProvider, controller.ServiceProvider);
-			Assert.Equal((object)state, (object)controller.Context);
+			Assert.Equal<object>(state, controller.Context);
 			Assert.Equal(testDependency, controller.Obj);
 		}
 
@@ -98,6 +98,13 @@ namespace UnityFx.App.Tests
 		{
 			var state = await _stateManager.PushStateAsync<TestController_DisposeError>(PushOptions.None, null);
 			await Assert.ThrowsAsync<Exception>(() => state.CloseAsync());
+		}
+
+		[Fact]
+		public async Task OnPushExceptionIsForwarded()
+		{
+			await Assert.ThrowsAsync<Exception>(() => _stateManager.PushStateAsync<TestController_OnPushError>(PushOptions.None, null));
+			Assert.Empty(_stateManager.States);
 		}
 
 		[Fact]
