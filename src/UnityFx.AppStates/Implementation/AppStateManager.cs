@@ -307,13 +307,18 @@ namespace UnityFx.App
 			{
 				while (_stackOperations.TryDequeue(out var op))
 				{
+					if (op.CancellationToken.IsCancellationRequested)
+					{
+						break;
+					}
+
 					if (CanExecuteOperation(op))
 					{
 						DeactivateTopState();
 
 						try
 						{
-							op.CancellationToken.ThrowIfCancellationRequested();
+							_console.TraceInformation(op.ToString());
 
 							if (op is AppStatePushOperation pushOp)
 							{
@@ -348,6 +353,10 @@ namespace UnityFx.App
 					ActivateTopState();
 				}
 			}
+			catch (Exception e)
+			{
+				_console.TraceData(TraceEventType.Error, 0, e);
+			}
 			finally
 			{
 				_stackOperationsProcessor = null;
@@ -362,13 +371,9 @@ namespace UnityFx.App
 
 			try
 			{
-				var stateName = AppState.GetStateName(op.ControllerType);
-
 				// Replace the specified state with the new one.
 				if (op.Options.HasFlag(PushOptions.Set))
 				{
-					_console.TraceInformation("Set " + stateName);
-
 					result = new AppState(_console, this, op.OwnerState.Owner, op.ControllerType, op.ControllerArgs);
 					await result.Push(op.CancellationToken);
 
@@ -382,8 +387,6 @@ namespace UnityFx.App
 				// Remove all states from the stack and push the new one.
 				else if (op.Options.HasFlag(PushOptions.Reset))
 				{
-					_console.TraceInformation("Reset " + stateName);
-
 					foreach (var s in _states.ToArray())
 					{
 						await s.Pop(op.CancellationToken);
@@ -400,8 +403,6 @@ namespace UnityFx.App
 				// Just push the new state onto the stack.
 				else
 				{
-					_console.TraceInformation("Push " + stateName);
-
 					result = new AppState(_console, this, op.OwnerState, op.ControllerType, op.ControllerArgs);
 					await result.Push(op.CancellationToken);
 
@@ -433,8 +434,6 @@ namespace UnityFx.App
 
 			if (op.State != null)
 			{
-				_console.TraceInformation("Pop " + op.State.Name);
-
 				if (op.Transition != null)
 				{
 					await op.Transition.PlayPopTransition(op.State, op.CancellationToken);
@@ -444,8 +443,6 @@ namespace UnityFx.App
 			}
 			else
 			{
-				_console.TraceInformation("PopAll");
-
 				foreach (var s in _states.ToArray())
 				{
 					await s.Pop(op.CancellationToken);

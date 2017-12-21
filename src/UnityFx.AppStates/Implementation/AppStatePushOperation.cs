@@ -42,29 +42,26 @@ namespace UnityFx.App
 
 			if (Options.HasFlag(PushOptions.Set))
 			{
-				text.Append("SetState");
+				text.Append("SetState ");
 			}
 			else if (Options.HasFlag(PushOptions.Reset))
 			{
-				text.Append("ResetState");
+				text.Append("ResetState ");
 			}
 			else
 			{
-				text.Append("PushState");
+				text.Append("PushState ");
 			}
 
 			if (ControllerType != null)
 			{
-				text.Append('<');
-				text.Append(ControllerType.Name);
-				text.Append('>');
+				text.Append(AppState.GetStateName(ControllerType));
 			}
 
 			if (ControllerArgs != null)
 			{
-				text.Append('(');
+				text.Append(", ");
 				text.Append(ControllerArgs.ToString());
-				text.Append(')');
 			}
 
 			return text.ToString();

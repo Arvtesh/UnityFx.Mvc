@@ -20,6 +20,7 @@ namespace UnityFx.App
 
 		/// <summary>
 		/// If set, the view of a state under this one is rendered. Typically set for states that implement popup windows.
+		/// Child states always have this flag set.
 		/// </summary>
 		Popup = 1
 	}

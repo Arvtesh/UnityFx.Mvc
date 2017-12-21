@@ -38,6 +38,7 @@ namespace UnityFx.App
 		private readonly TraceSource _console;
 		private readonly AppStateStack _stack;
 		private readonly string _name;
+		private readonly string _fullName;
 		private readonly AppStateFlags _flags;
 		private readonly int _layer;
 		private readonly object _stateArgs;
@@ -94,6 +95,7 @@ namespace UnityFx.App
 				_flags |= AppStateFlags.Popup;
 			}
 
+			_fullName = _parentState?.FullName + '.' + _name ?? _name;
 			_controller = parentStateManager.CreateStateController(this, controllerType);
 			_controllerEvents = _controller as IAppStateEvents;
 		}
@@ -104,7 +106,7 @@ namespace UnityFx.App
 
 			if (!_isActive)
 			{
-				_console.TraceEvent(TraceEventType.Verbose, 0, "ActivateState " + _name);
+				_console.TraceEvent(TraceEventType.Verbose, 0, "ActivateState " + _fullName);
 
 				if (_view != null)
 				{
@@ -112,16 +114,7 @@ namespace UnityFx.App
 				}
 
 				_isActive = true;
-
-				try
-				{
-					_controllerEvents?.OnActivate(!_isActivated);
-				}
-				catch (Exception e)
-				{
-					_console.TraceData(TraceEventType.Error, 0, e);
-				}
-
+				_controllerEvents?.OnActivate(!_isActivated);
 				_isActivated = true;
 				_substateManager?.ActivateTopState();
 				return true;
@@ -136,17 +129,12 @@ namespace UnityFx.App
 
 			if (_isActive)
 			{
-				_console.TraceData(TraceEventType.Verbose, 0, "DeactivateState " + _name);
-				_substateManager?.DeactivateTopState();
+				_console.TraceData(TraceEventType.Verbose, 0, "DeactivateState " + _fullName);
 
 				try
 				{
+					_substateManager?.DeactivateTopState();
 					_controllerEvents?.OnDeactivate();
-					return true;
-				}
-				catch (Exception e)
-				{
-					_console.TraceData(TraceEventType.Error, 0, e);
 				}
 				finally
 				{
@@ -157,6 +145,8 @@ namespace UnityFx.App
 
 					_isActive = false;
 				}
+
+				return true;
 			}
 
 			return false;
@@ -167,22 +157,13 @@ namespace UnityFx.App
 			Debug.Assert(_state == AppStateState.Created);
 
 			_state = AppStateState.Pushed;
-			_console.TraceData(TraceEventType.Verbose, 0, "PushState " + _name);
+			_console.TraceData(TraceEventType.Verbose, 0, "- PushState " + _fullName);
 			_stack.Add(this);
+			_controllerEvents?.OnPush();
 
-			try
+			if (_controller is IAppStateContent sc)
 			{
-				_controllerEvents?.OnPush();
-
-				if (_controller is IAppStateContent sc)
-				{
-					await sc.LoadContent(cancellationToken);
-				}
-			}
-			catch (Exception e)
-			{
-				_console.TraceData(TraceEventType.Error, 0, e);
-				throw;
+				await sc.LoadContent(cancellationToken);
 			}
 		}
 
@@ -198,16 +179,12 @@ namespace UnityFx.App
 				}
 
 				_state = AppStateState.Popped;
-				_console.TraceData(TraceEventType.Verbose, 0, "PopState " + _name);
-
-				try
-				{
-					_controllerEvents?.OnPop();
-				}
-				catch (Exception e)
-				{
-					_console.TraceData(TraceEventType.Error, 0, e);
-				}
+				_console.TraceData(TraceEventType.Verbose, 0, "- PopState " + _fullName);
+				_controllerEvents?.OnPop();
+			}
+			catch (Exception e)
+			{
+				_console.TraceData(TraceEventType.Error, 0, e);
 			}
 			finally
 			{
@@ -264,7 +241,7 @@ namespace UnityFx.App
 
 		public string Name => _name;
 
-		public string FullName => _parentState?.FullName + '.' + _name ?? _name;
+		public string FullName => _fullName;
 
 		public AppStateFlags Flags => _flags;
 

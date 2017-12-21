@@ -29,7 +29,12 @@ namespace UnityFx.App
 
 		public override string ToString()
 		{
-			return "PopState";
+			if (State != null)
+			{
+				return "PopState " + State.Name;
+			}
+
+			return "PopAll";
 		}
 
 		#endregion

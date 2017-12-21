@@ -29,22 +29,6 @@ namespace UnityFx.App
 	}
 
 	/// <summary>
-	/// Enumerates state operations.
-	/// </summary>
-	public enum StackOperation
-	{
-		/// <summary>
-		/// Push a new state on top of the previous one.
-		/// </summary>
-		Push,
-
-		/// <summary>
-		/// Removes the state from the stack.
-		/// </summary>
-		Pop,
-	}
-
-	/// <summary>
 	/// A generic application state manager.
 	/// </summary>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
