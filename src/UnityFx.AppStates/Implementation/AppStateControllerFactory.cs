@@ -19,6 +19,10 @@ namespace UnityFx.App
 
 		public IAppStateController CreateController(Type controllerType, IAppStateContext stateContext, IServiceProvider serviceProvider)
 		{
+			Debug.Assert(controllerType != null);
+			Debug.Assert(stateContext != null);
+			Debug.Assert(serviceProvider != null);
+
 			try
 			{
 				var constructors = controllerType.GetConstructors(BindingFlags.Instance | BindingFlags.Public);
@@ -60,6 +64,18 @@ namespace UnityFx.App
 			else if (serviceType == typeof(IServiceProvider))
 			{
 				return serviceProvider;
+			}
+			else if (serviceType == typeof(IAppState))
+			{
+				return stateContext.State;
+			}
+			else if (serviceType == typeof(IAppView))
+			{
+				return stateContext.View;
+			}
+			else if (serviceType == typeof(IAppStateManager))
+			{
+				return stateContext.StateManager;
 			}
 
 			return serviceProvider.GetService(serviceType);
