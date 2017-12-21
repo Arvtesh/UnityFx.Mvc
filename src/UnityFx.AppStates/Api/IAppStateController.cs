@@ -15,6 +15,7 @@ namespace UnityFx.App
 	/// </remarks>
 	/// <seealso cref="IAppState"/>
 	/// <seealso cref="IAppStateContext"/>
+	/// <seealso cref="IAppStateControllerFactory"/>
 	public interface IAppStateController
 	{
 	}

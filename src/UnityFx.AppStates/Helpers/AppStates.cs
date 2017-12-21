@@ -14,6 +14,29 @@ namespace UnityFx.App
 		/// <summary>
 		/// 
 		/// </summary>
+		public static IAppStateService CreateStateManager(SynchronizationContext syncContext, IAppStateControllerFactory controllerFactory, IAppViewFactory viewFactory, IServiceProvider serviceProvider)
+		{
+			if (controllerFactory == null)
+			{
+				throw new ArgumentNullException(nameof(controllerFactory));
+			}
+
+			if (viewFactory == null)
+			{
+				throw new ArgumentNullException(nameof(viewFactory));
+			}
+
+			if (serviceProvider == null)
+			{
+				throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			return new AppStateManager(syncContext, controllerFactory, viewFactory, serviceProvider);
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
 		public static IAppStateService CreateStateManager(SynchronizationContext syncContext, IAppViewFactory viewFactory, IServiceProvider serviceProvider)
 		{
 			if (viewFactory == null)
@@ -26,7 +49,9 @@ namespace UnityFx.App
 				throw new ArgumentNullException(nameof(serviceProvider));
 			}
 
-			return new AppStateManager(syncContext, viewFactory, serviceProvider);
+			var controllerFactory = new AppStateControllerFactory();
+
+			return new AppStateManager(syncContext, controllerFactory, viewFactory, serviceProvider);
 		}
 
 		/// <summary>
@@ -34,7 +59,20 @@ namespace UnityFx.App
 		/// </summary>
 		public static IAppStateService CreateStateManager(IAppViewFactory viewFactory, IServiceProvider serviceProvider)
 		{
-			return CreateStateManager(SynchronizationContext.Current, viewFactory, serviceProvider);
+			if (viewFactory == null)
+			{
+				throw new ArgumentNullException(nameof(viewFactory));
+			}
+
+			if (serviceProvider == null)
+			{
+				throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			var syncContext = SynchronizationContext.Current;
+			var controllerFactory = new AppStateControllerFactory();
+
+			return new AppStateManager(syncContext, controllerFactory, viewFactory, serviceProvider);
 		}
 	}
 }

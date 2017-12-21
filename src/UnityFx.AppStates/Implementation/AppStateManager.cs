@@ -28,8 +28,9 @@ namespace UnityFx.App
 		private readonly TraceSource _console;
 		private readonly SynchronizationContext _synchronizationContext;
 		private readonly AppState _parentState;
+		private readonly IAppStateControllerFactory _controllerFactory;
 		private readonly IAppViewFactory _viewManager;
-		private readonly IServiceProvider _services;
+		private readonly IServiceProvider _serviceProvider;
 
 		private Task _stackOperationsProcessor;
 		private bool _disposed;
@@ -38,35 +39,47 @@ namespace UnityFx.App
 
 		#region interface
 
-		internal IServiceProvider Services => _services;
+		internal IServiceProvider Services => _serviceProvider;
 
 		internal AppStateStack StatesEx => _states;
 
 		internal AppState ParentState => _parentState;
 
-		internal AppStateManager(SynchronizationContext syncContext, IAppViewFactory viewManager, IServiceProvider services)
+		internal AppStateManager(SynchronizationContext syncContext,
+			IAppStateControllerFactory controllerFactory,
+			IAppViewFactory viewManager,
+			IServiceProvider services)
 		{
+			Debug.Assert(controllerFactory != null);
 			Debug.Assert(viewManager != null);
 			Debug.Assert(services != null);
 
 			_console = new TraceSource(_serviceName);
 			_synchronizationContext = syncContext;
+			_controllerFactory = controllerFactory;
 			_viewManager = viewManager;
-			_services = services;
+			_serviceProvider = services;
 		}
 
-		internal AppStateManager(AppState parentState, TraceSource console, SynchronizationContext syncContext, IAppViewFactory viewManager, IServiceProvider services)
+		internal AppStateManager(AppState parentState,
+			TraceSource console,
+			SynchronizationContext syncContext,
+			IAppStateControllerFactory controllerFactory,
+			IAppViewFactory viewManager,
+			IServiceProvider services)
 		{
 			Debug.Assert(parentState != null);
 			Debug.Assert(console != null);
+			Debug.Assert(controllerFactory != null);
 			Debug.Assert(viewManager != null);
 			Debug.Assert(services != null);
 
 			_console = console;
 			_synchronizationContext = syncContext;
+			_controllerFactory = controllerFactory;
 			_viewManager = viewManager;
 			_parentState = parentState;
-			_services = services;
+			_serviceProvider = services;
 		}
 
 		internal AppStateManager CreateSubstateManager(AppState state)
@@ -74,7 +87,12 @@ namespace UnityFx.App
 			Debug.Assert(state != null);
 			ThrowIfDisposed();
 
-			return new AppStateManager(state, _console, _synchronizationContext, _viewManager, _services);
+			return new AppStateManager(state, _console, _synchronizationContext, _controllerFactory, _viewManager, _serviceProvider);
+		}
+
+		internal IAppStateController CreateStateController(AppState state, Type controllerType)
+		{
+			return _controllerFactory.CreateController(controllerType, state, _serviceProvider);
 		}
 
 		internal IAppView CreateView(AppState state)

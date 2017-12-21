@@ -6,7 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -94,7 +93,7 @@ namespace UnityFx.App
 				_name = GetStateName(controllerType);
 			}
 
-			_controller = CreateController(controllerType);
+			_controller = parentStateManager.CreateStateController(this, controllerType);
 			_controllerEvents = _controller as IAppStateEvents;
 		}
 
@@ -391,19 +390,6 @@ namespace UnityFx.App
 			if (_state == AppStateState.Disposed)
 			{
 				throw new ObjectDisposedException(_name);
-			}
-		}
-
-		private IAppStateController CreateController(Type controllerType)
-		{
-			try
-			{
-				// TODO: use IServiceProvider to resolve controller constructor parameters
-				return Activator.CreateInstance(controllerType) as IAppStateController;
-			}
-			catch (TargetInvocationException e)
-			{
-				throw e.InnerException;
 			}
 		}
 
