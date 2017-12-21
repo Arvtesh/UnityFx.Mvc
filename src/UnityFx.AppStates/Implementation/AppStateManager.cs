@@ -201,6 +201,11 @@ namespace UnityFx.App
 
 		#region IAppStateManager
 
+		public event EventHandler<AppStateEventArgs> StatePushed;
+		public event EventHandler<AppStateEventArgs> StatePopped;
+		public event EventHandler<AppStateEventArgs> StateActivated;
+		public event EventHandler<AppStateEventArgs> StateDeactivated;
+
 		public IAppStateStack States
 		{
 			get
@@ -492,22 +497,50 @@ namespace UnityFx.App
 
 		private void InvokeStatePushed(IAppState state)
 		{
-			// TODO
+			try
+			{
+				StatePushed?.Invoke(this, new AppStateEventArgs(state));
+			}
+			catch (Exception e)
+			{
+				_console.TraceData(TraceEventType.Error, 0, e);
+			}
 		}
 
 		private void InvokeStateActivated(IAppState state)
 		{
-			// TODO
+			try
+			{
+				StateActivated?.Invoke(this, new AppStateEventArgs(state));
+			}
+			catch (Exception e)
+			{
+				_console.TraceData(TraceEventType.Error, 0, e);
+			}
 		}
 
 		private void InvokeStateDeactivated(IAppState state)
 		{
-			// TODO
+			try
+			{
+				StateDeactivated?.Invoke(this, new AppStateEventArgs(state));
+			}
+			catch (Exception e)
+			{
+				_console.TraceData(TraceEventType.Error, 0, e);
+			}
 		}
 
 		private void InvokeStatePopped(IAppState state)
 		{
-			// TODO
+			try
+			{
+				StatePopped?.Invoke(this, new AppStateEventArgs(state));
+			}
+			catch (Exception e)
+			{
+				_console.TraceData(TraceEventType.Error, 0, e);
+			}
 		}
 
 		private string GetFullName()
