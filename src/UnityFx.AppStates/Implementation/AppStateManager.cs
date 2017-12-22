@@ -28,6 +28,7 @@ namespace UnityFx.App
 		private readonly TraceSource _console;
 		private readonly SynchronizationContext _synchronizationContext;
 		private readonly AppState _parentState;
+		private readonly AppStateManager _parentStateManager;
 		private readonly IAppStateControllerFactory _controllerFactory;
 		private readonly IAppViewFactory _viewManager;
 		private readonly IServiceProvider _serviceProvider;
@@ -39,11 +40,11 @@ namespace UnityFx.App
 
 		#region interface
 
-		internal IServiceProvider Services => _serviceProvider;
-
-		internal AppStateStack StatesEx => _states;
+		internal TraceSource TraceSource => _console;
 
 		internal AppState ParentState => _parentState;
+
+		internal AppStateStack StatesEx => _states;
 
 		internal AppStateManager(SynchronizationContext syncContext,
 			IAppStateControllerFactory controllerFactory,
@@ -61,37 +62,35 @@ namespace UnityFx.App
 			_serviceProvider = services;
 		}
 
-		internal AppStateManager(AppState parentState,
-			TraceSource console,
-			SynchronizationContext syncContext,
-			IAppStateControllerFactory controllerFactory,
-			IAppViewFactory viewManager,
-			IServiceProvider services)
+		internal AppStateManager(AppState parentState, AppStateManager parentStateManager)
 		{
 			Debug.Assert(parentState != null);
-			Debug.Assert(console != null);
-			Debug.Assert(controllerFactory != null);
-			Debug.Assert(viewManager != null);
-			Debug.Assert(services != null);
+			Debug.Assert(parentStateManager != null);
 
-			_console = console;
-			_synchronizationContext = syncContext;
-			_controllerFactory = controllerFactory;
-			_viewManager = viewManager;
+			_console = parentStateManager._console;
+			_synchronizationContext = parentStateManager._synchronizationContext;
+			_controllerFactory = parentStateManager._controllerFactory;
+			_viewManager = parentStateManager._viewManager;
 			_parentState = parentState;
-			_serviceProvider = services;
+			_parentStateManager = parentStateManager;
+			_serviceProvider = parentStateManager._serviceProvider;
 		}
 
-		internal AppStateManager CreateSubstateManager(AppState state)
+		internal AppStateManager CreateSubstateManager(AppState state, AppStateManager parentStateManager)
 		{
 			Debug.Assert(state != null);
+			Debug.Assert(parentStateManager != null);
 			ThrowIfDisposed();
 
-			return new AppStateManager(state, _console, _synchronizationContext, _controllerFactory, _viewManager, _serviceProvider);
+			return new AppStateManager(state, parentStateManager);
 		}
 
 		internal IAppStateController CreateStateController(AppState state, Type controllerType)
 		{
+			Debug.Assert(state != null);
+			Debug.Assert(controllerType != null);
+			ThrowIfDisposed();
+
 			return _controllerFactory.CreateController(controllerType, state, _serviceProvider);
 		}
 
@@ -109,6 +108,7 @@ namespace UnityFx.App
 
 		internal Task<IAppState> PushState(AppState ownerState, PushOptions options, Type controllerType, object controllerArgs)
 		{
+			Debug.Assert(controllerType != null);
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
@@ -156,24 +156,78 @@ namespace UnityFx.App
 
 		internal void ActivateTopState()
 		{
+			ThrowIfDisposed();
+
 			if (_states.TryPeek(out var state))
 			{
-				if (state.Activate())
-				{
-					InvokeStateActivated(state);
-				}
+				state.Activate();
 			}
 		}
 
 		internal void DeactivateTopState()
 		{
+			ThrowIfDisposed();
+
 			if (_states.TryPeek(out var state))
 			{
-				if (state.Deactivate())
-				{
-					InvokeStateDeactivated(state);
-				}
+				state.Deactivate();
 			}
+		}
+
+		internal void InvokeStatePushed(AppStateEventArgs args)
+		{
+			try
+			{
+				StatePushed?.Invoke(this, args);
+			}
+			catch (Exception e)
+			{
+				_console.TraceData(TraceEventType.Error, 0, e);
+			}
+
+			_parentStateManager?.InvokeStatePushed(args);
+		}
+
+		internal void InvokeStatePopped(AppStateEventArgs args)
+		{
+			try
+			{
+				StatePopped?.Invoke(this, args);
+			}
+			catch (Exception e)
+			{
+				_console.TraceData(TraceEventType.Error, 0, e);
+			}
+
+			_parentStateManager?.InvokeStatePopped(args);
+		}
+
+		internal void InvokeStateActivated(AppStateEventArgs args)
+		{
+			try
+			{
+				StateActivated?.Invoke(this, args);
+			}
+			catch (Exception e)
+			{
+				_console.TraceData(TraceEventType.Error, 0, e);
+			}
+
+			_parentStateManager?.InvokeStateActivated(args);
+		}
+
+		internal void InvokeStateDeactivated(AppStateEventArgs args)
+		{
+			try
+			{
+				StateDeactivated?.Invoke(this, args);
+			}
+			catch (Exception e)
+			{
+				_console.TraceData(TraceEventType.Error, 0, e);
+			}
+
+			_parentStateManager?.InvokeStateDeactivated(args);
 		}
 
 		#endregion
@@ -270,19 +324,6 @@ namespace UnityFx.App
 
 		#region implementation
 
-		private void RunOpProcessor(object state)
-		{
-			if (_stackOperationsProcessor == null && !_stackOperations.IsEmpty && !_cancellationSource.IsCancellationRequested)
-			{
-				var task = ProcessStackOperations();
-
-				if (!task.IsCompleted)
-				{
-					_stackOperationsProcessor = task;
-				}
-			}
-		}
-
 		private void AddStackOperation(AppStateStackOperation op)
 		{
 			if (_stackOperations.Count > _maxStackOperationsCount)
@@ -303,6 +344,19 @@ namespace UnityFx.App
 			else
 			{
 				RunOpProcessor(null);
+			}
+		}
+
+		private void RunOpProcessor(object state)
+		{
+			if (_stackOperationsProcessor == null && !_stackOperations.IsEmpty && !_cancellationSource.IsCancellationRequested)
+			{
+				var task = ProcessStackOperations();
+
+				if (!task.IsCompleted)
+				{
+					_stackOperationsProcessor = task;
+				}
 			}
 		}
 
@@ -379,7 +433,7 @@ namespace UnityFx.App
 				// Replace the specified state with the new one.
 				if (op.Options.HasFlag(PushOptions.Set))
 				{
-					result = new AppState(_console, this, op.OwnerState.Owner, op.ControllerType, op.ControllerArgs);
+					result = new AppState(this, op.OwnerState.Owner, op.ControllerType, op.ControllerArgs);
 					await result.Push(op.CancellationToken);
 
 					if (op.Transition != null)
@@ -397,7 +451,7 @@ namespace UnityFx.App
 						await s.Pop(op.CancellationToken);
 					}
 
-					result = new AppState(_console, this, null, op.ControllerType, op.ControllerArgs);
+					result = new AppState(this, null, op.ControllerType, op.ControllerArgs);
 					await result.Push(op.CancellationToken);
 
 					if (op.Transition != null)
@@ -408,7 +462,7 @@ namespace UnityFx.App
 				// Just push the new state onto the stack.
 				else
 				{
-					result = new AppState(_console, this, op.OwnerState, op.ControllerType, op.ControllerArgs);
+					result = new AppState(this, op.OwnerState, op.ControllerType, op.ControllerArgs);
 					await result.Push(op.CancellationToken);
 
 					if (op.Transition != null)
@@ -472,12 +526,12 @@ namespace UnityFx.App
 			{
 				if (s.Owner == state)
 				{
-					await s.Pop(cancellationToken).ConfigureAwait(false);
+					await s.Pop(cancellationToken);
 				}
 			}
 
 			// Release the state (and its substates). This will also remove state from the stack.
-			await state.Pop(cancellationToken).ConfigureAwait(false);
+			await state.Pop(cancellationToken);
 		}
 
 		private void InvokeOperationInitiated(AppStateStackOperation op)
@@ -493,54 +547,6 @@ namespace UnityFx.App
 		private void InvokeOperationFailed(AppStateStackOperation op)
 		{
 			// TODO
-		}
-
-		private void InvokeStatePushed(IAppState state)
-		{
-			try
-			{
-				StatePushed?.Invoke(this, new AppStateEventArgs(state));
-			}
-			catch (Exception e)
-			{
-				_console.TraceData(TraceEventType.Error, 0, e);
-			}
-		}
-
-		private void InvokeStateActivated(IAppState state)
-		{
-			try
-			{
-				StateActivated?.Invoke(this, new AppStateEventArgs(state));
-			}
-			catch (Exception e)
-			{
-				_console.TraceData(TraceEventType.Error, 0, e);
-			}
-		}
-
-		private void InvokeStateDeactivated(IAppState state)
-		{
-			try
-			{
-				StateDeactivated?.Invoke(this, new AppStateEventArgs(state));
-			}
-			catch (Exception e)
-			{
-				_console.TraceData(TraceEventType.Error, 0, e);
-			}
-		}
-
-		private void InvokeStatePopped(IAppState state)
-		{
-			try
-			{
-				StatePopped?.Invoke(this, new AppStateEventArgs(state));
-			}
-			catch (Exception e)
-			{
-				_console.TraceData(TraceEventType.Error, 0, e);
-			}
 		}
 
 		private string GetFullName()

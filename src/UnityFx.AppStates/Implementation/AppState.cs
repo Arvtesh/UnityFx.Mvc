@@ -42,9 +42,9 @@ namespace UnityFx.App
 		private readonly AppStateFlags _flags;
 		private readonly int _layer;
 		private readonly object _stateArgs;
+		private readonly AppStateEventArgs _eventArgs;
 
 		private AppStateManager _substateManager;
-		private IAppStateTransition _transition;
 		private IAppView _view;
 
 		private AppStateState _state;
@@ -55,20 +55,18 @@ namespace UnityFx.App
 
 		#region interface
 
-		internal IAppStateTransition Transition => _transition;
-
-		internal AppState(TraceSource console, AppStateManager parentStateManager, IAppState owner, Type controllerType, object args)
+		internal AppState(AppStateManager parentStateManager, IAppState owner, Type controllerType, object args)
 		{
-			Debug.Assert(console != null);
 			Debug.Assert(parentStateManager != null);
 			Debug.Assert(controllerType != null);
 
 			_parentStateManager = parentStateManager;
-			_parentState = _parentStateManager.ParentState;
+			_parentState = parentStateManager.ParentState;
 			_ownerState = owner;
 			_stateArgs = args;
-			_console = console;
-			_stack = _parentStateManager.StatesEx;
+			_eventArgs = new AppStateEventArgs(this);
+			_console = parentStateManager.TraceSource;
+			_stack = parentStateManager.StatesEx;
 
 			if (Attribute.GetCustomAttribute(controllerType, typeof(AppStateControllerAttribute)) is AppStateControllerAttribute paramsAttr)
 			{
@@ -100,7 +98,7 @@ namespace UnityFx.App
 			_controllerEvents = _controller as IAppStateEvents;
 		}
 
-		internal bool Activate()
+		internal void Activate()
 		{
 			Debug.Assert(_state == AppStateState.Pushed);
 
@@ -116,14 +114,12 @@ namespace UnityFx.App
 				_isActive = true;
 				_controllerEvents?.OnActivate(!_isActivated);
 				_isActivated = true;
+				_parentStateManager.InvokeStateActivated(_eventArgs);
 				_substateManager?.ActivateTopState();
-				return true;
 			}
-
-			return false;
 		}
 
-		internal bool Deactivate()
+		internal void Deactivate()
 		{
 			Debug.Assert(_state == AppStateState.Pushed);
 
@@ -135,6 +131,7 @@ namespace UnityFx.App
 				{
 					_substateManager?.DeactivateTopState();
 					_controllerEvents?.OnDeactivate();
+					_parentStateManager.InvokeStateDeactivated(_eventArgs);
 				}
 				finally
 				{
@@ -145,11 +142,7 @@ namespace UnityFx.App
 
 					_isActive = false;
 				}
-
-				return true;
 			}
-
-			return false;
 		}
 
 		internal async Task Push(CancellationToken cancellationToken)
@@ -160,6 +153,7 @@ namespace UnityFx.App
 			_console.TraceData(TraceEventType.Verbose, 0, "- PushState " + _fullName);
 			_stack.Add(this);
 			_controllerEvents?.OnPush();
+			_parentStateManager.InvokeStatePushed(_eventArgs);
 
 			if (_controller is IAppStateContent sc)
 			{
@@ -181,6 +175,7 @@ namespace UnityFx.App
 				_state = AppStateState.Popped;
 				_console.TraceData(TraceEventType.Verbose, 0, "- PopState " + _fullName);
 				_controllerEvents?.OnPop();
+				_parentStateManager.InvokeStatePopped(_eventArgs);
 			}
 			catch (Exception e)
 			{
@@ -324,7 +319,7 @@ namespace UnityFx.App
 
 				if (_substateManager == null)
 				{
-					_substateManager = _parentStateManager.CreateSubstateManager(this);
+					_substateManager = _parentStateManager.CreateSubstateManager(this, _parentStateManager);
 				}
 
 				return _substateManager;
