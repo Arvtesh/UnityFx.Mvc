@@ -149,12 +149,17 @@ namespace UnityFx.App
 		{
 			Debug.Assert(_state == AppStateState.Created);
 
+			// Push the state onto the stack.
 			_state = AppStateState.Pushed;
 			_console.TraceData(TraceEventType.Verbose, 0, "- PushState " + _fullName);
 			_stack.Add(this);
 			_controllerEvents?.OnPush();
 			_parentStateManager.InvokeStatePushed(_eventArgs);
 
+			// Enable substates processing.
+			_substateManager?.SetEnabled();
+
+			// Load state content.
 			if (_controller is IAppStateContent sc)
 			{
 				await sc.LoadContent(cancellationToken);
@@ -167,11 +172,13 @@ namespace UnityFx.App
 
 			try
 			{
+				// Stop any pending substate operations.
 				if (_substateManager != null)
 				{
 					await _substateManager.PopAll();
 				}
 
+				// Pop the state from the state stack (actually the state is removed from the stack in Dispose call).
 				_state = AppStateState.Popped;
 				_console.TraceData(TraceEventType.Verbose, 0, "- PopState " + _fullName);
 				_controllerEvents?.OnPop();
@@ -319,7 +326,7 @@ namespace UnityFx.App
 
 				if (_substateManager == null)
 				{
-					_substateManager = _parentStateManager.CreateSubstateManager(this, _parentStateManager);
+					_substateManager = _parentStateManager.CreateSubstateManager(this, _parentStateManager, _state == AppStateState.Pushed);
 				}
 
 				return _substateManager;

@@ -34,6 +34,7 @@ namespace UnityFx.App
 		private readonly IServiceProvider _serviceProvider;
 
 		private Task _stackOperationsProcessor;
+		private bool _enabled;
 		private bool _disposed;
 
 		#endregion
@@ -60,9 +61,10 @@ namespace UnityFx.App
 			_controllerFactory = controllerFactory;
 			_viewManager = viewManager;
 			_serviceProvider = services;
+			_enabled = true;
 		}
 
-		internal AppStateManager(AppState parentState, AppStateManager parentStateManager)
+		internal AppStateManager(AppState parentState, AppStateManager parentStateManager, bool enabled)
 		{
 			Debug.Assert(parentState != null);
 			Debug.Assert(parentStateManager != null);
@@ -74,15 +76,22 @@ namespace UnityFx.App
 			_parentState = parentState;
 			_parentStateManager = parentStateManager;
 			_serviceProvider = parentStateManager._serviceProvider;
+			_enabled = enabled;
 		}
 
-		internal AppStateManager CreateSubstateManager(AppState state, AppStateManager parentStateManager)
+		internal void SetEnabled()
+		{
+			_enabled = true;
+			TryRunOperationProcessor();
+		}
+
+		internal AppStateManager CreateSubstateManager(AppState state, AppStateManager parentStateManager, bool enabled)
 		{
 			Debug.Assert(state != null);
 			Debug.Assert(parentStateManager != null);
 			ThrowIfDisposed();
 
-			return new AppStateManager(state, parentStateManager);
+			return new AppStateManager(state, parentStateManager, enabled);
 		}
 
 		internal IAppStateController CreateStateController(AppState state, Type controllerType)
@@ -114,7 +123,7 @@ namespace UnityFx.App
 
 			var op = new AppStatePushOperation(options, ownerState, null, _cancellationSource.Token, controllerType, controllerArgs);
 			AddStackOperation(op);
-			RunStackOperation(op);
+			TryRunOperationProcessor();
 			return op.Task;
 		}
 
@@ -125,7 +134,7 @@ namespace UnityFx.App
 
 			var op = new AppStatePopOperation(state, null, _cancellationSource.Token);
 			AddStackOperation(op);
-			RunStackOperation(op);
+			TryRunOperationProcessor();
 			return op.Task;
 		}
 
@@ -134,6 +143,7 @@ namespace UnityFx.App
 			ThrowIfDisposed();
 
 			// Signal all pending operations should complete asap.
+			_enabled = false;
 			_cancellationSource.Cancel();
 
 			// Wait for the current operation to finish.
@@ -334,21 +344,24 @@ namespace UnityFx.App
 			_stackOperations.Enqueue(op);
 		}
 
-		private void RunStackOperation(AppStateStackOperation op)
+		private void TryRunOperationProcessor()
 		{
-			if (_synchronizationContext != null)
+			if (_enabled && !_cancellationSource.IsCancellationRequested)
 			{
-				_synchronizationContext.Post(RunOpProcessor, null);
-			}
-			else
-			{
-				RunOpProcessor(null);
+				if (_synchronizationContext != null)
+				{
+					_synchronizationContext.Post(RunOpProcessor, null);
+				}
+				else
+				{
+					RunOpProcessor(null);
+				}
 			}
 		}
 
 		private void RunOpProcessor(object state)
 		{
-			if (_stackOperationsProcessor == null && !_stackOperations.IsEmpty && !_cancellationSource.IsCancellationRequested)
+			if (_enabled && _stackOperationsProcessor == null && !_stackOperations.IsEmpty && !_cancellationSource.IsCancellationRequested)
 			{
 				var task = ProcessStackOperations();
 
@@ -365,12 +378,7 @@ namespace UnityFx.App
 			{
 				while (_stackOperations.TryDequeue(out var op))
 				{
-					if (op.CancellationToken.IsCancellationRequested)
-					{
-						op.TrySetCanceled();
-						OnOperationCanceled(op);
-					}
-					else if (CanExecuteOperation(op))
+					if (CanExecuteOperation(op))
 					{
 						try
 						{
@@ -404,6 +412,11 @@ namespace UnityFx.App
 							op.TrySetException(e);
 							OnOperationFailed(op, e);
 						}
+					}
+					else
+					{
+						op.TrySetCanceled();
+						OnOperationCanceled(op);
 					}
 				}
 
@@ -511,12 +524,17 @@ namespace UnityFx.App
 
 		private bool CanExecuteOperation(AppStateStackOperation op)
 		{
+			if (op.CancellationToken.IsCancellationRequested)
+			{
+				return false;
+			}
+
 			if (op.Task.IsCanceled)
 			{
 				return false;
 			}
 
-			return true;
+			return _enabled;
 		}
 
 		private async Task PopStateInternal(AppState state, CancellationToken cancellationToken)
