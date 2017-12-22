@@ -12,6 +12,16 @@ namespace UnityFx.App
 	public interface IAppStateStack : IReadOnlyCollection<IAppState>
 	{
 		/// <summary>
+		/// Triggered when a new state is added to the stack.
+		/// </summary>
+		event EventHandler<AppStateEventArgs> StateAdded;
+
+		/// <summary>
+		/// Triggered when a state is removed from the stack.
+		/// </summary>
+		event EventHandler<AppStateEventArgs> StateRemoved;
+
+		/// <summary>
 		/// Returns the state at the top of the stack without removing it.
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Thrown if the stack is empty.</exception>

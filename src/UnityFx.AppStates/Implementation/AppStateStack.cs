@@ -31,11 +31,16 @@ namespace UnityFx.App
 			}
 
 			_states.Add(state);
+
+			StateAdded?.Invoke(this, new AppStateEventArgs(state));
 		}
 
 		public void Remove(AppState state)
 		{
-			_states?.Remove(state);
+			if (_states != null && _states.Remove(state))
+			{
+				StateRemoved?.Invoke(this, new AppStateEventArgs(state));
+			}
 		}
 
 		public bool TryPeek(out AppState result)
@@ -71,6 +76,9 @@ namespace UnityFx.App
 		#endregion
 
 		#region IAppStateStack
+
+		public event EventHandler<AppStateEventArgs> StateAdded;
+		public event EventHandler<AppStateEventArgs> StateRemoved;
 
 		IAppState IAppStateStack.Peek()
 		{

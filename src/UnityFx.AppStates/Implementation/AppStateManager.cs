@@ -332,7 +332,6 @@ namespace UnityFx.App
 			}
 
 			_stackOperations.Enqueue(op);
-			InvokeOperationInitiated(op);
 		}
 
 		private void RunStackOperation(AppStateStackOperation op)
@@ -368,16 +367,15 @@ namespace UnityFx.App
 				{
 					if (op.CancellationToken.IsCancellationRequested)
 					{
-						break;
+						op.TrySetCanceled();
+						OnOperationCanceled(op);
 					}
-
-					if (CanExecuteOperation(op))
+					else if (CanExecuteOperation(op))
 					{
-						DeactivateTopState();
-
 						try
 						{
-							_console.TraceInformation(op.ToString());
+							DeactivateTopState();
+							OnOperationStarted(op);
 
 							if (op is AppStatePushOperation pushOp)
 							{
@@ -393,16 +391,18 @@ namespace UnityFx.App
 							{
 								Debug.Fail("Unknown stack operation");
 							}
+
+							OnOperationComplete(op);
 						}
-						catch (OperationCanceledException e)
+						catch (OperationCanceledException)
 						{
 							op.TrySetCanceled();
-							_console.TraceData(TraceEventType.Verbose, 0, e);
+							OnOperationCanceled(op);
 						}
 						catch (Exception e)
 						{
 							op.TrySetException(e);
-							_console.TraceData(TraceEventType.Error, 0, e);
+							OnOperationFailed(op, e);
 						}
 					}
 				}
@@ -534,19 +534,24 @@ namespace UnityFx.App
 			await state.Pop(cancellationToken);
 		}
 
-		private void InvokeOperationInitiated(AppStateStackOperation op)
+		private void OnOperationStarted(AppStateStackOperation op)
+		{
+			_console.TraceInformation(op.ToString());
+		}
+
+		private void OnOperationComplete(AppStateStackOperation op)
 		{
 			// TODO
 		}
 
-		private void InvokeOperationComplete(AppStateStackOperation op)
+		private void OnOperationCanceled(AppStateStackOperation op)
 		{
 			// TODO
 		}
 
-		private void InvokeOperationFailed(AppStateStackOperation op)
+		private void OnOperationFailed(AppStateStackOperation op, Exception e)
 		{
-			// TODO
+			_console.TraceData(TraceEventType.Error, 0, e);
 		}
 
 		private string GetFullName()
