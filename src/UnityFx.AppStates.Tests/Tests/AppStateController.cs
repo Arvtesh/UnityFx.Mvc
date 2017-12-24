@@ -10,8 +10,20 @@ using System.Threading;
 
 namespace UnityFx.App.Tests
 {
+	public enum ControllerMethodId
+	{
+		None,
+		Ctor,
+		OnPush,
+		LoadContent,
+		OnActivate,
+		OnDectivate,
+		OnPop,
+		Dispose
+	}
+
 	/// <summary>
-	/// 
+	/// Test realted to <see cref="IAppStateController"/>.
 	/// </summary>
 	public class AppStateController : IDisposable
 	{
@@ -79,38 +91,25 @@ namespace UnityFx.App.Tests
 			Assert.Equal(6, controller.DisposeIndex);
 		}
 
-		[Fact]
-		public async Task EventHandlerExceptionsAreIgnored()
+		[Theory]
+		[InlineData(ControllerMethodId.Ctor)]
+		[InlineData(ControllerMethodId.OnPush)]
+		[InlineData(ControllerMethodId.LoadContent)]
+		[InlineData(ControllerMethodId.OnActivate)]
+		public async Task PushExceptionIsForwarded(ControllerMethodId method)
 		{
-			var state = await _stateManager.PushStateAsync<TestController_EventErrors>(PushOptions.None, null);
-			await state.CloseAsync();
+			await Assert.ThrowsAsync<Exception>(() => _stateManager.PushStateAsync<TestController_EventErrors>(PushOptions.None, method));
+			Assert.Empty(_stateManager.States);
 		}
 
-		[Fact]
-		public async Task DisposeExceptionIsForwarded()
+		[Theory]
+		[InlineData(ControllerMethodId.OnDectivate)]
+		[InlineData(ControllerMethodId.OnPop)]
+		[InlineData(ControllerMethodId.Dispose)]
+		public async Task PopExceptionIsForwarded(ControllerMethodId method)
 		{
-			var state = await _stateManager.PushStateAsync<TestController_DisposeError>(PushOptions.None, null);
+			var state = await _stateManager.PushStateAsync<TestController_EventErrors>(PushOptions.None, method);
 			await Assert.ThrowsAsync<Exception>(() => state.CloseAsync());
-		}
-
-		[Fact]
-		public async Task OnPushExceptionIsForwarded()
-		{
-			await Assert.ThrowsAsync<Exception>(() => _stateManager.PushStateAsync<TestController_OnPushError>(PushOptions.None, null));
-			Assert.Empty(_stateManager.States);
-		}
-
-		[Fact]
-		public async Task LoadContentExceptionIsForwarded()
-		{
-			await Assert.ThrowsAsync<Exception>(() => _stateManager.PushStateAsync<TestController_LoadContentError>(PushOptions.None, null));
-			Assert.Empty(_stateManager.States);
-		}
-
-		[Fact]
-		public async Task ConstructorExceptionIsForwarded()
-		{
-			await Assert.ThrowsAsync<Exception>(() => _stateManager.PushStateAsync<TestController_ConstructorError>(PushOptions.None, null));
 			Assert.Empty(_stateManager.States);
 		}
 

@@ -60,11 +60,6 @@ namespace UnityFx.App
 		int Layer { get; }
 
 		/// <summary>
-		/// Returns user-specified state arguments. Read only.
-		/// </summary>
-		object Args { get; }
-
-		/// <summary>
 		/// Returns a value indicating whether this state is active (i.e. it is a top state and can processes user input). Read only.
 		/// </summary>
 		bool IsActive { get; }

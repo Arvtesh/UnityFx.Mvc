@@ -336,7 +336,7 @@ namespace UnityFx.App
 			if (!_disposed)
 			{
 				_disposed = true;
-
+				_cancellationSource.Dispose();
 				// TODO
 			}
 		}
@@ -397,7 +397,6 @@ namespace UnityFx.App
 					{
 						try
 						{
-							DeactivateTopState();
 							OnOperationStarted(op);
 
 							if (op is AppStatePushOperation pushOp)
@@ -434,11 +433,6 @@ namespace UnityFx.App
 						OnOperationCanceled(op);
 					}
 				}
-
-				if (!_cancellationSource.IsCancellationRequested)
-				{
-					ActivateTopState();
-				}
 			}
 			catch (Exception e)
 			{
@@ -458,15 +452,19 @@ namespace UnityFx.App
 
 			try
 			{
+				DeactivateTopState();
+
 				// Replace the specified state with the new one.
 				if (op.Options.HasFlag(PushOptions.Set))
 				{
 					result = new AppState(this, op.OwnerState.Owner, op.ControllerType, op.ControllerArgs);
 					await result.Push(op.CancellationToken);
+					op.CancellationToken.ThrowIfCancellationRequested();
 
 					if (op.Transition != null)
 					{
 						await op.Transition.PlaySetTransition(op.OwnerState, result, op.CancellationToken);
+						op.CancellationToken.ThrowIfCancellationRequested();
 					}
 
 					await PopStateInternal(op.OwnerState, op.CancellationToken);
@@ -477,6 +475,7 @@ namespace UnityFx.App
 					foreach (var s in _states.ToArray())
 					{
 						await s.Pop(op.CancellationToken);
+						op.CancellationToken.ThrowIfCancellationRequested();
 					}
 
 					result = new AppState(this, null, op.ControllerType, op.ControllerArgs);
@@ -484,6 +483,7 @@ namespace UnityFx.App
 
 					if (op.Transition != null)
 					{
+						op.CancellationToken.ThrowIfCancellationRequested();
 						await op.Transition.PlayPushTransition(result, op.CancellationToken);
 					}
 				}
@@ -495,6 +495,8 @@ namespace UnityFx.App
 
 					if (op.Transition != null)
 					{
+						op.CancellationToken.ThrowIfCancellationRequested();
+
 						if (op.OwnerState != null)
 						{
 							await op.Transition.PlayPushTransition(op.OwnerState, result, op.CancellationToken);
@@ -505,10 +507,21 @@ namespace UnityFx.App
 						}
 					}
 				}
+
+				if (_stackOperations.IsEmpty)
+				{
+					ActivateTopState();
+				}
 			}
 			catch
 			{
 				result?.Dispose();
+
+				if (_stackOperations.IsEmpty)
+				{
+					ActivateTopState();
+				}
+
 				throw;
 			}
 
@@ -519,21 +532,44 @@ namespace UnityFx.App
 		{
 			Debug.Assert(op != null);
 
-			if (op.State != null)
+			try
 			{
-				if (op.Transition != null)
+				DeactivateTopState();
+
+				if (op.State != null)
 				{
-					await op.Transition.PlayPopTransition(op.State, op.CancellationToken);
+					if (op.Transition != null)
+					{
+						await op.Transition.PlayPopTransition(op.State, op.CancellationToken);
+						op.CancellationToken.ThrowIfCancellationRequested();
+					}
+
+					await PopStateInternal(op.State, op.CancellationToken);
+				}
+				else
+				{
+					foreach (var s in _states.ToArray())
+					{
+						await s.Pop(op.CancellationToken);
+						op.CancellationToken.ThrowIfCancellationRequested();
+					}
 				}
 
-				await PopStateInternal(op.State, op.CancellationToken);
-			}
-			else
-			{
-				foreach (var s in _states.ToArray())
+				if (_stackOperations.IsEmpty)
 				{
-					await s.Pop(op.CancellationToken);
+					ActivateTopState();
 				}
+			}
+			catch
+			{
+				op.State?.Dispose();
+
+				if (_stackOperations.IsEmpty)
+				{
+					ActivateTopState();
+				}
+
+				throw;
 			}
 		}
 

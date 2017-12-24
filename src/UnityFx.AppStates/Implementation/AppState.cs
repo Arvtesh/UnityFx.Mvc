@@ -41,7 +41,7 @@ namespace UnityFx.App
 		private readonly string _fullName;
 		private readonly AppStateFlags _flags;
 		private readonly int _layer;
-		private readonly object _stateArgs;
+		private readonly object _controllerArgs;
 		private readonly AppStateEventArgs _eventArgs;
 
 		private AppStateManager _substateManager;
@@ -65,7 +65,7 @@ namespace UnityFx.App
 			_parentStateManager = parentStateManager;
 			_parentState = parentStateManager.ParentState;
 			_ownerState = owner;
-			_stateArgs = args;
+			_controllerArgs = args;
 			_eventArgs = new AppStateEventArgs(this);
 			_console = parentStateManager.TraceSource;
 			_stack = parentStateManager.StatesEx;
@@ -174,10 +174,6 @@ namespace UnityFx.App
 				_controllerEvents?.OnPop();
 				_parentStateManager.InvokeStatePopped(_eventArgs);
 			}
-			catch (Exception e)
-			{
-				_console.TraceData(TraceEventType.Error, 0, e);
-			}
 			finally
 			{
 				Dispose();
@@ -239,8 +235,6 @@ namespace UnityFx.App
 
 		public int Layer => _layer;
 
-		public object Args => _stateArgs;
-
 		public bool IsActive => _isActive;
 
 		public IAppState Parent => _parentState;
@@ -289,6 +283,8 @@ namespace UnityFx.App
 		#endregion
 
 		#region IAppStateContext
+
+		public object Args => _controllerArgs;
 
 		public IAppState State
 		{

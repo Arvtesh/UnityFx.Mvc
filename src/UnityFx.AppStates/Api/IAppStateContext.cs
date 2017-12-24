@@ -12,6 +12,11 @@ namespace UnityFx.App
 	public interface IAppStateContext
 	{
 		/// <summary>
+		/// Returns user-specified controller arguments. Read only.
+		/// </summary>
+		object Args { get; }
+
+		/// <summary>
 		/// Returns parent state. Never returns <c>null</c>. Read only.
 		/// </summary>
 		IAppState State { get; }

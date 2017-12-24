@@ -11,7 +11,7 @@ using System.Threading;
 namespace UnityFx.App.Tests
 {
 	/// <summary>
-	/// 
+	/// Common <see cref="IAppStateManager"/> tests.
 	/// </summary>
 	public class AppStateManager : IDisposable
 	{
