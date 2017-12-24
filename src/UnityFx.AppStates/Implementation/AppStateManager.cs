@@ -64,7 +64,7 @@ namespace UnityFx.App
 			_enabled = true;
 		}
 
-		internal AppStateManager(AppState parentState, AppStateManager parentStateManager, bool enabled)
+		internal AppStateManager(AppState parentState, AppStateManager parentStateManager)
 		{
 			Debug.Assert(parentState != null);
 			Debug.Assert(parentStateManager != null);
@@ -76,29 +76,23 @@ namespace UnityFx.App
 			_parentState = parentState;
 			_parentStateManager = parentStateManager;
 			_serviceProvider = parentStateManager._serviceProvider;
-			_enabled = enabled;
+			_enabled = parentState.Enabled;
 		}
 
-		internal void SetEnabled()
-		{
-			_enabled = true;
-			TryRunOperationProcessor();
-		}
-
-		internal AppStateManager CreateSubstateManager(AppState state, AppStateManager parentStateManager, bool enabled)
+		internal AppStateManager CreateSubstateManager(AppState state, AppStateManager parentStateManager)
 		{
 			Debug.Assert(state != null);
 			Debug.Assert(parentStateManager != null);
-			ThrowIfDisposed();
+			Debug.Assert(!_disposed);
 
-			return new AppStateManager(state, parentStateManager, enabled);
+			return new AppStateManager(state, parentStateManager);
 		}
 
 		internal IAppStateController CreateStateController(AppState state, Type controllerType)
 		{
 			Debug.Assert(state != null);
 			Debug.Assert(controllerType != null);
-			ThrowIfDisposed();
+			Debug.Assert(!_disposed);
 
 			return _controllerFactory.CreateController(controllerType, state, _serviceProvider);
 		}
@@ -106,7 +100,7 @@ namespace UnityFx.App
 		internal IAppView CreateView(AppState state)
 		{
 			Debug.Assert(state != null);
-			ThrowIfDisposed();
+			Debug.Assert(!_disposed);
 
 			var exclusive = !state.Flags.HasFlag(AppStateFlags.Popup);
 			var insertAfterView = default(IAppView);
@@ -118,29 +112,29 @@ namespace UnityFx.App
 		internal Task<IAppState> PushState(AppState ownerState, PushOptions options, Type controllerType, object controllerArgs)
 		{
 			Debug.Assert(controllerType != null);
-			ThrowIfDisposed();
+			Debug.Assert(!_disposed);
 			ThrowIfInvalidControllerType(controllerType);
 
 			var op = new AppStatePushOperation(options, ownerState, null, _cancellationSource.Token, controllerType, controllerArgs);
 			AddStackOperation(op);
-			TryRunOperationProcessor();
+			TryRunOperationProcessor(true);
 			return op.Task;
 		}
 
 		internal Task PopState(AppState state)
 		{
 			Debug.Assert(state != null);
-			ThrowIfDisposed();
+			Debug.Assert(!_disposed);
 
 			var op = new AppStatePopOperation(state, null, _cancellationSource.Token);
 			AddStackOperation(op);
-			TryRunOperationProcessor();
+			TryRunOperationProcessor(true);
 			return op.Task;
 		}
 
 		internal async Task PopAll()
 		{
-			ThrowIfDisposed();
+			Debug.Assert(!_disposed);
 
 			// Signal all pending operations should complete asap.
 			_enabled = false;
@@ -166,7 +160,7 @@ namespace UnityFx.App
 
 		internal void ActivateTopState()
 		{
-			ThrowIfDisposed();
+			Debug.Assert(!_disposed);
 
 			if (_states.TryPeek(out var state))
 			{
@@ -176,7 +170,7 @@ namespace UnityFx.App
 
 		internal void DeactivateTopState()
 		{
-			ThrowIfDisposed();
+			Debug.Assert(!_disposed);
 
 			if (_states.TryPeek(out var state))
 			{
@@ -184,8 +178,16 @@ namespace UnityFx.App
 			}
 		}
 
+		internal void SetEnabled()
+		{
+			_enabled = true;
+			TryRunOperationProcessor(false);
+		}
+
 		internal void InvokeStatePushed(AppStateEventArgs args)
 		{
+			Debug.Assert(!_disposed);
+
 			try
 			{
 				StatePushed?.Invoke(this, args);
@@ -200,6 +202,8 @@ namespace UnityFx.App
 
 		internal void InvokeStatePopped(AppStateEventArgs args)
 		{
+			Debug.Assert(!_disposed);
+
 			try
 			{
 				StatePopped?.Invoke(this, args);
@@ -214,6 +218,8 @@ namespace UnityFx.App
 
 		internal void InvokeStateActivated(AppStateEventArgs args)
 		{
+			Debug.Assert(!_disposed);
+
 			try
 			{
 				StateActivated?.Invoke(this, args);
@@ -228,6 +234,8 @@ namespace UnityFx.App
 
 		internal void InvokeStateDeactivated(AppStateEventArgs args)
 		{
+			Debug.Assert(!_disposed);
+
 			try
 			{
 				StateDeactivated?.Invoke(this, args);
@@ -344,21 +352,6 @@ namespace UnityFx.App
 			_stackOperations.Enqueue(op);
 		}
 
-		private void TryRunOperationProcessor()
-		{
-			if (_enabled && !_cancellationSource.IsCancellationRequested)
-			{
-				if (_synchronizationContext != null)
-				{
-					_synchronizationContext.Post(RunOpProcessor, null);
-				}
-				else
-				{
-					RunOpProcessor(null);
-				}
-			}
-		}
-
 		private void RunOpProcessor(object state)
 		{
 			if (_enabled && _stackOperationsProcessor == null && !_stackOperations.IsEmpty && !_cancellationSource.IsCancellationRequested)
@@ -370,6 +363,25 @@ namespace UnityFx.App
 					_stackOperationsProcessor = task;
 				}
 			}
+		}
+
+		private bool TryRunOperationProcessor(bool runOnSyncContext)
+		{
+			if (_enabled && !_cancellationSource.IsCancellationRequested)
+			{
+				if (runOnSyncContext || _synchronizationContext == null)
+				{
+					RunOpProcessor(null);
+				}
+				else
+				{
+					_synchronizationContext.Post(RunOpProcessor, null);
+				}
+
+				return true;
+			}
+
+			return false;
 		}
 
 		private async Task ProcessStackOperations()

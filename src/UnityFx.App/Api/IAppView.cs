@@ -34,20 +34,32 @@ namespace UnityFx.App
 		bool IsExclusive { get; }
 
 		/// <summary>
-		/// Enabled or disables the view (enabled views are visible, disabled are not visible and not interactable).
+		/// Returns <c>true</c> if the view is enabled (enabled views are visible, disabled are not visible and not interactable); <c>false</c> otherwise. Read only.
 		/// </summary>
 		/// <remarks>
 		/// If value of the property is <c>true</c> the view may or may not be visible. For example, if any view above this one
 		/// has <see cref="IsExclusive"/> flag set the view will not be rendered.
 		/// </remarks>
-		/// <seealso cref="Interactable"/>
+		/// <seealso cref="SetEnabled(bool)"/>
+		/// <seealso cref="IsInteractable"/>
 		/// <seealso cref="IsExclusive"/>
-		bool Enabled { get; set; }
+		bool IsEnabled { get; }
 
 		/// <summary>
-		/// Enabled or disapbes input processing for the view.
+		/// Returns <c>true</c> if input processing is enabled for the view; <c>false</c> otherwise. Read only.
 		/// </summary>
-		/// <seealso cref="Enabled"/>
-		bool Interactable { get; set; }
+		/// <seealso cref="SetInteractable(bool)"/>
+		/// <seealso cref="IsEnabled"/>
+		bool IsInteractable { get; }
+
+		/// <summary>
+		/// Enables or disables the view.
+		/// </summary>
+		void SetEnabled(bool enabled);
+
+		/// <summary>
+		/// Enables or disables input processing for the view.
+		/// </summary>
+		void SetInteractable(bool inputEnabled);
 	}
 }

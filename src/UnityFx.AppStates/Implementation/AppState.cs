@@ -55,6 +55,8 @@ namespace UnityFx.App
 
 		#region interface
 
+		internal bool Enabled => _state == AppStateState.Pushed;
+
 		internal AppState(AppStateManager parentStateManager, IAppState owner, Type controllerType, object args)
 		{
 			Debug.Assert(parentStateManager != null);
@@ -102,15 +104,11 @@ namespace UnityFx.App
 		{
 			Debug.Assert(_state == AppStateState.Pushed);
 
-			if (!_isActive)
+			if (!_isActive && (_parentState == null || _parentState.IsActive))
 			{
 				_console.TraceEvent(TraceEventType.Verbose, 0, "ActivateState " + _fullName);
 
-				if (_view != null)
-				{
-					_view.Interactable = true;
-				}
-
+				_view?.SetInteractable(true);
 				_isActive = true;
 				_controllerEvents?.OnActivate(!_isActivated);
 				_isActivated = true;
@@ -135,11 +133,7 @@ namespace UnityFx.App
 				}
 				finally
 				{
-					if (_view != null)
-					{
-						_view.Interactable = false;
-					}
-
+					_view?.SetInteractable(false);
 					_isActive = false;
 				}
 			}
@@ -149,17 +143,13 @@ namespace UnityFx.App
 		{
 			Debug.Assert(_state == AppStateState.Created);
 
-			// Push the state onto the stack.
-			_state = AppStateState.Pushed;
 			_console.TraceData(TraceEventType.Verbose, 0, "- PushState " + _fullName);
 			_stack.Add(this);
 			_controllerEvents?.OnPush();
 			_parentStateManager.InvokeStatePushed(_eventArgs);
-
-			// Enable substates processing.
+			_state = AppStateState.Pushed;
 			_substateManager?.SetEnabled();
 
-			// Load state content.
 			if (_controller is IAppStateContent sc)
 			{
 				await sc.LoadContent(cancellationToken);
@@ -326,7 +316,7 @@ namespace UnityFx.App
 
 				if (_substateManager == null)
 				{
-					_substateManager = _parentStateManager.CreateSubstateManager(this, _parentStateManager, _state == AppStateState.Pushed);
+					_substateManager = _parentStateManager.CreateSubstateManager(this, _parentStateManager);
 				}
 
 				return _substateManager;
