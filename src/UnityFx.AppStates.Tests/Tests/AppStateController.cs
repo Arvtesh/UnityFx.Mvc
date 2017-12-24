@@ -13,25 +13,23 @@ namespace UnityFx.App.Tests
 	/// <summary>
 	/// 
 	/// </summary>
-	public class AppStateManager_Controller : IDisposable
+	public class AppStateController : IDisposable
 	{
 		#region data
 
 		private readonly IAppViewFactory _viewFactory;
 		private readonly IServiceProvider _serviceProvider;
 		private readonly IAppStateService _stateManager;
-		private readonly int _stateManagerThreadId;
 
 		#endregion
 
 		#region interface
 
-		public AppStateManager_Controller()
+		public AppStateController()
 		{
 			_viewFactory = Substitute.For<IAppViewFactory>();
 			_serviceProvider = Substitute.For<IServiceProvider>();
 			_stateManager = AppStates.CreateStateManager(_viewFactory, _serviceProvider);
-			_stateManagerThreadId = Thread.CurrentThread.ManagedThreadId;
 		}
 
 		public void Dispose()
@@ -44,14 +42,9 @@ namespace UnityFx.App.Tests
 		#region tests
 
 		[Fact]
-		public async Task PushStateSucceeds()
+		public void InvalidControllerTypeShouldThrow()
 		{
-			var state = await _stateManager.PushStateAsync<TestController_Minimal>(PushOptions.None, null);
-
-			Assert.NotNull(state);
-			Assert.NotNull(state.Controller);
-			Assert.IsType<TestController_Minimal>(state.Controller);
-			Assert.Contains(state, _stateManager.States);
+			Assert.ThrowsAsync<ArgumentException>(() => _stateManager.PushStateAsync(typeof(TestController_Invalid), PushOptions.None, null));
 		}
 
 		[Fact]

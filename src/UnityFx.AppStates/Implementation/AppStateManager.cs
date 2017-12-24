@@ -113,7 +113,6 @@ namespace UnityFx.App
 		{
 			Debug.Assert(controllerType != null);
 			Debug.Assert(!_disposed);
-			ThrowIfInvalidControllerType(controllerType);
 
 			var op = new AppStatePushOperation(options, ownerState, null, _cancellationSource.Token, controllerType, controllerArgs);
 			AddStackOperation(op);
@@ -315,12 +314,16 @@ namespace UnityFx.App
 		public Task<IAppState> PushStateAsync<T>(PushOptions options, object args) where T : class, IAppStateController
 		{
 			ThrowIfDisposed();
+			ThrowIfInvalidControllerType(typeof(T));
+
 			return PushState(_parentState, options, typeof(T), args);
 		}
 
 		public Task<IAppState> PushStateAsync(Type controllerType, PushOptions options, object args)
 		{
 			ThrowIfDisposed();
+			ThrowIfInvalidControllerType(controllerType);
+
 			return PushState(_parentState, options, controllerType, args);
 		}
 
@@ -352,6 +355,25 @@ namespace UnityFx.App
 			_stackOperations.Enqueue(op);
 		}
 
+		private bool TryRunOperationProcessor(bool runOnSyncContext)
+		{
+			if (_enabled && !_cancellationSource.IsCancellationRequested)
+			{
+				if (runOnSyncContext && _synchronizationContext != null)
+				{
+					_synchronizationContext.Post(RunOpProcessor, null);
+				}
+				else
+				{
+					RunOpProcessor(null);
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+
 		private void RunOpProcessor(object state)
 		{
 			if (_enabled && _stackOperationsProcessor == null && !_stackOperations.IsEmpty && !_cancellationSource.IsCancellationRequested)
@@ -363,25 +385,6 @@ namespace UnityFx.App
 					_stackOperationsProcessor = task;
 				}
 			}
-		}
-
-		private bool TryRunOperationProcessor(bool runOnSyncContext)
-		{
-			if (_enabled && !_cancellationSource.IsCancellationRequested)
-			{
-				if (runOnSyncContext || _synchronizationContext == null)
-				{
-					RunOpProcessor(null);
-				}
-				else
-				{
-					_synchronizationContext.Post(RunOpProcessor, null);
-				}
-
-				return true;
-			}
-
-			return false;
 		}
 
 		private async Task ProcessStackOperations()

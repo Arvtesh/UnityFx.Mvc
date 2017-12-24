@@ -66,6 +66,17 @@ namespace UnityFx.App.Tests
 		}
 
 		[Fact]
+		public async Task PushStateSucceeds()
+		{
+			var state = await _stateManager.PushStateAsync<TestController_Minimal>(PushOptions.None, null);
+
+			Assert.NotNull(state);
+			Assert.NotNull(state.Controller);
+			Assert.IsType<TestController_Minimal>(state.Controller);
+			Assert.Contains(state, _stateManager.States);
+		}
+
+		[Fact]
 		public void DisposeCanBeCalledMultipleTimes()
 		{
 			_stateManager.Dispose();
