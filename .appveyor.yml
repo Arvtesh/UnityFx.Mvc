@@ -18,7 +18,7 @@ artifacts:
   - path: .\bin\net46
     name: UnityFx.AppStates-net46
 
-	- path: .\bin\netstandard2.0
+  - path: .\bin\netstandard2.0
     name: UnityFx.AppStates-netstandard2.0
 
 dotnet_csproj:
