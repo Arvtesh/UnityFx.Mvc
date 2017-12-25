@@ -361,11 +361,11 @@ namespace UnityFx.App
 			{
 				if (runOnSyncContext && _synchronizationContext != null)
 				{
-					_synchronizationContext.Post(RunOpProcessor, null);
+					_synchronizationContext.Post(RunOperationProcessor, null);
 				}
 				else
 				{
-					RunOpProcessor(null);
+					RunOperationProcessor(null);
 				}
 
 				return true;
@@ -374,7 +374,7 @@ namespace UnityFx.App
 			return false;
 		}
 
-		private void RunOpProcessor(object state)
+		private void RunOperationProcessor(object state)
 		{
 			if (_enabled && _stackOperationsProcessor == null && !_stackOperations.IsEmpty && !_cancellationSource.IsCancellationRequested)
 			{

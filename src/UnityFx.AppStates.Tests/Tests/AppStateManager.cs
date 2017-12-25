@@ -72,6 +72,8 @@ namespace UnityFx.App.Tests
 
 			Assert.NotNull(state);
 			Assert.NotNull(state.Controller);
+			Assert.True(state.IsActive);
+			Assert.Empty(state.ChildStates);
 			Assert.IsType<TestController_Minimal>(state.Controller);
 			Assert.Contains(state, _stateManager.States);
 		}
