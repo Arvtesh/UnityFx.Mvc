@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using NSubstitute;
@@ -22,9 +23,18 @@ namespace UnityFx.App.Tests
 		Dispose
 	}
 
-	/// <summary>
-	/// Test realted to <see cref="IAppStateController"/>.
-	/// </summary>
+	public struct MethodCallInfo
+	{
+		public object Caller;
+		public ControllerMethodId Method;
+
+		public MethodCallInfo(object caller, ControllerMethodId method)
+		{
+			Caller = caller;
+			Method = method;
+		}
+	}
+
 	public class AppStateController : IDisposable
 	{
 		#region data
@@ -76,19 +86,44 @@ namespace UnityFx.App.Tests
 		}
 
 		[Fact]
-		public async Task AllEventsAreTriggered()
+		public async Task EventsAreTriggeredInCorrectOrder()
 		{
-			var state = await _stateManager.PushStateAsync<TestController_Events>(PushOptions.None, null);
-			var controller = state.Controller as TestController_Events;
+			var eventList = new List<MethodCallInfo>();
+			var state = await _stateManager.PushStateAsync<TestController_Events>(PushOptions.None, eventList);
 			await state.CloseAsync();
 
 			Assert.Empty(_stateManager.States);
-			Assert.Equal(1, controller.OnPushIndex);
-			Assert.Equal(2, controller.LoadContentIndex);
-			Assert.Equal(3, controller.OnActivateIndex);
-			Assert.Equal(4, controller.OnDeactivateIndex);
-			Assert.Equal(5, controller.OnPopIndex);
-			Assert.Equal(6, controller.DisposeIndex);
+			Assert.Equal(ControllerMethodId.Ctor, eventList[0].Method);
+			Assert.Equal(ControllerMethodId.OnPush, eventList[1].Method);
+			Assert.Equal(ControllerMethodId.LoadContent, eventList[2].Method);
+			Assert.Equal(ControllerMethodId.OnActivate, eventList[3].Method);
+			Assert.Equal(ControllerMethodId.OnDectivate, eventList[4].Method);
+			Assert.Equal(ControllerMethodId.OnPop, eventList[5].Method);
+			Assert.Equal(ControllerMethodId.Dispose, eventList[6].Method);
+		}
+
+		[Theory]
+		[InlineData(ControllerMethodId.OnPush, ControllerMethodId.Ctor)]
+		[InlineData(ControllerMethodId.OnActivate, ControllerMethodId.OnActivate)]
+		public async Task SubstateEventShouldComeAfter(ControllerMethodId stateEvent, ControllerMethodId substateEvent)
+		{
+			var eventList = new List<MethodCallInfo>();
+			var state = await _stateManager.PushStateAsync<TestController_EventsSubstsatesCtor>(PushOptions.None, eventList);
+
+			AssertBefore(stateEvent, state.Controller, substateEvent, eventList);
+		}
+
+		[Theory]
+		[InlineData(ControllerMethodId.OnDectivate, ControllerMethodId.OnDectivate)]
+		[InlineData(ControllerMethodId.OnPop, ControllerMethodId.Dispose)]
+		public async Task SubstateEventShouldComeBefore(ControllerMethodId stateEvent, ControllerMethodId substateEvent)
+		{
+			var eventList = new List<MethodCallInfo>();
+			var state = await _stateManager.PushStateAsync<TestController_EventsSubstsatesCtor>(PushOptions.None, eventList);
+			var stateController = state.Controller;
+			await state.CloseAsync();
+
+			AssertAfter(stateEvent, stateController, substateEvent, eventList);
 		}
 
 		[Theory]
@@ -111,6 +146,46 @@ namespace UnityFx.App.Tests
 			var state = await _stateManager.PushStateAsync<TestController_EventErrors>(PushOptions.None, method);
 			await Assert.ThrowsAsync<Exception>(() => state.CloseAsync());
 			Assert.Empty(_stateManager.States);
+		}
+
+		#endregion
+
+		#region implementation
+
+		private static void AssertBefore(ControllerMethodId method, ControllerMethodId method2, List<MethodCallInfo> calls)
+		{
+			var index = calls.FindIndex(ci => ci.Method == method);
+			var index2 = calls.FindIndex(ci => ci.Method == method2);
+			Assert.NotEqual(-1, index);
+			Assert.NotEqual(-1, index2);
+			Assert.True(index < index2);
+		}
+
+		private static void AssertBefore(ControllerMethodId method, object caller, ControllerMethodId method2, List<MethodCallInfo> calls)
+		{
+			var index = calls.FindIndex(ci => ci.Caller == caller && ci.Method == method);
+			var index2 = calls.FindIndex(ci => ci.Caller != caller && ci.Method == method2);
+			Assert.NotEqual(-1, index);
+			Assert.NotEqual(-1, index2);
+			Assert.True(index < index2);
+		}
+
+		private static void AssertAfter(ControllerMethodId method, ControllerMethodId method2, List<MethodCallInfo> calls)
+		{
+			var index = calls.FindIndex(ci => ci.Method == method);
+			var index2 = calls.FindIndex(ci => ci.Method == method2);
+			Assert.NotEqual(-1, index);
+			Assert.NotEqual(-1, index2);
+			Assert.True(index > index2);
+		}
+
+		private static void AssertAfter(ControllerMethodId method, object caller, ControllerMethodId method2, List<MethodCallInfo> calls)
+		{
+			var index = calls.FindIndex(ci => ci.Caller == caller && ci.Method == method);
+			var index2 = calls.FindIndex(ci => ci.Caller != caller && ci.Method == method2);
+			Assert.NotEqual(-1, index);
+			Assert.NotEqual(-1, index2);
+			Assert.True(index > index2);
 		}
 
 		#endregion

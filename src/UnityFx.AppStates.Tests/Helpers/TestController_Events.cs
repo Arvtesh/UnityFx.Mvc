@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,56 +10,43 @@ namespace UnityFx.App.Tests
 {
 	internal class TestController_Events : IAppStateController, IAppStateEvents, IAppStateContent, IDisposable
 	{
-		private int _counter = 0;
+		private readonly ICollection<MethodCallInfo> _calls;
 
-		public int OnActivateIndex { get; private set; }
-		public int OnActivateThreadId { get; private set; }
-		public int OnDeactivateIndex { get; private set; }
-		public int OnDeactivateThreadId { get; private set; }
-		public int OnPushIndex { get; private set; }
-		public int OnPushThreadId { get; private set; }
-		public int OnPopIndex { get; private set; }
-		public int OnPopThreadId { get; private set; }
-		public int LoadContentIndex { get; private set; }
-		public int LoadContentThreadId { get; private set; }
-		public int DisposeIndex { get; private set; }
-		public int DisposeThreadId { get; private set; }
-
-		public Task LoadContent(CancellationToken cancellationToken)
+		public TestController_Events(IAppStateContext context)
 		{
-			LoadContentIndex = ++_counter;
-			LoadContentThreadId = Thread.CurrentThread.ManagedThreadId;
-			return Task.Delay(100);
+			_calls = context.Args as ICollection<MethodCallInfo>;
+			_calls.Add(new MethodCallInfo(this, ControllerMethodId.Ctor));
 		}
 
-		public void OnActivate(bool firstTime)
+		public virtual void OnPush()
 		{
-			OnActivateIndex = ++_counter;
-			OnActivateThreadId = Thread.CurrentThread.ManagedThreadId;
+			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnPush));
 		}
 
-		public void OnDeactivate()
+		public virtual void OnPop()
 		{
-			OnDeactivateIndex = ++_counter;
-			OnDeactivateThreadId = Thread.CurrentThread.ManagedThreadId;
+			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnPop));
 		}
 
-		public void OnPop()
+		public virtual void OnActivate(bool firstTime)
 		{
-			OnPopIndex = ++_counter;
-			OnPopThreadId = Thread.CurrentThread.ManagedThreadId;
+			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnActivate));
 		}
 
-		public void OnPush()
+		public virtual void OnDeactivate()
 		{
-			OnPushIndex = ++_counter;
-			OnPushThreadId = Thread.CurrentThread.ManagedThreadId;
+			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnDectivate));
 		}
 
-		public void Dispose()
+		public virtual Task LoadContent(CancellationToken cancellationToken)
 		{
-			DisposeIndex = ++_counter;
-			DisposeThreadId = Thread.CurrentThread.ManagedThreadId;
+			_calls.Add(new MethodCallInfo(this, ControllerMethodId.LoadContent));
+			return Task.Delay(10);
+		}
+
+		public virtual void Dispose()
+		{
+			_calls.Add(new MethodCallInfo(this, ControllerMethodId.Dispose));
 		}
 	}
 }
