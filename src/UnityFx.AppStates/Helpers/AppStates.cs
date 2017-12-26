@@ -7,12 +7,12 @@ using System.Threading;
 namespace UnityFx.App
 {
 	/// <summary>
-	/// 
+	/// Assembly entry point.
 	/// </summary>
 	public static class AppStates
 	{
 		/// <summary>
-		/// 
+		/// Creates a <see cref="IAppStateService"/> instance.
 		/// </summary>
 		public static IAppStateService CreateStateManager(SynchronizationContext syncContext, IAppStateControllerFactory controllerFactory, IAppViewFactory viewFactory, IServiceProvider serviceProvider)
 		{
@@ -35,7 +35,7 @@ namespace UnityFx.App
 		}
 
 		/// <summary>
-		/// 
+		/// Creates a <see cref="IAppStateService"/> instance.
 		/// </summary>
 		public static IAppStateService CreateStateManager(SynchronizationContext syncContext, IAppViewFactory viewFactory, IServiceProvider serviceProvider)
 		{
@@ -55,7 +55,7 @@ namespace UnityFx.App
 		}
 
 		/// <summary>
-		/// 
+		/// Creates a <see cref="IAppStateService"/> instance.
 		/// </summary>
 		public static IAppStateService CreateStateManager(IAppViewFactory viewFactory, IServiceProvider serviceProvider)
 		{

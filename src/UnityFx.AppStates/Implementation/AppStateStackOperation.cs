@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace UnityFx.App
 {
 	/// <summary>
-	/// 
+	/// A generic app state stack operation.
 	/// </summary>
 	internal class AppStateStackOperation : TaskCompletionSource<IAppState>
 	{
