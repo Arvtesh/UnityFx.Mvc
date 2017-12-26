@@ -121,7 +121,7 @@ namespace UnityFx.App
 
 			var op = new AppStatePushOperation(options, ownerState, null, _cancellationSource.Token, controllerType, controllerArgs);
 			AddStackOperation(op);
-			TryRunOperationProcessor(true);
+			TryRunOperationProcessorOnSyncContext();
 			return op.Task;
 		}
 
@@ -132,7 +132,7 @@ namespace UnityFx.App
 
 			var op = new AppStatePopOperation(state, null, _cancellationSource.Token);
 			AddStackOperation(op);
-			TryRunOperationProcessor(true);
+			TryRunOperationProcessorOnSyncContext();
 			return op.Task;
 		}
 
@@ -150,11 +150,24 @@ namespace UnityFx.App
 			// Pop all states from the stack.
 			if (_states.TryPeek(out var topState))
 			{
-				topState.Deactivate();
-
-				foreach (var state in _states.ToArray())
+				try
 				{
-					await state.Pop(_cancellationSource.Token);
+					topState.Deactivate();
+
+					foreach (var state in _states.ToArray())
+					{
+						await state.Pop(_cancellationSource.Token);
+					}
+				}
+				catch
+				{
+					// If something went wrong at least make sure to call Dispose() on all states.
+					foreach (var state in _states.Release())
+					{
+						state.Dispose();
+					}
+
+					throw;
 				}
 			}
 		}
@@ -182,7 +195,7 @@ namespace UnityFx.App
 		internal void SetEnabled()
 		{
 			_enabled = true;
-			TryRunOperationProcessor(false);
+			TryRunOperationProcessor();
 		}
 
 		internal void InvokeStatePushed(AppStateEventArgs args)
@@ -356,17 +369,17 @@ namespace UnityFx.App
 			_stackOperations.Enqueue(op);
 		}
 
-		private bool TryRunOperationProcessor(bool runOnSyncContext)
+		private bool TryRunOperationProcessorOnSyncContext()
 		{
 			if (_enabled && !_cancellationSource.IsCancellationRequested)
 			{
-				if (runOnSyncContext && _synchronizationContext != null)
+				if (_synchronizationContext != null)
 				{
-					_synchronizationContext.Post(RunOperationProcessor, null);
+					_synchronizationContext.Post(TryRunOperationProcessor, this);
 				}
 				else
 				{
-					RunOperationProcessor(null);
+					TryRunOperationProcessor();
 				}
 
 				return true;
@@ -375,7 +388,7 @@ namespace UnityFx.App
 			return false;
 		}
 
-		private void RunOperationProcessor(object state)
+		private void TryRunOperationProcessor()
 		{
 			if (_enabled && _stackOperationsProcessor == null && !_stackOperations.IsEmpty && !_cancellationSource.IsCancellationRequested)
 			{
@@ -636,6 +649,19 @@ namespace UnityFx.App
 			return _serviceName;
 		}
 
+		private void ThrowIfDisposed()
+		{
+			if (_disposed)
+			{
+				throw new ObjectDisposedException(GetFullName());
+			}
+		}
+
+		private static void TryRunOperationProcessor(object state)
+		{
+			(state as AppStateManager)?.TryRunOperationProcessor();
+		}
+
 		private static void ThrowIfInvalidControllerType(Type controllerType)
 		{
 			if (controllerType == null)
@@ -656,14 +682,6 @@ namespace UnityFx.App
 			if (!typeof(IAppStateController).IsAssignableFrom(controllerType))
 			{
 				throw new ArgumentException($"{controllerType.Name} should implement {typeof(IAppStateController).Name} interface", nameof(controllerType));
-			}
-		}
-
-		private void ThrowIfDisposed()
-		{
-			if (_disposed)
-			{
-				throw new ObjectDisposedException(GetFullName());
 			}
 		}
 

@@ -73,6 +73,19 @@ namespace UnityFx.App
 			return result;
 		}
 
+
+		public AppState[] Release()
+		{
+			var result = ToArray();
+			_states?.Clear();
+			return result;
+		}
+
+		public void Clear()
+		{
+			_states?.Clear();
+		}
+
 		#endregion
 
 		#region IAppStateStack
