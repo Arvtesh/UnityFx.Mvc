@@ -80,6 +80,11 @@ namespace UnityFx.App
 			_enabled = parentState.Enabled;
 		}
 
+		internal Task WaitUntilAllOperationsAreProcessed()
+		{
+			return _stackOperationsProcessor ?? Task.CompletedTask;
+		}
+
 		internal AppStateManager CreateSubstateManager(AppState state, AppStateManager parentStateManager)
 		{
 			Debug.Assert(state != null);
@@ -141,10 +146,7 @@ namespace UnityFx.App
 			_cancellationSource.Cancel();
 
 			// Wait for the current operation to finish.
-			if (_stackOperationsProcessor != null)
-			{
-				await _stackOperationsProcessor;
-			}
+			await WaitUntilAllOperationsAreProcessed();
 
 			// Pop all states from the stack.
 			if (_states.TryPeek(out var topState))

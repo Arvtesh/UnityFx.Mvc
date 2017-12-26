@@ -41,7 +41,7 @@ namespace UnityFx.App.Tests
 		public virtual Task LoadContent(CancellationToken cancellationToken)
 		{
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.LoadContent));
-			return Task.Delay(10);
+			return Task.Delay(1);
 		}
 
 		public virtual void Dispose()
