@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace UnityFx.App
 {
 	/// <summary>
-	/// 
+	/// A stack push operation.
 	/// </summary>
 	internal class AppStatePushOperation : AppStateStackOperation
 	{

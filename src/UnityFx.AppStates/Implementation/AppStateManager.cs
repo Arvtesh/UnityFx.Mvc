@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,7 +47,8 @@ namespace UnityFx.App
 
 		internal AppStateStack StatesEx => _states;
 
-		internal AppStateManager(SynchronizationContext syncContext,
+		internal AppStateManager(
+			SynchronizationContext syncContext,
 			IAppStateControllerFactory controllerFactory,
 			IAppViewFactory viewManager,
 			IServiceProvider services)
@@ -337,7 +338,6 @@ namespace UnityFx.App
 			{
 				_disposed = true;
 				_cancellationSource.Dispose();
-				// TODO
 			}
 		}
 
@@ -469,6 +469,7 @@ namespace UnityFx.App
 
 					await PopStateInternal(op.OwnerState, op.CancellationToken);
 				}
+
 				// Remove all states from the stack and push the new one.
 				else if (op.Options.HasFlag(PushOptions.Reset))
 				{
@@ -487,6 +488,7 @@ namespace UnityFx.App
 						await op.Transition.PlayPushTransition(result, op.CancellationToken);
 					}
 				}
+
 				// Just push the new state onto the stack.
 				else
 				{

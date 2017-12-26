@@ -29,16 +29,18 @@ namespace UnityFx.App
 		Bounds Bounds { get; }
 
 		/// <summary>
-		/// Returns <c>true</c> if the view should cover all screen (views under it are not visible); <c>false</c> otherwise. Read only.
+		/// Returns <see langword="true"/> if the view should cover all screen (views under it are not visible);
+		/// <see langword="false"/> otherwise. Read only.
 		/// </summary>
 		bool IsExclusive { get; }
 
 		/// <summary>
-		/// Returns <c>true</c> if the view is enabled (enabled views are visible, disabled are not visible and not interactable); <c>false</c> otherwise. Read only.
+		/// Returns <see langword="true"/> if the view is enabled (enabled views are visible, disabled ones
+		/// are neither visible nor interactable); <see langword="false"/> otherwise. Read only.
 		/// </summary>
 		/// <remarks>
-		/// If value of the property is <c>true</c> the view may or may not be visible. For example, if any view above this one
-		/// has <see cref="IsExclusive"/> flag set the view will not be rendered.
+		/// If value of the property is <see langword="true"/> the view may or may not be visible. For example,
+		/// if any view above this one has <see cref="IsExclusive"/> flag set the view will not be rendered.
 		/// </remarks>
 		/// <seealso cref="SetEnabled(bool)"/>
 		/// <seealso cref="IsInteractable"/>
@@ -46,7 +48,8 @@ namespace UnityFx.App
 		bool IsEnabled { get; }
 
 		/// <summary>
-		/// Returns <c>true</c> if input processing is enabled for the view; <c>false</c> otherwise. Read only.
+		/// Returns <see langword="true"/> if input processing is enabled for the view; <see langword="false"/>
+		/// otherwise. Read only.
 		/// </summary>
 		/// <seealso cref="SetInteractable(bool)"/>
 		/// <seealso cref="IsEnabled"/>

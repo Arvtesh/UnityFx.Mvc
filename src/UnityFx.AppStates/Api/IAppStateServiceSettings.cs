@@ -13,12 +13,12 @@ namespace UnityFx.App
 	public interface IAppStateServiceSettings
 	{
 		/// <summary>
-		/// 
+		/// Gets or sets trace switch used by the <see cref="TraceSource"/> instance.
 		/// </summary>
 		SourceSwitch TraceSwitch { get; set; }
 
 		/// <summary>
-		/// 
+		/// Returns a collection of <see cref="TraceListener"/> instances attached to the <see cref="TraceSource"/> used for logging. Read only.
 		/// </summary>
 		TraceListenerCollection TraceListeners { get; }
 	}

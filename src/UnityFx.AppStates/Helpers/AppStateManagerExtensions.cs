@@ -12,7 +12,7 @@ namespace UnityFx.App
 	public static class AppStateManagerExtensions
 	{
 		/// <summary>
-		/// 
+		/// Pushes a new state on top of the current.
 		/// </summary>
 		public static Task<IAppState> PushStateAsync<TStateController>(this IAppStateManager stateManager, object args) where TStateController : class, IAppStateController
 		{
@@ -20,7 +20,7 @@ namespace UnityFx.App
 		}
 
 		/// <summary>
-		/// 
+		/// Pushes a new state on top of the current.
 		/// </summary>
 		public static Task<IAppState> PushStateAsync<TStateController>(this IAppStateManager stateManager) where TStateController : class, IAppStateController
 		{
@@ -28,7 +28,7 @@ namespace UnityFx.App
 		}
 
 		/// <summary>
-		/// 
+		/// Pushes a new state instead of the current.
 		/// </summary>
 		public static Task<IAppState> SetStateAsync<TStateController>(this IAppStateManager stateManager, object args) where TStateController : class, IAppStateController
 		{
@@ -36,7 +36,7 @@ namespace UnityFx.App
 		}
 
 		/// <summary>
-		/// 
+		/// Pushes a new state instead of the current.
 		/// </summary>
 		public static Task<IAppState> SetStateAsync<TStateController>(this IAppStateManager stateManager) where TStateController : class, IAppStateController
 		{
