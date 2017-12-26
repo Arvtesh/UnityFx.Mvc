@@ -89,12 +89,6 @@ namespace UnityFx.App
 				_name = GetStateNameSimple(controllerType);
 			}
 
-			// Force AppStateFlags.Popup flag for child states.
-			if (_parentState != null)
-			{
-				_flags |= AppStateFlags.Popup;
-			}
-
 			_fullName = _parentState?.FullName + '.' + _name ?? _name;
 			_controller = parentStateManager.CreateStateController(this, controllerType);
 			_controllerEvents = _controller as IAppStateEvents;

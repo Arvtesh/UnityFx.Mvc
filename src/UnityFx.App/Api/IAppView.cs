@@ -32,6 +32,7 @@ namespace UnityFx.App
 		/// Returns <see langword="true"/> if the view should cover all screen (views under it are not visible);
 		/// <see langword="false"/> otherwise. Read only.
 		/// </summary>
+		/// <seealso cref="SetExclusive(bool)"/>
 		bool IsExclusive { get; }
 
 		/// <summary>
@@ -58,11 +59,19 @@ namespace UnityFx.App
 		/// <summary>
 		/// Enables or disables the view.
 		/// </summary>
+		/// <seealso cref="IsEnabled"/>
 		void SetEnabled(bool enabled);
 
 		/// <summary>
 		/// Enables or disables input processing for the view.
 		/// </summary>
+		/// <seealso cref="IsInteractable"/>
 		void SetInteractable(bool inputEnabled);
+
+		/// <summary>
+		/// Sets exclusive mode for the view.
+		/// </summary>
+		/// <seealso cref="IsExclusive"/>
+		void SetExclusive(bool exclusive);
 	}
 }

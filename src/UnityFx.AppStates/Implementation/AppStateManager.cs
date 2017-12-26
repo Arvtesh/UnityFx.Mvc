@@ -108,11 +108,10 @@ namespace UnityFx.App
 			Debug.Assert(state != null);
 			Debug.Assert(!_disposed);
 
-			var exclusive = !state.Flags.HasFlag(AppStateFlags.Popup);
 			var insertAfterView = default(IAppView);
 
 			// TODO
-			return _viewManager.CreateView(state.Name, exclusive, insertAfterView, state);
+			return _viewManager.CreateView(state.Name, insertAfterView, state);
 		}
 
 		internal Task<IAppState> PushState(AppState ownerState, PushOptions options, Type controllerType, object controllerArgs)
