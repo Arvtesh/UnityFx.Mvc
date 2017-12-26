@@ -145,14 +145,20 @@ namespace UnityFx.App
 
 			_console.TraceData(TraceEventType.Verbose, 0, "- PushState " + _fullName);
 			_stack.Add(this);
-			_controllerEvents?.OnPush();
-			_parentStateManager.InvokeStatePushed(_eventArgs);
-			_state = AppStateState.Pushed;
-			_substateManager?.SetEnabled();
 
-			if (_controller is IAppStateContent sc)
+			if (_controllerEvents != null)
 			{
-				await sc.LoadContent(cancellationToken);
+				_controllerEvents.OnPush();
+				_parentStateManager.InvokeStatePushed(_eventArgs);
+				_state = AppStateState.Pushed;
+				_substateManager?.SetEnabled();
+				await _controllerEvents.OnLoadContent(cancellationToken);
+			}
+			else
+			{
+				_parentStateManager.InvokeStatePushed(_eventArgs);
+				_state = AppStateState.Pushed;
+				_substateManager?.SetEnabled();
 			}
 		}
 

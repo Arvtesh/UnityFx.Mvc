@@ -16,7 +16,7 @@ namespace UnityFx.App.Tests
 		None,
 		Ctor,
 		OnPush,
-		LoadContent,
+		OnLoadContent,
 		OnActivate,
 		OnDectivate,
 		OnPop,
@@ -95,7 +95,7 @@ namespace UnityFx.App.Tests
 			Assert.Empty(_stateManager.States);
 			Assert.Equal(ControllerMethodId.Ctor, eventList[0].Method);
 			Assert.Equal(ControllerMethodId.OnPush, eventList[1].Method);
-			Assert.Equal(ControllerMethodId.LoadContent, eventList[2].Method);
+			Assert.Equal(ControllerMethodId.OnLoadContent, eventList[2].Method);
 			Assert.Equal(ControllerMethodId.OnActivate, eventList[3].Method);
 			Assert.Equal(ControllerMethodId.OnDectivate, eventList[4].Method);
 			Assert.Equal(ControllerMethodId.OnPop, eventList[5].Method);
@@ -129,7 +129,7 @@ namespace UnityFx.App.Tests
 		[Theory]
 		[InlineData(ControllerMethodId.Ctor)]
 		[InlineData(ControllerMethodId.OnPush)]
-		[InlineData(ControllerMethodId.LoadContent)]
+		[InlineData(ControllerMethodId.OnLoadContent)]
 		[InlineData(ControllerMethodId.OnActivate)]
 		public async Task PushExceptionIsForwarded(ControllerMethodId method)
 		{

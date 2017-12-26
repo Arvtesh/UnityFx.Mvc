@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace UnityFx.App.Tests
 {
-	internal class TestController_EventErrors : IAppStateController, IAppStateEvents, IAppStateContent, IDisposable
+	internal class TestController_EventErrors : IAppStateController, IAppStateEvents, IDisposable
 	{
 		private readonly ControllerMethodId _errorId;
 
@@ -29,9 +29,9 @@ namespace UnityFx.App.Tests
 			}
 		}
 
-		public Task LoadContent(CancellationToken cancellationToken)
+		public Task OnLoadContent(CancellationToken cancellationToken)
 		{
-			if (_errorId == ControllerMethodId.LoadContent)
+			if (_errorId == ControllerMethodId.OnLoadContent)
 			{
 				throw new Exception();
 			}

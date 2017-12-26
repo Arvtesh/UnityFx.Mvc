@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace UnityFx.App
 {
@@ -31,5 +33,10 @@ namespace UnityFx.App
 		/// Called when the state is about to become inactive.
 		/// </summary>
 		void OnDeactivate();
+
+		/// <summary>
+		/// Asyncronously loads state content. The state is not activated until this operation is finished.
+		/// </summary>
+		Task OnLoadContent(CancellationToken cancellationToken);
 	}
 }

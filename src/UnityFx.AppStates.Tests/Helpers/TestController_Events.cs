@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace UnityFx.App.Tests
 {
-	internal class TestController_Events : IAppStateController, IAppStateEvents, IAppStateContent, IDisposable
+	internal class TestController_Events : IAppStateController, IAppStateEvents, IDisposable
 	{
 		private readonly ICollection<MethodCallInfo> _calls;
 
@@ -38,9 +38,9 @@ namespace UnityFx.App.Tests
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnDectivate));
 		}
 
-		public virtual Task LoadContent(CancellationToken cancellationToken)
+		public virtual Task OnLoadContent(CancellationToken cancellationToken)
 		{
-			_calls.Add(new MethodCallInfo(this, ControllerMethodId.LoadContent));
+			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnLoadContent));
 			return Task.Delay(1);
 		}
 
