@@ -28,7 +28,7 @@ namespace UnityFx.App
 		IAppState Peek();
 
 		/// <summary>
-		/// Returns the state at the top of the stack without removing it. Returns <c>false</c> if the stack is empty.
+		/// Returns the state at the top of the stack without removing it. Returns <see langword="false"/> if the stack is empty.
 		/// </summary>
 		bool TryPeek(out IAppState result);
 

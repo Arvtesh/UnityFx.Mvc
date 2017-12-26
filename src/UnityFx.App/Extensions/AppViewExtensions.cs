@@ -16,7 +16,7 @@ namespace UnityFx.App
 	public static class AppViewExtensions
 	{
 		/// <summary>
-		/// Searches the view root for the specified component. Returns <c>null</c> if no components found.
+		/// Searches the view root for the specified component. Returns <see langword="null"/> if no components found.
 		/// </summary>
 		public static T GetComponent<T>(this IAppView view) where T : class
 		{
@@ -49,7 +49,7 @@ namespace UnityFx.App
 		}
 
 		/// <summary>
-		/// Searches the view for the specified component recursively. Returns <c>null</c> if no components found.
+		/// Searches the view for the specified component recursively. Returns <see langword="null"/> if no components found.
 		/// </summary>
 		public static T GetComponentRecursive<T>(this IAppView view) where T : class
 		{
