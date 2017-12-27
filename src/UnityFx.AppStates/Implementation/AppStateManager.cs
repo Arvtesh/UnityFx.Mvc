@@ -368,7 +368,6 @@ namespace UnityFx.App
 			{
 				_disposed = true;
 				_cancellationSource.Dispose();
-				_stackOperationsProcessor?.Dispose();
 
 				foreach (var state in _states)
 				{
