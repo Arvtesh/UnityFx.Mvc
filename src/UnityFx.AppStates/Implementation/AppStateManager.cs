@@ -111,7 +111,7 @@ namespace UnityFx.App
 			var insertAfterView = default(IAppView);
 
 			// TODO
-			return _viewManager.CreateView(state.Name, insertAfterView, state);
+			return _viewManager.CreateView(state.FullName, insertAfterView, state);
 		}
 
 		internal Task<IAppState> PushState(AppState ownerState, PushOptions options, Type controllerType, object controllerArgs)
@@ -119,10 +119,17 @@ namespace UnityFx.App
 			Debug.Assert(controllerType != null);
 			Debug.Assert(!_disposed);
 
-			var op = new AppStatePushOperation(options, ownerState, null, _cancellationSource.Token, controllerType, controllerArgs);
-			AddStackOperation(op);
-			TryRunOperationProcessorOnSyncContext();
-			return op.Task;
+			if (_cancellationSource.IsCancellationRequested)
+			{
+				return Task.FromCanceled<IAppState>(_cancellationSource.Token);
+			}
+			else
+			{
+				var op = new AppStatePushOperation(options, ownerState, null, _cancellationSource.Token, controllerType, controllerArgs);
+				AddStackOperation(op);
+				TryRunOperationProcessorOnSyncContext();
+				return op.Task;
+			}
 		}
 
 		internal Task PopState(AppState state)
@@ -130,18 +137,24 @@ namespace UnityFx.App
 			Debug.Assert(state != null);
 			Debug.Assert(!_disposed);
 
-			var op = new AppStatePopOperation(state, null, _cancellationSource.Token);
-			AddStackOperation(op);
-			TryRunOperationProcessorOnSyncContext();
-			return op.Task;
+			if (_cancellationSource.IsCancellationRequested)
+			{
+				return Task.FromCanceled<IAppState>(_cancellationSource.Token);
+			}
+			else
+			{
+				var op = new AppStatePopOperation(state, null, _cancellationSource.Token);
+				AddStackOperation(op);
+				TryRunOperationProcessorOnSyncContext();
+				return op.Task;
+			}
 		}
 
 		internal async Task PopAll()
 		{
 			Debug.Assert(!_disposed);
 
-			// Signal all pending operations should complete asap.
-			_enabled = false;
+			// Signal all pending operations should complete ASAP.
 			_cancellationSource.Cancel();
 
 			// Wait for the current operation to finish.
@@ -156,7 +169,7 @@ namespace UnityFx.App
 
 					foreach (var state in _states.ToArray())
 					{
-						await state.Pop(_cancellationSource.Token);
+						await state.Pop();
 					}
 				}
 				catch
@@ -172,17 +185,20 @@ namespace UnityFx.App
 			}
 		}
 
-		internal void ActivateTopState()
+		internal bool TryActivateTopState()
 		{
 			Debug.Assert(!_disposed);
 
-			if (_states.TryPeek(out var state))
+			if (_stackOperations.IsEmpty && _states.TryPeek(out var state))
 			{
 				state.Activate();
+				return true;
 			}
+
+			return false;
 		}
 
-		internal void DeactivateTopState()
+		internal void TryDeactivateTopState()
 		{
 			Debug.Assert(!_disposed);
 
@@ -352,6 +368,14 @@ namespace UnityFx.App
 			{
 				_disposed = true;
 				_cancellationSource.Dispose();
+				_stackOperationsProcessor?.Dispose();
+
+				foreach (var state in _states)
+				{
+					state.Dispose();
+				}
+
+				_states.Clear();
 			}
 		}
 
@@ -371,7 +395,7 @@ namespace UnityFx.App
 
 		private bool TryRunOperationProcessorOnSyncContext()
 		{
-			if (_enabled && !_cancellationSource.IsCancellationRequested)
+			if (_enabled)
 			{
 				if (_synchronizationContext != null)
 				{
@@ -390,7 +414,7 @@ namespace UnityFx.App
 
 		private void TryRunOperationProcessor()
 		{
-			if (_enabled && _stackOperationsProcessor == null && !_stackOperations.IsEmpty && !_cancellationSource.IsCancellationRequested)
+			if (_enabled && _stackOperationsProcessor == null && !_stackOperations.IsEmpty)
 			{
 				var task = ProcessStackOperations();
 
@@ -411,21 +435,34 @@ namespace UnityFx.App
 					{
 						try
 						{
+							IAppState result = null;
+
 							OnOperationStarted(op);
 
 							if (op is AppStatePushOperation pushOp)
 							{
-								var state = await ProcessPushOperation(pushOp);
-								op.SetResult(state);
+								result = await ProcessPushOperation(pushOp);
 							}
 							else if (op is AppStatePopOperation popOp)
 							{
 								await ProcessPopOperation(popOp);
-								op.SetResult(null);
 							}
 							else
 							{
 								Debug.Fail("Unknown stack operation");
+							}
+
+							if (op.HasExceptions)
+							{
+								op.SetException(op.Exceptions);
+							}
+							else if (op.CancellationToken.IsCancellationRequested)
+							{
+								op.SetCanceled();
+							}
+							else
+							{
+								op.SetResult(result);
 							}
 
 							OnOperationComplete(op);
@@ -437,7 +474,16 @@ namespace UnityFx.App
 						}
 						catch (Exception e)
 						{
-							op.TrySetException(e);
+							if (op.HasExceptions)
+							{
+								op.AddException(e);
+								op.TrySetException(op.Exceptions);
+							}
+							else
+							{
+								op.TrySetException(e);
+							}
+
 							OnOperationFailed(op, e);
 						}
 					}
@@ -450,7 +496,7 @@ namespace UnityFx.App
 			}
 			catch (Exception e)
 			{
-				_console.TraceData(TraceEventType.Error, 0, e);
+				_console.TraceData(TraceEventType.Critical, 0, e);
 			}
 			finally
 			{
@@ -464,78 +510,90 @@ namespace UnityFx.App
 
 			AppState result = null;
 
+			TryDeactivateTopState();
+
 			try
 			{
-				DeactivateTopState();
+				var options = op.Options;
+				var ownerState = op.OwnerState;
+				var cancellationToken = op.CancellationToken;
+				var transition = op.Transition;
 
 				// Replace the specified state with the new one.
-				if (op.Options.HasFlag(PushOptions.Set))
+				if (options.HasFlag(PushOptions.Set))
 				{
-					result = new AppState(this, op.OwnerState.Owner, op.ControllerType, op.ControllerArgs);
-					await result.Push(op.CancellationToken);
-					op.CancellationToken.ThrowIfCancellationRequested();
+					// 1) Push the new state onto the stack.
+					result = new AppState(this, ownerState.Owner, op.ControllerType, op.ControllerArgs);
+					await result.Push(cancellationToken);
 
-					if (op.Transition != null)
+					// 2) Play transition animation if any.
+					if (transition != null && !cancellationToken.IsCancellationRequested)
 					{
-						await op.Transition.PlaySetTransition(op.OwnerState, result, op.CancellationToken);
-						op.CancellationToken.ThrowIfCancellationRequested();
+						await transition.PlaySetTransition(ownerState, result, cancellationToken);
 					}
 
-					await PopStateInternal(op.OwnerState, op.CancellationToken);
+					// 3) Pop the previous state.
+					await PopStateInternal(ownerState, op);
 				}
 
 				// Remove all states from the stack and push the new one.
-				else if (op.Options.HasFlag(PushOptions.Reset))
+				else if (options.HasFlag(PushOptions.Reset))
 				{
-					foreach (var s in _states.ToArray())
-					{
-						await s.Pop(op.CancellationToken);
-						op.CancellationToken.ThrowIfCancellationRequested();
-					}
+					// 1) Clear the state stack.
+					await PopAllStatesInternal(op);
 
-					result = new AppState(this, null, op.ControllerType, op.ControllerArgs);
-					await result.Push(op.CancellationToken);
-
-					if (op.Transition != null)
+					// 2) Push the new state if no errors and the operation is not canceled.
+					if (!op.HasExceptions && !cancellationToken.IsCancellationRequested)
 					{
-						op.CancellationToken.ThrowIfCancellationRequested();
-						await op.Transition.PlayPushTransition(result, op.CancellationToken);
+						result = new AppState(this, null, op.ControllerType, op.ControllerArgs);
+						await result.Push(cancellationToken);
+
+						// 3) Play transition animation if any.
+						if (transition != null && !cancellationToken.IsCancellationRequested)
+						{
+							await transition.PlayPushTransition(result, cancellationToken);
+						}
 					}
 				}
 
 				// Just push the new state onto the stack.
 				else
 				{
-					result = new AppState(this, op.OwnerState, op.ControllerType, op.ControllerArgs);
-					await result.Push(op.CancellationToken);
+					// 1) Push the new state onto the stack.
+					result = new AppState(this, ownerState, op.ControllerType, op.ControllerArgs);
+					await result.Push(cancellationToken);
 
-					if (op.Transition != null)
+					// 2) Play transition animation if any.
+					if (transition != null && !cancellationToken.IsCancellationRequested)
 					{
-						op.CancellationToken.ThrowIfCancellationRequested();
-
-						if (op.OwnerState != null)
+						if (ownerState != null)
 						{
-							await op.Transition.PlayPushTransition(op.OwnerState, result, op.CancellationToken);
+							await transition.PlayPushTransition(ownerState, result, cancellationToken);
 						}
 						else
 						{
-							await op.Transition.PlayPushTransition(result, op.CancellationToken);
+							await transition.PlayPushTransition(result, cancellationToken);
 						}
 					}
 				}
 
-				if (_stackOperations.IsEmpty)
-				{
-					ActivateTopState();
-				}
+				TryActivateTopState();
 			}
 			catch
 			{
-				result?.Dispose();
-
-				if (_stackOperations.IsEmpty)
+				try
 				{
-					ActivateTopState();
+					if (result != null)
+					{
+						await result.PopIfNotAlready();
+					}
+
+					TryActivateTopState();
+				}
+				catch (Exception e)
+				{
+					// NOTE: Ignore any exceptions.
+					_console.TraceData(TraceEventType.Error, 0, e);
 				}
 
 				throw;
@@ -550,42 +608,48 @@ namespace UnityFx.App
 
 			try
 			{
-				DeactivateTopState();
+				TryDeactivateTopState();
+			}
+			catch (Exception e)
+			{
+				op.AddException(e);
+			}
 
+			try
+			{
+				if (op.Transition != null && op.State != null)
+				{
+					await op.Transition.PlayPopTransition(op.State, op.CancellationToken);
+				}
+			}
+			catch (Exception e)
+			{
+				op.AddException(e);
+			}
+
+			try
+			{
 				if (op.State != null)
 				{
-					if (op.Transition != null)
-					{
-						await op.Transition.PlayPopTransition(op.State, op.CancellationToken);
-						op.CancellationToken.ThrowIfCancellationRequested();
-					}
-
-					await PopStateInternal(op.State, op.CancellationToken);
+					await PopStateInternal(op.State, op);
 				}
 				else
 				{
-					foreach (var s in _states.ToArray())
-					{
-						await s.Pop(op.CancellationToken);
-						op.CancellationToken.ThrowIfCancellationRequested();
-					}
-				}
-
-				if (_stackOperations.IsEmpty)
-				{
-					ActivateTopState();
+					await PopAllStatesInternal(op);
 				}
 			}
-			catch
+			catch (Exception e)
 			{
-				op.State?.Dispose();
+				op.AddException(e);
+			}
 
-				if (_stackOperations.IsEmpty)
-				{
-					ActivateTopState();
-				}
-
-				throw;
+			try
+			{
+				TryActivateTopState();
+			}
+			catch (Exception e)
+			{
+				op.AddException(e);
 			}
 		}
 
@@ -604,19 +668,55 @@ namespace UnityFx.App
 			return _enabled;
 		}
 
-		private async Task PopStateInternal(AppState state, CancellationToken cancellationToken)
+		private async Task PopAllStatesInternal(AppStateStackOperation op)
+		{
+			if (_states.Count > 0)
+			{
+				foreach (var s in _states.ToArray())
+				{
+					try
+					{
+						await s.Pop();
+					}
+					catch (Exception e)
+					{
+						op.AddException(e);
+					}
+				}
+			}
+		}
+
+		private async Task PopStateInternal(AppState state, AppStateStackOperation op)
 		{
 			// Pop all dependent states (states that was pushed onto the stack by the state).
-			foreach (var s in _states.ToArray())
+			if (_states.Count > 1)
 			{
-				if (s.Owner == state)
+				foreach (var s in _states.ToArray())
 				{
-					await s.Pop(cancellationToken);
+					if (s.Owner == state)
+					{
+						try
+						{
+							await s.Pop();
+						}
+						catch (Exception e)
+						{
+							op.AddException(e);
+						}
+					}
 				}
 			}
 
 			// Release the state (and its substates). This will also remove state from the stack.
-			await state.Pop(cancellationToken);
+			try
+			{
+				await state.Pop();
+			}
+			catch (Exception e)
+			{
+				_console.TraceData(TraceEventType.Error, 0, e);
+				op.AddException(e);
+			}
 		}
 
 		private void OnOperationStarted(AppStateStackOperation op)
@@ -626,7 +726,13 @@ namespace UnityFx.App
 
 		private void OnOperationComplete(AppStateStackOperation op)
 		{
-			// TODO
+			if (op.HasExceptions)
+			{
+				foreach (var e in op.Exceptions)
+				{
+					_console.TraceData(TraceEventType.Error, 0, e);
+				}
+			}
 		}
 
 		private void OnOperationCanceled(AppStateStackOperation op)

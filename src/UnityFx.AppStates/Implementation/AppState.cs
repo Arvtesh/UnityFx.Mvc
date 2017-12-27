@@ -107,7 +107,7 @@ namespace UnityFx.App
 				_controllerEvents?.OnActivate(!_isActivated);
 				_isActivated = true;
 				_parentStateManager.InvokeStateActivated(_eventArgs);
-				_substateManager?.ActivateTopState();
+				_substateManager?.TryActivateTopState();
 			}
 		}
 
@@ -121,7 +121,7 @@ namespace UnityFx.App
 
 				try
 				{
-					_substateManager?.DeactivateTopState();
+					_substateManager?.TryDeactivateTopState();
 					_controllerEvents?.OnDeactivate();
 					_parentStateManager.InvokeStateDeactivated(_eventArgs);
 				}
@@ -143,20 +143,20 @@ namespace UnityFx.App
 			if (_controllerEvents != null)
 			{
 				_controllerEvents.OnPush();
-				_parentStateManager.InvokeStatePushed(_eventArgs);
 				_state = AppStateState.Pushed;
+				_parentStateManager.InvokeStatePushed(_eventArgs);
 				_substateManager?.SetEnabled();
 				await _controllerEvents.OnLoadContent(cancellationToken);
 			}
 			else
 			{
-				_parentStateManager.InvokeStatePushed(_eventArgs);
 				_state = AppStateState.Pushed;
+				_parentStateManager.InvokeStatePushed(_eventArgs);
 				_substateManager?.SetEnabled();
 			}
 		}
 
-		internal async Task Pop(CancellationToken cancellationToken)
+		internal async Task Pop()
 		{
 			Debug.Assert(_state == AppStateState.Pushed);
 
@@ -172,11 +172,24 @@ namespace UnityFx.App
 				_state = AppStateState.Popped;
 				_console.TraceData(TraceEventType.Verbose, 0, "- PopState " + _fullName);
 				_controllerEvents?.OnPop();
-				_parentStateManager.InvokeStatePopped(_eventArgs);
 			}
 			finally
 			{
+				_parentStateManager.InvokeStatePopped(_eventArgs);
 				Dispose();
+			}
+		}
+
+		internal Task PopIfNotAlready()
+		{
+			if (_state == AppStateState.Pushed)
+			{
+				return Pop();
+			}
+			else
+			{
+				Dispose();
+				return Task.CompletedTask;
 			}
 		}
 
@@ -360,6 +373,7 @@ namespace UnityFx.App
 				}
 				finally
 				{
+					_substateManager?.Dispose();
 					_view?.Dispose();
 				}
 			}
