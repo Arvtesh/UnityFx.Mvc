@@ -451,19 +451,7 @@ namespace UnityFx.App
 								Debug.Fail("Unknown stack operation");
 							}
 
-							if (op.HasExceptions)
-							{
-								op.SetException(op.Exceptions);
-							}
-							else if (op.CancellationToken.IsCancellationRequested)
-							{
-								op.SetCanceled();
-							}
-							else
-							{
-								op.SetResult(result);
-							}
-
+							op.SetResult(result);
 							OnOperationComplete(op);
 						}
 						catch (OperationCanceledException)
@@ -473,17 +461,8 @@ namespace UnityFx.App
 						}
 						catch (Exception e)
 						{
-							if (op.HasExceptions)
-							{
-								op.AddException(e);
-								op.TrySetException(op.Exceptions);
-							}
-							else
-							{
-								op.TrySetException(e);
-							}
-
-							OnOperationFailed(op, e);
+							op.TrySetException(e);
+							OnOperationFailed(op);
 						}
 					}
 					else
@@ -509,8 +488,6 @@ namespace UnityFx.App
 
 			AppState result = null;
 
-			TryDeactivateTopState();
-
 			try
 			{
 				var options = op.Options;
@@ -518,20 +495,19 @@ namespace UnityFx.App
 				var cancellationToken = op.CancellationToken;
 				var transition = op.Transition;
 
+				TryDeactivateTopState();
+
 				// Replace the specified state with the new one.
 				if (options.HasFlag(PushOptions.Set))
 				{
-					// 1) Push the new state onto the stack.
 					result = new AppState(this, ownerState.Owner, op.ControllerType, op.ControllerArgs);
 					await result.Push(cancellationToken);
 
-					// 2) Play transition animation if any.
 					if (transition != null && !cancellationToken.IsCancellationRequested)
 					{
 						await transition.PlaySetTransition(ownerState, result, cancellationToken);
 					}
 
-					// 3) Pop the previous state.
 					await PopStateInternal(ownerState, op);
 				}
 
@@ -542,7 +518,7 @@ namespace UnityFx.App
 					await PopAllStatesInternal(op);
 
 					// 2) Push the new state if no errors and the operation is not canceled.
-					if (!op.HasExceptions && !cancellationToken.IsCancellationRequested)
+					if (!cancellationToken.IsCancellationRequested)
 					{
 						result = new AppState(this, null, op.ControllerType, op.ControllerArgs);
 						await result.Push(cancellationToken);
@@ -575,8 +551,6 @@ namespace UnityFx.App
 						}
 					}
 				}
-
-				TryActivateTopState();
 			}
 			catch
 			{
@@ -586,16 +560,25 @@ namespace UnityFx.App
 					{
 						await result.PopIfNotAlready();
 					}
-
-					TryActivateTopState();
 				}
 				catch (Exception e)
 				{
-					// NOTE: Ignore any exceptions.
+					// NOTE: Ignore any exceptions here.
 					_console.TraceData(TraceEventType.Error, 0, e);
 				}
 
 				throw;
+			}
+			finally
+			{
+				try
+				{
+					TryActivateTopState();
+				}
+				catch (Exception e)
+				{
+					op.AddException(e);
+				}
 			}
 
 			return result;
@@ -605,6 +588,7 @@ namespace UnityFx.App
 		{
 			Debug.Assert(op != null);
 
+			// Deativate the top state.
 			try
 			{
 				TryDeactivateTopState();
@@ -614,6 +598,7 @@ namespace UnityFx.App
 				op.AddException(e);
 			}
 
+			// Play pop transition.
 			try
 			{
 				if (op.Transition != null && op.State != null)
@@ -626,6 +611,7 @@ namespace UnityFx.App
 				op.AddException(e);
 			}
 
+			// Pop the state(s).
 			try
 			{
 				if (op.State != null)
@@ -642,6 +628,7 @@ namespace UnityFx.App
 				op.AddException(e);
 			}
 
+			// Activate the new top state.
 			try
 			{
 				TryActivateTopState();
@@ -713,7 +700,6 @@ namespace UnityFx.App
 			}
 			catch (Exception e)
 			{
-				_console.TraceData(TraceEventType.Error, 0, e);
 				op.AddException(e);
 			}
 		}
@@ -725,12 +711,9 @@ namespace UnityFx.App
 
 		private void OnOperationComplete(AppStateStackOperation op)
 		{
-			if (op.HasExceptions)
+			if (op.Task.IsFaulted)
 			{
-				foreach (var e in op.Exceptions)
-				{
-					_console.TraceData(TraceEventType.Error, 0, e);
-				}
+				OnOperationFailed(op);
 			}
 		}
 
@@ -739,9 +722,12 @@ namespace UnityFx.App
 			// TODO
 		}
 
-		private void OnOperationFailed(AppStateStackOperation op, Exception e)
+		private void OnOperationFailed(AppStateStackOperation op)
 		{
-			_console.TraceData(TraceEventType.Error, 0, e);
+			foreach (var e in op.Task.Exception.InnerExceptions)
+			{
+				_console.TraceData(TraceEventType.Error, 0, e);
+			}
 		}
 
 		private string GetFullName()

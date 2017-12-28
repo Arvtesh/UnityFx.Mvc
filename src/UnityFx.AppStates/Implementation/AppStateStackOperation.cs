@@ -25,10 +25,6 @@ namespace UnityFx.App
 
 		public CancellationToken CancellationToken { get; }
 
-		public IEnumerable<Exception> Exceptions => _exceptions;
-
-		public bool HasExceptions => _exceptions != null;
-
 		public AppStateStackOperation(IAppStateTransition transition, CancellationToken ct)
 		{
 			Transition = transition;
@@ -45,6 +41,40 @@ namespace UnityFx.App
 			{
 				_exceptions.Add(e);
 			}
+		}
+
+		public new void SetResult(IAppState result)
+		{
+			if (_exceptions != null)
+			{
+				if (_exceptions.Count > 1)
+				{
+					SetException(_exceptions);
+				}
+				else
+				{
+					SetException(_exceptions[0]);
+				}
+			}
+			else if (CancellationToken.IsCancellationRequested)
+			{
+				SetCanceled();
+			}
+			else
+			{
+				base.SetResult(result);
+			}
+		}
+
+		public new bool TrySetException(Exception e)
+		{
+			if (_exceptions != null)
+			{
+				_exceptions.Add(e);
+				return TrySetException(_exceptions);
+			}
+
+			return base.TrySetException(e);
 		}
 
 		#endregion

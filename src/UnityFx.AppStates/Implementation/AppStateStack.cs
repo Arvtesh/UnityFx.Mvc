@@ -73,7 +73,6 @@ namespace UnityFx.App
 			return result;
 		}
 
-
 		public AppState[] Release()
 		{
 			var result = ToArray();

@@ -134,7 +134,15 @@ namespace UnityFx.App.Tests
 		public async Task PushExceptionIsForwarded(ControllerMethodId method)
 		{
 			await Assert.ThrowsAsync<Exception>(() => _stateManager.PushStateAsync<TestController_EventErrors>(PushOptions.None, method));
-			Assert.Empty(_stateManager.States);
+
+			if (method == ControllerMethodId.OnActivate)
+			{
+				Assert.Equal(1, _stateManager.States.Count);
+			}
+			else
+			{
+				Assert.Empty(_stateManager.States);
+			}
 		}
 
 		[Theory]
