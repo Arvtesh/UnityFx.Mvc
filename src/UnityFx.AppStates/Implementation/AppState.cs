@@ -156,7 +156,7 @@ namespace UnityFx.App
 			}
 		}
 
-		internal async Task Pop()
+		internal async Task Pop(IExceptionAggregator ea)
 		{
 			Debug.Assert(_state == AppStateState.Pushed);
 
@@ -165,7 +165,7 @@ namespace UnityFx.App
 				// Stop any pending substate operations.
 				if (_substateManager != null)
 				{
-					await _substateManager.PopAll();
+					await _substateManager.PopAll(ea);
 				}
 
 				// Pop the state from the state stack (actually the state is removed from the stack in Dispose call).
@@ -180,11 +180,11 @@ namespace UnityFx.App
 			}
 		}
 
-		internal Task PopIfNotAlready()
+		internal Task PopIfNotAlready(IExceptionAggregator ea)
 		{
 			if (_state == AppStateState.Pushed)
 			{
-				return Pop();
+				return Pop(ea);
 			}
 			else
 			{

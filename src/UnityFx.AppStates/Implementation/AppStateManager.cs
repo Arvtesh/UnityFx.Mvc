@@ -150,7 +150,7 @@ namespace UnityFx.App
 			}
 		}
 
-		internal async Task PopAll()
+		internal async Task PopAll(IExceptionAggregator ea)
 		{
 			Debug.Assert(!_disposed);
 
@@ -161,28 +161,8 @@ namespace UnityFx.App
 			await WaitUntilAllOperationsAreProcessed();
 
 			// Pop all states from the stack.
-			if (_states.TryPeek(out var topState))
-			{
-				try
-				{
-					topState.Deactivate();
-
-					foreach (var state in _states.ToArray())
-					{
-						await state.Pop();
-					}
-				}
-				catch
-				{
-					// If something went wrong at least make sure to call Dispose() on all states.
-					foreach (var state in _states.Release())
-					{
-						state.Dispose();
-					}
-
-					throw;
-				}
-			}
+			TryDeactivateTopStateSafe(ea);
+			await PopAllStatesInternal(ea);
 		}
 
 		internal bool TryActivateTopState()
@@ -198,14 +178,49 @@ namespace UnityFx.App
 			return false;
 		}
 
-		internal void TryDeactivateTopState()
+		internal bool TryActivateTopStateSafe(IExceptionAggregator ea)
+		{
+			Debug.Assert(!_disposed);
+
+			try
+			{
+				return TryActivateTopState();
+			}
+			catch (Exception e)
+			{
+				ea.AddException(e);
+			}
+
+			return false;
+		}
+
+		internal bool TryDeactivateTopState()
 		{
 			Debug.Assert(!_disposed);
 
 			if (_states.TryPeek(out var state))
 			{
 				state.Deactivate();
+				return true;
 			}
+
+			return false;
+		}
+
+		internal bool TryDeactivateTopStateSafe(IExceptionAggregator ea)
+		{
+			Debug.Assert(!_disposed);
+
+			try
+			{
+				return TryDeactivateTopState();
+			}
+			catch (Exception e)
+			{
+				ea.AddException(e);
+			}
+
+			return false;
 		}
 
 		internal void SetEnabled()
@@ -430,7 +445,12 @@ namespace UnityFx.App
 			{
 				while (_stackOperations.TryDequeue(out var op))
 				{
-					if (CanExecuteOperation(op))
+					if (op.CancellationToken.IsCancellationRequested)
+					{
+						op.TrySetCanceled();
+						OnOperationCanceled(op);
+					}
+					else
 					{
 						try
 						{
@@ -464,11 +484,6 @@ namespace UnityFx.App
 							op.TrySetException(e);
 							OnOperationFailed(op);
 						}
-					}
-					else
-					{
-						op.TrySetCanceled();
-						OnOperationCanceled(op);
 					}
 				}
 			}
@@ -558,7 +573,7 @@ namespace UnityFx.App
 				{
 					if (result != null)
 					{
-						await result.PopIfNotAlready();
+						await result.PopIfNotAlready(op);
 					}
 				}
 				catch (Exception e)
@@ -571,14 +586,7 @@ namespace UnityFx.App
 			}
 			finally
 			{
-				try
-				{
-					TryActivateTopState();
-				}
-				catch (Exception e)
-				{
-					op.AddException(e);
-				}
+				TryActivateTopStateSafe(op);
 			}
 
 			return result;
@@ -589,14 +597,7 @@ namespace UnityFx.App
 			Debug.Assert(op != null);
 
 			// Deativate the top state.
-			try
-			{
-				TryDeactivateTopState();
-			}
-			catch (Exception e)
-			{
-				op.AddException(e);
-			}
+			TryDeactivateTopStateSafe(op);
 
 			// Play pop transition.
 			try
@@ -629,32 +630,10 @@ namespace UnityFx.App
 			}
 
 			// Activate the new top state.
-			try
-			{
-				TryActivateTopState();
-			}
-			catch (Exception e)
-			{
-				op.AddException(e);
-			}
+			TryActivateTopStateSafe(op);
 		}
 
-		private bool CanExecuteOperation(AppStateStackOperation op)
-		{
-			if (op.CancellationToken.IsCancellationRequested)
-			{
-				return false;
-			}
-
-			if (op.Task.IsCanceled)
-			{
-				return false;
-			}
-
-			return _enabled;
-		}
-
-		private async Task PopAllStatesInternal(AppStateStackOperation op)
+		private async Task PopAllStatesInternal(IExceptionAggregator ea)
 		{
 			if (_states.Count > 0)
 			{
@@ -662,17 +641,17 @@ namespace UnityFx.App
 				{
 					try
 					{
-						await s.Pop();
+						await s.Pop(ea);
 					}
 					catch (Exception e)
 					{
-						op.AddException(e);
+						ea.AddException(e);
 					}
 				}
 			}
 		}
 
-		private async Task PopStateInternal(AppState state, AppStateStackOperation op)
+		private async Task PopStateInternal(AppState state, IExceptionAggregator ea)
 		{
 			// Pop all dependent states (states that was pushed onto the stack by the state).
 			if (_states.Count > 1)
@@ -683,11 +662,11 @@ namespace UnityFx.App
 					{
 						try
 						{
-							await s.Pop();
+							await s.Pop(ea);
 						}
 						catch (Exception e)
 						{
-							op.AddException(e);
+							ea.AddException(e);
 						}
 					}
 				}
@@ -696,11 +675,11 @@ namespace UnityFx.App
 			// Release the state (and its substates). This will also remove state from the stack.
 			try
 			{
-				await state.Pop();
+				await state.Pop(ea);
 			}
 			catch (Exception e)
 			{
-				op.AddException(e);
+				ea.AddException(e);
 			}
 		}
 

@@ -11,7 +11,7 @@ namespace UnityFx.App
 	/// <summary>
 	/// A generic app state stack operation.
 	/// </summary>
-	internal class AppStateStackOperation : TaskCompletionSource<IAppState>
+	internal class AppStateStackOperation : TaskCompletionSource<IAppState>, IExceptionAggregator
 	{
 		#region data
 
@@ -29,18 +29,6 @@ namespace UnityFx.App
 		{
 			Transition = transition;
 			CancellationToken = ct;
-		}
-
-		public void AddException(Exception e)
-		{
-			if (_exceptions == null)
-			{
-				_exceptions = new List<Exception>() { e };
-			}
-			else
-			{
-				_exceptions.Add(e);
-			}
 		}
 
 		public new void SetResult(IAppState result)
@@ -75,6 +63,22 @@ namespace UnityFx.App
 			}
 
 			return base.TrySetException(e);
+		}
+
+		#endregion
+
+		#region IExceptionAggregator
+
+		public void AddException(Exception e)
+		{
+			if (_exceptions == null)
+			{
+				_exceptions = new List<Exception>() { e };
+			}
+			else
+			{
+				_exceptions.Add(e);
+			}
 		}
 
 		#endregion
