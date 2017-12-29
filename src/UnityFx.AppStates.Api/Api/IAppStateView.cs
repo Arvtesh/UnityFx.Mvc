@@ -19,11 +19,6 @@ namespace UnityFx.AppStates
 		string Name { get; }
 
 		/// <summary>
-		/// Return user-specified data (if any). Read only.
-		/// </summary>
-		object UserData { get; }
-
-		/// <summary>
 		/// Returns view bounds (in world space) based on its content. Read only.
 		/// </summary>
 		Bounds Bounds { get; }

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.AppStates", "UnityFx.AppStates\UnityFx.AppStates.csproj", "{C7D875E0-B7DE-4F90-9931-2D879B1CE32E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.AppStates.Core", "UnityFx.AppStates.Core\UnityFx.AppStates.Core.csproj", "{C7D875E0-B7DE-4F90-9931-2D879B1CE32E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.AppStates.Api", "UnityFx.AppStates.Api\UnityFx.AppStates.Api.csproj", "{86A935B6-D9CE-4309-9127-643E510523BC}"
 EndProject
