@@ -11,13 +11,13 @@ namespace UnityFx.App
 	public class AppStateEventArgs : EventArgs
 	{
 		/// <summary>
-		/// Returns state instance event refers to. Read only.
+		/// Returns state instance event refers to (if any). Read only.
 		/// </summary>
-		public IAppState State { get; }
+		public IAppState State { get; internal set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppStateEventArgs"/> class.
 		/// </summary>
-		public AppStateEventArgs(IAppState state) => State = state;
+		internal AppStateEventArgs(IAppState state) => State = state;
 	}
 }

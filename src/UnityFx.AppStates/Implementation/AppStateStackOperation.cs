@@ -8,10 +8,7 @@ using System.Threading.Tasks;
 
 namespace UnityFx.App
 {
-	/// <summary>
-	/// A generic app state stack operation.
-	/// </summary>
-	internal class AppStateStackOperation : TaskCompletionSource<IAppState>, IExceptionAggregator
+	internal abstract class AppStateStackOperation : TaskCompletionSource<IAppState>, IAppStateOperationInfo, IExceptionAggregator
 	{
 		#region data
 
@@ -64,6 +61,26 @@ namespace UnityFx.App
 
 			return base.TrySetException(e);
 		}
+
+		#endregion
+
+		#region IAppStateOperationInfo
+
+		public abstract AppStateOperationType Type { get; }
+
+		public abstract object Args { get; }
+
+		public abstract IAppState Result { get; }
+
+		public abstract IAppState Target { get; }
+
+		public AggregateException Exception => Task.Exception;
+
+		public bool IsSucceeded => Task.Status == TaskStatus.RanToCompletion;
+
+		public bool IsCanceled => Task.Status == TaskStatus.Canceled;
+
+		public bool IsFaulted => Task.Status == TaskStatus.Faulted;
 
 		#endregion
 

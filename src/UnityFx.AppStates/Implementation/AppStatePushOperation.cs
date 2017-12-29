@@ -8,9 +8,6 @@ using System.Threading.Tasks;
 
 namespace UnityFx.App
 {
-	/// <summary>
-	/// A stack push operation.
-	/// </summary>
 	internal class AppStatePushOperation : AppStateStackOperation
 	{
 		#region interface
@@ -34,24 +31,40 @@ namespace UnityFx.App
 
 		#endregion
 
+		#region IAppStateOperationInfo
+
+		public override AppStateOperationType Type
+		{
+			get
+			{
+				if (Options.HasFlag(PushOptions.Set))
+				{
+					return AppStateOperationType.Set;
+				}
+				else if (Options.HasFlag(PushOptions.Reset))
+				{
+					return AppStateOperationType.Reset;
+				}
+
+				return AppStateOperationType.Push;
+			}
+		}
+
+		public override object Args => ControllerArgs;
+
+		public override IAppState Result => Task.Status == TaskStatus.RanToCompletion ? Task.Result : null;
+
+		public override IAppState Target => null;
+
+		#endregion
+
 		#region Object
 
 		public override string ToString()
 		{
-			var text = new StringBuilder();
+			var text = new StringBuilder(Type.ToString());
 
-			if (Options.HasFlag(PushOptions.Set))
-			{
-				text.Append("SetState ");
-			}
-			else if (Options.HasFlag(PushOptions.Reset))
-			{
-				text.Append("ResetState ");
-			}
-			else
-			{
-				text.Append("PushState ");
-			}
+			text.Append("State ");
 
 			if (ControllerType != null)
 			{

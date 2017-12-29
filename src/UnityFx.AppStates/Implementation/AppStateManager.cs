@@ -24,6 +24,7 @@ namespace UnityFx.App
 		private readonly AppStateStack _states = new AppStateStack();
 		private readonly ConcurrentQueue<AppStateStackOperation> _stackOperations = new ConcurrentQueue<AppStateStackOperation>();
 		private readonly CancellationTokenSource _cancellationSource = new CancellationTokenSource();
+		private readonly AppStateOperationEventArgs _opArgs = new AppStateOperationEventArgs();
 
 		private readonly TraceSource _console;
 		private readonly SynchronizationContext _synchronizationContext;
@@ -322,6 +323,7 @@ namespace UnityFx.App
 		public event EventHandler<AppStateEventArgs> StatePopped;
 		public event EventHandler<AppStateEventArgs> StateActivated;
 		public event EventHandler<AppStateEventArgs> StateDeactivated;
+		public event EventHandler<AppStateOperationEventArgs> StateOperationCompleted;
 
 		public IAppStateStack States
 		{
@@ -448,7 +450,7 @@ namespace UnityFx.App
 					if (op.CancellationToken.IsCancellationRequested)
 					{
 						op.TrySetCanceled();
-						OnOperationCanceled(op);
+						OnOperationComplete(op);
 					}
 					else
 					{
@@ -472,17 +474,18 @@ namespace UnityFx.App
 							}
 
 							op.SetResult(result);
-							OnOperationComplete(op);
 						}
 						catch (OperationCanceledException)
 						{
 							op.TrySetCanceled();
-							OnOperationCanceled(op);
 						}
 						catch (Exception e)
 						{
 							op.TrySetException(e);
-							OnOperationFailed(op);
+						}
+						finally
+						{
+							OnOperationComplete(op);
 						}
 					}
 				}
@@ -683,30 +686,39 @@ namespace UnityFx.App
 			}
 		}
 
-		private void OnOperationStarted(AppStateStackOperation op)
+		private void OnOperationStarted(IAppStateOperationInfo op)
 		{
 			_console.TraceInformation(op.ToString());
 		}
 
-		private void OnOperationComplete(AppStateStackOperation op)
+		private void OnOperationComplete(IAppStateOperationInfo op)
 		{
-			if (op.Task.IsFaulted)
+			if (op.IsFaulted)
 			{
-				OnOperationFailed(op);
+				foreach (var e in op.Exception.InnerExceptions)
+				{
+					_console.TraceData(TraceEventType.Error, 0, e);
+				}
 			}
+
+			_opArgs.State = op.Target ?? op.Result;
+			_opArgs.Operation = op;
+
+			InvokeOperationCompleted(_opArgs);
 		}
 
-		private void OnOperationCanceled(AppStateStackOperation op)
+		private void InvokeOperationCompleted(AppStateOperationEventArgs args)
 		{
-			// TODO
-		}
-
-		private void OnOperationFailed(AppStateStackOperation op)
-		{
-			foreach (var e in op.Task.Exception.InnerExceptions)
+			try
+			{
+				StateOperationCompleted?.Invoke(this, args);
+			}
+			catch (Exception e)
 			{
 				_console.TraceData(TraceEventType.Error, 0, e);
 			}
+
+			_parentStateManager?.InvokeOperationCompleted(args);
 		}
 
 		private string GetFullName()

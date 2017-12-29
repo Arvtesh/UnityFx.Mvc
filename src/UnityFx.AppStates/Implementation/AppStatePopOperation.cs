@@ -8,9 +8,6 @@ using System.Threading.Tasks;
 
 namespace UnityFx.App
 {
-	/// <summary>
-	/// A state pop operation.
-	/// </summary>
 	internal class AppStatePopOperation : AppStateStackOperation
 	{
 		#region interface
@@ -22,6 +19,29 @@ namespace UnityFx.App
 		{
 			State = state;
 		}
+
+		#endregion
+
+		#region IAppStateOperationInfo
+
+		public override AppStateOperationType Type
+		{
+			get
+			{
+				if (State != null)
+				{
+					return AppStateOperationType.Pop;
+				}
+
+				return AppStateOperationType.PopAll;
+			}
+		}
+
+		public override object Args => null;
+
+		public override IAppState Result => null;
+
+		public override IAppState Target => State;
 
 		#endregion
 
