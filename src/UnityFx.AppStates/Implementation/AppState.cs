@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace UnityFx.App
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// Enumerates states of <see cref="AppState"/>.

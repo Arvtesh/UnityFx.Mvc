@@ -3,7 +3,7 @@
 
 using System;
 
-namespace UnityFx.App
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// Stores static parameters applicable to <see cref="IAppStateController"/> implementation.

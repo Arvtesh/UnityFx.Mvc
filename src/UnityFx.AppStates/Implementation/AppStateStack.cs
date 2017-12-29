@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace UnityFx.App
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// Implementation of <see cref="IAppStateStack"/>.

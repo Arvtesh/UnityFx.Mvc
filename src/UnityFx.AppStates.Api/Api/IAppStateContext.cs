@@ -3,7 +3,7 @@
 
 using System;
 
-namespace UnityFx.App
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// Represents <see cref="IAppStateController"/> context.

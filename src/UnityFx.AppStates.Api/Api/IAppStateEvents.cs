@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace UnityFx.App
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// An <see cref="IAppState"/> extension. Implement it to receive notifications on the state lifetime events.

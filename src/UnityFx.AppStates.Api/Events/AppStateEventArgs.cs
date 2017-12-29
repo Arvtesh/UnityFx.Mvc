@@ -3,7 +3,7 @@
 
 using System;
 
-namespace UnityFx.App
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// Arguments for state-related events.
@@ -13,11 +13,11 @@ namespace UnityFx.App
 		/// <summary>
 		/// Returns state instance event refers to (if any). Read only.
 		/// </summary>
-		public IAppState State { get; internal set; }
+		public IAppState State { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppStateEventArgs"/> class.
 		/// </summary>
-		internal AppStateEventArgs(IAppState state) => State = state;
+		public AppStateEventArgs(IAppState state) => State = state;
 	}
 }

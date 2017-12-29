@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\UnityFx.AppStates.Api\UnityFx.AppStates.Api.csproj" />
     <ProjectReference Include="..\UnityFx.AppStates\UnityFx.AppStates.csproj" />
-    <ProjectReference Include="..\UnityFx.App\UnityFx.App.csproj" />
   </ItemGroup>
 
 </Project>

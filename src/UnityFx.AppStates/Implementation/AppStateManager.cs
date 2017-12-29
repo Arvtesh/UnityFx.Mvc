@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace UnityFx.App
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// Implementation of <see cref="IAppStateService"/>.
@@ -24,7 +24,6 @@ namespace UnityFx.App
 		private readonly AppStateStack _states = new AppStateStack();
 		private readonly ConcurrentQueue<AppStateStackOperation> _stackOperations = new ConcurrentQueue<AppStateStackOperation>();
 		private readonly CancellationTokenSource _cancellationSource = new CancellationTokenSource();
-		private readonly AppStateOperationEventArgs _opArgs = new AppStateOperationEventArgs();
 
 		private readonly TraceSource _console;
 		private readonly SynchronizationContext _synchronizationContext;
@@ -701,10 +700,7 @@ namespace UnityFx.App
 				}
 			}
 
-			_opArgs.State = op.Target ?? op.Result;
-			_opArgs.Operation = op;
-
-			InvokeOperationCompleted(_opArgs);
+			InvokeOperationCompleted(new AppStateOperationEventArgs(op, op.Target ?? op.Result));
 		}
 
 		private void InvokeOperationCompleted(AppStateOperationEventArgs args)

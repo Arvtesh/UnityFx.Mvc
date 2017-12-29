@@ -19,6 +19,7 @@
 	<PropertyGroup>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NeutralLanguage>en-US</NeutralLanguage>
+		<RootNamespace>UnityFx.AppStates</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>

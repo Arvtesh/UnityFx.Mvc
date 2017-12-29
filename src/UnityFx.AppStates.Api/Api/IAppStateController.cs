@@ -3,7 +3,7 @@
 
 using System;
 
-namespace UnityFx.App
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// A user-defined application state controller.

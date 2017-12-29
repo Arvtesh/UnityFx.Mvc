@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 
-namespace UnityFx.App
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// Assembly entry point.

@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 
-namespace UnityFx.App
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// Settings of a <see cref="IAppStateService"/>.

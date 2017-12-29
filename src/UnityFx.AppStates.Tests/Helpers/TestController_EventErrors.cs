@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace UnityFx.App.Tests
+namespace UnityFx.AppStates.Tests
 {
 	internal class TestController_EventErrors : IAppStateController, IAppStateEvents, IDisposable
 	{

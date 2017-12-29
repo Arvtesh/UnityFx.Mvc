@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace UnityFx.App
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// Default implementation of <see cref="IAppStateControllerFactory"/>.

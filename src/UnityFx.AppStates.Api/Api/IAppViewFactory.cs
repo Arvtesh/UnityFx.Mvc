@@ -3,7 +3,7 @@
 
 using System;
 
-namespace UnityFx.App
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// A factory for <see cref="IAppView"/> instances.

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace UnityFx.App.Tests
+namespace UnityFx.AppStates.Tests
 {
 	internal class TestController_Invalid
 	{

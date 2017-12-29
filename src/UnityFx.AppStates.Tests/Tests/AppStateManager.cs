@@ -8,7 +8,7 @@ using Xunit;
 using NSubstitute;
 using System.Threading;
 
-namespace UnityFx.App.Tests
+namespace UnityFx.AppStates.Tests
 {
 	public class AppStateManager : IDisposable
 	{

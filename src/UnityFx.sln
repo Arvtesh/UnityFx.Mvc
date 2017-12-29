@@ -5,9 +5,9 @@ VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.AppStates", "UnityFx.AppStates\UnityFx.AppStates.csproj", "{C7D875E0-B7DE-4F90-9931-2D879B1CE32E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.App", "UnityFx.App\UnityFx.App.csproj", "{86A935B6-D9CE-4309-9127-643E510523BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.AppStates.Api", "UnityFx.AppStates.Api\UnityFx.AppStates.Api.csproj", "{86A935B6-D9CE-4309-9127-643E510523BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityFx.AppStates.Tests", "UnityFx.AppStates.Tests\UnityFx.AppStates.Tests.csproj", "{CB7C17FF-4B84-4457-A9FE-53CD7B23F751}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.AppStates.Tests", "UnityFx.AppStates.Tests\UnityFx.AppStates.Tests.csproj", "{CB7C17FF-4B84-4457-A9FE-53CD7B23F751}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

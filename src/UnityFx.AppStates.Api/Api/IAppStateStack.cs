@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace UnityFx.App
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// Returns a read-only stack of the <see cref="IAppState"/> instances.

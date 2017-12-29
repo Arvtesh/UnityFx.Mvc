@@ -54,16 +54,16 @@ if ($LastExitCode -ne 0) {
 
 # publish build results to .\Build\Bin
 $filesToPublish46 =
-	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates/bin" (Join-Path $configuration "net46\UnityFx.App.dll"))),
-	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates/bin" (Join-Path $configuration "net46\UnityFx.App.xml"))),
+	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates/bin" (Join-Path $configuration "net46\UnityFx.AppStates.Api.dll"))),
+	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates/bin" (Join-Path $configuration "net46\UnityFx.AppStates.Api.xml"))),
 	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates/bin" (Join-Path $configuration "net46\UnityFx.AppStates.dll"))),
 	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates/bin" (Join-Path $configuration "net46\UnityFx.AppStates.xml")))
 
 Copy-Item -Path $filesToPublish46 -Destination $binPath46 -Force
 
 $filesToPublish20 =
-	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates/bin" (Join-Path $configuration "netstandard2.0\UnityFx.App.dll"))),
-	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates/bin" (Join-Path $configuration "netstandard2.0\UnityFx.App.xml"))),
+	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates/bin" (Join-Path $configuration "netstandard2.0\UnityFx.AppStates.Api.dll"))),
+	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates/bin" (Join-Path $configuration "netstandard2.0\UnityFx.AppStates.Api.xml"))),
 	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates/bin" (Join-Path $configuration "netstandard2.0\UnityFx.AppStates.dll"))),
 	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates/bin" (Join-Path $configuration "netstandard2.0\UnityFx.AppStates.xml")))
 

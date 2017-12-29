@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace UnityFx.App
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// Extensions for <see cref="IAppState"/>.

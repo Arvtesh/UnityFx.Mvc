@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace UnityFx.App
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// Arguments for state manager error events.
@@ -14,20 +14,12 @@ namespace UnityFx.App
 		/// <summary>
 		/// Returns the operation result. Read only.
 		/// </summary>
-		public IAppStateOperationInfo Operation { get; internal set; }
+		public IAppStateOperationInfo Operation { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppStateOperationEventArgs"/> class.
 		/// </summary>
-		internal AppStateOperationEventArgs()
-			: base(null)
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AppStateOperationEventArgs"/> class.
-		/// </summary>
-		internal AppStateOperationEventArgs(IAppStateOperationInfo op, IAppState state)
+		public AppStateOperationEventArgs(IAppStateOperationInfo op, IAppState state)
 			: base(state)
 		{
 			Operation = op;

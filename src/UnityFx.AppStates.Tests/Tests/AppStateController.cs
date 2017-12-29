@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Xunit;
 using NSubstitute;
 
-namespace UnityFx.App.Tests
+namespace UnityFx.AppStates.Tests
 {
 	public enum ControllerMethodId
 	{
