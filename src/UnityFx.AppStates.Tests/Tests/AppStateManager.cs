@@ -24,7 +24,7 @@ namespace UnityFx.AppStates.Tests
 		{
 			var viewFactory = Substitute.For<IAppViewFactory>();
 			var serviceProvider = Substitute.For<IServiceProvider>();
-			_stateManager = AppStates.CreateStateManager(viewFactory, serviceProvider);
+			_stateManager = AppStateFactory.CreateStateManager(viewFactory, serviceProvider);
 		}
 
 		public void Dispose()

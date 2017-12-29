@@ -9,7 +9,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Assembly entry point.
 	/// </summary>
-	public static class AppStates
+	public static class AppStateFactory
 	{
 		/// <summary>
 		/// Creates a <see cref="IAppStateService"/> instance.
