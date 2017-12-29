@@ -6,13 +6,13 @@ using System;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// A factory for <see cref="IAppView"/> instances.
+	/// A factory for <see cref="IAppStateView"/> instances.
 	/// </summary>
-	public interface IAppViewFactory
+	public interface IAppStateViewFactory
 	{
 		/// <summary>
 		/// Creates an empty view with the specified name.
 		/// </summary>
-		IAppView CreateView(string name, IAppView insertAfter, object userData);
+		IAppStateView CreateView(string name, IAppStateView insertAfter);
 	}
 }

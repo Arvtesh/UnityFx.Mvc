@@ -39,7 +39,7 @@ namespace UnityFx.AppStates.Tests
 	{
 		#region data
 
-		private readonly IAppViewFactory _viewFactory;
+		private readonly IAppStateViewFactory _viewFactory;
 		private readonly IServiceProvider _serviceProvider;
 		private readonly IAppStateService _stateManager;
 
@@ -49,7 +49,7 @@ namespace UnityFx.AppStates.Tests
 
 		public AppStateController()
 		{
-			_viewFactory = Substitute.For<IAppViewFactory>();
+			_viewFactory = Substitute.For<IAppStateViewFactory>();
 			_serviceProvider = Substitute.For<IServiceProvider>();
 			_stateManager = AppStateFactory.CreateStateManager(_viewFactory, _serviceProvider);
 		}

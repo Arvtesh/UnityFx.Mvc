@@ -30,7 +30,7 @@ namespace UnityFx.AppStates
 		private readonly AppState _parentState;
 		private readonly AppStateManager _parentStateManager;
 		private readonly IAppStateControllerFactory _controllerFactory;
-		private readonly IAppViewFactory _viewManager;
+		private readonly IAppStateViewFactory _viewManager;
 		private readonly IServiceProvider _serviceProvider;
 
 		private Task _stackOperationsProcessor;
@@ -47,10 +47,25 @@ namespace UnityFx.AppStates
 
 		internal AppStateStack StatesEx => _states;
 
+		public AppStateManager(
+			IAppStateControllerFactory controllerFactory,
+			IAppStateViewFactory viewManager,
+			IServiceProvider services)
+			: this(SynchronizationContext.Current, controllerFactory, viewManager, services)
+		{
+		}
+
+		public AppStateManager(
+			IAppStateViewFactory viewManager,
+			IServiceProvider services)
+			: this(SynchronizationContext.Current, new AppStateControllerFactory(), viewManager, services)
+		{
+		}
+
 		internal AppStateManager(
 			SynchronizationContext syncContext,
 			IAppStateControllerFactory controllerFactory,
-			IAppViewFactory viewManager,
+			IAppStateViewFactory viewManager,
 			IServiceProvider services)
 		{
 			Debug.Assert(controllerFactory != null);
@@ -103,15 +118,15 @@ namespace UnityFx.AppStates
 			return _controllerFactory.CreateController(controllerType, state, _serviceProvider);
 		}
 
-		internal IAppView CreateView(AppState state)
+		internal IAppStateView CreateView(AppState state)
 		{
 			Debug.Assert(state != null);
 			Debug.Assert(!_disposed);
 
-			var insertAfterView = default(IAppView);
+			var insertAfterView = default(IAppStateView);
 
 			// TODO
-			return _viewManager.CreateView(state.FullName, insertAfterView, state);
+			return _viewManager.CreateView(state.FullName, insertAfterView);
 		}
 
 		internal Task<IAppState> PushState(AppState ownerState, PushOptions options, Type controllerType, object controllerArgs)

@@ -76,7 +76,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Returns a view instance attached to the state. Read only.
 		/// </summary>
-		IAppView View { get; }
+		IAppStateView View { get; }
 
 		/// <summary>
 		/// Returns a user-defined view controller instance attached to the state. Read only.

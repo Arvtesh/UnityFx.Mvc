@@ -22,7 +22,7 @@ namespace UnityFx.AppStates.Tests
 
 		public AppStateManager()
 		{
-			var viewFactory = Substitute.For<IAppViewFactory>();
+			var viewFactory = Substitute.For<IAppStateViewFactory>();
 			var serviceProvider = Substitute.For<IServiceProvider>();
 			_stateManager = AppStateFactory.CreateStateManager(viewFactory, serviceProvider);
 		}

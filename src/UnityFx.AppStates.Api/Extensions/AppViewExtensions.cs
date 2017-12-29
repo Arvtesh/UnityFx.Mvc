@@ -11,14 +11,14 @@ using UnityEngine;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Extension methods for <see cref="IAppView"/>.
+	/// Extension methods for <see cref="IAppStateView"/>.
 	/// </summary>
 	public static class AppViewExtensions
 	{
 		/// <summary>
 		/// Searches the view root for the specified component. Returns <see langword="null"/> if no components found.
 		/// </summary>
-		public static T GetComponent<T>(this IAppView view) where T : class
+		public static T GetComponent<T>(this IEnumerable<GameObject> view) where T : class
 		{
 			foreach (var go in view)
 			{
@@ -36,7 +36,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Searches the view root for the specified components. Returns an empty array if no components found.
 		/// </summary>
-		public static T[] GetComponents<T>(this IAppView view) where T : class
+		public static T[] GetComponents<T>(this IEnumerable<GameObject> view) where T : class
 		{
 			var result = new List<T>();
 
@@ -51,7 +51,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Searches the view for the specified component recursively. Returns <see langword="null"/> if no components found.
 		/// </summary>
-		public static T GetComponentRecursive<T>(this IAppView view) where T : class
+		public static T GetComponentRecursive<T>(this IEnumerable<GameObject> view) where T : class
 		{
 			foreach (var go in view)
 			{
@@ -69,7 +69,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Searches the view for the specified components recursively. Returns an empty array if no components found.
 		/// </summary>
-		public static T[] GetComponentsRecursive<T>(this IAppView view) where T : class
+		public static T[] GetComponentsRecursive<T>(this IEnumerable<GameObject> view) where T : class
 		{
 			var result = new List<T>();
 
