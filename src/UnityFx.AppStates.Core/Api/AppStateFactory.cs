@@ -15,7 +15,7 @@ namespace UnityFx.AppStates
 		/// Returns <see cref="Type"/> for the <see cref="IAppStateService"/> implementated in the assembly.
 		/// Intended for use in DI containers. Read only.
 		/// </summary>
-		public static Type StateManaagerType => typeof(AppStateManager);
+		public static Type StateManagerType => typeof(AppStateManager);
 
 		/// <summary>
 		/// Creates a <see cref="IAppStateService"/> instance.

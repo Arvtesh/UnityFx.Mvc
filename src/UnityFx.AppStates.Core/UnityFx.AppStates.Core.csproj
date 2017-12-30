@@ -32,4 +32,13 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\UnityFx.AppStates.Api\UnityFx.AppStates.Api.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="UnityEngine">
+	    <HintPath>..\Dependencies\UnityEngine.dll</HintPath>
+	  </Reference>
+	  <Reference Include="UnityEngine.UI">
+	    <HintPath>..\Dependencies\UnityEngine.UI.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
 </Project>
