@@ -12,7 +12,8 @@ namespace UnityFx.AppStates
 	public interface IAppViewFactory
 	{
 		/// <summary>
-		/// Creates an empty view with the specified name.
+		/// Creates an empty view with the specified <paramref name="name"/> on top of the <paramref name="insertAfter"/> one.
+		/// If <paramref name="insertAfter"/> is <see langword="null"/> the view is created below all others.
 		/// </summary>
 		IAppView CreateView(string name, IAppView insertAfter);
 	}
