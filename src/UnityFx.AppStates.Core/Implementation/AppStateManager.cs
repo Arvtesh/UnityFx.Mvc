@@ -391,6 +391,14 @@ namespace UnityFx.AppStates
 
 		#endregion
 
+		#region IEnumerable
+
+		public IEnumerator<IAppState> GetEnumerator() => _states.GetEnumerator();
+
+		IEnumerator IEnumerable.GetEnumerator() => _states.GetEnumerator();
+
+		#endregion
+
 		#region IDisposable
 
 		public void Dispose()

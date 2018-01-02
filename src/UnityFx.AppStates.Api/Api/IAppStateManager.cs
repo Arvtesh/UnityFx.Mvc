@@ -69,7 +69,7 @@ namespace UnityFx.AppStates
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso cref="IAppState"/>
 	/// <seealso cref="IAppStateController"/>
-	public interface IAppStateManager
+	public interface IAppStateManager : IEnumerable<IAppState>
 	{
 		/// <summary>
 		/// Triggered when a new state is pushed onto the state stack of this manager or any of its child managers.

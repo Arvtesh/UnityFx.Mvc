@@ -27,16 +27,14 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region interface
-
-		public void Initialize(string name)
-		{
-			_name = name;
-			gameObject.name = name;
-		}
-
 		#endregion
 
 		#region MonoBehaviour
+
+		private void Awake()
+		{
+			_name = gameObject.name;
+		}
 
 		private void OnDestroy()
 		{
