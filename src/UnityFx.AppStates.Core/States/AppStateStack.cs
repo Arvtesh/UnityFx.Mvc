@@ -21,6 +21,8 @@ namespace UnityFx.AppStates
 
 		#region interface
 
+		public AppState this[int index] => _states[index];
+
 		public IEnumerator<AppState> GetEnumerator() => GetEnumeratorInternal();
 
 		public void Add(AppState state)
@@ -70,13 +72,6 @@ namespace UnityFx.AppStates
 				result[i] = _states[childCount - i - 1];
 			}
 
-			return result;
-		}
-
-		public AppState[] Release()
-		{
-			var result = ToArray();
-			_states?.Clear();
 			return result;
 		}
 

@@ -123,10 +123,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(state != null);
 			Debug.Assert(!_disposed);
 
-			var insertAfterView = default(IAppView);
-
-			// TODO
-			return _viewManager.CreateView(state.FullName, insertAfterView);
+			return _viewManager.CreateView(state.FullName, state.GetPrevView());
 		}
 
 		internal Task<IAppState> PushState(AppState ownerState, PushOptions options, Type controllerType, object controllerArgs)

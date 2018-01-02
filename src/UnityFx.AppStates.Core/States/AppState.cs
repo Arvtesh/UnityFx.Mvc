@@ -32,7 +32,7 @@ namespace UnityFx.AppStates
 		private readonly AppStateManager _parentStateManager;
 		private readonly IAppStateController _controller;
 		private readonly IAppStateEvents _controllerEvents;
-		private readonly IAppState _parentState;
+		private readonly AppState _parentState;
 		private readonly IAppState _ownerState;
 
 		private readonly TraceSource _console;
@@ -201,6 +201,31 @@ namespace UnityFx.AppStates
 			{
 				_substateManager.GetStatesRecursive(states);
 			}
+		}
+
+		internal IAppView GetPrevView()
+		{
+			var i = _stack.Count - 1;
+
+			while (i >= 0)
+			{
+				if (_stack[i] != this)
+				{
+					--i;
+				}
+			}
+
+			for (; i >= 0; --i)
+			{
+				var view = _stack[i]._view;
+
+				if (view != null)
+				{
+					return view;
+				}
+			}
+
+			return _parentState?.GetPrevView();
 		}
 
 		internal static string GetStateName(Type controllerType)

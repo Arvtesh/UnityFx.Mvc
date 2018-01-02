@@ -12,7 +12,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A disposable component collection.
 	/// </summary>
-	internal class DisposableComponentList<T> : DisposableMonoBehaviour, IReadOnlyList<T>
+	internal class DisposableComponentList<T> : DisposableMonoBehaviour, IReadOnlyList<T> where T : class
 	{
 		#region data
 		#endregion
