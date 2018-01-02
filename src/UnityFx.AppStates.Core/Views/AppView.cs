@@ -11,18 +11,16 @@ using UnityEngine.UI;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Implementation of <see cref="IAppStateView"/>.
+	/// Implementation of <see cref="IAppView"/>.
 	/// </summary>
-	internal class AppStateView : MonoBehaviour, IAppStateView
+	internal class AppView : DisposableMonoBehaviour, IAppView, ICollection<GameObject>
 	{
 		#region data
 
-		private string _name;
 		private bool _enabled = true;
 		private bool _interactable = true;
 		private bool _exclusiveParent;
 		private bool _exclusive;
-		private bool _disposed;
 
 		#endregion
 
@@ -31,20 +29,32 @@ namespace UnityFx.AppStates
 
 		#region MonoBehaviour
 
-		private void Awake()
-		{
-			_name = gameObject.name;
-		}
-
 		private void OnDestroy()
 		{
+			SetDisposed();
 		}
 
 		#endregion
 
-		#region IAppStateView
+		#region IAppView
 
-		public string Name => _name;
+		public string Name
+		{
+			get
+			{
+				ThrowIfDisposed();
+				return name;
+			}
+		}
+
+		public ICollection<GameObject> Content
+		{
+			get
+			{
+				ThrowIfDisposed();
+				return this;
+			}
+		}
 
 		public Bounds Bounds
 		{
@@ -96,7 +106,7 @@ namespace UnityFx.AppStates
 			{
 				for (var i = transform.GetSiblingIndex() - 1; i >= 0; --i)
 				{
-					var view = transform.GetChild(i).GetComponent<AppStateView>();
+					var view = transform.GetChild(i).GetComponent<AppView>();
 
 					if (!ReferenceEquals(view, null))
 					{
@@ -227,30 +237,9 @@ namespace UnityFx.AppStates
 
 		#region IEnumerable
 
-		public IEnumerator<GameObject> GetEnumerator()
-		{
-			ThrowIfDisposed();
-			return GetEnumeratorInternal();
-		}
+		public IEnumerator<GameObject> GetEnumerator() => GetEnumeratorInternal();
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			ThrowIfDisposed();
-			return GetEnumeratorInternal();
-		}
-
-		#endregion
-
-		#region IDisposable
-
-		public void Dispose()
-		{
-			if (!_disposed)
-			{
-				_disposed = true;
-				Destroy(gameObject);
-			}
-		}
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumeratorInternal();
 
 		#endregion
 
@@ -263,16 +252,10 @@ namespace UnityFx.AppStates
 			return parentExclusive || _exclusive;
 		}
 
-		private void ThrowIfDisposed()
-		{
-			if (_disposed || !this)
-			{
-				throw new ObjectDisposedException(_name);
-			}
-		}
-
 		private IEnumerator<GameObject> GetEnumeratorInternal()
 		{
+			ThrowIfDisposed();
+
 			for (var i = 0; i < transform.childCount; ++i)
 			{
 				yield return transform.GetChild(i).gameObject;

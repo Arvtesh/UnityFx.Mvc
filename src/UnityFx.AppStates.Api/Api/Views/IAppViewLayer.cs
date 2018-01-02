@@ -7,13 +7,15 @@ using System.Collections.Generic;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// A collection of <see cref="IAppStateView"/> instances.
+	/// A collection of <see cref="IAppView"/> instances.
 	/// </summary>
-	public interface IAppStateViewManager : IAppStateViewFactory, IEnumerable<IAppStateView>
+	/// <seealso cref="IAppView"/>
+	/// <seealso cref="IAppViewService"/>
+	public interface IAppViewLayer : IAppViewFactory, IEnumerable<IAppView>, IDisposable
 	{
 		/// <summary>
 		/// Returns a collection of views managed by the manager. Read only.
 		/// </summary>
-		IReadOnlyList<IAppStateView> Views { get; }
+		IReadOnlyList<IAppView> Views { get; }
 	}
 }

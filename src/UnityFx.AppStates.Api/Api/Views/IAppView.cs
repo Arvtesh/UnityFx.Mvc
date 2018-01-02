@@ -10,13 +10,20 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A generic application view.
 	/// </summary>
-	/// <seealso cref="IAppStateViewFactory"/>
-	public interface IAppStateView : ICollection<GameObject>, IDisposable
+	/// <seealso cref="IAppViewFactory"/>
+	/// <seealso cref="IAppViewLayer"/>
+	/// <seealso cref="IAppViewService"/>
+	public interface IAppView : IEnumerable<GameObject>, IDisposable
 	{
 		/// <summary>
 		/// Returns name of the view. Read only.
 		/// </summary>
 		string Name { get; }
+
+		/// <summary>
+		/// Returns view content. Read only.
+		/// </summary>
+		ICollection<GameObject> Content { get; }
 
 		/// <summary>
 		/// Returns view bounds (in world space) based on its content. Read only.

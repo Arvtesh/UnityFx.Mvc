@@ -69,7 +69,7 @@ namespace UnityFx.AppStates
 			{
 				return stateContext.State;
 			}
-			else if (serviceType == typeof(IAppStateView))
+			else if (serviceType == typeof(IAppView))
 			{
 				return stateContext.View;
 			}

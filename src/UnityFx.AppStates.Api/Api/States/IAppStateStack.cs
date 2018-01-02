@@ -31,10 +31,5 @@ namespace UnityFx.AppStates
 		/// Returns the state at the top of the stack without removing it. Returns <see langword="false"/> if the stack is empty.
 		/// </summary>
 		bool TryPeek(out IAppState result);
-
-		/// <summary>
-		/// Determines whether the specified state is in the stack.
-		/// </summary>
-		bool Contains(IAppState state);
 	}
 }

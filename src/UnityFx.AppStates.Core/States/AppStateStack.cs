@@ -115,22 +115,6 @@ namespace UnityFx.AppStates
 			return false;
 		}
 
-		bool IAppStateStack.Contains(IAppState state)
-		{
-			if (_states != null)
-			{
-				foreach (var s in _states)
-				{
-					if (s == state)
-					{
-						return true;
-					}
-				}
-			}
-
-			return false;
-		}
-
 		#endregion
 
 		#region IReadOnlyColection

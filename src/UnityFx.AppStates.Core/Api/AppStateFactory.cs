@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using UnityEngine;
 
 namespace UnityFx.AppStates
 {
@@ -20,7 +21,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Creates a <see cref="IAppStateService"/> instance.
 		/// </summary>
-		public static IAppStateService CreateStateManager(SynchronizationContext syncContext, IAppStateControllerFactory controllerFactory, IAppStateViewFactory viewFactory, IServiceProvider serviceProvider)
+		public static IAppStateService CreateStateManager(SynchronizationContext syncContext, IAppStateControllerFactory controllerFactory, IAppViewFactory viewFactory, IServiceProvider serviceProvider)
 		{
 			if (controllerFactory == null)
 			{
@@ -43,7 +44,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Creates a <see cref="IAppStateService"/> instance.
 		/// </summary>
-		public static IAppStateService CreateStateManager(SynchronizationContext syncContext, IAppStateViewFactory viewFactory, IServiceProvider serviceProvider)
+		public static IAppStateService CreateStateManager(SynchronizationContext syncContext, IAppViewFactory viewFactory, IServiceProvider serviceProvider)
 		{
 			if (viewFactory == null)
 			{
@@ -63,7 +64,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Creates a <see cref="IAppStateService"/> instance.
 		/// </summary>
-		public static IAppStateService CreateStateManager(IAppStateViewFactory viewFactory, IServiceProvider serviceProvider)
+		public static IAppStateService CreateStateManager(IAppViewFactory viewFactory, IServiceProvider serviceProvider)
 		{
 			if (viewFactory == null)
 			{
@@ -78,6 +79,19 @@ namespace UnityFx.AppStates
 			var controllerFactory = new AppStateControllerFactory();
 
 			return new AppStateManager(controllerFactory, viewFactory, serviceProvider);
+		}
+
+		/// <summary>
+		/// Creates a <see cref="IAppViewService"/> instance.
+		/// </summary>
+		public static IAppViewService CreateViewManager(GameObject go)
+		{
+			if (go == null)
+			{
+				throw new ArgumentNullException(nameof(go));
+			}
+
+			return go.AddComponent<AppViewService>();
 		}
 	}
 }

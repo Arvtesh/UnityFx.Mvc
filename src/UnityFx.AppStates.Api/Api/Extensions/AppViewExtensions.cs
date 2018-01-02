@@ -11,7 +11,7 @@ using UnityEngine;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Extension methods for <see cref="IAppStateView"/>.
+	/// Extension methods for <see cref="IAppView"/>.
 	/// </summary>
 	public static class AppViewExtensions
 	{

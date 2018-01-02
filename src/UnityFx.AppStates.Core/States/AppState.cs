@@ -45,7 +45,7 @@ namespace UnityFx.AppStates
 		private readonly AppStateEventArgs _eventArgs;
 
 		private AppStateManager _substateManager;
-		private IAppStateView _view;
+		private IAppView _view;
 
 		private AppStateState _state;
 		private bool _isActive;
@@ -263,7 +263,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		public IAppStateView View
+		public IAppView View
 		{
 			get
 			{
