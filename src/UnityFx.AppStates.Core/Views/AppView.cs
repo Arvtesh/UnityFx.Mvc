@@ -102,11 +102,11 @@ namespace UnityFx.AppStates
 		{
 			ThrowIfDisposed();
 
-			if (_exclusive != exclusive)
+			if (_exclusive != exclusive && !ReferenceEquals(transform.parent, null))
 			{
 				for (var i = transform.GetSiblingIndex() - 1; i >= 0; --i)
 				{
-					var view = transform.GetChild(i).GetComponent<AppView>();
+					var view = transform.parent.GetChild(i).GetComponent<AppView>();
 
 					if (!ReferenceEquals(view, null))
 					{
@@ -181,7 +181,7 @@ namespace UnityFx.AppStates
 
 					if (ReferenceEquals(go.transform, t))
 					{
-						t.SetParent(null, false);
+						Destroy(t.gameObject);
 						return true;
 					}
 				}
@@ -229,7 +229,7 @@ namespace UnityFx.AppStates
 
 			while (transform.childCount > 0)
 			{
-				transform.GetChild(0).SetParent(null, false);
+				Destroy(transform.GetChild(0).gameObject);
 			}
 		}
 
