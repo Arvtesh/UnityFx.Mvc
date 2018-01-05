@@ -9,7 +9,7 @@ First off, thank you for considering contributing to UnityFx. It's people like y
 * Ensure cross-platform compatibilty for every change you make.
 * Create issues for any major changes and enhancements that you wish to make (make sure that the reported issue is not a duplicate of an existing one).
 * Don't add any classes to the codebase unless absolutely needed.
-* Please follow the coding style conventions used in the library.
+* Please follow the [coding style conventions](https://github.com/Arvtesh/CsCodingConventions/blob/master/Cs/CsharpCodingStandard.md) used in the library.
 
 # Code of Conduct
 
