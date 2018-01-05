@@ -11,4 +11,6 @@ First off, thank you for considering contributing to UnityFx. It's people like y
 * Don't add any classes to the codebase unless absolutely needed.
 * Please follow the coding style conventions used in the library.
 
+# Code of Conduct
 
+Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
