@@ -22,7 +22,7 @@ namespace UnityFx.AppStates.Tests
 
 		public AppStateManager()
 		{
-			var viewFactory = Substitute.For<IAppViewFactory>();
+			var viewFactory = Substitute.For<IAppStateViewFactory>();
 			var serviceProvider = Substitute.For<IServiceProvider>();
 			_stateManager = AppStateFactory.CreateStateManager(viewFactory, serviceProvider);
 		}
@@ -58,14 +58,14 @@ namespace UnityFx.AppStates.Tests
 			Assert.Throws<ObjectDisposedException>(() => _stateManager.GetStatesRecursive(new List<IAppState>()));
 			Assert.Throws<ObjectDisposedException>(() => _stateManager.Settings);
 			Assert.Throws<ObjectDisposedException>(() => _stateManager.States);
-			Assert.Throws<ObjectDisposedException>(() => _stateManager.PushStateAsync<TestController_Minimal>(PushOptions.None, null).Wait());
-			Assert.Throws<ObjectDisposedException>(() => _stateManager.PushStateAsync(typeof(TestController_Minimal), PushOptions.None, null).Wait());
+			Assert.Throws<ObjectDisposedException>(() => _stateManager.PushStateTaskAsync<TestController_Minimal>(PushOptions.None, null).Wait());
+			Assert.Throws<ObjectDisposedException>(() => _stateManager.PushStateTaskAsync(typeof(TestController_Minimal), PushOptions.None, null).Wait());
 		}
 
 		[Fact]
 		public async Task PushStateSucceeds()
 		{
-			var state = await _stateManager.PushStateAsync<TestController_Minimal>(PushOptions.None, null);
+			var state = await _stateManager.PushStateTaskAsync<TestController_Minimal>(PushOptions.None, null);
 
 			Assert.NotNull(state);
 			Assert.NotNull(state.Controller);

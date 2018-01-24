@@ -6,7 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace UnityFx.AppStates
 {
@@ -23,17 +22,21 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		protected void SetDisposed()
-		{
-			_disposed = true;
-		}
-
 		protected void ThrowIfDisposed()
 		{
 			if (_disposed)
 			{
 				throw new ObjectDisposedException(name);
 			}
+		}
+
+		#endregion
+
+		#region MonoBehaviour
+
+		private void OnDestroy()
+		{
+			_disposed = true;
 		}
 
 		#endregion

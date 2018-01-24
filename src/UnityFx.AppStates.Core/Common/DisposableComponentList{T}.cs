@@ -24,7 +24,6 @@ namespace UnityFx.AppStates
 
 		private void OnDestroy()
 		{
-			SetDisposed();
 		}
 
 		#endregion

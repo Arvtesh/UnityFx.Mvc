@@ -45,7 +45,7 @@ namespace UnityFx.AppStates
 		private readonly AppStateEventArgs _eventArgs;
 
 		private AppStateManager _substateManager;
-		private IAppView _view;
+		private IAppStateView _view;
 
 		private AppStateState _state;
 		private bool _isActive;
@@ -203,7 +203,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		internal IAppView GetPrevView()
+		internal IAppStateView GetPrevView()
 		{
 			var i = _stack.Count - 1;
 
@@ -288,7 +288,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		public IAppView View
+		public IAppStateView View
 		{
 			get
 			{

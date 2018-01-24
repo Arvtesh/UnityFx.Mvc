@@ -16,7 +16,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public static Task<IAppState> PushStateAsync<TStateController>(this IAppStateManager stateManager, object args) where TStateController : class, IAppStateController
 		{
-			return stateManager.PushStateAsync<TStateController>(PushOptions.None, args);
+			return stateManager.PushStateTaskAsync<TStateController>(PushOptions.None, args);
 		}
 
 		/// <summary>
@@ -24,7 +24,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public static Task<IAppState> PushStateAsync<TStateController>(this IAppStateManager stateManager) where TStateController : class, IAppStateController
 		{
-			return stateManager.PushStateAsync<TStateController>(PushOptions.None, null);
+			return stateManager.PushStateTaskAsync<TStateController>(PushOptions.None, null);
 		}
 
 		/// <summary>
@@ -32,7 +32,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public static Task<IAppState> SetStateAsync<TStateController>(this IAppStateManager stateManager, object args) where TStateController : class, IAppStateController
 		{
-			return stateManager.PushStateAsync<TStateController>(PushOptions.Set, args);
+			return stateManager.PushStateTaskAsync<TStateController>(PushOptions.Set, args);
 		}
 
 		/// <summary>
@@ -40,7 +40,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public static Task<IAppState> SetStateAsync<TStateController>(this IAppStateManager stateManager) where TStateController : class, IAppStateController
 		{
-			return stateManager.PushStateAsync<TStateController>(PushOptions.Set, null);
+			return stateManager.PushStateTaskAsync<TStateController>(PushOptions.Set, null);
 		}
 	}
 }

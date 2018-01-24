@@ -127,8 +127,7 @@ namespace UnityFx.AppStates
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TStateController"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
-		/// <seealso cref="PushStateAsync(Type, PushOptions, object)"/>
-		Task<IAppState> PushStateAsync<TStateController>(PushOptions options, object args) where TStateController : class, IAppStateController;
+		IAppStateOperation PushStateAsync<TStateController>(PushOptions options, object args) where TStateController : class, IAppStateController;
 
 		/// <summary>
 		/// Pushes a <paramref name="controllerType"/> instance on top of the states stack.
@@ -144,7 +143,40 @@ namespace UnityFx.AppStates
 		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
-		/// <seealso cref="PushStateAsync{TStateController}(PushOptions, object)"/>
-		Task<IAppState> PushStateAsync(Type controllerType, PushOptions options, object args);
+		/// <seealso cref="PushStateTaskAsync{TStateController}(PushOptions, object)"/>
+		IAppStateOperation PushStateAsync(Type controllerType, PushOptions options, object args);
+
+		/// <summary>
+		/// Pushes a <typeparamref name="TStateController"/> instance on top of the states stack.
+		/// </summary>
+		/// <remarks>
+		/// The method schedules an operation to run on the main thread. The operation instantiates a new state,
+		/// the controller the specified type, loads it content and activates it.
+		/// </remarks>
+		/// <param name="options">Push options.</param>
+		/// <param name="args">Controller-specific arguments.</param>
+		/// <typeparam name="TStateController">Type of the state controller.</typeparam>
+		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TStateController"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
+		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
+		/// <seealso cref="PushStateTaskAsync(Type, PushOptions, object)"/>
+		Task<IAppState> PushStateTaskAsync<TStateController>(PushOptions options, object args) where TStateController : class, IAppStateController;
+
+		/// <summary>
+		/// Pushes a <paramref name="controllerType"/> instance on top of the states stack.
+		/// </summary>
+		/// <remarks>
+		/// The method schedules an operation to run on the main thread. The operation instantiates a new state,
+		/// the controller the specified type, loads it content and activates it.
+		/// </remarks>
+		/// <param name="controllerType">Type of the state controller.</param>
+		/// <param name="options">Push options.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
+		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
+		/// <seealso cref="PushStateTaskAsync{TStateController}(PushOptions, object)"/>
+		Task<IAppState> PushStateTaskAsync(Type controllerType, PushOptions options, object args);
 	}
 }

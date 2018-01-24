@@ -13,7 +13,7 @@ namespace UnityFx.AppStates.Tests
 		public TestController_EventsSubstsatesCtor(IAppStateContext context)
 			: base(context)
 		{
-			context.SubstateManager.PushStateAsync<TestController_Events>(PushOptions.None, context.Args);
+			context.SubstateManager.PushStateTaskAsync<TestController_Events>(PushOptions.None, context.Args);
 		}
 	}
 }

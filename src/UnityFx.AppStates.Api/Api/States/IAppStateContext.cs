@@ -24,7 +24,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Returns a view attached to the state. Never returns <see langword="null"/>. Read only.
 		/// </summary>
-		IAppView View { get; }
+		IAppStateView View { get; }
 
 		/// <summary>
 		/// Returns the parent state manager. Never returns <see langword="null"/>. Read only.

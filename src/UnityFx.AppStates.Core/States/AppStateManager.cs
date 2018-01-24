@@ -30,7 +30,7 @@ namespace UnityFx.AppStates
 		private readonly AppState _parentState;
 		private readonly AppStateManager _parentStateManager;
 		private readonly IAppStateControllerFactory _controllerFactory;
-		private readonly IAppViewFactory _viewManager;
+		private readonly IAppStateViewFactory _viewManager;
 		private readonly IServiceProvider _serviceProvider;
 
 		private Task _stackOperationsProcessor;
@@ -49,14 +49,14 @@ namespace UnityFx.AppStates
 
 		public AppStateManager(
 			IAppStateControllerFactory controllerFactory,
-			IAppViewFactory viewManager,
+			IAppStateViewFactory viewManager,
 			IServiceProvider services)
 			: this(SynchronizationContext.Current, controllerFactory, viewManager, services)
 		{
 		}
 
 		public AppStateManager(
-			IAppViewFactory viewManager,
+			IAppStateViewFactory viewManager,
 			IServiceProvider services)
 			: this(SynchronizationContext.Current, new AppStateControllerFactory(), viewManager, services)
 		{
@@ -65,7 +65,7 @@ namespace UnityFx.AppStates
 		internal AppStateManager(
 			SynchronizationContext syncContext,
 			IAppStateControllerFactory controllerFactory,
-			IAppViewFactory viewManager,
+			IAppStateViewFactory viewManager,
 			IServiceProvider services)
 		{
 			Debug.Assert(controllerFactory != null);
@@ -118,7 +118,7 @@ namespace UnityFx.AppStates
 			return _controllerFactory.CreateController(controllerType, state, _serviceProvider);
 		}
 
-		internal IAppView CreateView(AppState state)
+		internal IAppStateView CreateView(AppState state)
 		{
 			Debug.Assert(state != null);
 			Debug.Assert(!_disposed);
@@ -370,7 +370,23 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		public Task<IAppState> PushStateAsync<T>(PushOptions options, object args) where T : class, IAppStateController
+		public IAppStateOperation PushStateAsync<T>(PushOptions options, object args) where T : class, IAppStateController
+		{
+			ThrowIfDisposed();
+			ThrowIfInvalidControllerType(typeof(T));
+
+			throw new NotImplementedException();
+		}
+
+		public IAppStateOperation PushStateAsync(Type controllerType, PushOptions options, object args)
+		{
+			ThrowIfDisposed();
+			ThrowIfInvalidControllerType(controllerType);
+
+			throw new NotImplementedException();
+		}
+
+		public Task<IAppState> PushStateTaskAsync<T>(PushOptions options, object args) where T : class, IAppStateController
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(typeof(T));
@@ -378,7 +394,7 @@ namespace UnityFx.AppStates
 			return PushState(_parentState, options, typeof(T), args);
 		}
 
-		public Task<IAppState> PushStateAsync(Type controllerType, PushOptions options, object args)
+		public Task<IAppState> PushStateTaskAsync(Type controllerType, PushOptions options, object args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);

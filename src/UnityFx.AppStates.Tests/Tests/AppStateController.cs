@@ -39,7 +39,7 @@ namespace UnityFx.AppStates.Tests
 	{
 		#region data
 
-		private readonly IAppViewFactory _viewFactory;
+		private readonly IAppStateViewFactory _viewFactory;
 		private readonly IServiceProvider _serviceProvider;
 		private readonly IAppStateService _stateManager;
 
@@ -49,7 +49,7 @@ namespace UnityFx.AppStates.Tests
 
 		public AppStateController()
 		{
-			_viewFactory = Substitute.For<IAppViewFactory>();
+			_viewFactory = Substitute.For<IAppStateViewFactory>();
 			_serviceProvider = Substitute.For<IServiceProvider>();
 			_stateManager = AppStateFactory.CreateStateManager(_viewFactory, _serviceProvider);
 		}
@@ -66,7 +66,7 @@ namespace UnityFx.AppStates.Tests
 		[Fact]
 		public void InvalidControllerTypeShouldThrow()
 		{
-			Assert.ThrowsAsync<ArgumentException>(() => _stateManager.PushStateAsync(typeof(TestController_Invalid), PushOptions.None, null));
+			Assert.ThrowsAsync<ArgumentException>(() => _stateManager.PushStateTaskAsync(typeof(TestController_Invalid), PushOptions.None, null));
 		}
 
 		[Fact]
@@ -75,7 +75,7 @@ namespace UnityFx.AppStates.Tests
 			var testDependency = new object();
 			_serviceProvider.GetService(typeof(object)).Returns(testDependency);
 
-			var state = await _stateManager.PushStateAsync<TestController_ConstructorWithMultipleArguments>(PushOptions.None, null);
+			var state = await _stateManager.PushStateTaskAsync<TestController_ConstructorWithMultipleArguments>(PushOptions.None, null);
 			var controller = state.Controller as TestController_ConstructorWithMultipleArguments;
 
 			Assert.NotNull(state);
@@ -89,7 +89,7 @@ namespace UnityFx.AppStates.Tests
 		public async Task EventsAreTriggeredInCorrectOrder()
 		{
 			var eventList = new List<MethodCallInfo>();
-			var state = await _stateManager.PushStateAsync<TestController_Events>(PushOptions.None, eventList);
+			var state = await _stateManager.PushStateTaskAsync<TestController_Events>(PushOptions.None, eventList);
 			await state.CloseAsync();
 
 			Assert.Empty(_stateManager.States);
@@ -108,7 +108,7 @@ namespace UnityFx.AppStates.Tests
 		public async Task SubstateEventShouldComeAfter(ControllerMethodId stateEvent, ControllerMethodId substateEvent)
 		{
 			var eventList = new List<MethodCallInfo>();
-			var state = await _stateManager.PushStateAsync<TestController_EventsSubstsatesCtor>(PushOptions.None, eventList);
+			var state = await _stateManager.PushStateTaskAsync<TestController_EventsSubstsatesCtor>(PushOptions.None, eventList);
 
 			AssertBefore(stateEvent, state.Controller, substateEvent, eventList);
 		}
@@ -119,7 +119,7 @@ namespace UnityFx.AppStates.Tests
 		public async Task SubstateEventShouldComeBefore(ControllerMethodId stateEvent, ControllerMethodId substateEvent)
 		{
 			var eventList = new List<MethodCallInfo>();
-			var state = await _stateManager.PushStateAsync<TestController_EventsSubstsatesCtor>(PushOptions.None, eventList);
+			var state = await _stateManager.PushStateTaskAsync<TestController_EventsSubstsatesCtor>(PushOptions.None, eventList);
 			var stateController = state.Controller;
 			await state.CloseAsync();
 
@@ -133,7 +133,7 @@ namespace UnityFx.AppStates.Tests
 		[InlineData(ControllerMethodId.OnActivate)]
 		public async Task PushExceptionIsForwarded(ControllerMethodId method)
 		{
-			await Assert.ThrowsAsync<Exception>(() => _stateManager.PushStateAsync<TestController_EventErrors>(PushOptions.None, method));
+			await Assert.ThrowsAsync<Exception>(() => _stateManager.PushStateTaskAsync<TestController_EventErrors>(PushOptions.None, method));
 
 			if (method == ControllerMethodId.OnActivate)
 			{
@@ -151,7 +151,7 @@ namespace UnityFx.AppStates.Tests
 		[InlineData(ControllerMethodId.Dispose)]
 		public async Task PopExceptionIsForwarded(ControllerMethodId method)
 		{
-			var state = await _stateManager.PushStateAsync<TestController_EventErrors>(PushOptions.None, method);
+			var state = await _stateManager.PushStateTaskAsync<TestController_EventErrors>(PushOptions.None, method);
 			await Assert.ThrowsAsync<Exception>(() => state.CloseAsync());
 			Assert.Empty(_stateManager.States);
 		}
