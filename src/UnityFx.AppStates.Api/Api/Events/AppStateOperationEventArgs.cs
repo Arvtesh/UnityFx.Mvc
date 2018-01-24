@@ -14,12 +14,12 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Returns the operation result. Read only.
 		/// </summary>
-		public IAppStateOperationInfo Operation { get; }
+		public IAppStateOperation Operation { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppStateOperationEventArgs"/> class.
 		/// </summary>
-		public AppStateOperationEventArgs(IAppStateOperationInfo op, IAppState state)
+		public AppStateOperationEventArgs(IAppStateOperation op, IAppState state)
 			: base(state)
 		{
 			Operation = op;

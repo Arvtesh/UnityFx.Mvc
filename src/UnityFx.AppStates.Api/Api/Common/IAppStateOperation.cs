@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 
 namespace UnityFx.AppStates
 {
@@ -26,7 +27,7 @@ namespace UnityFx.AppStates
 		object Args { get; }
 
 		/// <summary>
-		/// Returns the result value of this operation. Read only.
+		/// Returns the result value of this operation (if any). Read only.
 		/// </summary>
 		/// <remarks>
 		/// Once the result of an operation is available, it is stored and is returned immediately on subsequent calls to the <see cref="Result"/> property.
@@ -37,11 +38,20 @@ namespace UnityFx.AppStates
 		IAppState Result { get; }
 
 		/// <summary>
-		/// Returns an <see cref="System.Exception"/> that caused the operation to end prematurely. If the operation completed successfully
+		/// Returns the very first of exceptions that caused the operation to end prematurely. If the operation completed successfully
 		/// or has not yet thrown any exceptions, this will return <see langword="null"/>. Read only.
 		/// </summary>
+		/// <seealso cref="Exceptions"/>
 		/// <seealso cref="IsFaulted"/>
 		Exception Exception { get; }
+
+		/// <summary>
+		/// Returns one or more exceptions that caused the operation to end prematurely. If the operation completed successfully
+		/// or has not yet thrown any exceptions, this will return <see langword="null"/>. Read only.
+		/// </summary>
+		/// <seealso cref="Exception"/>
+		/// <seealso cref="IsFaulted"/>
+		IReadOnlyCollection<Exception> Exceptions { get; }
 
 		/// <summary>
 		/// Returns <see langword="true"/> if the operation has completed successfully, <see langword="false"/> otherwise. Read only.
