@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+#if UNITYFX_SUPPORT_TAP
 using System.Threading.Tasks;
+#endif
 
 namespace UnityFx.AppStates
 {
@@ -69,65 +71,31 @@ namespace UnityFx.AppStates
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso cref="IAppState"/>
 	/// <seealso cref="IAppStateController"/>
-	public interface IAppStateManager : IEnumerable<IAppState>
+	public interface IAppStateManager : IAppStateContainer
 	{
 		/// <summary>
-		/// Triggered when a new state is pushed onto the state stack of this manager or any of its child managers.
+		/// Raised when a new push operation is initiated.
 		/// </summary>
-		event EventHandler<AppStateEventArgs> StatePushed;
+		/// <seealso cref="PushStateAsync(PushOptions, Type, object)"/>
+		event EventHandler<PushStateInitiatedEventArgs> PushStateInitiated;
 
 		/// <summary>
-		/// Triggered when a state is popped from the state stack of this manager or any of its child managers.
+		/// Raised when a push operation is completed (either successfully or not).
 		/// </summary>
-		event EventHandler<AppStateEventArgs> StatePopped;
+		/// <seealso cref="PushStateAsync(PushOptions, Type, object)"/>
+		event EventHandler<PushStateCompletedEventArgs> PushStateCompleted;
 
 		/// <summary>
-		/// Triggered when a state is activated (in this manager or in any of its child managers).
+		/// Raised when a new pop operation is initiated.
 		/// </summary>
-		event EventHandler<AppStateEventArgs> StateActivated;
+		/// <seealso cref="PopStateAsync(IAppState)"/>
+		event EventHandler<PopStateInitiatedEventArgs> PopStateInitiated;
 
 		/// <summary>
-		/// Triggered when a state is deactivated (in this manager or in any of its child managers).
+		/// Raised when a pop operation is completed (either successfully or not).
 		/// </summary>
-		event EventHandler<AppStateEventArgs> StateDeactivated;
-
-		/// <summary>
-		/// Triggered when a state operation is complete (in this manager or in any of its child managers).
-		/// </summary>
-		event EventHandler<AppStateOperationEventArgs> StateOperationCompleted;
-
-		/// <summary>
-		/// Returns the child states stack. Read only.
-		/// </summary>
-		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
-		IAppStateStack States { get; }
-
-		/// <summary>
-		/// Enumerates child states recursively.
-		/// </summary>
-		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
-		IEnumerable<IAppState> GetStatesRecursive();
-
-		/// <summary>
-		/// Enumerates child states recursively.
-		/// </summary>
-		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
-		void GetStatesRecursive(ICollection<IAppState> states);
-
-		/// <summary>
-		/// Pushes a <typeparamref name="TStateController"/> instance on top of the states stack.
-		/// </summary>
-		/// <remarks>
-		/// The method schedules an operation to run on the main thread. The operation instantiates a new state,
-		/// the controller the specified type, loads it content and activates it.
-		/// </remarks>
-		/// <param name="options">Push options.</param>
-		/// <param name="args">Controller-specific arguments.</param>
-		/// <typeparam name="TStateController">Type of the state controller.</typeparam>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TStateController"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
-		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
-		IAppStateOperation PushStateAsync<TStateController>(PushOptions options, object args) where TStateController : class, IAppStateController;
+		/// <seealso cref="PopStateAsync(IAppState)"/>
+		event EventHandler<PopStateCompletedEventArgs> PopStateCompleted;
 
 		/// <summary>
 		/// Pushes a <paramref name="controllerType"/> instance on top of the states stack.
@@ -136,31 +104,28 @@ namespace UnityFx.AppStates
 		/// The method schedules an operation to run on the main thread. The operation instantiates a new state,
 		/// the controller the specified type, loads it content and activates it.
 		/// </remarks>
-		/// <param name="controllerType">Type of the state controller.</param>
 		/// <param name="options">Push options.</param>
-		/// <param name="args">Controller arguments.</param>
+		/// <param name="controllerType">Type of the state controller.</param>
+		/// <param name="controllerArgs">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
-		/// <seealso cref="PushStateTaskAsync{TStateController}(PushOptions, object)"/>
-		IAppStateOperation PushStateAsync(Type controllerType, PushOptions options, object args);
+		/// <seealso cref="PopStateAsync(IAppState)"/>
+		IAppStateOperation<IAppState> PushStateAsync(PushOptions options, Type controllerType, object controllerArgs);
 
 		/// <summary>
-		/// Pushes a <typeparamref name="TStateController"/> instance on top of the states stack.
+		/// Removes the specified state from the stack.
 		/// </summary>
-		/// <remarks>
-		/// The method schedules an operation to run on the main thread. The operation instantiates a new state,
-		/// the controller the specified type, loads it content and activates it.
-		/// </remarks>
-		/// <param name="options">Push options.</param>
-		/// <param name="args">Controller-specific arguments.</param>
-		/// <typeparam name="TStateController">Type of the state controller.</typeparam>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TStateController"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
-		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
-		/// <seealso cref="PushStateTaskAsync(Type, PushOptions, object)"/>
-		Task<IAppState> PushStateTaskAsync<TStateController>(PushOptions options, object args) where TStateController : class, IAppStateController;
+		/// <param name="state">The state to remove.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="state"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if the <paramref name="state"/> does not belong to this manager.</exception>
+		/// <seealso cref="PushStateAsync(PushOptions, Type, object)"/>
+		IAppStateOperation PopStateAsync(IAppState state);
+
+#if UNITYFX_SUPPORT_TAP
 
 		/// <summary>
 		/// Pushes a <paramref name="controllerType"/> instance on top of the states stack.
@@ -169,14 +134,26 @@ namespace UnityFx.AppStates
 		/// The method schedules an operation to run on the main thread. The operation instantiates a new state,
 		/// the controller the specified type, loads it content and activates it.
 		/// </remarks>
-		/// <param name="controllerType">Type of the state controller.</param>
 		/// <param name="options">Push options.</param>
-		/// <param name="args">Controller arguments.</param>
+		/// <param name="controllerType">Type of the state controller.</param>
+		/// <param name="controllerArgs">Controller arguments.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
-		/// <seealso cref="PushStateTaskAsync{TStateController}(PushOptions, object)"/>
-		Task<IAppState> PushStateTaskAsync(Type controllerType, PushOptions options, object args);
+		/// <seealso cref="PopStateTaskAsync(IAppState)"/>
+		Task<IAppState> PushStateTaskAsync(PushOptions options, Type controllerType, object controllerArgs);
+
+		/// <summary>
+		/// Removes the specified state from the stack.
+		/// </summary>
+		/// <param name="state">The state to remove.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="state"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if the <paramref name="state"/> does not belong to this manager.</exception>
+		/// <seealso cref="PushStateTaskAsync(PushOptions, Type, object)"/>
+		Task PopStateTaskAsync(IAppState state);
+
+#endif
 	}
 }

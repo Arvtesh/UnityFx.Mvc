@@ -4,8 +4,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace UnityFx.AppStates
@@ -13,6 +13,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Extension methods for <see cref="IAppView"/>.
 	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
 	public static class AppViewExtensions
 	{
 		/// <summary>

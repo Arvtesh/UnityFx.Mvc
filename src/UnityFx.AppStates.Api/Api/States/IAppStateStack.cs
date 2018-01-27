@@ -9,7 +9,11 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Returns a read-only stack of the <see cref="IAppState"/> instances.
 	/// </summary>
+#if NET35
+	public interface IAppStateStack : IEnumerable<IAppState>
+#else
 	public interface IAppStateStack : IReadOnlyCollection<IAppState>
+#endif
 	{
 		/// <summary>
 		/// Triggered when a new state is added to the stack.
@@ -20,6 +24,15 @@ namespace UnityFx.AppStates
 		/// Triggered when a state is removed from the stack.
 		/// </summary>
 		event EventHandler<AppStateEventArgs> StateRemoved;
+
+#if NET35
+
+		/// <summary>
+		/// Returns number of states in the stack. Read only.
+		/// </summary>
+		int Count { get; }
+
+#endif
 
 		/// <summary>
 		/// Returns the state at the top of the stack without removing it.

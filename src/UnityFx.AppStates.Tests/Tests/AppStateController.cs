@@ -66,7 +66,7 @@ namespace UnityFx.AppStates.Tests
 		[Fact]
 		public void InvalidControllerTypeShouldThrow()
 		{
-			Assert.ThrowsAsync<ArgumentException>(() => _stateManager.PushStateTaskAsync(typeof(TestController_Invalid), PushOptions.None, null));
+			Assert.ThrowsAsync<ArgumentException>(() => _stateManager.PushStateTaskAsync(PushOptions.None, typeof(TestController_Invalid), null));
 		}
 
 		[Fact]
@@ -75,7 +75,7 @@ namespace UnityFx.AppStates.Tests
 			var testDependency = new object();
 			_serviceProvider.GetService(typeof(object)).Returns(testDependency);
 
-			var state = await _stateManager.PushStateTaskAsync<TestController_ConstructorWithMultipleArguments>(PushOptions.None, null);
+			var state = await _stateManager.PushStateTaskAsync(PushOptions.None, typeof(TestController_ConstructorWithMultipleArguments), null);
 			var controller = state.Controller as TestController_ConstructorWithMultipleArguments;
 
 			Assert.NotNull(state);
@@ -89,8 +89,8 @@ namespace UnityFx.AppStates.Tests
 		public async Task EventsAreTriggeredInCorrectOrder()
 		{
 			var eventList = new List<MethodCallInfo>();
-			var state = await _stateManager.PushStateTaskAsync<TestController_Events>(PushOptions.None, eventList);
-			await state.CloseAsync();
+			var state = await _stateManager.PushStateTaskAsync(PushOptions.None, typeof(TestController_Events), eventList);
+			await _stateManager.PopStateTaskAsync(state);
 
 			Assert.Empty(_stateManager.States);
 			Assert.Equal(ControllerMethodId.Ctor, eventList[0].Method);
@@ -108,7 +108,7 @@ namespace UnityFx.AppStates.Tests
 		public async Task SubstateEventShouldComeAfter(ControllerMethodId stateEvent, ControllerMethodId substateEvent)
 		{
 			var eventList = new List<MethodCallInfo>();
-			var state = await _stateManager.PushStateTaskAsync<TestController_EventsSubstsatesCtor>(PushOptions.None, eventList);
+			var state = await _stateManager.PushStateTaskAsync(PushOptions.None, typeof(TestController_EventsSubstsatesCtor), eventList);
 
 			AssertBefore(stateEvent, state.Controller, substateEvent, eventList);
 		}
@@ -119,9 +119,9 @@ namespace UnityFx.AppStates.Tests
 		public async Task SubstateEventShouldComeBefore(ControllerMethodId stateEvent, ControllerMethodId substateEvent)
 		{
 			var eventList = new List<MethodCallInfo>();
-			var state = await _stateManager.PushStateTaskAsync<TestController_EventsSubstsatesCtor>(PushOptions.None, eventList);
+			var state = await _stateManager.PushStateTaskAsync(PushOptions.None, typeof(TestController_EventsSubstsatesCtor), eventList);
 			var stateController = state.Controller;
-			await state.CloseAsync();
+			await _stateManager.PopStateTaskAsync(state);
 
 			AssertAfter(stateEvent, stateController, substateEvent, eventList);
 		}
@@ -133,7 +133,7 @@ namespace UnityFx.AppStates.Tests
 		[InlineData(ControllerMethodId.OnActivate)]
 		public async Task PushExceptionIsForwarded(ControllerMethodId method)
 		{
-			await Assert.ThrowsAsync<Exception>(() => _stateManager.PushStateTaskAsync<TestController_EventErrors>(PushOptions.None, method));
+			await Assert.ThrowsAsync<Exception>(() => _stateManager.PushStateTaskAsync(PushOptions.None, typeof(TestController_EventErrors), method));
 
 			if (method == ControllerMethodId.OnActivate)
 			{
@@ -151,8 +151,8 @@ namespace UnityFx.AppStates.Tests
 		[InlineData(ControllerMethodId.Dispose)]
 		public async Task PopExceptionIsForwarded(ControllerMethodId method)
 		{
-			var state = await _stateManager.PushStateTaskAsync<TestController_EventErrors>(PushOptions.None, method);
-			await Assert.ThrowsAsync<Exception>(() => state.CloseAsync());
+			var state = await _stateManager.PushStateTaskAsync(PushOptions.None, typeof(TestController_EventErrors), method);
+			await Assert.ThrowsAsync<Exception>(() => _stateManager.PopStateTaskAsync(state));
 			Assert.Empty(_stateManager.States);
 		}
 

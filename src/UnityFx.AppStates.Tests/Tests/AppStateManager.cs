@@ -58,14 +58,13 @@ namespace UnityFx.AppStates.Tests
 			Assert.Throws<ObjectDisposedException>(() => _stateManager.GetStatesRecursive(new List<IAppState>()));
 			Assert.Throws<ObjectDisposedException>(() => _stateManager.Settings);
 			Assert.Throws<ObjectDisposedException>(() => _stateManager.States);
-			Assert.Throws<ObjectDisposedException>(() => _stateManager.PushStateTaskAsync<TestController_Minimal>(PushOptions.None, null).Wait());
-			Assert.Throws<ObjectDisposedException>(() => _stateManager.PushStateTaskAsync(typeof(TestController_Minimal), PushOptions.None, null).Wait());
+			Assert.Throws<ObjectDisposedException>(() => _stateManager.PushStateTaskAsync(PushOptions.None, typeof(TestController_Minimal), null).Wait());
 		}
 
 		[Fact]
 		public async Task PushStateSucceeds()
 		{
-			var state = await _stateManager.PushStateTaskAsync<TestController_Minimal>(PushOptions.None, null);
+			var state = await _stateManager.PushStateTaskAsync(PushOptions.None, typeof(TestController_Minimal), null);
 
 			Assert.NotNull(state);
 			Assert.NotNull(state.Controller);

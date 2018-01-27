@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace UnityFx.AppStates
 {
@@ -49,11 +48,6 @@ namespace UnityFx.AppStates
 		AppStateFlags Flags { get; }
 
 		/// <summary>
-		/// Returns the state layer. Read only.
-		/// </summary>
-		int Layer { get; }
-
-		/// <summary>
 		/// Returns a value indicating whether this state is active (i.e. it is a top state and can processes user input). Read only.
 		/// </summary>
 		bool IsActive { get; }
@@ -61,12 +55,12 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Returns parent state (if any). Read only.
 		/// </summary>
-		IAppState Parent { get; }
+		IAppState ParentState { get; }
 
 		/// <summary>
 		/// Returns the owner state (if any). Owner state is the state that pushed this one onto the stack. Read only.
 		/// </summary>
-		IAppState Owner { get; }
+		IAppState OwnerState { get; }
 
 		/// <summary>
 		/// Returns child states enumerator. Read only.
@@ -82,10 +76,5 @@ namespace UnityFx.AppStates
 		/// Returns a user-defined view controller instance attached to the state. Read only.
 		/// </summary>
 		IAppStateController Controller { get; }
-
-		/// <summary>
-		/// Pops the state from the state stack.
-		/// </summary>
-		Task CloseAsync();
 	}
 }

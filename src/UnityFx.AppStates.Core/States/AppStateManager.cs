@@ -3,45 +3,44 @@
 
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
+#if UNITYFX_SUPPORT_TAP
 using System.Threading.Tasks;
+#endif
 
 namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// Implementation of <see cref="IAppStateService"/>.
 	/// </summary>
-	internal sealed class AppStateManager : IAppStateService, IAppStateServiceSettings
+	internal sealed class AppStateManager : IAppStateService, IAppStateServiceSettings, IAppStateOperationOwner
 	{
 		#region data
 
 		private const int _maxStackOperationsCount = 32;
 		private const string _serviceName = "StateManager";
 
-		private readonly AppStateStack _states = new AppStateStack();
-		private readonly ConcurrentQueue<AppStateStackOperation> _stackOperations = new ConcurrentQueue<AppStateStackOperation>();
-		private readonly CancellationTokenSource _cancellationSource = new CancellationTokenSource();
-
-		private readonly TraceSource _console;
-		private readonly SynchronizationContext _synchronizationContext;
-		private readonly AppState _parentState;
-		private readonly AppStateManager _parentStateManager;
 		private readonly IAppStateControllerFactory _controllerFactory;
 		private readonly IAppStateViewFactory _viewManager;
 		private readonly IServiceProvider _serviceProvider;
+		private readonly SynchronizationContext _synchronizationContext;
 
-		private Task _stackOperationsProcessor;
+		private readonly TraceSource _console;
+		private readonly AppStateStack _states = new AppStateStack();
+		private readonly Queue<AppStateStackOperation> _stackOperations = new Queue<AppStateStackOperation>();
+		private readonly AppState _parentState;
+		private readonly AppStateManager _parentStateManager;
+
+		private AppStateStackOperation _currentOp;
 		private bool _enabled;
 		private bool _disposed;
 
 		#endregion
 
 		#region interface
-
-		internal TraceSource TraceSource => _console;
 
 		internal AppState ParentState => _parentState;
 
@@ -95,11 +94,6 @@ namespace UnityFx.AppStates
 			_enabled = parentState.Enabled;
 		}
 
-		internal Task WaitUntilAllOperationsAreProcessed()
-		{
-			return _stackOperationsProcessor ?? Task.CompletedTask;
-		}
-
 		internal AppStateManager CreateSubstateManager(AppState state, AppStateManager parentStateManager)
 		{
 			Debug.Assert(state != null);
@@ -124,42 +118,6 @@ namespace UnityFx.AppStates
 			Debug.Assert(!_disposed);
 
 			return _viewManager.CreateView(state.FullName, state.GetPrevView());
-		}
-
-		internal Task<IAppState> PushState(AppState ownerState, PushOptions options, Type controllerType, object controllerArgs)
-		{
-			Debug.Assert(controllerType != null);
-			Debug.Assert(!_disposed);
-
-			if (_cancellationSource.IsCancellationRequested)
-			{
-				return Task.FromCanceled<IAppState>(_cancellationSource.Token);
-			}
-			else
-			{
-				var op = new AppStatePushOperation(options, ownerState, null, _cancellationSource.Token, controllerType, controllerArgs);
-				AddStackOperation(op);
-				TryRunOperationProcessorOnSyncContext();
-				return op.Task;
-			}
-		}
-
-		internal Task PopState(AppState state)
-		{
-			Debug.Assert(state != null);
-			Debug.Assert(!_disposed);
-
-			if (_cancellationSource.IsCancellationRequested)
-			{
-				return Task.FromCanceled<IAppState>(_cancellationSource.Token);
-			}
-			else
-			{
-				var op = new AppStatePopOperation(state, null, _cancellationSource.Token);
-				AddStackOperation(op);
-				TryRunOperationProcessorOnSyncContext();
-				return op.Task;
-			}
 		}
 
 		internal async Task PopAll(IExceptionAggregator ea)
@@ -307,7 +265,18 @@ namespace UnityFx.AppStates
 
 		#endregion
 
+		#region IAppStateOperationOwner
+
+		public TraceSource TraceSource => _console;
+
+		#endregion
+
 		#region IAppStateService
+
+		public event EventHandler<AppStateEventArgs> StatePushed;
+		public event EventHandler<AppStateEventArgs> StatePopped;
+		public event EventHandler<AppStateEventArgs> StateActivated;
+		public event EventHandler<AppStateEventArgs> StateDeactivated;
 
 		public IAppStateServiceSettings Settings
 		{
@@ -330,11 +299,58 @@ namespace UnityFx.AppStates
 
 		#region IAppStateManager
 
-		public event EventHandler<AppStateEventArgs> StatePushed;
-		public event EventHandler<AppStateEventArgs> StatePopped;
-		public event EventHandler<AppStateEventArgs> StateActivated;
-		public event EventHandler<AppStateEventArgs> StateDeactivated;
-		public event EventHandler<AppStateOperationEventArgs> StateOperationCompleted;
+		public event EventHandler<PushStateInitiatedEventArgs> PushStateInitiated;
+		public event EventHandler<PushStateCompletedEventArgs> PushStateCompleted;
+		public event EventHandler<PopStateInitiatedEventArgs> PopStateInitiated;
+		public event EventHandler<PopStateCompletedEventArgs> PopStateCompleted;
+
+		public IAppStateOperation<IAppState> PushStateAsync(PushOptions options, Type controllerType, object controllerArgs)
+		{
+			ThrowIfDisposed();
+			ThrowIfInvalidControllerType(controllerType);
+			ThrowIfTooManyOperations();
+
+			return PushStateInternal(options, controllerType, controllerArgs, null, null);
+		}
+
+		public IAppStateOperation PopStateAsync(IAppState state)
+		{
+			ThrowIfDisposed();
+			ThrowIfInvalidState(state);
+			ThrowIfTooManyOperations();
+
+			return PopStateInternal(state, null, null);
+		}
+
+#if UNITYFX_SUPPORT_TAP
+
+		public Task<IAppState> PushStateTaskAsync(PushOptions options, Type controllerType, object controllerArgs)
+		{
+			ThrowIfDisposed();
+			ThrowIfInvalidControllerType(controllerType);
+			ThrowIfTooManyOperations();
+
+			var tcs = new TaskCompletionSource<IAppState>();
+			PushStateInternal(options, controllerType, controllerArgs, PushPopCompletionCallback, tcs);
+			return tcs.Task;
+		}
+
+		public Task PopStateTaskAsync(IAppState state)
+		{
+			ThrowIfDisposed();
+			ThrowIfInvalidState(state);
+			ThrowIfTooManyOperations();
+
+			var tcs = new TaskCompletionSource<IAppState>();
+			PopStateInternal(state, PushPopCompletionCallback, tcs);
+			return tcs.Task;
+		}
+
+#endif
+
+		#endregion
+
+		#region IAppStateContainer
 
 		public IAppStateStack States
 		{
@@ -370,46 +386,6 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		public IAppStateOperation PushStateAsync<T>(PushOptions options, object args) where T : class, IAppStateController
-		{
-			ThrowIfDisposed();
-			ThrowIfInvalidControllerType(typeof(T));
-
-			throw new NotImplementedException();
-		}
-
-		public IAppStateOperation PushStateAsync(Type controllerType, PushOptions options, object args)
-		{
-			ThrowIfDisposed();
-			ThrowIfInvalidControllerType(controllerType);
-
-			throw new NotImplementedException();
-		}
-
-		public Task<IAppState> PushStateTaskAsync<T>(PushOptions options, object args) where T : class, IAppStateController
-		{
-			ThrowIfDisposed();
-			ThrowIfInvalidControllerType(typeof(T));
-
-			return PushState(_parentState, options, typeof(T), args);
-		}
-
-		public Task<IAppState> PushStateTaskAsync(Type controllerType, PushOptions options, object args)
-		{
-			ThrowIfDisposed();
-			ThrowIfInvalidControllerType(controllerType);
-
-			return PushState(_parentState, options, controllerType, args);
-		}
-
-		#endregion
-
-		#region IEnumerable
-
-		public IEnumerator<IAppState> GetEnumerator() => _states.GetEnumerator();
-
-		IEnumerator IEnumerable.GetEnumerator() => _states.GetEnumerator();
-
 		#endregion
 
 		#region IDisposable
@@ -419,7 +395,6 @@ namespace UnityFx.AppStates
 			if (!_disposed)
 			{
 				_disposed = true;
-				_cancellationSource.Dispose();
 
 				foreach (var state in _states)
 				{
@@ -434,18 +409,333 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private void AddStackOperation(AppStateStackOperation op)
+		////private async Task ProcessStackOperations()
+		////{
+		////	try
+		////	{
+		////		while (_stackOperations.TryDequeue(out var op))
+		////		{
+		////			if (op.CancellationToken.IsCancellationRequested)
+		////			{
+		////				op.TrySetCanceled();
+		////				OnOperationComplete(op);
+		////			}
+		////			else
+		////			{
+		////				try
+		////				{
+		////					IAppState result = null;
+
+		////					OnOperationStarted(op);
+
+		////					if (op is PushStateOperation pushOp)
+		////					{
+		////						result = await ProcessPushOperation(pushOp);
+		////					}
+		////					else if (op is PopStateOperation popOp)
+		////					{
+		////						await ProcessPopOperation(popOp);
+		////					}
+		////					else
+		////					{
+		////						Debug.Fail("Unknown stack operation");
+		////					}
+
+		////					op.SetResult(result);
+		////				}
+		////				catch (OperationCanceledException)
+		////				{
+		////					op.TrySetCanceled();
+		////				}
+		////				catch (Exception e)
+		////				{
+		////					op.TrySetException(e);
+		////				}
+		////				finally
+		////				{
+		////					OnOperationComplete(op);
+		////				}
+		////			}
+		////		}
+		////	}
+		////	catch (Exception e)
+		////	{
+		////		_console.TraceData(TraceEventType.Critical, 0, e);
+		////	}
+		////	finally
+		////	{
+		////		_stackOperationsProcessor = null;
+		////	}
+		////}
+
+		////private async Task<IAppState> ProcessPushOperation(PushStateOperation op)
+		////{
+		////	Debug.Assert(op != null);
+
+		////	AppState result = null;
+
+		////	try
+		////	{
+		////		var options = op.Options;
+		////		var ownerState = op.OwnerState;
+		////		var cancellationToken = op.CancellationToken;
+		////		var transition = op.Transition;
+
+		////		TryDeactivateTopState();
+
+		////		// Replace the specified state with the new one.
+		////		if (options.HasFlag(PushOptions.Set))
+		////		{
+		////			result = new AppState(this, ownerState.OwnerState, op.ControllerType, op.ControllerArgs);
+		////			await result.Push(cancellationToken);
+
+		////			if (transition != null && !cancellationToken.IsCancellationRequested)
+		////			{
+		////				await transition.PlaySetTransition(ownerState, result, cancellationToken);
+		////			}
+
+		////			await PopStateInternal(ownerState, op);
+		////		}
+
+		////		// Remove all states from the stack and push the new one.
+		////		else if (options.HasFlag(PushOptions.Reset))
+		////		{
+		////			// 1) Clear the state stack.
+		////			await PopAllStatesInternal(op);
+
+		////			// 2) Push the new state if no errors and the operation is not canceled.
+		////			if (!cancellationToken.IsCancellationRequested)
+		////			{
+		////				result = new AppState(this, null, op.ControllerType, op.ControllerArgs);
+		////				await result.Push(cancellationToken);
+
+		////				// 3) Play transition animation if any.
+		////				if (transition != null && !cancellationToken.IsCancellationRequested)
+		////				{
+		////					await transition.PlayPushTransition(result, cancellationToken);
+		////				}
+		////			}
+		////		}
+
+		////		// Just push the new state onto the stack.
+		////		else
+		////		{
+		////			// 1) Push the new state onto the stack.
+		////			result = new AppState(this, ownerState, op.ControllerType, op.ControllerArgs);
+		////			await result.Push(cancellationToken);
+
+		////			// 2) Play transition animation if any.
+		////			if (transition != null && !cancellationToken.IsCancellationRequested)
+		////			{
+		////				if (ownerState != null)
+		////				{
+		////					await transition.PlayPushTransition(ownerState, result, cancellationToken);
+		////				}
+		////				else
+		////				{
+		////					await transition.PlayPushTransition(result, cancellationToken);
+		////				}
+		////			}
+		////		}
+		////	}
+		////	catch
+		////	{
+		////		try
+		////		{
+		////			if (result != null)
+		////			{
+		////				await result.PopIfNotAlready(op);
+		////			}
+		////		}
+		////		catch (Exception e)
+		////		{
+		////			// NOTE: Ignore any exceptions here.
+		////			_console.TraceData(TraceEventType.Error, 0, e);
+		////		}
+
+		////		throw;
+		////	}
+		////	finally
+		////	{
+		////		TryActivateTopStateSafe(op);
+		////	}
+
+		////	return result;
+		////}
+
+		////private async Task ProcessPopOperation(PopStateOperation op)
+		////{
+		////	Debug.Assert(op != null);
+
+		////	// Deativate the top state.
+		////	TryDeactivateTopStateSafe(op);
+
+		////	// Play pop transition.
+		////	try
+		////	{
+		////		if (op.Transition != null && op.State != null)
+		////		{
+		////			await op.Transition.PlayPopTransition(op.State, op.CancellationToken);
+		////		}
+		////	}
+		////	catch (Exception e)
+		////	{
+		////		op.AddException(e);
+		////	}
+
+		////	// Pop the state(s).
+		////	try
+		////	{
+		////		if (op.State != null)
+		////		{
+		////			await PopStateInternal(op.State, op);
+		////		}
+		////		else
+		////		{
+		////			await PopAllStatesInternal(op);
+		////		}
+		////	}
+		////	catch (Exception e)
+		////	{
+		////		op.AddException(e);
+		////	}
+
+		////	// Activate the new top state.
+		////	TryActivateTopStateSafe(op);
+		////}
+
+		////private async Task PopAllStatesInternal(IExceptionAggregator ea)
+		////{
+		////	if (_states.Count > 0)
+		////	{
+		////		foreach (var s in _states.ToArray())
+		////		{
+		////			try
+		////			{
+		////				await s.Pop(ea);
+		////			}
+		////			catch (Exception e)
+		////			{
+		////				ea.AddException(e);
+		////			}
+		////		}
+		////	}
+		////}
+
+		////private async Task PopStateInternal(AppState state, IExceptionAggregator ea)
+		////{
+		////	// Pop all dependent states (states that was pushed onto the stack by the state).
+		////	if (_states.Count > 1)
+		////	{
+		////		foreach (var s in _states.ToArray())
+		////		{
+		////			if (s.OwnerState == state)
+		////			{
+		////				try
+		////				{
+		////					await s.Pop(ea);
+		////				}
+		////				catch (Exception e)
+		////				{
+		////					ea.AddException(e);
+		////				}
+		////			}
+		////		}
+		////	}
+
+		////	// Release the state (and its substates). This will also remove state from the stack.
+		////	try
+		////	{
+		////		await state.Pop(ea);
+		////	}
+		////	catch (Exception e)
+		////	{
+		////		ea.AddException(e);
+		////	}
+		////}
+
+		////private void OnOperationStarted(IAppStateOperationInfo op)
+		////{
+		////	_console.TraceInformation(op.ToString());
+		////}
+
+		////private void OnOperationComplete(IAppStateOperationInfo op)
+		////{
+		////	if (op.IsFaulted)
+		////	{
+		////		foreach (var e in op.Exception.InnerExceptions)
+		////		{
+		////			_console.TraceData(TraceEventType.Error, 0, e);
+		////		}
+		////	}
+
+		////	InvokeOperationCompleted(new AppStateOperationEventArgs(op, op.Target ?? op.Result));
+		////}
+
+		////private void InvokeOperationCompleted(AppStateOperationEventArgs args)
+		////{
+		////	try
+		////	{
+		////		StateOperationCompleted?.Invoke(this, args);
+		////	}
+		////	catch (Exception e)
+		////	{
+		////		_console.TraceData(TraceEventType.Error, 0, e);
+		////	}
+
+		////	_parentStateManager?.InvokeOperationCompleted(args);
+		////}
+
+		private AppStateStackOperation PushStateInternal(PushOptions options, Type controllerType, object controllerArgs, AsyncCallback asyncCallback, object asyncState)
 		{
-			if (_stackOperations.Count > _maxStackOperationsCount)
+			Debug.Assert(controllerType != null);
+			Debug.Assert(!_disposed);
+
+			AppStateStackOperation result;
+
+			if (options == PushOptions.Set)
 			{
-				throw new InvalidOperationException($"Operation cannot be scheduled because maximum number of simultaneous stack operations ({_maxStackOperationsCount}) is exceeded.");
+				result = new SetStateOperation(this, _parentState, controllerType, controllerArgs, asyncCallback, asyncState);
+			}
+			else if (options == PushOptions.Reset)
+			{
+				result = new ResetStateOperation(this, controllerType, controllerArgs, asyncCallback, asyncState);
+			}
+			else
+			{
+				result = new PushStateOperation(this, _parentState, controllerType, controllerArgs, asyncCallback, asyncState);
 			}
 
-			_stackOperations.Enqueue(op);
+			QueueOperation(result);
+			return result;
 		}
 
-		private bool TryRunOperationProcessorOnSyncContext()
+		private AppStateStackOperation PopStateInternal(IAppState state, AsyncCallback asyncCallback, object asyncState)
 		{
+			Debug.Assert(!_disposed);
+
+			AppStateStackOperation result;
+
+			if (state != null)
+			{
+				result = new PopStateOperation(this, state as AppState, asyncCallback, asyncState);
+			}
+			else
+			{
+				result = new PopAllStatesOperation(this, asyncCallback, asyncState);
+			}
+
+			QueueOperation(result);
+			return result;
+		}
+
+		private void QueueOperation(AppStateStackOperation op)
+		{
+			lock (_stackOperations)
+			{
+				_stackOperations.Enqueue(op);
+			}
+
 			if (_enabled)
 			{
 				if (_synchronizationContext != null)
@@ -456,11 +746,12 @@ namespace UnityFx.AppStates
 				{
 					TryRunOperationProcessor();
 				}
-
-				return true;
 			}
+		}
 
-			return false;
+		private static void TryRunOperationProcessor(object args)
+		{
+			(args as AppStateManager).TryRunOperationProcessor();
 		}
 
 		private void TryRunOperationProcessor()
@@ -476,282 +767,28 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		private async Task ProcessStackOperations()
+#if UNITYFX_SUPPORT_TAP
+
+		private static void PushPopCompletionCallback(IAsyncResult asyncResult)
 		{
-			try
+			var storeOp = asyncResult as IAppStateOperation<IAppState>;
+			var tcs = asyncResult.AsyncState as TaskCompletionSource<IAppState>;
+
+			if (storeOp.IsCompletedSuccessfully)
 			{
-				while (_stackOperations.TryDequeue(out var op))
-				{
-					if (op.CancellationToken.IsCancellationRequested)
-					{
-						op.TrySetCanceled();
-						OnOperationComplete(op);
-					}
-					else
-					{
-						try
-						{
-							IAppState result = null;
-
-							OnOperationStarted(op);
-
-							if (op is AppStatePushOperation pushOp)
-							{
-								result = await ProcessPushOperation(pushOp);
-							}
-							else if (op is AppStatePopOperation popOp)
-							{
-								await ProcessPopOperation(popOp);
-							}
-							else
-							{
-								Debug.Fail("Unknown stack operation");
-							}
-
-							op.SetResult(result);
-						}
-						catch (OperationCanceledException)
-						{
-							op.TrySetCanceled();
-						}
-						catch (Exception e)
-						{
-							op.TrySetException(e);
-						}
-						finally
-						{
-							OnOperationComplete(op);
-						}
-					}
-				}
+				tcs.TrySetResult(storeOp.Result);
 			}
-			catch (Exception e)
+			else if (storeOp.IsCanceled)
 			{
-				_console.TraceData(TraceEventType.Critical, 0, e);
+				tcs.TrySetCanceled();
 			}
-			finally
+			else
 			{
-				_stackOperationsProcessor = null;
+				tcs.TrySetException(storeOp.Exception);
 			}
 		}
 
-		private async Task<IAppState> ProcessPushOperation(AppStatePushOperation op)
-		{
-			Debug.Assert(op != null);
-
-			AppState result = null;
-
-			try
-			{
-				var options = op.Options;
-				var ownerState = op.OwnerState;
-				var cancellationToken = op.CancellationToken;
-				var transition = op.Transition;
-
-				TryDeactivateTopState();
-
-				// Replace the specified state with the new one.
-				if (options.HasFlag(PushOptions.Set))
-				{
-					result = new AppState(this, ownerState.Owner, op.ControllerType, op.ControllerArgs);
-					await result.Push(cancellationToken);
-
-					if (transition != null && !cancellationToken.IsCancellationRequested)
-					{
-						await transition.PlaySetTransition(ownerState, result, cancellationToken);
-					}
-
-					await PopStateInternal(ownerState, op);
-				}
-
-				// Remove all states from the stack and push the new one.
-				else if (options.HasFlag(PushOptions.Reset))
-				{
-					// 1) Clear the state stack.
-					await PopAllStatesInternal(op);
-
-					// 2) Push the new state if no errors and the operation is not canceled.
-					if (!cancellationToken.IsCancellationRequested)
-					{
-						result = new AppState(this, null, op.ControllerType, op.ControllerArgs);
-						await result.Push(cancellationToken);
-
-						// 3) Play transition animation if any.
-						if (transition != null && !cancellationToken.IsCancellationRequested)
-						{
-							await transition.PlayPushTransition(result, cancellationToken);
-						}
-					}
-				}
-
-				// Just push the new state onto the stack.
-				else
-				{
-					// 1) Push the new state onto the stack.
-					result = new AppState(this, ownerState, op.ControllerType, op.ControllerArgs);
-					await result.Push(cancellationToken);
-
-					// 2) Play transition animation if any.
-					if (transition != null && !cancellationToken.IsCancellationRequested)
-					{
-						if (ownerState != null)
-						{
-							await transition.PlayPushTransition(ownerState, result, cancellationToken);
-						}
-						else
-						{
-							await transition.PlayPushTransition(result, cancellationToken);
-						}
-					}
-				}
-			}
-			catch
-			{
-				try
-				{
-					if (result != null)
-					{
-						await result.PopIfNotAlready(op);
-					}
-				}
-				catch (Exception e)
-				{
-					// NOTE: Ignore any exceptions here.
-					_console.TraceData(TraceEventType.Error, 0, e);
-				}
-
-				throw;
-			}
-			finally
-			{
-				TryActivateTopStateSafe(op);
-			}
-
-			return result;
-		}
-
-		private async Task ProcessPopOperation(AppStatePopOperation op)
-		{
-			Debug.Assert(op != null);
-
-			// Deativate the top state.
-			TryDeactivateTopStateSafe(op);
-
-			// Play pop transition.
-			try
-			{
-				if (op.Transition != null && op.State != null)
-				{
-					await op.Transition.PlayPopTransition(op.State, op.CancellationToken);
-				}
-			}
-			catch (Exception e)
-			{
-				op.AddException(e);
-			}
-
-			// Pop the state(s).
-			try
-			{
-				if (op.State != null)
-				{
-					await PopStateInternal(op.State, op);
-				}
-				else
-				{
-					await PopAllStatesInternal(op);
-				}
-			}
-			catch (Exception e)
-			{
-				op.AddException(e);
-			}
-
-			// Activate the new top state.
-			TryActivateTopStateSafe(op);
-		}
-
-		private async Task PopAllStatesInternal(IExceptionAggregator ea)
-		{
-			if (_states.Count > 0)
-			{
-				foreach (var s in _states.ToArray())
-				{
-					try
-					{
-						await s.Pop(ea);
-					}
-					catch (Exception e)
-					{
-						ea.AddException(e);
-					}
-				}
-			}
-		}
-
-		private async Task PopStateInternal(AppState state, IExceptionAggregator ea)
-		{
-			// Pop all dependent states (states that was pushed onto the stack by the state).
-			if (_states.Count > 1)
-			{
-				foreach (var s in _states.ToArray())
-				{
-					if (s.Owner == state)
-					{
-						try
-						{
-							await s.Pop(ea);
-						}
-						catch (Exception e)
-						{
-							ea.AddException(e);
-						}
-					}
-				}
-			}
-
-			// Release the state (and its substates). This will also remove state from the stack.
-			try
-			{
-				await state.Pop(ea);
-			}
-			catch (Exception e)
-			{
-				ea.AddException(e);
-			}
-		}
-
-		private void OnOperationStarted(IAppStateOperationInfo op)
-		{
-			_console.TraceInformation(op.ToString());
-		}
-
-		private void OnOperationComplete(IAppStateOperationInfo op)
-		{
-			if (op.IsFaulted)
-			{
-				foreach (var e in op.Exception.InnerExceptions)
-				{
-					_console.TraceData(TraceEventType.Error, 0, e);
-				}
-			}
-
-			InvokeOperationCompleted(new AppStateOperationEventArgs(op, op.Target ?? op.Result));
-		}
-
-		private void InvokeOperationCompleted(AppStateOperationEventArgs args)
-		{
-			try
-			{
-				StateOperationCompleted?.Invoke(this, args);
-			}
-			catch (Exception e)
-			{
-				_console.TraceData(TraceEventType.Error, 0, e);
-			}
-
-			_parentStateManager?.InvokeOperationCompleted(args);
-		}
+#endif
 
 		private string GetFullName()
 		{
@@ -771,9 +808,25 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		private static void TryRunOperationProcessor(object state)
+		private void ThrowIfTooManyOperations()
 		{
-			(state as AppStateManager)?.TryRunOperationProcessor();
+			if (_stackOperations.Count > _maxStackOperationsCount)
+			{
+				throw new InvalidOperationException($"Operation cannot be scheduled because maximum number of simultaneous stack operations ({_maxStackOperationsCount}) is exceeded.");
+			}
+		}
+
+		private void ThrowIfInvalidState(IAppState state)
+		{
+			if (state == null)
+			{
+				throw new ArgumentNullException(nameof(state));
+			}
+
+			if (!_states.Contains(state))
+			{
+				throw new InvalidOperationException("The state does not belong to the manager.");
+			}
 		}
 
 		private static void ThrowIfInvalidControllerType(Type controllerType)

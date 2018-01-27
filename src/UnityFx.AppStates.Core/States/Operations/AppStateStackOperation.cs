@@ -3,12 +3,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace UnityFx.AppStates
 {
-	internal abstract class AppStateStackOperation : IAppStateOperation, IExceptionAggregator, IAsyncResult, IDisposable
+	/// <summary>
+	/// A yieldable asynchronous state operation.
+	/// </summary>
+	/// <seealso href="https://blogs.msdn.microsoft.com/nikos/2011/03/14/how-to-implement-the-iasyncresult-design-pattern/"/>
+	[DebuggerDisplay("{DebuggerDisplay,nq}")]
+	internal abstract class AppStateStackOperation : IAppStateOperation<IAppState>, IAppStateOperationInfo, IExceptionAggregator, IAsyncResult, IDisposable
 	{
 		#region data
 
@@ -18,8 +24,10 @@ namespace UnityFx.AppStates
 		private const int _statusCompleted = 4;
 		private const int _statusFaulted = 8;
 		private const int _statusCanceled = 16;
+		private const int _typeMask = 0x7;
 
 		private readonly int _id;
+		private readonly IAppStateOperationOwner _owner;
 
 		private static int _lastId;
 
@@ -27,6 +35,7 @@ namespace UnityFx.AppStates
 		private object _asyncState;
 		private EventWaitHandle _waitHandle;
 		private List<Exception> _exceptions;
+		private IAppState _result;
 
 		private volatile int _status;
 
@@ -34,20 +43,60 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		public IAppStateTransition Transition { get; }
-
-		public CancellationToken CancellationToken { get; }
-
-		public AppStateStackOperation(IAppStateTransition transition, CancellationToken ct)
+		public string DebuggerDisplay
 		{
-			Transition = transition;
-			CancellationToken = ct;
+			get
+			{
+				var result = GetOperationName();
+				var state = "Running";
+
+				if ((_status & _statusCompleted) != 0)
+				{
+					state = "Completed";
+				}
+				else if ((_status & _statusFaulted) != 0)
+				{
+					state = "Faulted";
+				}
+				else if ((_status & _statusCanceled) != 0)
+				{
+					state = "Canceled";
+				}
+
+				result += ", State = ";
+				result += state;
+
+				if ((_status & _statusDisposedFlag) != 0)
+				{
+					result += ", Disposed";
+				}
+
+				return result;
+			}
 		}
 
-		protected bool TrySetCompleted(bool completedSynchronously = false)
+		protected AppStateStackOperation(IAppStateOperationOwner owner, AppStateOperationType opType, AsyncCallback asyncCallback, object asyncState, string comment)
+		{
+			_id = (++_lastId << 3) | (int)opType;
+			_owner = owner;
+			_asyncCallback = asyncCallback;
+			_asyncState = asyncState;
+
+			var s = GetOperationName();
+
+			if (!string.IsNullOrEmpty(comment))
+			{
+				s += ": " + comment;
+			}
+
+			TraceEvent(TraceEventType.Start, s);
+		}
+
+		protected bool TrySetResult(IAppState result, bool completedSynchronously = false)
 		{
 			if (TrySetStatus(_statusCompleted, completedSynchronously))
 			{
+				_result = result;
 				OnCompleted();
 				return true;
 			}
@@ -80,6 +129,26 @@ namespace UnityFx.AppStates
 			return false;
 		}
 
+		protected void TraceError(string s)
+		{
+			_owner.TraceSource.TraceEvent(TraceEventType.Error, _id, GetOperationName() + ": " + s);
+		}
+
+		protected void TraceException(Exception e)
+		{
+			_owner.TraceSource.TraceData(TraceEventType.Error, _id, e);
+		}
+
+		protected void TraceEvent(TraceEventType eventType, string s)
+		{
+			_owner.TraceSource.TraceEvent(eventType, _id, s);
+		}
+
+		protected void TraceData(TraceEventType eventType, object data)
+		{
+			_owner.TraceSource.TraceData(eventType, _id, data);
+		}
+
 		protected void ThrowIfNotCompletedSuccessfully()
 		{
 			if ((_status & _statusCompleted) == 0)
@@ -96,19 +165,45 @@ namespace UnityFx.AppStates
 			}
 		}
 
+		protected string GetOperationTypeName()
+		{
+			return ((AppStateOperationType)(_id & _typeMask)).ToString();
+		}
+
+		protected string GetOperationName()
+		{
+			var result = (AppStateOperationType)(_id & _typeMask);
+			return $"{result.ToString()} ({_id.ToString(CultureInfo.InvariantCulture)})";
+		}
+
+		#endregion
+
+		#region IAppStateOperation
+
+		public IAppState Result
+		{
+			get
+			{
+				ThrowIfDisposed();
+				ThrowIfNotCompletedSuccessfully();
+				return _result;
+			}
+		}
+
+		public int Id => _id;
+		public Exception Exception => _exceptions?[0];
+		public IEnumerable<Exception> Exceptions => _exceptions;
+		public bool IsCompletedSuccessfully => (_status & _statusCompleted) != 0;
+		public bool IsFaulted => _status >= _statusFaulted;
+		public bool IsCanceled => (_status & _statusCanceled) != 0;
+
 		#endregion
 
 		#region IAppStateOperationInfo
 
-		public int Id => _id;
-		public abstract AppStateOperationType Type { get; }
-		public abstract object Args { get; }
-		public abstract IAppState Result { get; }
-		public Exception Exception => _exceptions?[0];
-		public IReadOnlyCollection<Exception> Exceptions => _exceptions;
-		public bool IsCompletedSuccessfully => (_status & _statusCompleted) != 0;
-		public bool IsFaulted => _status >= _statusFaulted;
-		public bool IsCanceled => (_status & _statusCanceled) != 0;
+		public int OperationId => _id;
+		public AppStateOperationType OperationType => (AppStateOperationType)(_id & _typeMask);
+		public object UserState => _asyncState;
 
 		#endregion
 
@@ -198,6 +293,10 @@ namespace UnityFx.AppStates
 
 		private void OnCompleted()
 		{
+			var s = GetOperationName() + (IsCompletedSuccessfully ? " completed" : " failed");
+
+			TraceEvent(TraceEventType.Stop, s);
+
 			_waitHandle?.Set();
 			_asyncCallback?.Invoke(this);
 			_asyncCallback = null;
@@ -216,11 +315,6 @@ namespace UnityFx.AppStates
 			}
 
 			return false;
-		}
-
-		private string GetOperationName()
-		{
-			return string.Empty;
 		}
 
 		#endregion

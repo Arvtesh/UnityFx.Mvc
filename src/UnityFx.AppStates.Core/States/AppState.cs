@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace UnityFx.AppStates
 {
@@ -275,9 +274,9 @@ namespace UnityFx.AppStates
 
 		public bool IsActive => _isActive;
 
-		public IAppState Parent => _parentState;
+		public IAppState ParentState => _parentState;
 
-		public IAppState Owner => _ownerState;
+		public IAppState OwnerState => _ownerState;
 
 		public IReadOnlyCollection<IAppState> ChildStates
 		{
@@ -310,12 +309,6 @@ namespace UnityFx.AppStates
 				ThrowIfDisposed();
 				return _controller;
 			}
-		}
-
-		public Task CloseAsync()
-		{
-			ThrowIfDisposed();
-			return _parentStateManager.PopState(this);
 		}
 
 		#endregion

@@ -17,27 +17,6 @@ namespace UnityFx.AppStates
 		int Id { get; }
 
 		/// <summary>
-		/// Returns the operation type. Read only.
-		/// </summary>
-		AppStateOperationType Type { get; }
-
-		/// <summary>
-		/// Returns operation arguments (if any). Read only.
-		/// </summary>
-		object Args { get; }
-
-		/// <summary>
-		/// Returns the result value of this operation (if any). Read only.
-		/// </summary>
-		/// <remarks>
-		/// Once the result of an operation is available, it is stored and is returned immediately on subsequent calls to the <see cref="Result"/> property.
-		/// Note that, if an exception occurred during the operation, or if the operation has been cancelled, the <see cref="Result"/> property does not return a value.
-		/// Instead, attempting to access the property value throws an <see cref="InvalidOperationException"/> exception.
-		/// </remarks>
-		/// <exception cref="InvalidOperationException">Thrown if the property is accessed before operation is completed or if the operation has failed.</exception>
-		IAppState Result { get; }
-
-		/// <summary>
 		/// Returns the very first of exceptions that caused the operation to end prematurely. If the operation completed successfully
 		/// or has not yet thrown any exceptions, this will return <see langword="null"/>. Read only.
 		/// </summary>
@@ -51,7 +30,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <seealso cref="Exception"/>
 		/// <seealso cref="IsFaulted"/>
-		IReadOnlyCollection<Exception> Exceptions { get; }
+		IEnumerable<Exception> Exceptions { get; }
 
 		/// <summary>
 		/// Returns <see langword="true"/> if the operation has completed successfully, <see langword="false"/> otherwise. Read only.
