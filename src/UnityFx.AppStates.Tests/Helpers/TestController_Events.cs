@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace UnityFx.AppStates.Tests
 {
-	internal class TestController_Events : IAppStateController, IAppStateEvents, IDisposable
+	internal class TestController_Events : IAppStateEvents, IDisposable
 	{
 		private readonly ICollection<MethodCallInfo> _calls;
 

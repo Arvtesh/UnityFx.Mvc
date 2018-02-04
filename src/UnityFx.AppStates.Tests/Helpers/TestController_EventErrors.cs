@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace UnityFx.AppStates.Tests
 {
-	internal class TestController_EventErrors : IAppStateController, IAppStateEvents, IDisposable
+	internal class TestController_EventErrors : IAppStateEvents, IDisposable
 	{
 		private readonly ControllerMethodId _errorId;
 

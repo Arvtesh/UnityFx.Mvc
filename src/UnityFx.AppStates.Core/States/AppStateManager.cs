@@ -103,7 +103,7 @@ namespace UnityFx.AppStates
 			return new AppStateManager(state, parentStateManager);
 		}
 
-		internal IAppStateController CreateStateController(AppState state, Type controllerType)
+		internal object CreateStateController(AppState state, Type controllerType)
 		{
 			Debug.Assert(state != null);
 			Debug.Assert(controllerType != null);
@@ -844,11 +844,6 @@ namespace UnityFx.AppStates
 			if (controllerType.IsValueType)
 			{
 				throw new ArgumentException($"A state instance cannot be value-type", nameof(controllerType));
-			}
-
-			if (!typeof(IAppStateController).IsAssignableFrom(controllerType))
-			{
-				throw new ArgumentException($"{controllerType.Name} should implement {typeof(IAppStateController).Name} interface", nameof(controllerType));
 			}
 		}
 

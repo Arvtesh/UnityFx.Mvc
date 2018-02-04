@@ -29,7 +29,6 @@ namespace UnityFx.AppStates
 	/// </remarks>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
-	/// <seealso cref="IAppStateController"/>
 	public interface IAppState
 	{
 		/// <summary>
@@ -75,6 +74,6 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Returns a user-defined view controller instance attached to the state. Read only.
 		/// </summary>
-		IAppStateController Controller { get; }
+		object Controller { get; }
 	}
 }

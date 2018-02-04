@@ -6,7 +6,7 @@ using System;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Represents <see cref="IAppStateController"/> context.
+	/// Represents state controller context.
 	/// </summary>
 	/// <seealso cref="IAppState"/>
 	public interface IAppStateContext

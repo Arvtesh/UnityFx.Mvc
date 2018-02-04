@@ -6,7 +6,7 @@ using System;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Stores static parameters applicable to <see cref="IAppStateController"/> implementation.
+	/// Stores static parameters applicable to state controller implementation.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class)]
 	public sealed class AppStateControllerAttribute : Attribute

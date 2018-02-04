@@ -29,7 +29,7 @@ namespace UnityFx.AppStates
 		#region data
 
 		private readonly AppStateManager _parentStateManager;
-		private readonly IAppStateController _controller;
+		private readonly object _controller;
 		private readonly IAppStateEvents _controllerEvents;
 		private readonly AppState _parentState;
 		private readonly IAppState _ownerState;
@@ -302,7 +302,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		public IAppStateController Controller
+		public object Controller
 		{
 			get
 			{

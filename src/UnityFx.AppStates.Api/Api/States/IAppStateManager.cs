@@ -41,7 +41,7 @@ namespace UnityFx.AppStates
 	}
 
 	/// <summary>
-	/// Enumerates <see cref="IAppStateController"/> push options.
+	/// Enumerates state controller push options.
 	/// </summary>
 	public enum PushOptions
 	{
@@ -70,7 +70,6 @@ namespace UnityFx.AppStates
 	/// <threadsafety static="true" instance="false"/>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso cref="IAppState"/>
-	/// <seealso cref="IAppStateController"/>
 	public interface IAppStateManager : IAppStateContainer
 	{
 		/// <summary>

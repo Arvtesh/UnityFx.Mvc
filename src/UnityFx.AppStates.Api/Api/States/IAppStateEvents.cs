@@ -10,7 +10,6 @@ namespace UnityFx.AppStates
 	/// An <see cref="IAppState"/> extension. Implement it to receive notifications on the state lifetime events.
 	/// </summary>
 	/// <seealso cref="IAppState"/>
-	/// <seealso cref="IAppStateController"/>
 	public interface IAppStateEvents
 	{
 		/// <summary>
