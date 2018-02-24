@@ -76,13 +76,14 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Raised when a new push operation is initiated.
 		/// </summary>
-		/// <seealso cref="PushStateAsync(PushOptions, Type, object)"/>
+		/// <seealso cref="PushStateAsync(Type, PushStateArgs)"/>
 		event EventHandler<PushStateInitiatedEventArgs> PushStateInitiated;
 
 		/// <summary>
 		/// Raised when a push operation is completed (either successfully or not).
 		/// </summary>
-		/// <seealso cref="PushStateAsync(PushOptions, Type, object)"/>
+		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap">Event-based Asynchronous Pattern (EAP)</seealso>
+		/// <seealso cref="PushStateAsync(Type, PushStateArgs)"/>
 		event EventHandler<PushStateCompletedEventArgs> PushStateCompleted;
 
 		/// <summary>
@@ -94,11 +95,12 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Raised when a pop operation is completed (either successfully or not).
 		/// </summary>
+		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap">Event-based Asynchronous Pattern (EAP)</seealso>
 		/// <seealso cref="PopStateAsync(IAppState)"/>
 		event EventHandler<PopStateCompletedEventArgs> PopStateCompleted;
 
 		/// <summary>
-		/// Returns the child states stack.
+		/// Gets the child states.
 		/// </summary>
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
 		IAppStateStack States { get; }
@@ -120,18 +122,18 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <remarks>
 		/// The method schedules an operation to run on the main thread. The operation instantiates a new state,
-		/// the controller the specified type, loads it content and activates it.
+		/// a controller of the specified type, loads it content and activates it.
 		/// </remarks>
-		/// <param name="options">Push options.</param>
 		/// <param name="controllerType">Type of the state controller.</param>
-		/// <param name="controllerArgs">Controller arguments.</param>
+		/// <param name="args">Controller arguments.</param>
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
+		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap">Event-based Asynchronous Pattern (EAP)</seealso>
 		/// <seealso cref="PopStateAsync(IAppState)"/>
-		IAsyncOperation<IAppState> PushStateAsync(PushOptions options, Type controllerType, object controllerArgs);
+		IAsyncOperation<IAppState> PushStateAsync(Type controllerType, PushStateArgs args);
 
 		/// <summary>
 		/// Removes the specified state from the stack.
@@ -140,7 +142,8 @@ namespace UnityFx.AppStates
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="state"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if the <paramref name="state"/> does not belong to this manager.</exception>
-		/// <seealso cref="PushStateAsync(PushOptions, Type, object)"/>
+		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap">Event-based Asynchronous Pattern (EAP)</seealso>
+		/// <seealso cref="PushStateAsync(Type, PushStateArgs)"/>
 		IAsyncOperation PopStateAsync(IAppState state);
 
 #if UNITYFX_SUPPORT_TAP
@@ -152,15 +155,15 @@ namespace UnityFx.AppStates
 		/// The method schedules an operation to run on the main thread. The operation instantiates a new state,
 		/// the controller the specified type, loads it content and activates it.
 		/// </remarks>
-		/// <param name="options">Push options.</param>
 		/// <param name="controllerType">Type of the state controller.</param>
-		/// <param name="controllerArgs">Controller arguments.</param>
+		/// <param name="args">Controller arguments.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
+		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/task-based-asynchronous-pattern-tap">Task-based Asynchronous Pattern (TAP)</seealso>
 		/// <seealso cref="PopStateTaskAsync(IAppState)"/>
-		Task<IAppState> PushStateTaskAsync(PushOptions options, Type controllerType, object controllerArgs);
+		Task<IAppState> PushStateTaskAsync(Type controllerType, PushStateArgs args);
 
 		/// <summary>
 		/// Removes the specified state from the stack.
@@ -169,7 +172,8 @@ namespace UnityFx.AppStates
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="state"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if the <paramref name="state"/> does not belong to this manager.</exception>
-		/// <seealso cref="PushStateTaskAsync(PushOptions, Type, object)"/>
+		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/task-based-asynchronous-pattern-tap">Task-based Asynchronous Pattern (TAP)</seealso>
+		/// <seealso cref="PushStateTaskAsync(Type, PushStateArgs)"/>
 		Task PopStateTaskAsync(IAppState state);
 
 #endif

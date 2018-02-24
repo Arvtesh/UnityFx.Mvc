@@ -4,8 +4,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityFx.Async;
 
-namespace UnityFx.AppStates.Tests
+namespace UnityFx.AppStates
 {
 	internal class TestController_EventErrors : IAppStateEvents, IDisposable
 	{
@@ -21,12 +22,14 @@ namespace UnityFx.AppStates.Tests
 			}
 		}
 
-		public void OnPush()
+		public IAsyncOperation OnPush()
 		{
 			if (_errorId == ControllerMethodId.OnPush)
 			{
 				throw new Exception();
 			}
+
+			return null;
 		}
 
 		public Task OnLoadContent(CancellationToken cancellationToken)

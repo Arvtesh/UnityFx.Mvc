@@ -8,23 +8,23 @@ using Xunit;
 using NSubstitute;
 using System.Threading;
 
-namespace UnityFx.AppStates.Tests
+namespace UnityFx.AppStates
 {
-	public class AppStateManager : IDisposable
+	public class AppStateManagerTests : IDisposable
 	{
 		#region data
 
-		private readonly IAppStateService _stateManager;
+		private readonly AppStateManager _stateManager;
 
 		#endregion
 
 		#region interface
 
-		public AppStateManager()
+		public AppStateManagerTests()
 		{
 			var viewFactory = Substitute.For<IAppStateViewFactory>();
 			var serviceProvider = Substitute.For<IServiceProvider>();
-			_stateManager = AppStateFactory.CreateStateManager(viewFactory, serviceProvider);
+			_stateManager = new AppStateManager(SynchronizationContext.Current, viewFactory, serviceProvider);
 		}
 
 		public void Dispose()
@@ -44,9 +44,8 @@ namespace UnityFx.AppStates.Tests
 			Assert.NotNull(_stateManager.States);
 			Assert.Empty(_stateManager.States);
 
-			Assert.NotNull(_stateManager.Settings);
-			Assert.NotNull(_stateManager.Settings.TraceListeners);
-			Assert.NotNull(_stateManager.Settings.TraceSwitch);
+			Assert.NotNull(_stateManager.TraceListeners);
+			Assert.NotNull(_stateManager.TraceSwitch);
 		}
 
 		[Fact]
@@ -56,15 +55,14 @@ namespace UnityFx.AppStates.Tests
 
 			Assert.Throws<ObjectDisposedException>(() => _stateManager.GetStatesRecursive());
 			Assert.Throws<ObjectDisposedException>(() => _stateManager.GetStatesRecursive(new List<IAppState>()));
-			Assert.Throws<ObjectDisposedException>(() => _stateManager.Settings);
 			Assert.Throws<ObjectDisposedException>(() => _stateManager.States);
-			Assert.Throws<ObjectDisposedException>(() => _stateManager.PushStateTaskAsync(PushOptions.None, typeof(TestController_Minimal), null).Wait());
+			Assert.Throws<ObjectDisposedException>(() => _stateManager.PushStateTaskAsync(typeof(TestController_Minimal), PushStateArgs.Default).Wait());
 		}
 
 		[Fact]
 		public async Task PushStateSucceeds()
 		{
-			var state = await _stateManager.PushStateTaskAsync(PushOptions.None, typeof(TestController_Minimal), null);
+			var state = await _stateManager.PushStateTaskAsync(typeof(TestController_Minimal), PushStateArgs.Default);
 
 			Assert.NotNull(state);
 			Assert.NotNull(state.Controller);

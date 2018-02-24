@@ -6,14 +6,14 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace UnityFx.AppStates.Tests
+namespace UnityFx.AppStates
 {
 	internal class TestController_EventsSubstsatesCtor : TestController_Events
 	{
 		public TestController_EventsSubstsatesCtor(IAppStateContext context)
 			: base(context)
 		{
-			context.SubstateManager.PushStateTaskAsync<TestController_Events>(PushOptions.None, context.Args);
+			context.SubstateManager.PushStateTaskAsync(typeof(TestController_Events), context.State.CreationArgs);
 		}
 	}
 }

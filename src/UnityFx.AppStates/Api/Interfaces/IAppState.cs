@@ -32,48 +32,58 @@ namespace UnityFx.AppStates
 	public interface IAppState
 	{
 		/// <summary>
-		/// Returns the state name.
+		/// Gets unique state type identifier.
 		/// </summary>
-		string Name { get; }
+		string Id { get; }
 
 		/// <summary>
-		/// Returns the qualified state name.
-		/// </summary>
-		string FullName { get; }
-
-		/// <summary>
-		/// Returns state flags.
+		/// Gets the state flags.
 		/// </summary>
 		AppStateFlags Flags { get; }
 
 		/// <summary>
-		/// Returns a value indicating whether this state is active (i.e. it is a top state and can processes user input).
+		/// Gets a path to this state.
 		/// </summary>
-		bool IsActive { get; }
+		string Path { get; }
 
 		/// <summary>
-		/// Returns parent state (if any).
+		/// Gets the arguments used to create the state.
+		/// </summary>
+		PushStateArgs CreationArgs { get; }
+
+		/// <summary>
+		/// Gets a deeplink that was used to navigate to this state.
+		/// </summary>
+		Uri Deeplink { get; }
+
+		/// <summary>
+		/// Gets parent state (if any).
 		/// </summary>
 		IAppState ParentState { get; }
 
 		/// <summary>
-		/// Returns the owner state (if any). Owner state is the state that pushed this one onto the stack.
+		/// Gets owner state (if any). Owner state is the state that pushed this one onto the stack.
 		/// </summary>
 		IAppState OwnerState { get; }
 
 		/// <summary>
-		/// Returns child states enumerator.
-		/// </summary>
-		IReadOnlyCollection<IAppState> ChildStates { get; }
-
-		/// <summary>
-		/// Returns a view instance attached to the state.
+		/// Gets a view instance attached to the state.
 		/// </summary>
 		IAppStateView View { get; }
 
 		/// <summary>
-		/// Returns a user-defined view controller instance attached to the state.
+		/// Gets a user-defined view controller instance attached to the state.
 		/// </summary>
 		IAppStateController Controller { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether this state is active (i.e. it is a top state and can processes user input).
+		/// </summary>
+		bool IsActive { get; }
+
+		/// <summary>
+		/// Gets a child states collection.
+		/// </summary>
+		IReadOnlyCollection<IAppState> ChildStates { get; }
 	}
 }

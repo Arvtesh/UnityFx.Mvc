@@ -30,7 +30,7 @@ namespace UnityFx.AppStates
 
 		public override string ToString()
 		{
-			return "PopState " + State.Name;
+			return "PopState " + State.Id;
 		}
 
 		#endregion

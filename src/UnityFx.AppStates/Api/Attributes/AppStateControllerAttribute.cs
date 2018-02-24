@@ -12,21 +12,21 @@ namespace UnityFx.AppStates
 	public sealed class AppStateControllerAttribute : Attribute
 	{
 		/// <summary>
-		/// Returns the state name.
+		/// Gets an unique controller (state) identifier that may be used to identify the its type (in deeplinks).
 		/// </summary>
-		public string Name { get; }
+		public string Id { get; }
 
 		/// <summary>
-		/// Returns state flags.
+		/// Gets controller (state) flags.
 		/// </summary>
 		public AppStateFlags Flags { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppStateControllerAttribute"/> class.
 		/// </summary>
-		public AppStateControllerAttribute(string name, AppStateFlags flags = AppStateFlags.None)
+		public AppStateControllerAttribute(string id, AppStateFlags flags = AppStateFlags.None)
 		{
-			Name = name;
+			Id = id;
 			Flags = flags;
 		}
 	}

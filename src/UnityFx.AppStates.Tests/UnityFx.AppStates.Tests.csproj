@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UnityFx.AppStates.Core\UnityFx.AppStates.csproj" />
     <ProjectReference Include="..\UnityFx.AppStates\UnityFx.AppStates.csproj" />
   </ItemGroup>
 

@@ -12,27 +12,27 @@ namespace UnityFx.AppStates
 	public interface IAppStateContext
 	{
 		/// <summary>
-		/// Returns user-specified controller arguments.
+		/// Gets user-specified controller arguments.
 		/// </summary>
 		object Args { get; }
 
 		/// <summary>
-		/// Returns parent state. Never returns <see langword="null"/>.
+		/// Gets parent state.
 		/// </summary>
 		IAppState State { get; }
 
 		/// <summary>
-		/// Returns a view attached to the state. Never returns <see langword="null"/>.
+		/// Gets a view attached to the state.
 		/// </summary>
 		IAppStateView View { get; }
 
 		/// <summary>
-		/// Returns the parent state manager. Never returns <see langword="null"/>.
+		/// Gets the parent state manager.
 		/// </summary>
 		IAppStateManager StateManager { get; }
 
 		/// <summary>
-		/// Returns the substate manager for this state. Never returns <see langword="null"/>.
+		/// Gets a substate manager for this state.
 		/// </summary>
 		IAppStateManager SubstateManager { get; }
 	}

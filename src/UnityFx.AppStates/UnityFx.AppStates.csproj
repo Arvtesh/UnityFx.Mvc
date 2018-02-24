@@ -38,16 +38,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="StyleCop.Analyzers" Version="1.0.2" PrivateAssets="All" />
-		<PackageReference Include="UnityFx.Async" Version="0.7.*" />
+		<PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta006" PrivateAssets="All" />
+		<PackageReference Include="UnityFx.Async" Version="0.8.0-beta0005" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<AdditionalFiles Include="../CodingConventions/Common/stylecop.json" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Api\Helpers\" />
 	</ItemGroup>
 
 </Project>

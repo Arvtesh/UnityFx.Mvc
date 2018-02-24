@@ -3,7 +3,7 @@
 
 using System;
 
-namespace UnityFx.AppStates.Tests
+namespace UnityFx.AppStates
 {
 	internal class TestController_ConstructorWithMultipleArguments
 	{

@@ -15,7 +15,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Called right after the state has been pushed onto the stack.
 		/// </summary>
-		void OnPush();
+		IAsyncOperation OnPush();
 
 		/// <summary>
 		/// Called when the state is about to be removed from the stack.
@@ -31,11 +31,5 @@ namespace UnityFx.AppStates
 		/// Called when the state is about to become inactive.
 		/// </summary>
 		void OnDeactivate();
-
-		/// <summary>
-		/// Called when controller should load its content (after <see cref="OnPush"/> but before <see cref="OnActivate(bool)"/>).
-		/// </summary>
-		/// <param name="completionSource">An object to signal that loading is completed.</param>
-		void OnLoad(IAsyncCompletionSource completionSource);
 	}
 }

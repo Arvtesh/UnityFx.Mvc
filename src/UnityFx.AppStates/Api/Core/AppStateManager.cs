@@ -15,14 +15,14 @@ using UnityFx.Async;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Implementation of <see cref="IAppStateService"/>.
+	/// A manager of application states (<see cref="IAppState"/>).
 	/// </summary>
-	public class AppStateService : IAppStateService, IAppStateServiceSettings
+	/// <seealso cref="IAppState"/>
+	public class AppStateManager : IAppStateManager, IAppStateManagerSettings, IDisposable
 	{
 		#region data
 
-		private const int _maxStackOperationsCount = 32;
-		private const string _serviceName = "StateManager";
+		private const string _serviceName = "AppStates";
 
 		private readonly IAppStateControllerFactory _controllerFactory;
 		private readonly IAppStateViewFactory _viewManager;
@@ -33,7 +33,7 @@ namespace UnityFx.AppStates
 		private readonly AppStateStack _states;
 		private readonly AsyncResultQueue<AppStateStackOperation> _stackOperations;
 		private readonly AppState _parentState;
-		private readonly AppStateService _parentStateManager;
+		private readonly AppStateManager _parentStateManager;
 
 		private bool _enabled;
 		private bool _disposed;
@@ -49,43 +49,31 @@ namespace UnityFx.AppStates
 		protected internal TraceSource TraceSource => _console;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="AppStateService"/> class.
+		/// Initializes a new instance of the <see cref="AppStateManager"/> class.
 		/// </summary>
-		/// <param name="controllerFactory"></param>
+		/// <param name="syncContext"></param>
 		/// <param name="viewManager"></param>
 		/// <param name="services"></param>
-		public AppStateService(
-			IAppStateControllerFactory controllerFactory,
+		public AppStateManager(
+			SynchronizationContext syncContext,
 			IAppStateViewFactory viewManager,
 			IServiceProvider services)
-			: this(SynchronizationContext.Current, controllerFactory, viewManager, services)
+			: this(syncContext, viewManager, services, new AppStateControllerFactory())
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="AppStateService"/> class.
-		/// </summary>
-		/// <param name="viewManager"></param>
-		/// <param name="services"></param>
-		public AppStateService(
-			IAppStateViewFactory viewManager,
-			IServiceProvider services)
-			: this(SynchronizationContext.Current, new AppStateControllerFactory(), viewManager, services)
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AppStateService"/> class.
+		/// Initializes a new instance of the <see cref="AppStateManager"/> class.
 		/// </summary>
 		/// <param name="syncContext"></param>
 		/// <param name="controllerFactory"></param>
 		/// <param name="viewManager"></param>
 		/// <param name="services"></param>
-		public AppStateService(
+		public AppStateManager(
 			SynchronizationContext syncContext,
-			IAppStateControllerFactory controllerFactory,
 			IAppStateViewFactory viewManager,
-			IServiceProvider services)
+			IServiceProvider services,
+			IAppStateControllerFactory controllerFactory)
 		{
 			Debug.Assert(controllerFactory != null);
 			Debug.Assert(viewManager != null);
@@ -101,7 +89,7 @@ namespace UnityFx.AppStates
 			_enabled = true;
 		}
 
-		internal AppStateService(AppState parentState, AppStateService parentStateManager)
+		internal AppStateManager(AppState parentState, AppStateManager parentStateManager)
 		{
 			Debug.Assert(parentState != null);
 			Debug.Assert(parentStateManager != null);
@@ -119,13 +107,13 @@ namespace UnityFx.AppStates
 			_stackOperations.Suspended = !_enabled;
 		}
 
-		internal AppStateService CreateSubstateManager(AppState state, AppStateService parentStateManager)
+		internal AppStateManager CreateSubstateManager(AppState state, AppStateManager parentStateManager)
 		{
 			Debug.Assert(state != null);
 			Debug.Assert(parentStateManager != null);
 			Debug.Assert(!_disposed);
 
-			return new AppStateService(state, parentStateManager);
+			return new AppStateManager(state, parentStateManager);
 		}
 
 		internal IAppStateController CreateStateController(AppState state, Type controllerType)
@@ -142,7 +130,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(state != null);
 			Debug.Assert(!_disposed);
 
-			return _viewManager.CreateView(state.FullName, state.GetPrevView());
+			return _viewManager.CreateView(state.Path, state.GetPrevView());
 		}
 
 		internal bool TryActivateTopState()
@@ -221,20 +209,6 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region IAppStateService
-
-		/// <inheritdoc/>
-		public IAppStateServiceSettings Settings
-		{
-			get
-			{
-				ThrowIfDisposed();
-				return this;
-			}
-		}
-
-		#endregion
-
 		#region IAppStateServiceSettings
 
 		/// <inheritdoc/>
@@ -242,6 +216,15 @@ namespace UnityFx.AppStates
 
 		/// <inheritdoc/>
 		public TraceListenerCollection TraceListeners => _console.Listeners;
+
+		/// <inheritdoc/>
+		public int MaxNumberOfPendingOperations { get; set; }
+
+		/// <inheritdoc/>
+		public string DeeplinkDomain { get; set; }
+
+		/// <inheritdoc/>
+		public string DeeplinkScheme { get; set; }
 
 		#endregion
 
@@ -297,13 +280,13 @@ namespace UnityFx.AppStates
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<IAppState> PushStateAsync(PushOptions options, Type controllerType, object controllerArgs)
+		public IAsyncOperation<IAppState> PushStateAsync(Type controllerType, PushStateArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
-			ThrowIfTooManyOperations();
+			ThrowIfInvalidArgs(args);
 
-			return PushStateInternal(options, controllerType, controllerArgs, null, null);
+			return PushStateInternal(controllerType, args, null, null);
 		}
 
 		/// <inheritdoc/>
@@ -311,7 +294,6 @@ namespace UnityFx.AppStates
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidState(state);
-			ThrowIfTooManyOperations();
 
 			return PopStateInternal(state, null, null);
 		}
@@ -319,14 +301,14 @@ namespace UnityFx.AppStates
 #if UNITYFX_SUPPORT_TAP
 
 		/// <inheritdoc/>
-		public Task<IAppState> PushStateTaskAsync(PushOptions options, Type controllerType, object controllerArgs)
+		public Task<IAppState> PushStateTaskAsync(Type controllerType, PushStateArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
-			ThrowIfTooManyOperations();
+			ThrowIfInvalidArgs(args);
 
 			var tcs = new TaskCompletionSource<IAppState>();
-			PushStateInternal(options, controllerType, controllerArgs, PushPopCompletionCallback, tcs);
+			PushStateInternal(controllerType, args, PushPopCompletionCallback, tcs);
 			return tcs.Task;
 		}
 
@@ -335,7 +317,6 @@ namespace UnityFx.AppStates
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidState(state);
-			ThrowIfTooManyOperations();
 
 			var tcs = new TaskCompletionSource<IAppState>();
 			PopStateInternal(state, PushPopCompletionCallback, tcs);
@@ -359,24 +340,25 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private AppStateStackOperation PushStateInternal(PushOptions options, Type controllerType, object controllerArgs, AsyncCallback asyncCallback, object asyncState)
+		private AppStateStackOperation PushStateInternal(Type controllerType, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
 		{
-			Debug.Assert(controllerType != null);
 			Debug.Assert(!_disposed);
+			Debug.Assert(controllerType != null);
+			Debug.Assert(args != null);
 
 			AppStateStackOperation result;
 
-			if (options == PushOptions.Set)
+			if (args.Options == PushOptions.Set)
 			{
-				result = new SetStateOperation(_console, _parentState, controllerType, controllerArgs, asyncCallback, asyncState);
+				result = new SetStateOperation(_console, _parentState, controllerType, args, asyncCallback, asyncState);
 			}
-			else if (options == PushOptions.Reset)
+			else if (args.Options == PushOptions.Reset)
 			{
-				result = new ResetStateOperation(_console, controllerType, controllerArgs, asyncCallback, asyncState);
+				result = new ResetStateOperation(_console, controllerType, args, asyncCallback, asyncState);
 			}
 			else
 			{
-				result = new PushStateOperation(_console, _parentState, controllerType, controllerArgs, asyncCallback, asyncState);
+				result = new PushStateOperation(_console, _parentState, controllerType, args, asyncCallback, asyncState);
 			}
 
 			QueueOperation(result);
@@ -434,17 +416,17 @@ namespace UnityFx.AppStates
 		{
 			if (_parentState != null)
 			{
-				return _parentState.FullName + '.' + _serviceName;
+				return _parentState.Path + '.' + _serviceName;
 			}
 
 			return _serviceName;
 		}
 
-		private void ThrowIfTooManyOperations()
+		private void ThrowIfInvalidArgs(PushStateArgs args)
 		{
-			if (_stackOperations.Count > _maxStackOperationsCount)
+			if (args == null)
 			{
-				throw new InvalidOperationException($"Operation cannot be scheduled because maximum number of simultaneous stack operations ({_maxStackOperationsCount}) is exceeded.");
+				throw new ArgumentNullException(nameof(args));
 			}
 		}
 

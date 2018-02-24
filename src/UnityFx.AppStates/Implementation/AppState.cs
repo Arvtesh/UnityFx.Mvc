@@ -28,19 +28,19 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private readonly AppStateService _parentStateManager;
+		private readonly AppStateManager _parentStateManager;
 		private readonly IAppStateController _controller;
 		private readonly AppState _parentState;
 		private readonly IAppState _ownerState;
 
 		private readonly TraceSource _console;
 		private readonly AppStateStack _stack;
-		private readonly string _name;
-		private readonly string _fullName;
+		private readonly string _id;
+		private readonly string _path;
 		private readonly AppStateFlags _flags;
-		private readonly object _controllerArgs;
+		private readonly PushStateArgs _args;
 
-		private AppStateService _substateManager;
+		private AppStateManager _substateManager;
 		private IAppStateView _view;
 
 		private AppStateState _state;
@@ -53,7 +53,8 @@ namespace UnityFx.AppStates
 
 		internal bool Enabled => _state == AppStateState.Pushed;
 
-		internal AppState(AppStateService parentStateManager, IAppState owner, Type controllerType, object args)
+		internal AppState(AppStateManager parentStateManager, IAppState owner, Type controllerType, PushStateArgs
+			args)
 		{
 			Debug.Assert(parentStateManager != null);
 			Debug.Assert(controllerType != null);
@@ -61,29 +62,29 @@ namespace UnityFx.AppStates
 			_parentStateManager = parentStateManager;
 			_parentState = parentStateManager.ParentState;
 			_ownerState = owner;
-			_controllerArgs = args;
+			_args = args;
 			_console = parentStateManager.TraceSource;
 			_stack = parentStateManager.StatesEx;
 
 			if (Attribute.GetCustomAttribute(controllerType, typeof(AppStateControllerAttribute)) is AppStateControllerAttribute paramsAttr)
 			{
-				if (string.IsNullOrEmpty(paramsAttr.Name))
+				if (string.IsNullOrEmpty(paramsAttr.Id))
 				{
-					_name = GetStateNameSimple(controllerType);
+					_id = GetStateNameSimple(controllerType);
 				}
 				else
 				{
-					_name = paramsAttr.Name;
+					_id = paramsAttr.Id;
 				}
 
 				_flags = paramsAttr.Flags;
 			}
 			else
 			{
-				_name = GetStateNameSimple(controllerType);
+				_id = GetStateNameSimple(controllerType);
 			}
 
-			_fullName = _parentState?.FullName + '.' + _name ?? _name;
+			_path = _parentState?.Path + '.' + _id ?? _id;
 			_controller = parentStateManager.CreateStateController(this, controllerType);
 		}
 
@@ -93,7 +94,7 @@ namespace UnityFx.AppStates
 
 			if (!_isActive && (_parentState == null || _parentState.IsActive))
 			{
-				_console.TraceEvent(TraceEventType.Verbose, 0, "ActivateState " + _fullName);
+				_console.TraceEvent(TraceEventType.Verbose, 0, "ActivateState " + _path);
 
 				_view?.SetInteractable(true);
 				_isActive = true;
@@ -114,7 +115,7 @@ namespace UnityFx.AppStates
 
 			if (_isActive)
 			{
-				_console.TraceData(TraceEventType.Verbose, 0, "DeactivateState " + _fullName);
+				_console.TraceData(TraceEventType.Verbose, 0, "DeactivateState " + _path);
 
 				try
 				{
@@ -172,13 +173,13 @@ namespace UnityFx.AppStates
 		{
 			if (Attribute.GetCustomAttribute(controllerType, typeof(AppStateControllerAttribute)) is AppStateControllerAttribute attr)
 			{
-				if (string.IsNullOrEmpty(attr.Name))
+				if (string.IsNullOrEmpty(attr.Id))
 				{
 					return GetStateNameSimple(controllerType);
 				}
 				else
 				{
-					return attr.Name;
+					return attr.Id;
 				}
 			}
 
@@ -191,11 +192,11 @@ namespace UnityFx.AppStates
 
 			if (name.EndsWith("State"))
 			{
-				name = name.Substring(0, name.Length - 5);
+				name = name.Substring(0, name.Length - 5).ToLowerInvariant();
 			}
 			else if (name.EndsWith("Controller"))
 			{
-				name = name.Substring(0, name.Length - 10);
+				name = name.Substring(0, name.Length - 10).ToLowerInvariant();
 			}
 
 			return name;
@@ -205,28 +206,25 @@ namespace UnityFx.AppStates
 
 		#region IAppState
 
-		public string Name => _name;
-
-		public string FullName => _fullName;
+		public string Id => _id;
 
 		public AppStateFlags Flags => _flags;
 
-		public int Layer => _layer;
+		public string Path => _path;
 
-		public bool IsActive => _isActive;
+		public PushStateArgs CreationArgs => _args;
+
+		public Uri Deeplink
+		{
+			get
+			{
+				throw new NotImplementedException();
+			}
+		}
 
 		public IAppState ParentState => _parentState;
 
 		public IAppState OwnerState => _ownerState;
-
-		public IReadOnlyCollection<IAppState> ChildStates
-		{
-			get
-			{
-				ThrowIfDisposed();
-				return this;
-			}
-		}
 
 		public IAppStateView View
 		{
@@ -243,20 +241,17 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		public IAppStateController Controller
-		{
-			get
-			{
-				ThrowIfDisposed();
-				return _controller;
-			}
-		}
+		public IAppStateController Controller => _controller;
+
+		public bool IsActive => _isActive;
+
+		public IReadOnlyCollection<IAppState> ChildStates => this;
 
 		#endregion
 
 		#region IAppStateContext
 
-		public object Args => _controllerArgs;
+		public object Args => _args;
 
 		public IAppState State
 		{
@@ -346,7 +341,7 @@ namespace UnityFx.AppStates
 		{
 			if (_state == AppStateState.Disposed)
 			{
-				throw new ObjectDisposedException(_name);
+				throw new ObjectDisposedException(_id);
 			}
 		}
 

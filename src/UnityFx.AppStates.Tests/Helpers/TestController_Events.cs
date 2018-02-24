@@ -5,8 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityFx.Async;
 
-namespace UnityFx.AppStates.Tests
+namespace UnityFx.AppStates
 {
 	internal class TestController_Events : IAppStateEvents, IDisposable
 	{
@@ -18,9 +19,10 @@ namespace UnityFx.AppStates.Tests
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.Ctor));
 		}
 
-		public virtual void OnPush()
+		public virtual IAsyncOperation OnPush()
 		{
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnPush));
+			return null;
 		}
 
 		public virtual void OnPop()
