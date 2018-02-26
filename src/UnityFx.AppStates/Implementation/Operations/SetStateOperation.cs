@@ -6,16 +6,51 @@ using System.Diagnostics;
 
 namespace UnityFx.AppStates
 {
-	internal class SetStateOperation : PushStateOperation
+	internal class SetStateOperation : AppStateOperation
 	{
 		#region data
+
+		private readonly Type _controllerType;
+		private readonly PushStateArgs _args;
+		private readonly AppState _ownerState;
+
 		#endregion
 
 		#region interface
 
-		public SetStateOperation(TraceSource traceSource, AppState ownerState, Type controllerType, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
-			: base(traceSource, AppStateOperationType.Set, ownerState, controllerType, args, asyncCallback, asyncState)
+		public SetStateOperation(AppStateManager stateManager, AppState ownerState, Type controllerType, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
+			: base(stateManager, AppStateOperationType.Set, asyncCallback, asyncState, null)
 		{
+			_controllerType = controllerType;
+			_args = args;
+			_ownerState = ownerState;
+		}
+
+		#endregion
+
+		#region AsyncResult
+
+		protected sealed override void OnStarted()
+		{
+			base.OnStarted();
+
+			// TODO
+		}
+
+		#endregion
+
+		#region Object
+
+		public override string ToString()
+		{
+			var text = "SetState " + AppState.GetStateName(_controllerType);
+
+			if (_args != null)
+			{
+				text += _args.ToString();
+			}
+
+			return text;
 		}
 
 		#endregion

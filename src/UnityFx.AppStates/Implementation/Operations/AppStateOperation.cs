@@ -21,6 +21,7 @@ namespace UnityFx.AppStates
 
 		private readonly int _id;
 		private readonly string _name;
+		private readonly AppStateManager _stateManager;
 		private readonly TraceSource _traceSource;
 
 		private static int _lastId;
@@ -31,11 +32,14 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		protected AppStateOperation(TraceSource traceSource, AppStateOperationType opType, AsyncCallback asyncCallback, object asyncState, string comment)
+		protected AppStateManager StateManager => _stateManager;
+
+		protected AppStateOperation(AppStateManager stateManager, AppStateOperationType opType, AsyncCallback asyncCallback, object asyncState, string comment)
 		{
 			_id = (++_lastId << 3) | (int)opType;
 			_name = $"{opType.ToString()} ({_id.ToString(CultureInfo.InvariantCulture)})";
-			_traceSource = traceSource;
+			_stateManager = stateManager;
+			_traceSource = _stateManager.TraceSource;
 
 			TraceStart(comment);
 		}

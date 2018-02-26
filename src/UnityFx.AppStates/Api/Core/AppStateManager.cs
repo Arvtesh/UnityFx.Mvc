@@ -53,9 +53,9 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <param name="traceSource"></param>
 		/// <param name="syncContext"></param>
-		/// <param name="controllerFactory"></param>
 		/// <param name="viewManager"></param>
 		/// <param name="services"></param>
+		/// <param name="controllerFactory"></param>
 		protected AppStateManager(
 			TraceSource traceSource,
 			SynchronizationContext syncContext,
@@ -152,7 +152,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(controllerType != null);
 			Debug.Assert(!_disposed);
 
-			return _controllerFactory.CreateController(controllerType, state, _serviceProvider);
+			return _controllerFactory.CreateController(controllerType, state);
 		}
 
 		internal IAppStateView CreateView(AppState state)
@@ -161,6 +161,11 @@ namespace UnityFx.AppStates
 			Debug.Assert(!_disposed);
 
 			return _viewManager.CreateView(state.Path, state.GetPrevView());
+		}
+
+		internal void PopAll()
+		{
+			// TODO
 		}
 
 		internal bool TryActivateTopState()
@@ -319,15 +324,15 @@ namespace UnityFx.AppStates
 
 			if (args.Options == PushOptions.Set)
 			{
-				result = new SetStateOperation(_console, _parentState, controllerType, args, asyncCallback, asyncState);
+				result = new SetStateOperation(this, _parentState, controllerType, args, asyncCallback, asyncState);
 			}
 			else if (args.Options == PushOptions.Reset)
 			{
-				result = new ResetStateOperation(_console, controllerType, args, asyncCallback, asyncState);
+				result = new ResetStateOperation(this, controllerType, args, asyncCallback, asyncState);
 			}
 			else
 			{
-				result = new PushStateOperation(_console, _parentState, controllerType, args, asyncCallback, asyncState);
+				result = new PushStateOperation(this, _parentState, controllerType, args, asyncCallback, asyncState);
 			}
 
 			QueueOperation(result);
@@ -342,11 +347,11 @@ namespace UnityFx.AppStates
 
 			if (state != null)
 			{
-				result = new PopStateOperation(_console, state as AppState, asyncCallback, asyncState);
+				result = new PopStateOperation(this, state as AppState, asyncCallback, asyncState);
 			}
 			else
 			{
-				result = new PopAllStatesOperation(_console, asyncCallback, asyncState);
+				result = new PopAllStatesOperation(this, asyncCallback, asyncState);
 			}
 
 			QueueOperation(result);

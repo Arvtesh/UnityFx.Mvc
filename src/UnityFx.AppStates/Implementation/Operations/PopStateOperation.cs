@@ -18,8 +18,8 @@ namespace UnityFx.AppStates
 
 		public AppState State => _state;
 
-		public PopStateOperation(TraceSource traceSource, AppState state, AsyncCallback asyncCallback, object asyncState)
-			: base(traceSource, AppStateOperationType.Pop, asyncCallback, asyncState, null)
+		public PopStateOperation(AppStateManager stateManager, AppState state, AsyncCallback asyncCallback, object asyncState)
+			: base(stateManager, AppStateOperationType.Pop, asyncCallback, asyncState, null)
 		{
 			_state = state;
 		}

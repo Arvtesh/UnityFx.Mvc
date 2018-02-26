@@ -13,8 +13,8 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		public PopAllStatesOperation(TraceSource traceSource, AsyncCallback asyncCallback, object asyncState)
-			: base(traceSource, AppStateOperationType.PopAll, asyncCallback, asyncState, null)
+		public PopAllStatesOperation(AppStateManager stateManager, AsyncCallback asyncCallback, object asyncState)
+			: base(stateManager, AppStateOperationType.PopAll, asyncCallback, asyncState, null)
 		{
 		}
 

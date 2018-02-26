@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
@@ -53,8 +54,7 @@ namespace UnityFx.AppStates
 
 		internal bool Enabled => _state == AppStateState.Pushed;
 
-		internal AppState(AppStateManager parentStateManager, IAppState owner, Type controllerType, PushStateArgs
-			args)
+		internal AppState(AppStateManager parentStateManager, IAppState owner, Type controllerType, PushStateArgs args)
 		{
 			Debug.Assert(parentStateManager != null);
 			Debug.Assert(controllerType != null);
@@ -84,8 +84,56 @@ namespace UnityFx.AppStates
 				_id = GetStateNameSimple(controllerType);
 			}
 
-			_path = _parentState?.Path + '.' + _id ?? _id;
+			_path = _parentState?.Path + '/' + _id ?? _id;
 			_controller = parentStateManager.CreateStateController(this, controllerType);
+		}
+
+		internal IAsyncOperation Push()
+		{
+			Debug.Assert(_state == AppStateState.Created);
+
+			_console.TraceEvent(TraceEventType.Verbose, 0, "PushState " + _path);
+			_stack.Add(this);
+			_state = AppStateState.Pushed;
+			_substateManager?.SetEnabled();
+
+			if (_controller is IAppStateEvents ce)
+			{
+				return ce.OnPush();
+			}
+
+			return AsyncResult.CompletedOperation;
+		}
+
+		internal void Pop()
+		{
+			Debug.Assert(_state == AppStateState.Pushed);
+
+			_substateManager?.PopAll();
+
+			_console.TraceData(TraceEventType.Verbose, 0, "PopState " + _path);
+			_stack.Remove(this);
+			_state = AppStateState.Popped;
+
+			if (_controller is IAppStateEvents ce)
+			{
+				ce.OnPop();
+			}
+		}
+
+		internal void PopAndDispose()
+		{
+			try
+			{
+				if (_state == AppStateState.Pushed)
+				{
+					Pop();
+				}
+			}
+			finally
+			{
+				Dispose();
+			}
 		}
 
 		internal void Activate()

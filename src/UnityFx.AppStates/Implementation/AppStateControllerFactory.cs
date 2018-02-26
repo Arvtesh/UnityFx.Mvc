@@ -12,16 +12,27 @@ namespace UnityFx.AppStates
 	/// </summary>
 	internal sealed class AppStateControllerFactory : IAppStateControllerFactory
 	{
+		#region data
+
+		private readonly IServiceProvider _serviceProvider;
+
+		#endregion
+
 		#region interface
+
+		public AppStateControllerFactory(IServiceProvider serviceProvider)
+		{
+			_serviceProvider = serviceProvider;
+		}
+
 		#endregion
 
 		#region IAppStateControllerFactory
 
-		public IAppStateController CreateController(Type controllerType, IAppStateContext stateContext, IServiceProvider serviceProvider)
+		public IAppStateController CreateController(Type controllerType, IAppStateContext stateContext)
 		{
 			Debug.Assert(controllerType != null);
 			Debug.Assert(stateContext != null);
-			Debug.Assert(serviceProvider != null);
 
 			try
 			{
@@ -35,7 +46,7 @@ namespace UnityFx.AppStates
 
 					for (int i = 0; i < args.Length; i++)
 					{
-						args[i] = GetServiceInstance(parameters[i].ParameterType, stateContext, serviceProvider);
+						args[i] = GetServiceInstance(parameters[i].ParameterType, stateContext);
 					}
 
 					return c.Invoke(args) as IAppStateController;
@@ -55,7 +66,7 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private object GetServiceInstance(Type serviceType, IAppStateContext stateContext, IServiceProvider serviceProvider)
+		private object GetServiceInstance(Type serviceType, IAppStateContext stateContext)
 		{
 			if (serviceType == typeof(IAppStateContext))
 			{
@@ -63,7 +74,7 @@ namespace UnityFx.AppStates
 			}
 			else if (serviceType == typeof(IServiceProvider))
 			{
-				return serviceProvider;
+				return _serviceProvider;
 			}
 			else if (serviceType == typeof(IAppState))
 			{
@@ -78,7 +89,7 @@ namespace UnityFx.AppStates
 				return stateContext.StateManager;
 			}
 
-			return serviceProvider.GetService(serviceType);
+			return _serviceProvider.GetService(serviceType);
 		}
 
 		#endregion

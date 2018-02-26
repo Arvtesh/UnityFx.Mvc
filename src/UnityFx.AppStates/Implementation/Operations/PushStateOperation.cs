@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
@@ -14,28 +15,45 @@ namespace UnityFx.AppStates
 		private readonly PushStateArgs _args;
 		private readonly AppState _ownerState;
 
+		private AppState _state;
+
 		#endregion
 
 		#region interface
 
-		public Type ControllerType => _controllerType;
-		public PushStateArgs Args => _args;
-		public AppState OwnerState => _ownerState;
-
-		public PushStateOperation(TraceSource traceSource, AppState ownerState, Type controllerType, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
-			: base(traceSource, AppStateOperationType.Push, asyncCallback, asyncState, null)
+		public PushStateOperation(AppStateManager stateManager, AppState ownerState, Type controllerType, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
+			: base(stateManager, AppStateOperationType.Push, asyncCallback, asyncState, null)
 		{
 			_controllerType = controllerType;
 			_args = args;
 			_ownerState = ownerState;
 		}
 
-		public PushStateOperation(TraceSource traceSource, AppStateOperationType opType, AppState ownerState, Type controllerType, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
-			: base(traceSource, opType, asyncCallback, asyncState, null)
+		#endregion
+
+		#region AsyncResult
+
+		protected sealed override void OnStarted()
 		{
-			_controllerType = controllerType;
-			_args = args;
-			_ownerState = ownerState;
+			base.OnStarted();
+
+			try
+			{
+				StateManager.TryDeactivateTopState();
+
+				_state = new AppState(StateManager, _ownerState, _controllerType, _args);
+				_state.Push().AddCompletionCallback(OnStatePushed);
+			}
+			catch (Exception e)
+			{
+				TrySetException(e, false);
+
+				if (_state != null)
+				{
+					_state.PopAndDispose();
+					_state = null;
+				}
+			}
 		}
 
 		#endregion
@@ -44,7 +62,7 @@ namespace UnityFx.AppStates
 
 		public override string ToString()
 		{
-			var text = OperationType.ToString() + "State " + AppState.GetStateName(_controllerType);
+			var text = "PushState " + AppState.GetStateName(_controllerType);
 
 			if (_args != null)
 			{
@@ -52,6 +70,28 @@ namespace UnityFx.AppStates
 			}
 
 			return text;
+		}
+
+		#endregion
+
+		#region implementation
+
+		private void OnStatePushed(IAsyncOperation op)
+		{
+			if (op.IsCompletedSuccessfully)
+			{
+				TrySetResult(_state, false);
+			}
+			else if (op.IsFaulted)
+			{
+				TrySetException(op.Exception, false);
+			}
+			else
+			{
+				TrySetCanceled(false);
+			}
+
+			StateManager.TryActivateTopState();
 		}
 
 		#endregion

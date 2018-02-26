@@ -16,8 +16,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <param name="controllerType">Type of the controller to be created.</param>
 		/// <param name="stateContext">State context.</param>
-		/// <param name="serviceProvider">A service provider instance. Should be used as a source for the controller dependencies.</param>
 		/// <returns></returns>
-		IAppStateController CreateController(Type controllerType, IAppStateContext stateContext, IServiceProvider serviceProvider);
+		IAppStateController CreateController(Type controllerType, IAppStateContext stateContext);
 	}
 }
