@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace UnityFx.AppStates
 {
-	internal class PopStateOperation : AppStateStackOperation
+	internal class PopStateOperation : AppStateOperation
 	{
 		#region data
 

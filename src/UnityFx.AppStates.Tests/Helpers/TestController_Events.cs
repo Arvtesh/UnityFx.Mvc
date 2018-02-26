@@ -15,7 +15,7 @@ namespace UnityFx.AppStates
 
 		public TestController_Events(IAppStateContext context)
 		{
-			_calls = context.Args as ICollection<MethodCallInfo>;
+			_calls = context.CreationArgs.Data as ICollection<MethodCallInfo>;
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.Ctor));
 		}
 

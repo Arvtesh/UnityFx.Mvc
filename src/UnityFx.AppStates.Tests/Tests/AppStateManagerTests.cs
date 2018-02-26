@@ -14,7 +14,7 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private readonly AppStateManager _stateManager;
+		private readonly AppStateService _stateManager;
 
 		#endregion
 
@@ -24,7 +24,7 @@ namespace UnityFx.AppStates
 		{
 			var viewFactory = Substitute.For<IAppStateViewFactory>();
 			var serviceProvider = Substitute.For<IServiceProvider>();
-			_stateManager = new AppStateManager(SynchronizationContext.Current, viewFactory, serviceProvider);
+			_stateManager = new AppStateService(SynchronizationContext.Current, viewFactory, serviceProvider);
 		}
 
 		public void Dispose()

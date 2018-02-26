@@ -14,7 +14,7 @@ namespace UnityFx.AppStates
 
 		public TestController_EventErrors(IAppStateContext context)
 		{
-			_errorId = (ControllerMethodId)context.Args;
+			_errorId = (ControllerMethodId)context.CreationArgs.Data;
 
 			if (_errorId == ControllerMethodId.Ctor)
 			{

@@ -10,7 +10,7 @@ namespace UnityFx.AppStates
 	/// Settings of a <see cref="IAppStateManager"/>.
 	/// </summary>
 	/// <seealso cref="IAppStateManager"/>
-	public interface IAppStateManagerSettings
+	public interface IAppStateServiceSettings
 	{
 		/// <summary>
 		/// Gets or sets trace switch used by the <see cref="TraceSource"/> instance.

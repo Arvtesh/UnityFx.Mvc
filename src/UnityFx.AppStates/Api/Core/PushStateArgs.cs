@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace UnityFx.AppStates
 {
@@ -64,6 +65,59 @@ namespace UnityFx.AppStates
 		/// Gets deeplink query parameters (if any).
 		/// </summary>
 		public string DeeplinkFragment => _fragment;
+
+		/// <summary>
+		/// Gets string representatino of the deepling query and fragment.
+		/// </summary>
+		/// <seealso cref="DeeplinkQuery"/>
+		/// <seealso cref="DeeplinkFragment"/>
+		public string DeeplingQueryString
+		{
+			get
+			{
+				var queryNotEmpty = _query.Count > 0;
+				var fragmentNotEmpty = !string.IsNullOrEmpty(_fragment);
+
+				if (queryNotEmpty || fragmentNotEmpty)
+				{
+					var text = new StringBuilder();
+
+					if (queryNotEmpty)
+					{
+						var first = true;
+
+						foreach (var item in _query)
+						{
+							if (first)
+							{
+								first = false;
+							}
+							else
+							{
+								text.Append('?');
+							}
+
+							text.Append(item.Key);
+
+							if (!string.IsNullOrEmpty(item.Value))
+							{
+								text.Append(item.Value);
+							}
+						}
+					}
+
+					if (fragmentNotEmpty)
+					{
+						text.Append('#');
+						text.Append(_fragment);
+					}
+
+					return text.ToString();
+				}
+
+				return string.Empty;
+			}
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PushStateArgs"/> class.
@@ -134,6 +188,16 @@ namespace UnityFx.AppStates
 			_data = userData;
 			_query = data;
 			_fragment = fragmentParams ?? string.Empty;
+		}
+
+		#endregion
+
+		#region Object
+
+		/// <inheritdoc/>
+		public override string ToString()
+		{
+			return DeeplingQueryString;
 		}
 
 		#endregion

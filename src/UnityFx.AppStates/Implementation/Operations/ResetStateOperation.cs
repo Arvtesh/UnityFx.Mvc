@@ -6,15 +6,15 @@ using System.Diagnostics;
 
 namespace UnityFx.AppStates
 {
-	internal class ResetStateOperation : PushStateOperationBase
+	internal class ResetStateOperation : PushStateOperation
 	{
 		#region data
 		#endregion
 
 		#region interface
 
-		public ResetStateOperation(TraceSource traceSource, Type controllerType, object controllerArgs, AsyncCallback asyncCallback, object asyncState)
-			: base(traceSource, AppStateOperationType.Reset, controllerType, controllerArgs, asyncCallback, asyncState)
+		public ResetStateOperation(TraceSource traceSource, Type controllerType, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
+			: base(traceSource, AppStateOperationType.Reset, null, controllerType, args, asyncCallback, asyncState)
 		{
 		}
 

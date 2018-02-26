@@ -47,10 +47,10 @@ namespace UnityFx.AppStates
 	public enum PushOptions
 	{
 		/// <summary>
-		/// No options.
+		/// Default options (push). The new state is pushed onto the stack.
 		/// </summary>
 		/// <seealso cref="AppStateOperationType.Push"/>
-		None,
+		Push,
 
 		/// <summary>
 		/// Pushes new state onto the stack instead of the previous one.

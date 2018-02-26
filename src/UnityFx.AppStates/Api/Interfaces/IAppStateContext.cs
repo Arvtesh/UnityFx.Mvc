@@ -12,9 +12,9 @@ namespace UnityFx.AppStates
 	public interface IAppStateContext
 	{
 		/// <summary>
-		/// Gets user-specified controller arguments.
+		/// Gets the arguments used to create the state.
 		/// </summary>
-		object Args { get; }
+		PushStateArgs CreationArgs { get; }
 
 		/// <summary>
 		/// Gets parent state.

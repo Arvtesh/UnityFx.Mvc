@@ -6,22 +6,16 @@ using System.Diagnostics;
 
 namespace UnityFx.AppStates
 {
-	internal class SetStateOperation : PushStateOperationBase
+	internal class SetStateOperation : PushStateOperation
 	{
 		#region data
-
-		private readonly AppState _ownerState;
-
 		#endregion
 
 		#region interface
 
-		public AppState OwnerState => _ownerState;
-
-		public SetStateOperation(TraceSource traceSource, AppState ownerState, Type controllerType, object controllerArgs, AsyncCallback asyncCallback, object asyncState)
-			: base(traceSource, AppStateOperationType.Set, controllerType, controllerArgs, asyncCallback, asyncState)
+		public SetStateOperation(TraceSource traceSource, AppState ownerState, Type controllerType, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
+			: base(traceSource, AppStateOperationType.Set, ownerState, controllerType, args, asyncCallback, asyncState)
 		{
-			_ownerState = ownerState;
 		}
 
 		#endregion

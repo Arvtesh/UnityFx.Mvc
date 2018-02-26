@@ -18,11 +18,11 @@ namespace UnityFx.AppStates
 	/// A manager of application states (<see cref="IAppState"/>).
 	/// </summary>
 	/// <seealso cref="IAppState"/>
-	public class AppStateManager : IAppStateManager, IAppStateManagerSettings, IDisposable
+	public class AppStateManager : IAppStateManager, IDisposable
 	{
 		#region data
 
-		private const string _serviceName = "AppStates";
+		private const string _serviceName = "StateManager";
 
 		private readonly IAppStateControllerFactory _controllerFactory;
 		private readonly IAppStateViewFactory _viewManager;
@@ -31,7 +31,7 @@ namespace UnityFx.AppStates
 
 		private readonly TraceSource _console;
 		private readonly AppStateStack _states;
-		private readonly AsyncResultQueue<AppStateStackOperation> _stackOperations;
+		private readonly AsyncResultQueue<AppStateOperation> _stackOperations;
 		private readonly AppState _parentState;
 		private readonly AppStateManager _parentStateManager;
 
@@ -51,25 +51,13 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppStateManager"/> class.
 		/// </summary>
-		/// <param name="syncContext"></param>
-		/// <param name="viewManager"></param>
-		/// <param name="services"></param>
-		public AppStateManager(
-			SynchronizationContext syncContext,
-			IAppStateViewFactory viewManager,
-			IServiceProvider services)
-			: this(syncContext, viewManager, services, new AppStateControllerFactory())
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AppStateManager"/> class.
-		/// </summary>
+		/// <param name="traceSource"></param>
 		/// <param name="syncContext"></param>
 		/// <param name="controllerFactory"></param>
 		/// <param name="viewManager"></param>
 		/// <param name="services"></param>
-		public AppStateManager(
+		protected AppStateManager(
+			TraceSource traceSource,
 			SynchronizationContext syncContext,
 			IAppStateViewFactory viewManager,
 			IServiceProvider services,
@@ -79,15 +67,57 @@ namespace UnityFx.AppStates
 			Debug.Assert(viewManager != null);
 			Debug.Assert(services != null);
 
-			_console = new TraceSource(_serviceName);
+			_console = traceSource;
 			_states = new AppStateStack();
-			_stackOperations = new AsyncResultQueue<AppStateStackOperation>(syncContext);
+			_stackOperations = new AsyncResultQueue<AppStateOperation>(syncContext);
 			_synchronizationContext = syncContext;
 			_controllerFactory = controllerFactory;
 			_viewManager = viewManager;
 			_serviceProvider = services;
 			_enabled = true;
 		}
+
+		/// <summary>
+		/// Releases unmanaged resources used by the service.
+		/// </summary>
+		/// <param name="disposing">Should be <see langword="true"/> if the method is called from <see cref="Dispose()"/>; <see langword="false"/> otherwise.</param>
+		/// <seealso cref="Dispose()"/>
+		/// <seealso cref="ThrowIfDisposed"/>
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing && !_disposed)
+			{
+				_disposed = true;
+
+				foreach (var state in _states)
+				{
+					state.Dispose();
+				}
+
+				_states.Clear();
+			}
+		}
+
+		/// <summary>
+		/// Throws an <see cref="ObjectDisposedException"/> if the instance is already disposed.
+		/// </summary>
+		/// <seealso cref="Dispose()"/>
+		/// <seealso cref="Dispose(bool)"/>
+		protected void ThrowIfDisposed()
+		{
+			if (_disposed)
+			{
+				throw new ObjectDisposedException(GetFullName());
+			}
+		}
+
+		#endregion
+
+		#region internals
+
+		internal AppState ParentState => _parentState;
+
+		internal AppStateStack StatesEx => _states;
 
 		internal AppStateManager(AppState parentState, AppStateManager parentStateManager)
 		{
@@ -96,7 +126,7 @@ namespace UnityFx.AppStates
 
 			_console = parentStateManager._console;
 			_states = new AppStateStack();
-			_stackOperations = new AsyncResultQueue<AppStateStackOperation>(parentStateManager._synchronizationContext);
+			_stackOperations = new AsyncResultQueue<AppStateOperation>(parentStateManager._synchronizationContext);
 			_synchronizationContext = parentStateManager._synchronizationContext;
 			_controllerFactory = parentStateManager._controllerFactory;
 			_viewManager = parentStateManager._viewManager;
@@ -159,72 +189,11 @@ namespace UnityFx.AppStates
 			return false;
 		}
 
-		/// <summary>
-		/// Releases unmanaged resources used by the service.
-		/// </summary>
-		/// <param name="disposing">Should be <see langword="true"/> if the method is called from <see cref="Dispose()"/>; <see langword="false"/> otherwise.</param>
-		/// <seealso cref="Dispose()"/>
-		/// <seealso cref="ThrowIfDisposed"/>
-		protected virtual void Dispose(bool disposing)
-		{
-			if (disposing && !_disposed)
-			{
-				_disposed = true;
-
-				foreach (var state in _states)
-				{
-					state.Dispose();
-				}
-
-				_states.Clear();
-			}
-		}
-
-		/// <summary>
-		/// Throws an <see cref="ObjectDisposedException"/> if the instance is already disposed.
-		/// </summary>
-		/// <seealso cref="Dispose()"/>
-		/// <seealso cref="Dispose(bool)"/>
-		protected void ThrowIfDisposed()
-		{
-			if (_disposed)
-			{
-				throw new ObjectDisposedException(GetFullName());
-			}
-		}
-
-		#endregion
-
-		#region internals
-
-		internal AppState ParentState => _parentState;
-
-		internal AppStateStack StatesEx => _states;
-
 		internal void SetEnabled()
 		{
 			_enabled = true;
 			_stackOperations.Suspended = false;
 		}
-
-		#endregion
-
-		#region IAppStateServiceSettings
-
-		/// <inheritdoc/>
-		public SourceSwitch TraceSwitch { get => _console.Switch; set => _console.Switch = value; }
-
-		/// <inheritdoc/>
-		public TraceListenerCollection TraceListeners => _console.Listeners;
-
-		/// <inheritdoc/>
-		public int MaxNumberOfPendingOperations { get; set; }
-
-		/// <inheritdoc/>
-		public string DeeplinkDomain { get; set; }
-
-		/// <inheritdoc/>
-		public string DeeplinkScheme { get; set; }
 
 		#endregion
 
@@ -340,13 +309,13 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private AppStateStackOperation PushStateInternal(Type controllerType, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
+		private AppStateOperation PushStateInternal(Type controllerType, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
 		{
 			Debug.Assert(!_disposed);
 			Debug.Assert(controllerType != null);
 			Debug.Assert(args != null);
 
-			AppStateStackOperation result;
+			AppStateOperation result;
 
 			if (args.Options == PushOptions.Set)
 			{
@@ -365,11 +334,11 @@ namespace UnityFx.AppStates
 			return result;
 		}
 
-		private AppStateStackOperation PopStateInternal(IAppState state, AsyncCallback asyncCallback, object asyncState)
+		private AppStateOperation PopStateInternal(IAppState state, AsyncCallback asyncCallback, object asyncState)
 		{
 			Debug.Assert(!_disposed);
 
-			AppStateStackOperation result;
+			AppStateOperation result;
 
 			if (state != null)
 			{
@@ -384,7 +353,7 @@ namespace UnityFx.AppStates
 			return result;
 		}
 
-		private void QueueOperation(AppStateStackOperation op)
+		private void QueueOperation(AppStateOperation op)
 		{
 			_stackOperations.Add(op);
 		}

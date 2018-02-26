@@ -13,8 +13,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A yieldable asynchronous state operation.
 	/// </summary>
-	/// <seealso href="https://blogs.msdn.microsoft.com/nikos/2011/03/14/how-to-implement-the-iasyncresult-design-pattern/"/>
-	internal abstract class AppStateStackOperation : AsyncResult<IAppState>, IAppStateOperationInfo
+	internal abstract class AppStateOperation : AsyncResult<IAppState>, IAppStateOperationInfo
 	{
 		#region data
 
@@ -32,7 +31,7 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		protected AppStateStackOperation(TraceSource traceSource, AppStateOperationType opType, AsyncCallback asyncCallback, object asyncState, string comment)
+		protected AppStateOperation(TraceSource traceSource, AppStateOperationType opType, AsyncCallback asyncCallback, object asyncState, string comment)
 		{
 			_id = (++_lastId << 3) | (int)opType;
 			_name = $"{opType.ToString()} ({_id.ToString(CultureInfo.InvariantCulture)})";
