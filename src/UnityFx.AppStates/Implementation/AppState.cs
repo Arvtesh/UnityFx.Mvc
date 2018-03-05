@@ -37,7 +37,6 @@ namespace UnityFx.AppStates
 		private readonly TraceSource _console;
 		private readonly AppStateStack _stack;
 		private readonly string _id;
-		private readonly string _path;
 		private readonly AppStateFlags _flags;
 		private readonly PushStateArgs _args;
 
@@ -84,7 +83,6 @@ namespace UnityFx.AppStates
 				_id = GetStateNameSimple(controllerType);
 			}
 
-			_path = _parentState?.Path + '/' + _id ?? _id;
 			_controller = parentStateManager.CreateStateController(this, controllerType);
 		}
 
@@ -92,7 +90,7 @@ namespace UnityFx.AppStates
 		{
 			Debug.Assert(_state == AppStateState.Created);
 
-			_console.TraceEvent(TraceEventType.Verbose, 0, "PushState " + _path);
+			_console.TraceEvent(TraceEventType.Verbose, 0, "PushState " + _id);
 			_stack.Add(this);
 			_state = AppStateState.Pushed;
 			_substateManager?.SetEnabled();
@@ -111,7 +109,7 @@ namespace UnityFx.AppStates
 
 			_substateManager?.PopAll();
 
-			_console.TraceData(TraceEventType.Verbose, 0, "PopState " + _path);
+			_console.TraceData(TraceEventType.Verbose, 0, "PopState " + _id);
 			_stack.Remove(this);
 			_state = AppStateState.Popped;
 
@@ -142,7 +140,7 @@ namespace UnityFx.AppStates
 
 			if (!_isActive && (_parentState == null || _parentState.IsActive))
 			{
-				_console.TraceEvent(TraceEventType.Verbose, 0, "ActivateState " + _path);
+				_console.TraceEvent(TraceEventType.Verbose, 0, "ActivateState " + _id);
 
 				_view?.SetInteractable(true);
 				_isActive = true;
@@ -163,7 +161,7 @@ namespace UnityFx.AppStates
 
 			if (_isActive)
 			{
-				_console.TraceData(TraceEventType.Verbose, 0, "DeactivateState " + _path);
+				_console.TraceData(TraceEventType.Verbose, 0, "DeactivateState " + _id);
 
 				try
 				{
@@ -258,7 +256,20 @@ namespace UnityFx.AppStates
 
 		public AppStateFlags Flags => _flags;
 
-		public string Path => _path;
+		public string Path
+		{
+			get
+			{
+				var localPath = '/' + _id;
+
+				if (_parentState == null)
+				{
+					return _ownerState?.Path + localPath ?? localPath;
+				}
+
+				return _parentState.Path;
+			}
+		}
 
 		public PushStateArgs CreationArgs => _args;
 
@@ -266,7 +277,15 @@ namespace UnityFx.AppStates
 		{
 			get
 			{
-				throw new NotImplementedException();
+				var uriBuilder = new UriBuilder(_parentStateManager.Shared.DeeplinkScheme, _parentStateManager.Shared.DeeplinkDomain);
+				uriBuilder.Path = Path;
+
+				if (_parentState != null)
+				{
+					uriBuilder.Fragment = _id;
+				}
+
+				return uriBuilder.Uri;
 			}
 		}
 

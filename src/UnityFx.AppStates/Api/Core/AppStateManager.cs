@@ -24,12 +24,7 @@ namespace UnityFx.AppStates
 
 		private const string _serviceName = "StateManager";
 
-		private readonly IAppStateControllerFactory _controllerFactory;
-		private readonly IAppStateViewFactory _viewManager;
-		private readonly IServiceProvider _serviceProvider;
-		private readonly SynchronizationContext _synchronizationContext;
-
-		private readonly TraceSource _console;
+		private readonly AppStateManagerShared _shared;
 		private readonly AppStateStack _states;
 		private readonly AsyncResultQueue<AppStateOperation> _stackOperations;
 		private readonly AppState _parentState;
@@ -46,34 +41,28 @@ namespace UnityFx.AppStates
 		/// Gets the <see cref="System.Diagnostics.TraceSource"/> instance used by the service.
 		/// </summary>
 		/// <value>A <see cref="System.Diagnostics.TraceSource"/> instance used for tracing.</value>
-		protected internal TraceSource TraceSource => _console;
+		protected internal TraceSource TraceSource => _shared.TraceSource;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppStateManager"/> class.
 		/// </summary>
-		/// <param name="traceSource"></param>
 		/// <param name="syncContext"></param>
 		/// <param name="viewManager"></param>
 		/// <param name="services"></param>
 		/// <param name="controllerFactory"></param>
 		protected AppStateManager(
-			TraceSource traceSource,
 			SynchronizationContext syncContext,
+			IAppStateControllerFactory controllerFactory,
 			IAppStateViewFactory viewManager,
-			IServiceProvider services,
-			IAppStateControllerFactory controllerFactory)
+			IServiceProvider services)
 		{
 			Debug.Assert(controllerFactory != null);
 			Debug.Assert(viewManager != null);
 			Debug.Assert(services != null);
 
-			_console = traceSource;
+			_shared = new AppStateManagerShared(syncContext, controllerFactory, viewManager, services);
 			_states = new AppStateStack();
 			_stackOperations = new AsyncResultQueue<AppStateOperation>(syncContext);
-			_synchronizationContext = syncContext;
-			_controllerFactory = controllerFactory;
-			_viewManager = viewManager;
-			_serviceProvider = services;
 			_enabled = true;
 		}
 
@@ -115,6 +104,8 @@ namespace UnityFx.AppStates
 
 		#region internals
 
+		internal AppStateManagerShared Shared => _shared;
+
 		internal AppState ParentState => _parentState;
 
 		internal AppStateStack StatesEx => _states;
@@ -124,15 +115,11 @@ namespace UnityFx.AppStates
 			Debug.Assert(parentState != null);
 			Debug.Assert(parentStateManager != null);
 
-			_console = parentStateManager._console;
+			_shared = _parentStateManager._shared;
 			_states = new AppStateStack();
-			_stackOperations = new AsyncResultQueue<AppStateOperation>(parentStateManager._synchronizationContext);
-			_synchronizationContext = parentStateManager._synchronizationContext;
-			_controllerFactory = parentStateManager._controllerFactory;
-			_viewManager = parentStateManager._viewManager;
+			_stackOperations = new AsyncResultQueue<AppStateOperation>(_shared.SynchronizationContext);
 			_parentState = parentState;
 			_parentStateManager = parentStateManager;
-			_serviceProvider = parentStateManager._serviceProvider;
 			_enabled = parentState.Enabled;
 			_stackOperations.Suspended = !_enabled;
 		}
@@ -148,19 +135,16 @@ namespace UnityFx.AppStates
 
 		internal IAppStateController CreateStateController(AppState state, Type controllerType)
 		{
-			Debug.Assert(state != null);
-			Debug.Assert(controllerType != null);
 			Debug.Assert(!_disposed);
 
-			return _controllerFactory.CreateController(controllerType, state);
+			return _shared.CreateController(state, controllerType);
 		}
 
 		internal IAppStateView CreateView(AppState state)
 		{
-			Debug.Assert(state != null);
 			Debug.Assert(!_disposed);
 
-			return _viewManager.CreateView(state.Path, state.GetPrevView());
+			return _shared.CreateView(state);
 		}
 
 		internal void PopAll()

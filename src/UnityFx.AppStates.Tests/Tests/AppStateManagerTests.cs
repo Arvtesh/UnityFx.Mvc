@@ -43,9 +43,6 @@ namespace UnityFx.AppStates
 
 			Assert.NotNull(_stateManager.States);
 			Assert.Empty(_stateManager.States);
-
-			Assert.NotNull(_stateManager.TraceListeners);
-			Assert.NotNull(_stateManager.TraceSwitch);
 		}
 
 		[Fact]

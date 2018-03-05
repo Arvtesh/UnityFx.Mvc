@@ -15,7 +15,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// tt
 	/// </summary>
-	public class AppStateService : AppStateManager, IAppStateServiceSettings
+	public class AppStateService : AppStateManager
 	{
 		#region data
 		#endregion
@@ -31,10 +31,10 @@ namespace UnityFx.AppStates
 		/// <param name="controllerFactory"></param>
 		public AppStateService(
 			SynchronizationContext syncContext,
+			IAppStateControllerFactory controllerFactory,
 			IAppStateViewFactory viewManager,
-			IServiceProvider services,
-			IAppStateControllerFactory controllerFactory)
-			: base(new TraceSource("AppStates"), syncContext, viewManager, services, controllerFactory)
+			IServiceProvider services)
+			: base(syncContext, controllerFactory, viewManager, services)
 		{
 		}
 
@@ -48,7 +48,7 @@ namespace UnityFx.AppStates
 			SynchronizationContext syncContext,
 			IAppStateViewFactory viewManager,
 			IServiceProvider services)
-			: this(syncContext, viewManager, services, new AppStateControllerFactory(services))
+			: this(syncContext, new AppStateControllerFactory(services), viewManager, services)
 		{
 		}
 
@@ -57,26 +57,7 @@ namespace UnityFx.AppStates
 		#region IAppStateService
 
 		/// <inheritdoc/>
-		public IAppStateServiceSettings Settings => this;
-
-		#endregion
-
-		#region IAppStateServiceSettings
-
-		/// <inheritdoc/>
-		public SourceSwitch TraceSwitch { get => TraceSource.Switch; set => TraceSource.Switch = value; }
-
-		/// <inheritdoc/>
-		public TraceListenerCollection TraceListeners => TraceSource.Listeners;
-
-		/// <inheritdoc/>
-		public int MaxNumberOfPendingOperations { get; set; }
-
-		/// <inheritdoc/>
-		public string DeeplinkDomain { get; set; }
-
-		/// <inheritdoc/>
-		public string DeeplinkScheme { get; set; }
+		public IAppStateServiceSettings Settings => Shared;
 
 		#endregion
 	}

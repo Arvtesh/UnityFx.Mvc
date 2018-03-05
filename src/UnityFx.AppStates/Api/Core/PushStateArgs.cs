@@ -17,6 +17,7 @@ namespace UnityFx.AppStates
 		private static Dictionary<string, string> _emptyQuery = new Dictionary<string, string>();
 		private static PushStateArgs _defaultArgs;
 
+		private readonly Uri _deeplink;
 		private readonly PushOptions _options;
 		private readonly object _data;
 		private readonly Dictionary<string, string> _query;
@@ -53,71 +54,23 @@ namespace UnityFx.AppStates
 		public object Data => _data;
 
 		/// <summary>
+		/// Gets the deeplink this state was created with or <see langword="null"/> if no deeplink was specified.
+		/// </summary>
+		public Uri Deeplink => _deeplink;
+
+		/// <summary>
 		/// Gets deeplink query parameters (if any).
 		/// </summary>
 #if NET35
 		public IDictionary<string, string> DeeplinkQuery => _query;
 #else
-		public IReadOnlyDictionary<string, string> DeeplinkQuery => _query;
+		public IReadOnlyDictionary<string, string> Query => _query;
 #endif
 
 		/// <summary>
 		/// Gets deeplink query parameters (if any).
 		/// </summary>
-		public string DeeplinkFragment => _fragment;
-
-		/// <summary>
-		/// Gets string representatino of the deepling query and fragment.
-		/// </summary>
-		/// <seealso cref="DeeplinkQuery"/>
-		/// <seealso cref="DeeplinkFragment"/>
-		public string DeeplingQueryString
-		{
-			get
-			{
-				var queryNotEmpty = _query.Count > 0;
-				var fragmentNotEmpty = !string.IsNullOrEmpty(_fragment);
-
-				if (queryNotEmpty || fragmentNotEmpty)
-				{
-					var text = new StringBuilder();
-
-					if (queryNotEmpty)
-					{
-						var first = true;
-
-						foreach (var item in _query)
-						{
-							if (first)
-							{
-								first = false;
-							}
-							else
-							{
-								text.Append('?');
-							}
-
-							text.Append(item.Key);
-
-							if (!string.IsNullOrEmpty(item.Value))
-							{
-								text.Append(item.Value);
-							}
-						}
-					}
-
-					if (fragmentNotEmpty)
-					{
-						text.Append('#');
-						text.Append(_fragment);
-					}
-
-					return text.ToString();
-				}
-
-				return string.Empty;
-			}
-		}
+		public string Fragment => _fragment;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PushStateArgs"/> class.
@@ -126,6 +79,18 @@ namespace UnityFx.AppStates
 		{
 			_query = _emptyQuery;
 			_fragment = string.Empty;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PushStateArgs"/> class.
+		/// </summary>
+		public PushStateArgs(Uri deeplink)
+		{
+			_deeplink = deeplink;
+			_query = _emptyQuery;
+			_fragment = string.Empty;
+
+			// TODO: initialize query & fragment
 		}
 
 		/// <summary>
@@ -197,7 +162,54 @@ namespace UnityFx.AppStates
 		/// <inheritdoc/>
 		public override string ToString()
 		{
-			return DeeplingQueryString;
+			if (_deeplink != null)
+			{
+				return _deeplink.ToString();
+			}
+			else
+			{
+				var queryNotEmpty = _query.Count > 0;
+				var fragmentNotEmpty = !string.IsNullOrEmpty(_fragment);
+
+				if (queryNotEmpty || fragmentNotEmpty)
+				{
+					var text = new StringBuilder();
+
+					if (queryNotEmpty)
+					{
+						var first = true;
+
+						foreach (var item in _query)
+						{
+							if (first)
+							{
+								first = false;
+							}
+							else
+							{
+								text.Append('?');
+							}
+
+							text.Append(item.Key);
+
+							if (!string.IsNullOrEmpty(item.Value))
+							{
+								text.Append(item.Value);
+							}
+						}
+					}
+
+					if (fragmentNotEmpty)
+					{
+						text.Append('#');
+						text.Append(_fragment);
+					}
+
+					return text.ToString();
+				}
+
+				return base.ToString();
+			}
 		}
 
 		#endregion
