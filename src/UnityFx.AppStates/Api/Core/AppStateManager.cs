@@ -133,20 +133,6 @@ namespace UnityFx.AppStates
 			return new AppStateManager(state, parentStateManager);
 		}
 
-		internal IAppStateController CreateStateController(AppState state, Type controllerType)
-		{
-			Debug.Assert(!_disposed);
-
-			return _shared.CreateController(state, controllerType);
-		}
-
-		internal IAppStateView CreateView(AppState state)
-		{
-			Debug.Assert(!_disposed);
-
-			return _shared.CreateView(state);
-		}
-
 		internal void PopAll()
 		{
 			// TODO

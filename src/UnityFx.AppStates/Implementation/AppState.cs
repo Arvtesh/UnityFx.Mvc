@@ -31,6 +31,7 @@ namespace UnityFx.AppStates
 
 		private readonly AppStateManager _parentStateManager;
 		private readonly IAppStateController _controller;
+		private readonly IAppStateView _view;
 		private readonly AppState _parentState;
 		private readonly IAppState _ownerState;
 
@@ -41,8 +42,6 @@ namespace UnityFx.AppStates
 		private readonly PushStateArgs _args;
 
 		private AppStateManager _substateManager;
-		private IAppStateView _view;
-
 		private AppStateState _state;
 		private bool _isActive;
 		private bool _isActivated;
@@ -83,7 +82,8 @@ namespace UnityFx.AppStates
 				_id = GetStateNameSimple(controllerType);
 			}
 
-			_controller = parentStateManager.CreateStateController(this, controllerType);
+			_view = parentStateManager.Shared.CreateView(this);
+			_controller = parentStateManager.Shared.CreateController(this, controllerType);
 		}
 
 		internal IAsyncOperation Push()
@@ -293,20 +293,7 @@ namespace UnityFx.AppStates
 
 		public IAppState OwnerState => _ownerState;
 
-		public IAppStateView View
-		{
-			get
-			{
-				ThrowIfDisposed();
-
-				if (_view == null)
-				{
-					_view = _parentStateManager.CreateView(this);
-				}
-
-				return _view;
-			}
-		}
+		public IAppStateView View => _view;
 
 		public IAppStateController Controller => _controller;
 

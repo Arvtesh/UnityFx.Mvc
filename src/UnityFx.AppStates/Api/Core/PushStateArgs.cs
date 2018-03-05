@@ -20,8 +20,9 @@ namespace UnityFx.AppStates
 		private readonly Uri _deeplink;
 		private readonly PushOptions _options;
 		private readonly object _data;
-		private readonly Dictionary<string, string> _query;
-		private readonly string _fragment;
+
+		private Dictionary<string, string> _query;
+		private string _fragment;
 
 		#endregion
 
@@ -36,7 +37,7 @@ namespace UnityFx.AppStates
 			{
 				if (_defaultArgs == null)
 				{
-					_defaultArgs = new PushStateArgs();
+					_defaultArgs = new PushStateArgs(PushOptions.Push);
 				}
 
 				return _defaultArgs;
@@ -59,26 +60,83 @@ namespace UnityFx.AppStates
 		public Uri Deeplink => _deeplink;
 
 		/// <summary>
-		/// Gets deeplink query parameters (if any).
+		/// Gets query parameters (if any).
 		/// </summary>
 #if NET35
-		public IDictionary<string, string> DeeplinkQuery => _query;
+		public IDictionary<string, string> Query
 #else
-		public IReadOnlyDictionary<string, string> Query => _query;
+		public IReadOnlyDictionary<string, string> Query
 #endif
-
-		/// <summary>
-		/// Gets deeplink query parameters (if any).
-		/// </summary>
-		public string Fragment => _fragment;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PushStateArgs"/> class.
-		/// </summary>
-		public PushStateArgs()
 		{
-			_query = _emptyQuery;
-			_fragment = string.Empty;
+			get
+			{
+				if (_query == null)
+				{
+					if (_deeplink == null)
+					{
+						_query = _emptyQuery;
+					}
+					else
+					{
+						var query = _deeplink.Query;
+
+						if (string.IsNullOrEmpty(query))
+						{
+							_query = _emptyQuery;
+						}
+						else
+						{
+							var args = query.Split('?');
+							var queryParams = new Dictionary<string, string>(args.Length);
+
+							foreach (var arg in args)
+							{
+								var index = arg.IndexOf('=');
+								var key = arg;
+								var value = string.Empty;
+
+								if (index >= 0)
+								{
+									key = arg.Substring(0, index);
+									value = arg.Substring(index);
+								}
+
+								if (!string.IsNullOrEmpty(key) && !queryParams.ContainsKey(key))
+								{
+									queryParams.Add(key, value);
+								}
+							}
+
+							_query = queryParams;
+						}
+					}
+				}
+
+				return _query;
+			}
+		}
+
+		/// <summary>
+		/// Gets fragment parameters (if any).
+		/// </summary>
+		public string Fragment
+		{
+			get
+			{
+				if (_fragment == null)
+				{
+					if (_deeplink == null)
+					{
+						_fragment = string.Empty;
+					}
+					else
+					{
+						_fragment = _deeplink.Fragment;
+					}
+				}
+
+				return _fragment;
+			}
 		}
 
 		/// <summary>
@@ -87,10 +145,6 @@ namespace UnityFx.AppStates
 		public PushStateArgs(Uri deeplink)
 		{
 			_deeplink = deeplink;
-			_query = _emptyQuery;
-			_fragment = string.Empty;
-
-			// TODO: initialize query & fragment
 		}
 
 		/// <summary>
