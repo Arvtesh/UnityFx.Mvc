@@ -133,7 +133,7 @@ namespace UnityFx.AppStates
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
 		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap">Event-based Asynchronous Pattern (EAP)</seealso>
 		/// <seealso cref="PopStateAsync(IAppState)"/>
-		IAsyncOperation<IAppState> PushStateAsync(Type controllerType, PushStateArgs args);
+		AsyncResult<IAppState> PushStateAsync(Type controllerType, PushStateArgs args);
 
 		/// <summary>
 		/// Removes the specified state from the stack.
@@ -144,7 +144,7 @@ namespace UnityFx.AppStates
 		/// <exception cref="InvalidOperationException">Thrown if the <paramref name="state"/> does not belong to this manager.</exception>
 		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap">Event-based Asynchronous Pattern (EAP)</seealso>
 		/// <seealso cref="PushStateAsync(Type, PushStateArgs)"/>
-		IAsyncOperation PopStateAsync(IAppState state);
+		AsyncResult PopStateAsync(IAppState state);
 
 #if UNITYFX_SUPPORT_TAP
 

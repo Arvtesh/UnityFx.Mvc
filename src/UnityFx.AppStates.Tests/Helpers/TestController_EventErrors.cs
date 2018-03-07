@@ -8,11 +8,12 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class TestController_EventErrors : IAppStateEvents, IDisposable
+	internal class TestController_EventErrors : AppStateController
 	{
 		private readonly ControllerMethodId _errorId;
 
 		public TestController_EventErrors(IAppStateContext context)
+			: base(context)
 		{
 			_errorId = (ControllerMethodId)context.CreationArgs.Data;
 
@@ -20,58 +21,56 @@ namespace UnityFx.AppStates
 			{
 				throw new Exception();
 			}
-		}
 
-		public IAsyncOperation OnPush()
-		{
 			if (_errorId == ControllerMethodId.OnPush)
 			{
 				throw new Exception();
 			}
-
-			return null;
 		}
 
-		public Task OnLoadContent(CancellationToken cancellationToken)
+		protected override void OnActivate(bool firstActivated)
 		{
-			if (_errorId == ControllerMethodId.OnLoadContent)
-			{
-				throw new Exception();
-			}
+			base.OnActivate(firstActivated);
 
-			return Task.CompletedTask;
-		}
-
-		public void OnActivate(bool firstTime)
-		{
 			if (_errorId == ControllerMethodId.OnActivate)
 			{
 				throw new Exception();
 			}
 		}
 
-		public void OnDeactivate()
+		protected override void OnDeactivate()
 		{
 			if (_errorId == ControllerMethodId.OnDectivate)
 			{
 				throw new Exception();
 			}
+
+			base.OnDeactivate();
 		}
 
-		public void OnPop()
+		protected override AsyncResult OnLoadContent()
+		{
+			if (_errorId == ControllerMethodId.OnLoadContent)
+			{
+				throw new Exception();
+			}
+
+			return base.OnLoadContent();
+		}
+
+		protected override void Dispose(bool disposing)
 		{
 			if (_errorId == ControllerMethodId.OnPop)
 			{
 				throw new Exception();
 			}
-		}
 
-		public void Dispose()
-		{
 			if (_errorId == ControllerMethodId.Dispose)
 			{
 				throw new Exception();
 			}
+
+			base.Dispose(disposing);
 		}
 	}
 }

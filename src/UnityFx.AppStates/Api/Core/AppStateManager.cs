@@ -224,7 +224,7 @@ namespace UnityFx.AppStates
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<IAppState> PushStateAsync(Type controllerType, PushStateArgs args)
+		public AsyncResult<IAppState> PushStateAsync(Type controllerType, PushStateArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
@@ -234,7 +234,7 @@ namespace UnityFx.AppStates
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation PopStateAsync(IAppState state)
+		public AsyncResult PopStateAsync(IAppState state)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidState(state);

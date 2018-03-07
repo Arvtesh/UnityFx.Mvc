@@ -86,7 +86,7 @@ namespace UnityFx.AppStates
 			_controller = parentStateManager.Shared.CreateController(this, controllerType);
 		}
 
-		internal IAsyncOperation Push()
+		internal AsyncResult Push()
 		{
 			Debug.Assert(_state == AppStateState.Created);
 
@@ -95,12 +95,7 @@ namespace UnityFx.AppStates
 			_state = AppStateState.Pushed;
 			_substateManager?.SetEnabled();
 
-			if (_controller is IAppStateEvents ce)
-			{
-				return ce.OnPush();
-			}
-
-			return AsyncResult.CompletedOperation;
+			return PushInternal();
 		}
 
 		internal void Pop()
@@ -112,11 +107,6 @@ namespace UnityFx.AppStates
 			_console.TraceData(TraceEventType.Verbose, 0, "PopState " + _id);
 			_stack.Remove(this);
 			_state = AppStateState.Popped;
-
-			if (_controller is IAppStateEvents ce)
-			{
-				ce.OnPop();
-			}
 		}
 
 		internal void PopAndDispose()
@@ -142,13 +132,10 @@ namespace UnityFx.AppStates
 			{
 				_console.TraceEvent(TraceEventType.Verbose, 0, "ActivateState " + _id);
 
-				_view?.SetInteractable(true);
+				_view.SetInteractable(true);
 				_isActive = true;
 
-				if (_controller is IAppStateEvents ce)
-				{
-					ce.OnActivate(_isActivated);
-				}
+				ActivateInternal();
 
 				_isActivated = true;
 				_substateManager?.TryActivateTopState();
@@ -166,15 +153,11 @@ namespace UnityFx.AppStates
 				try
 				{
 					_substateManager?.TryDeactivateTopState();
-
-					if (_controller is IAppStateEvents ce)
-					{
-						ce.OnDeactivate();
-					}
+					DeactivateInternal();
 				}
 				finally
 				{
-					_view?.SetInteractable(false);
+					_view.SetInteractable(false);
 					_isActive = false;
 				}
 			}
@@ -382,7 +365,7 @@ namespace UnityFx.AppStates
 				finally
 				{
 					_substateManager?.Dispose();
-					_view?.Dispose();
+					_view.Dispose();
 				}
 			}
 		}
@@ -390,6 +373,37 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region implementation
+
+		private AsyncResult PushInternal()
+		{
+			if (_controller is AppStateController c)
+			{
+				return c.OnLoadContent();
+			}
+
+			return AsyncResult.CompletedOperation;
+		}
+
+		private void ActivateInternal()
+		{
+			if (_controller is AppStateController c)
+			{
+				c.OnActivate(_isActivated);
+			}
+		}
+
+		private void DeactivateInternal()
+		{
+			if (_controller is AppStateController c)
+			{
+				c.OnDeactivate();
+			}
+		}
+
+		private void PopInternal()
+		{
+			// do nothing
+		}
 
 		private void ThrowIfDisposed()
 		{

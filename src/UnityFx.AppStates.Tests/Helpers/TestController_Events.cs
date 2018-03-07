@@ -9,46 +9,41 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class TestController_Events : IAppStateEvents, IDisposable
+	internal class TestController_Events : AppStateController
 	{
 		private readonly ICollection<MethodCallInfo> _calls;
 
 		public TestController_Events(IAppStateContext context)
+			: base(context)
 		{
 			_calls = context.CreationArgs.Data as ICollection<MethodCallInfo>;
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.Ctor));
 		}
 
-		public virtual IAsyncOperation OnPush()
+		protected override AsyncResult OnLoadContent()
 		{
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnPush));
-			return null;
+			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnLoadContent));
+			return base.OnLoadContent();
 		}
 
-		public virtual void OnPop()
+		protected override void OnActivate(bool firstActivated)
 		{
-			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnPop));
-		}
-
-		public virtual void OnActivate(bool firstTime)
-		{
+			base.OnActivate(firstActivated);
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnActivate));
 		}
 
-		public virtual void OnDeactivate()
+		protected override void OnDeactivate()
 		{
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnDectivate));
+			base.OnDeactivate();
 		}
 
-		public virtual Task OnLoadContent(CancellationToken cancellationToken)
+		protected override void Dispose(bool disposing)
 		{
-			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnLoadContent));
-			return Task.Delay(1);
-		}
-
-		public virtual void Dispose()
-		{
+			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnPop));
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.Dispose));
+			base.Dispose(disposing);
 		}
 	}
 }
