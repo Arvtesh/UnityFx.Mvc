@@ -46,8 +46,17 @@ namespace UnityFx.AppStates
 			}
 			catch (Exception e)
 			{
+				TraceException(e);
 				TrySetException(e, false);
+			}
+		}
 
+		protected override void OnCompleted()
+		{
+			base.OnCompleted();
+
+			if (!IsCompletedSuccessfully)
+			{
 				if (_state != null)
 				{
 					_state.PopAndDispose();
@@ -78,20 +87,27 @@ namespace UnityFx.AppStates
 
 		private void OnStatePushed(IAsyncOperation op)
 		{
-			if (op.IsCompletedSuccessfully)
+			try
 			{
-				TrySetResult(_state, false);
+				if (op.IsFaulted)
+				{
+					TrySetException(op.Exception, false);
+				}
+				else if (op.IsCanceled)
+				{
+					TrySetCanceled(false);
+				}
+				else
+				{
+					StateManager.TryActivateTopState();
+					TrySetResult(_state, false);
+				}
 			}
-			else if (op.IsFaulted)
+			catch (Exception e)
 			{
-				TrySetException(op.Exception, false);
+				TraceException(e);
+				TrySetException(e, false);
 			}
-			else
-			{
-				TrySetCanceled(false);
-			}
-
-			StateManager.TryActivateTopState();
 		}
 
 		#endregion
