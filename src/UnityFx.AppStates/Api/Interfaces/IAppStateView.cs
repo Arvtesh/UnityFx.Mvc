@@ -9,19 +9,27 @@ namespace UnityFx.AppStates
 	/// A generic application view.
 	/// </summary>
 	/// <seealso cref="IAppStateViewFactory"/>
-	public interface IAppStateView : IAppView
+	public interface IAppStateView : IDisposable
 	{
 		/// <summary>
-		/// Gets a value indicating whether the view should cover all screen (views under it are not visible).
+		/// Gets the view identifier (matches the state identifier).
 		/// </summary>
-		/// <seealso cref="SetExclusive(bool)"/>
-		bool IsExclusive { get; }
+		string Id { get; }
 
 		/// <summary>
-		/// Sets exclusive mode for the view.
+		/// Gets or sets a value indicating whether the view is enabled (enabled views are visible, disabled ones
+		/// are neither visible nor interactable).
 		/// </summary>
-		/// <exception cref="ObjectDisposedException">Thrown if the view has been disposed.</exception>
-		/// <seealso cref="IsExclusive"/>
-		void SetExclusive(bool exclusive);
+		bool Enabled { get; set; }
+
+		/// <summary>
+		/// Gets or sets a value indicating whether input processing is enabled for the view. Note that disabled views do not process input.
+		/// </summary>
+		bool Interactable { get; set; }
+
+		/// <summary>
+		/// Gets or sets a value indicating whether the view should cover all screen (views under it are not visible).
+		/// </summary>
+		bool Exclusive { get; set; }
 	}
 }

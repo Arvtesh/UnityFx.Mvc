@@ -132,7 +132,7 @@ namespace UnityFx.AppStates
 			{
 				_console.TraceEvent(TraceEventType.Verbose, 0, "ActivateState " + _id);
 
-				_view.SetInteractable(true);
+				_view.Interactable = true;
 				_isActive = true;
 
 				ActivateInternal();
@@ -157,7 +157,7 @@ namespace UnityFx.AppStates
 				}
 				finally
 				{
-					_view.SetInteractable(false);
+					_view.Interactable = false;
 					_isActive = false;
 				}
 			}
