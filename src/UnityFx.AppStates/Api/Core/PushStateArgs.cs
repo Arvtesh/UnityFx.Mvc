@@ -17,12 +17,10 @@ namespace UnityFx.AppStates
 		private static Dictionary<string, string> _emptyQuery = new Dictionary<string, string>();
 		private static PushStateArgs _defaultArgs;
 
-		private readonly Uri _deeplink;
 		private readonly PushOptions _options;
 		private readonly object _data;
-
-		private Dictionary<string, string> _query;
-		private string _fragment;
+		private readonly Dictionary<string, string> _query;
+		private readonly string _fragment;
 
 		#endregion
 
@@ -45,6 +43,52 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
+		/// Creates a <see cref="PushStateArgs"/> instance from a <paramref name="deeplink"/> specified.
+		/// </summary>
+		/// <param name="deeplink">A deeplink.</param>
+		/// <returns>A <see cref="PushStateArgs"/> instance representing the specified deeplink.</returns>
+		public static PushStateArgs FromDeeplink(Uri deeplink)
+		{
+			if (deeplink == null)
+			{
+				throw new ArgumentNullException(nameof(deeplink));
+			}
+
+			var query = deeplink.Query;
+			var fragment = deeplink.Fragment;
+
+			if (string.IsNullOrEmpty(query))
+			{
+				return new PushStateArgs(PushOptions.Push, deeplink, _emptyQuery, fragment);
+			}
+			else
+			{
+				var args = query.Split('?');
+				var queryMap = new Dictionary<string, string>(args.Length);
+
+				foreach (var arg in args)
+				{
+					var index = arg.IndexOf('=');
+					var key = arg;
+					var value = string.Empty;
+
+					if (index >= 0)
+					{
+						key = arg.Substring(0, index);
+						value = arg.Substring(index);
+					}
+
+					if (!string.IsNullOrEmpty(key) && !queryMap.ContainsKey(key))
+					{
+						queryMap.Add(key, value);
+					}
+				}
+
+				return new PushStateArgs(PushOptions.Push, deeplink, queryMap, fragment);
+			}
+		}
+
+		/// <summary>
 		/// Gets state creation options.
 		/// </summary>
 		public PushOptions Options => _options;
@@ -55,97 +99,18 @@ namespace UnityFx.AppStates
 		public object Data => _data;
 
 		/// <summary>
-		/// Gets the deeplink this state was created with or <see langword="null"/> if no deeplink was specified.
-		/// </summary>
-		public Uri Deeplink => _deeplink;
-
-		/// <summary>
 		/// Gets query parameters (if any).
 		/// </summary>
 #if NET35
-		public IDictionary<string, string> Query
+		public IDictionary<string, string> Query => _query;
 #else
-		public IReadOnlyDictionary<string, string> Query
+		public IReadOnlyDictionary<string, string> Query => _query;
 #endif
-		{
-			get
-			{
-				if (_query == null)
-				{
-					if (_deeplink == null)
-					{
-						_query = _emptyQuery;
-					}
-					else
-					{
-						var query = _deeplink.Query;
-
-						if (string.IsNullOrEmpty(query))
-						{
-							_query = _emptyQuery;
-						}
-						else
-						{
-							var args = query.Split('?');
-							var queryParams = new Dictionary<string, string>(args.Length);
-
-							foreach (var arg in args)
-							{
-								var index = arg.IndexOf('=');
-								var key = arg;
-								var value = string.Empty;
-
-								if (index >= 0)
-								{
-									key = arg.Substring(0, index);
-									value = arg.Substring(index);
-								}
-
-								if (!string.IsNullOrEmpty(key) && !queryParams.ContainsKey(key))
-								{
-									queryParams.Add(key, value);
-								}
-							}
-
-							_query = queryParams;
-						}
-					}
-				}
-
-				return _query;
-			}
-		}
 
 		/// <summary>
 		/// Gets fragment parameters (if any).
 		/// </summary>
-		public string Fragment
-		{
-			get
-			{
-				if (_fragment == null)
-				{
-					if (_deeplink == null)
-					{
-						_fragment = string.Empty;
-					}
-					else
-					{
-						_fragment = _deeplink.Fragment;
-					}
-				}
-
-				return _fragment;
-			}
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PushStateArgs"/> class.
-		/// </summary>
-		public PushStateArgs(Uri deeplink)
-		{
-			_deeplink = deeplink;
-		}
+		public string Fragment => _fragment;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PushStateArgs"/> class.
@@ -209,6 +174,14 @@ namespace UnityFx.AppStates
 			_fragment = fragmentParams ?? string.Empty;
 		}
 
+		private PushStateArgs(PushOptions options, Uri deeplink, Dictionary<string, string> query, string fragment)
+		{
+			_options = options;
+			_data = deeplink;
+			_query = query;
+			_fragment = fragment ?? string.Empty;
+		}
+
 		#endregion
 
 		#region Object
@@ -216,9 +189,9 @@ namespace UnityFx.AppStates
 		/// <inheritdoc/>
 		public override string ToString()
 		{
-			if (_deeplink != null)
+			if (_data is Uri deeplink)
 			{
-				return _deeplink.ToString();
+				return deeplink.ToString();
 			}
 			else
 			{

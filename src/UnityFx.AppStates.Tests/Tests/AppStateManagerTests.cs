@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Xunit;
 using NSubstitute;
 using System.Threading;
+using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
@@ -25,6 +26,8 @@ namespace UnityFx.AppStates
 			var viewFactory = Substitute.For<IAppStateViewFactory>();
 			var serviceProvider = Substitute.For<IServiceProvider>();
 			_stateManager = new AppStateService(SynchronizationContext.Current, viewFactory, serviceProvider);
+			_stateManager.Settings.DeeplinkScheme = "myapp";
+			_stateManager.Settings.DeeplinkDomain = "game";
 		}
 
 		public void Dispose()
@@ -39,8 +42,6 @@ namespace UnityFx.AppStates
 		[Fact]
 		public void InitialStateIsCorrect()
 		{
-			Assert.NotNull(_stateManager);
-
 			Assert.NotNull(_stateManager.States);
 			Assert.Empty(_stateManager.States);
 		}
@@ -57,12 +58,18 @@ namespace UnityFx.AppStates
 		}
 
 		[Fact]
-		public async Task PushStateSucceeds()
+		public async Task PushStateAsync_Succeeds()
 		{
-			var state = await _stateManager.PushStateTaskAsync(typeof(TestController_Minimal), PushStateArgs.Default);
+			// Arrange
+			var op = _stateManager.PushStateAsync(typeof(TestController_Minimal), PushStateArgs.Default);
 
+			// Act
+			var state = await op;
+
+			// Assert
 			Assert.NotNull(state);
 			Assert.NotNull(state.Controller);
+			Assert.NotNull(state.Deeplink);
 			Assert.True(state.IsActive);
 			Assert.Empty(state.ChildStates);
 			Assert.IsType<TestController_Minimal>(state.Controller);
@@ -70,7 +77,7 @@ namespace UnityFx.AppStates
 		}
 
 		[Fact]
-		public void DisposeCanBeCalledMultipleTimes()
+		public void Dispose_CanBeCalledMultipleTimes()
 		{
 			_stateManager.Dispose();
 			_stateManager.Dispose();

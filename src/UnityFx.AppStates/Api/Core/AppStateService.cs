@@ -48,7 +48,7 @@ namespace UnityFx.AppStates
 			SynchronizationContext syncContext,
 			IAppStateViewFactory viewManager,
 			IServiceProvider services)
-			: this(syncContext, new AppStateControllerFactory(services), viewManager, services)
+			: base(syncContext, new AppStateControllerFactory(services), viewManager, services)
 		{
 		}
 
