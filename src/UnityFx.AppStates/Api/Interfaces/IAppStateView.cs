@@ -12,8 +12,7 @@ namespace UnityFx.AppStates
 	public interface IAppStateView : IAppView
 	{
 		/// <summary>
-		/// Returns <see langword="true"/> if the view should cover all screen (views under it are not visible);
-		/// <see langword="false"/> otherwise.
+		/// Gets a value indicating whether the view should cover all screen (views under it are not visible).
 		/// </summary>
 		/// <seealso cref="SetExclusive(bool)"/>
 		bool IsExclusive { get; }

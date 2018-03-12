@@ -23,7 +23,7 @@ namespace UnityFx.AppStates
 		TraceListenerCollection TraceListeners { get; }
 
 		/// <summary>
-		/// Gets of sets maximum allowed number of simultanous stack operations.
+		/// Gets or sets maximum allowed number of simultanous stack operations.
 		/// </summary>
 		int MaxNumberOfPendingOperations { get; set; }
 

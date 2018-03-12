@@ -13,13 +13,13 @@ namespace UnityFx.AppStates
 	public interface IAppView : IDisposable
 	{
 		/// <summary>
-		/// Returns name of the view.
+		/// Gets name of the view.
 		/// </summary>
 		string Name { get; }
 
 		/// <summary>
-		/// Returns <see langword="true"/> if the view is enabled (enabled views are visible, disabled ones
-		/// are neither visible nor interactable); <see langword="false"/> otherwise.
+		/// Gets a value indicating whether the view is enabled (enabled views are visible, disabled ones
+		/// are neither visible nor interactable).
 		/// </summary>
 		/// <remarks>
 		/// If value of the property is <see langword="true"/> the view still may not be visible depending
@@ -30,8 +30,7 @@ namespace UnityFx.AppStates
 		bool IsEnabled { get; }
 
 		/// <summary>
-		/// Returns <see langword="true"/> if input processing is enabled for the view; <see langword="false"/>
-		/// otherwise. Note that disabled views do not process input.
+		/// Gets a value indicating whether input processing is enabled for the view. Note that disabled views do not process input.
 		/// </summary>
 		/// <seealso cref="SetInteractable(bool)"/>
 		/// <seealso cref="IsEnabled"/>

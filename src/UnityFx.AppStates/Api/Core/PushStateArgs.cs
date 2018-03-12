@@ -50,7 +50,7 @@ namespace UnityFx.AppStates
 		public PushOptions Options => _options;
 
 		/// <summary>
-		/// Get user data attached to this object.
+		/// Gets user data attached to this object.
 		/// </summary>
 		public object Data => _data;
 

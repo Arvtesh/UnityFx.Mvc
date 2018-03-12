@@ -22,7 +22,7 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
-		/// tt
+		/// Gets a target state.
 		/// </summary>
 		public IAppState State => _state;
 

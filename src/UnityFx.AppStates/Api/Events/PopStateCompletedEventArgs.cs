@@ -22,7 +22,7 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
-		/// tt
+		/// Gets a state being popped.
 		/// </summary>
 		public IAppState State => _state;
 

@@ -22,7 +22,7 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
-		/// tt
+		/// Gets push options.
 		/// </summary>
 		public PushOptions Options => _options;
 
