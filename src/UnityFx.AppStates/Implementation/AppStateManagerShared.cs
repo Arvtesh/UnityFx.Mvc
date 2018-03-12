@@ -16,7 +16,8 @@ namespace UnityFx.AppStates
 		private readonly TraceSource _console = new TraceSource("AppStates");
 		private readonly SynchronizationContext _synchronizationContext;
 		private readonly IAppStateControllerFactory _controllerFactory;
-		private readonly IAppStateViewFactory _viewManager;
+		private readonly IAppStateViewManager _viewManager;
+		private readonly IAppStateTransitionManager _transitionManager;
 		private readonly IServiceProvider _serviceProvider;
 
 		private string _deeplinkScheme;
@@ -29,18 +30,21 @@ namespace UnityFx.AppStates
 		internal TraceSource TraceSource => _console;
 		internal SynchronizationContext SynchronizationContext => _synchronizationContext;
 		internal IAppStateControllerFactory ControllerFactory => _controllerFactory;
-		internal IAppStateViewFactory ViewManager => _viewManager;
+		internal IAppStateViewManager ViewManager => _viewManager;
+		internal IAppStateTransitionManager TransitionManager => _transitionManager;
 		internal IServiceProvider ServiceProvider => _serviceProvider;
 
 		internal AppStateManagerShared(
 			SynchronizationContext syncContext,
 			IAppStateControllerFactory controllerFactory,
-			IAppStateViewFactory viewManager,
+			IAppStateViewManager viewManager,
+			IAppStateTransitionManager transitionManager,
 			IServiceProvider services)
 		{
 			_synchronizationContext = syncContext;
 			_controllerFactory = controllerFactory;
 			_viewManager = viewManager;
+			_transitionManager = transitionManager;
 			_serviceProvider = services;
 		}
 

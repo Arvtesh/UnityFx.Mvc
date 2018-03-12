@@ -34,6 +34,8 @@ namespace UnityFx.AppStates
 
 		protected AppStateManager StateManager => _stateManager;
 
+		protected IAppStateTransitionManager TransitionManager => _stateManager.Shared.TransitionManager;
+
 		protected AppStateOperation(AppStateManager stateManager, AppStateOperationType opType, AsyncCallback asyncCallback, object asyncState, string comment)
 		{
 			_id = (++_lastId << 3) | (int)opType;
@@ -62,6 +64,11 @@ namespace UnityFx.AppStates
 		protected void TraceData(TraceEventType eventType, object data)
 		{
 			_traceSource.TraceData(eventType, _id, data);
+		}
+
+		internal virtual void Cancel()
+		{
+			TrySetCanceled(false);
 		}
 
 		#endregion

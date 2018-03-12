@@ -48,19 +48,22 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <param name="syncContext"></param>
 		/// <param name="viewManager"></param>
+		/// <param name="transitionManager"></param>
 		/// <param name="services"></param>
 		/// <param name="controllerFactory"></param>
 		protected AppStateManager(
 			SynchronizationContext syncContext,
 			IAppStateControllerFactory controllerFactory,
-			IAppStateViewFactory viewManager,
+			IAppStateViewManager viewManager,
+			IAppStateTransitionManager transitionManager,
 			IServiceProvider services)
 		{
 			Debug.Assert(controllerFactory != null);
 			Debug.Assert(viewManager != null);
+			Debug.Assert(transitionManager != null);
 			Debug.Assert(services != null);
 
-			_shared = new AppStateManagerShared(syncContext, controllerFactory, viewManager, services);
+			_shared = new AppStateManagerShared(syncContext, controllerFactory, viewManager, transitionManager, services);
 			_states = new AppStateStack();
 			_stackOperations = new AsyncResultQueue<AppStateOperation>(syncContext);
 			_enabled = true;

@@ -23,7 +23,7 @@ namespace UnityFx.AppStates
 
 		public AppStateManagerTests()
 		{
-			var viewFactory = Substitute.For<IAppStateViewFactory>();
+			var viewFactory = Substitute.For<IAppStateViewManager>();
 			var serviceProvider = Substitute.For<IServiceProvider>();
 			_stateManager = new AppStateService(SynchronizationContext.Current, viewFactory, serviceProvider);
 			_stateManager.Settings.DeeplinkScheme = "myapp";

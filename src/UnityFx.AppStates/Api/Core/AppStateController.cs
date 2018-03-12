@@ -101,7 +101,7 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// Releases unmanaged resources used by the service.
+		/// Releases resources used by the controller.
 		/// </summary>
 		/// <param name="disposing">Should be <see langword="true"/> if the method is called from <see cref="Dispose()"/>; <see langword="false"/> otherwise.</param>
 		/// <seealso cref="Dispose()"/>

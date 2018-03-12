@@ -8,7 +8,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A generic application view.
 	/// </summary>
-	/// <seealso cref="IAppStateViewFactory"/>
+	/// <seealso cref="IAppStateViewManager"/>
 	public interface IAppStateView : IDisposable
 	{
 		/// <summary>

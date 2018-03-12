@@ -26,6 +26,15 @@ namespace UnityFx.AppStates
 
 		#endregion
 
+		#region AsyncResult
+
+		protected override void OnStarted()
+		{
+			base.OnStarted();
+		}
+
+		#endregion
+
 		#region Object
 
 		public override string ToString()

@@ -16,6 +16,8 @@ namespace UnityFx.AppStates
 		private readonly AppState _ownerState;
 
 		private AppState _state;
+		private IAsyncOperation _pushOp;
+		private IAsyncOperation _transitionOp;
 
 		#endregion
 
@@ -31,6 +33,20 @@ namespace UnityFx.AppStates
 
 		#endregion
 
+		#region AppStateOperation
+
+		internal override void Cancel()
+		{
+			if (_transitionOp != null)
+			{
+				TransitionManager.CancelTransition(_transitionOp);
+			}
+
+			base.Cancel();
+		}
+
+		#endregion
+
 		#region AsyncResult
 
 		protected sealed override void OnStarted()
@@ -42,7 +58,8 @@ namespace UnityFx.AppStates
 				StateManager.TryDeactivateTopState();
 
 				_state = new AppState(StateManager, _ownerState, _controllerType, _args);
-				_state.Push().AddCompletionCallback(OnStatePushed);
+				_pushOp = _state.Push();
+				_pushOp.AddCompletionCallback(OnStatePushed);
 			}
 			catch (Exception e)
 			{
@@ -62,6 +79,9 @@ namespace UnityFx.AppStates
 					_state.PopAndDispose();
 					_state = null;
 				}
+
+				_pushOp = null;
+				_transitionOp = null;
 			}
 		}
 
@@ -86,6 +106,31 @@ namespace UnityFx.AppStates
 		#region implementation
 
 		private void OnStatePushed(IAsyncOperation op)
+		{
+			try
+			{
+				if (op.IsFaulted)
+				{
+					TrySetException(op.Exception, false);
+				}
+				else if (op.IsCanceled)
+				{
+					TrySetCanceled(false);
+				}
+				else
+				{
+					_transitionOp = TransitionManager.PlayPushTransition(_state.View);
+					_transitionOp.AddCompletionCallback(OnTransitionCompleted);
+				}
+			}
+			catch (Exception e)
+			{
+				TraceException(e);
+				TrySetException(e, false);
+			}
+		}
+
+		private void OnTransitionCompleted(IAsyncOperation op)
 		{
 			try
 			{

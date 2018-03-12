@@ -27,14 +27,16 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <param name="syncContext"></param>
 		/// <param name="viewManager"></param>
+		/// <param name="transitionManager"></param>
 		/// <param name="services"></param>
 		/// <param name="controllerFactory"></param>
 		public AppStateService(
 			SynchronizationContext syncContext,
 			IAppStateControllerFactory controllerFactory,
-			IAppStateViewFactory viewManager,
+			IAppStateViewManager viewManager,
+			IAppStateTransitionManager transitionManager,
 			IServiceProvider services)
-			: base(syncContext, controllerFactory, viewManager, services)
+			: base(syncContext, controllerFactory, viewManager, transitionManager, services)
 		{
 		}
 
@@ -46,9 +48,9 @@ namespace UnityFx.AppStates
 		/// <param name="services"></param>
 		public AppStateService(
 			SynchronizationContext syncContext,
-			IAppStateViewFactory viewManager,
+			IAppStateViewManager viewManager,
 			IServiceProvider services)
-			: base(syncContext, new AppStateControllerFactory(services), viewManager, services)
+			: base(syncContext, new AppStateControllerFactory(services), viewManager, new AppStateTransitionManager(), services)
 		{
 		}
 
