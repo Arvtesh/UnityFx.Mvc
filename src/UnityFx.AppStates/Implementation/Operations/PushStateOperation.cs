@@ -24,7 +24,7 @@ namespace UnityFx.AppStates
 		#region interface
 
 		public PushStateOperation(AppStateManager stateManager, AppState ownerState, Type controllerType, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
-			: base(stateManager, AppStateOperationType.Push, asyncCallback, asyncState, null)
+			: base(stateManager, AppStateOperationType.Push, asyncCallback, asyncState, GetStateDesc(controllerType, args))
 		{
 			_controllerType = controllerType;
 			_args = args;
@@ -55,10 +55,10 @@ namespace UnityFx.AppStates
 
 			try
 			{
-				StateManager.TryDeactivateTopState();
+				StateManager.TryDeactivateTopState(this);
 
 				_state = new AppState(StateManager, _ownerState, _controllerType, _args);
-				_pushOp = _state.Push();
+				_pushOp = _state.Push(this);
 				_pushOp.AddCompletionCallback(OnStatePushed);
 			}
 			catch (Exception e)
@@ -76,7 +76,7 @@ namespace UnityFx.AppStates
 			{
 				if (_state != null)
 				{
-					_state.PopAndDispose();
+					_state.Pop(this);
 					_state = null;
 				}
 
@@ -91,14 +91,7 @@ namespace UnityFx.AppStates
 
 		public override string ToString()
 		{
-			var text = "PushState " + AppState.GetStateName(_controllerType);
-
-			if (_args != null)
-			{
-				text += _args.ToString();
-			}
-
-			return text;
+			return "PushState " + GetStateDesc(_controllerType, _args);
 		}
 
 		#endregion
@@ -144,7 +137,7 @@ namespace UnityFx.AppStates
 				}
 				else
 				{
-					StateManager.TryActivateTopState();
+					StateManager.TryActivateTopState(this);
 					TrySetResult(_state, false);
 				}
 			}

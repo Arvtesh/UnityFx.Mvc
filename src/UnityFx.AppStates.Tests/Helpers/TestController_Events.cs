@@ -20,7 +20,7 @@ namespace UnityFx.AppStates
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.Ctor));
 		}
 
-		protected override AsyncResult OnLoadContent()
+		protected override IAsyncOperation OnLoadContent()
 		{
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnPush));
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnLoadContent));

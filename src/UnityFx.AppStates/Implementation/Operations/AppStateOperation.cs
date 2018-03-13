@@ -21,6 +21,7 @@ namespace UnityFx.AppStates
 
 		private readonly int _id;
 		private readonly string _name;
+		private readonly string _comment;
 		private readonly AppStateManager _stateManager;
 		private readonly TraceSource _traceSource;
 
@@ -39,11 +40,10 @@ namespace UnityFx.AppStates
 		protected AppStateOperation(AppStateManager stateManager, AppStateOperationType opType, AsyncCallback asyncCallback, object asyncState, string comment)
 		{
 			_id = (++_lastId << 3) | (int)opType;
-			_name = $"{opType.ToString()} ({_id.ToString(CultureInfo.InvariantCulture)})";
+			_name = opType.ToString();
 			_stateManager = stateManager;
 			_traceSource = _stateManager.TraceSource;
-
-			TraceStart(comment);
+			_comment = comment;
 		}
 
 		protected void TraceError(string s)
@@ -71,6 +71,11 @@ namespace UnityFx.AppStates
 			TrySetCanceled(false);
 		}
 
+		protected static string GetStateDesc(Type controllerType, PushStateArgs args)
+		{
+			return AppState.GetStateName(controllerType) + " (" + args.ToString() + ')';
+		}
+
 		#endregion
 
 		#region AsyncResult
@@ -78,7 +83,7 @@ namespace UnityFx.AppStates
 		protected override void OnStatusChanged(AsyncOperationStatus status)
 		{
 			base.OnStatusChanged(status);
-			TraceStop(status);
+			TraceStartStop(status);
 		}
 
 		#endregion
@@ -109,21 +114,20 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private void TraceStart(string comment)
+		private void TraceStartStop(AsyncOperationStatus status)
 		{
-			var s = _name;
-
-			if (!string.IsNullOrEmpty(comment))
+			if (status == AsyncOperationStatus.Running)
 			{
-				s += ": " + comment;
+				var s = _name;
+
+				if (!string.IsNullOrEmpty(_comment))
+				{
+					s += ": " + _comment;
+				}
+
+				_traceSource.TraceEvent(TraceEventType.Start, _id, s);
 			}
-
-			_traceSource.TraceEvent(TraceEventType.Start, _id, s);
-		}
-
-		private void TraceStop(AsyncOperationStatus status)
-		{
-			if (status == AsyncOperationStatus.RanToCompletion)
+			else if (status == AsyncOperationStatus.RanToCompletion)
 			{
 				_traceSource.TraceEvent(TraceEventType.Stop, _id, _name + " completed");
 			}

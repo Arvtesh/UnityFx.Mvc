@@ -19,7 +19,7 @@ namespace UnityFx.AppStates
 		#region interface
 
 		public SetStateOperation(AppStateManager stateManager, AppState ownerState, Type controllerType, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
-			: base(stateManager, AppStateOperationType.Set, asyncCallback, asyncState, null)
+			: base(stateManager, AppStateOperationType.Set, asyncCallback, asyncState, GetStateDesc(controllerType, args))
 		{
 			_controllerType = controllerType;
 			_args = args;

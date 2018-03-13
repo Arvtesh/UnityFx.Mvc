@@ -79,8 +79,21 @@ namespace UnityFx.AppStates
 		{
 			if (disposing && !_disposed)
 			{
+				// 1) Stop operation processing.
 				_disposed = true;
+				_enabled = false;
+				_stackOperations.Suspended = true;
 
+				// 2) Cancel pending operations.
+				if (!_stackOperations.IsEmpty)
+				{
+					foreach (var op in _stackOperations.Release())
+					{
+						op.Cancel();
+					}
+				}
+
+				// 3) Dispose child states.
 				foreach (var state in _states)
 				{
 					state.Dispose();
@@ -136,31 +149,50 @@ namespace UnityFx.AppStates
 			return new AppStateManager(state, parentStateManager);
 		}
 
-		internal void PopAll()
+		internal void Pop(IAppStateOperationInfo op)
 		{
-			// TODO
+			// 1) Stop operation processing.
+			_enabled = false;
+			_stackOperations.Suspended = true;
+
+			// 2) Cancel pending operations.
+			if (!_stackOperations.IsEmpty)
+			{
+				foreach (var o in _stackOperations.Release())
+				{
+					o.Cancel();
+				}
+			}
+
+			// 3) Pop child states.
+			foreach (var state in _states)
+			{
+				state.Pop(op);
+			}
+
+			_states.Clear();
 		}
 
-		internal bool TryActivateTopState()
+		internal bool TryActivateTopState(IAppStateOperationInfo op)
 		{
 			Debug.Assert(!_disposed);
 
 			if (_stackOperations.Count == 0 && _states.TryPeek(out var state))
 			{
-				state.Activate();
+				state.Activate(op);
 				return true;
 			}
 
 			return false;
 		}
 
-		internal bool TryDeactivateTopState()
+		internal bool TryDeactivateTopState(IAppStateOperationInfo op)
 		{
 			Debug.Assert(!_disposed);
 
 			if (_states.TryPeek(out var state))
 			{
-				state.Deactivate();
+				state.Deactivate(op);
 				return true;
 			}
 

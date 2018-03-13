@@ -86,11 +86,11 @@ namespace UnityFx.AppStates
 			_controller = parentStateManager.Shared.CreateController(this, controllerType);
 		}
 
-		internal AsyncResult Push()
+		internal IAsyncOperation Push(IAppStateOperationInfo op)
 		{
 			Debug.Assert(_state == AppStateState.Created);
 
-			_console.TraceEvent(TraceEventType.Verbose, 0, "PushState " + _id);
+			_console.TraceData(TraceEventType.Verbose, op.OperationId, "PushState " + _id);
 			_stack.Add(this);
 			_state = AppStateState.Pushed;
 			_substateManager?.SetEnabled();
@@ -98,39 +98,26 @@ namespace UnityFx.AppStates
 			return PushInternal();
 		}
 
-		internal void Pop()
+		internal void Pop(IAppStateOperationInfo op)
 		{
-			Debug.Assert(_state == AppStateState.Pushed);
+			if (_state == AppStateState.Pushed)
+			{
+				_substateManager?.Pop(op);
+				_console.TraceData(TraceEventType.Verbose, op.OperationId, "PopState " + _id);
+				_stack.Remove(this);
+				_state = AppStateState.Popped;
+			}
 
-			_substateManager?.PopAll();
-
-			_console.TraceData(TraceEventType.Verbose, 0, "PopState " + _id);
-			_stack.Remove(this);
-			_state = AppStateState.Popped;
+			Dispose();
 		}
 
-		internal void PopAndDispose()
-		{
-			try
-			{
-				if (_state == AppStateState.Pushed)
-				{
-					Pop();
-				}
-			}
-			finally
-			{
-				Dispose();
-			}
-		}
-
-		internal void Activate()
+		internal void Activate(IAppStateOperationInfo op)
 		{
 			Debug.Assert(_state == AppStateState.Pushed);
 
 			if (!_isActive && (_parentState == null || _parentState.IsActive))
 			{
-				_console.TraceEvent(TraceEventType.Verbose, 0, "ActivateState " + _id);
+				_console.TraceEvent(TraceEventType.Verbose, op.OperationId, "ActivateState " + _id);
 
 				_view.Interactable = true;
 				_isActive = true;
@@ -138,21 +125,21 @@ namespace UnityFx.AppStates
 				ActivateInternal();
 
 				_isActivated = true;
-				_substateManager?.TryActivateTopState();
+				_substateManager?.TryActivateTopState(op);
 			}
 		}
 
-		internal void Deactivate()
+		internal void Deactivate(IAppStateOperationInfo op)
 		{
 			Debug.Assert(_state == AppStateState.Pushed);
 
 			if (_isActive)
 			{
-				_console.TraceData(TraceEventType.Verbose, 0, "DeactivateState " + _id);
+				_console.TraceData(TraceEventType.Verbose, op.OperationId, "DeactivateState " + _id);
 
 				try
 				{
-					_substateManager?.TryDeactivateTopState();
+					_substateManager?.TryDeactivateTopState(op);
 					DeactivateInternal();
 				}
 				finally
@@ -260,8 +247,10 @@ namespace UnityFx.AppStates
 		{
 			get
 			{
-				var uriBuilder = new UriBuilder(_parentStateManager.Shared.DeeplinkScheme, _parentStateManager.Shared.DeeplinkDomain);
-				uriBuilder.Path = Path;
+				var uriBuilder = new UriBuilder(_parentStateManager.Shared.DeeplinkScheme, _parentStateManager.Shared.DeeplinkDomain)
+				{
+					Path = Path
+				};
 
 				if (_parentState != null)
 				{
@@ -357,6 +346,8 @@ namespace UnityFx.AppStates
 
 				try
 				{
+					_substateManager?.Dispose();
+
 					if (_controller is IDisposable d)
 					{
 						d.Dispose();
@@ -364,7 +355,6 @@ namespace UnityFx.AppStates
 				}
 				finally
 				{
-					_substateManager?.Dispose();
 					_view.Dispose();
 				}
 			}
@@ -374,7 +364,7 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private AsyncResult PushInternal()
+		private IAsyncOperation PushInternal()
 		{
 			if (_controller is AppStateController c)
 			{

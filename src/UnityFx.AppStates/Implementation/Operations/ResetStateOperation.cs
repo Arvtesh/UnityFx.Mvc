@@ -18,7 +18,7 @@ namespace UnityFx.AppStates
 		#region interface
 
 		public ResetStateOperation(AppStateManager stateManager, Type controllerType, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
-			: base(stateManager, AppStateOperationType.Reset, asyncCallback, asyncState, null)
+			: base(stateManager, AppStateOperationType.Reset, asyncCallback, asyncState, GetStateDesc(controllerType, args))
 		{
 			_controllerType = controllerType;
 			_args = args;

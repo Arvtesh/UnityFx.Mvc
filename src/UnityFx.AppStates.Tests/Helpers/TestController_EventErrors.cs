@@ -48,7 +48,7 @@ namespace UnityFx.AppStates
 			base.OnDeactivate();
 		}
 
-		protected override AsyncResult OnLoadContent()
+		protected override IAsyncOperation OnLoadContent()
 		{
 			if (_errorId == ControllerMethodId.OnLoadContent)
 			{

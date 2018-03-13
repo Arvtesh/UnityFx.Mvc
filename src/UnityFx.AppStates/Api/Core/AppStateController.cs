@@ -81,7 +81,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Called before the first activation to load state content. Default implementation does nothing.
 		/// </summary>
-		protected internal virtual AsyncResult OnLoadContent()
+		protected internal virtual IAsyncOperation OnLoadContent()
 		{
 			return AsyncResult.CompletedOperation;
 		}
