@@ -69,11 +69,27 @@ namespace UnityFx.AppStates
 			// Assert
 			Assert.NotNull(state);
 			Assert.NotNull(state.Controller);
-			Assert.NotNull(state.Deeplink);
 			Assert.True(state.IsActive);
+			Assert.NotEmpty(_stateManager.States);
 			Assert.Empty(state.ChildStates);
 			Assert.IsType<TestController_Minimal>(state.Controller);
 			Assert.Contains(state, _stateManager.States);
+		}
+
+		[Fact]
+		public async Task PopStateAsync_Succeeds()
+		{
+			// Arrange
+			var state = await _stateManager.PushStateAsync(typeof(TestController_Minimal), PushStateArgs.Default);
+
+			// Act
+			await _stateManager.PopStateAsync(state);
+
+			// Assert
+			Assert.NotNull(state);
+			Assert.NotNull(state.Controller);
+			Assert.False(state.IsActive);
+			Assert.Empty(_stateManager.States);
 		}
 
 		[Fact]

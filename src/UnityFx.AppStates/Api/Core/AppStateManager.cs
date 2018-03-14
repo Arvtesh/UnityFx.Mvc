@@ -30,7 +30,6 @@ namespace UnityFx.AppStates
 		private readonly AppState _parentState;
 		private readonly AppStateManager _parentStateManager;
 
-		private bool _enabled;
 		private bool _disposed;
 
 		#endregion
@@ -66,7 +65,6 @@ namespace UnityFx.AppStates
 			_shared = new AppStateManagerShared(syncContext, controllerFactory, viewManager, transitionManager, services);
 			_states = new AppStateStack();
 			_stackOperations = new AsyncResultQueue<AppStateOperation>(syncContext);
-			_enabled = true;
 		}
 
 		/// <summary>
@@ -81,7 +79,6 @@ namespace UnityFx.AppStates
 			{
 				// 1) Stop operation processing.
 				_disposed = true;
-				_enabled = false;
 				_stackOperations.Suspended = true;
 
 				// 2) Cancel pending operations.
@@ -136,8 +133,7 @@ namespace UnityFx.AppStates
 			_stackOperations = new AsyncResultQueue<AppStateOperation>(_shared.SynchronizationContext);
 			_parentState = parentState;
 			_parentStateManager = parentStateManager;
-			_enabled = parentState.Enabled;
-			_stackOperations.Suspended = !_enabled;
+			_stackOperations.Suspended = !parentState.Enabled;
 		}
 
 		internal AppStateManager CreateSubstateManager(AppState state, AppStateManager parentStateManager)
@@ -152,7 +148,6 @@ namespace UnityFx.AppStates
 		internal void Pop(IAppStateOperationInfo op)
 		{
 			// 1) Stop operation processing.
-			_enabled = false;
 			_stackOperations.Suspended = true;
 
 			// 2) Cancel pending operations.
@@ -176,8 +171,9 @@ namespace UnityFx.AppStates
 		internal bool TryActivateTopState(IAppStateOperationInfo op)
 		{
 			Debug.Assert(!_disposed);
+			Debug.Assert(op != null);
 
-			if (_stackOperations.Count == 0 && _states.TryPeek(out var state))
+			if (_states.TryPeek(out var state) && _stackOperations.Count <= 1)
 			{
 				state.Activate(op);
 				return true;
@@ -189,6 +185,7 @@ namespace UnityFx.AppStates
 		internal bool TryDeactivateTopState(IAppStateOperationInfo op)
 		{
 			Debug.Assert(!_disposed);
+			Debug.Assert(op != null);
 
 			if (_states.TryPeek(out var state))
 			{
@@ -201,7 +198,6 @@ namespace UnityFx.AppStates
 
 		internal void SetEnabled()
 		{
-			_enabled = true;
 			_stackOperations.Suspended = false;
 		}
 

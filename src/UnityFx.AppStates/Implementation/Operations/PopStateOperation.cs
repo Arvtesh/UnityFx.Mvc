@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
@@ -10,7 +11,8 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private readonly AppState _state;
+		private AppState _state;
+		private IAsyncOperation _transitionOp;
 
 		#endregion
 
@@ -31,6 +33,27 @@ namespace UnityFx.AppStates
 		protected override void OnStarted()
 		{
 			base.OnStarted();
+
+			try
+			{
+				StateManager.TryDeactivateTopState(this);
+
+				_transitionOp = TransitionManager.PlayPopTransition(_state.View);
+				_transitionOp.AddCompletionCallback(OnTransitionCompleted);
+			}
+			catch (Exception e)
+			{
+				TraceException(e);
+				TrySetException(e, false);
+			}
+		}
+
+		protected override void OnCompleted()
+		{
+			base.OnCompleted();
+
+			_state = null;
+			_transitionOp = null;
 		}
 
 		#endregion
@@ -40,6 +63,37 @@ namespace UnityFx.AppStates
 		public override string ToString()
 		{
 			return "PopState " + State.Id;
+		}
+
+		#endregion
+
+		#region implementation
+
+		private void OnTransitionCompleted(IAsyncOperation op)
+		{
+			try
+			{
+				if (op.IsFaulted)
+				{
+					TrySetException(op.Exception, false);
+				}
+				else if (op.IsCanceled)
+				{
+					TrySetCanceled(false);
+				}
+				else
+				{
+					_state.Pop(this);
+
+					StateManager.TryActivateTopState(this);
+					TrySetCompleted(false);
+				}
+			}
+			catch (Exception e)
+			{
+				TraceException(e);
+				TrySetException(e, false);
+			}
 		}
 
 		#endregion

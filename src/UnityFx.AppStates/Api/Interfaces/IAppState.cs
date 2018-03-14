@@ -22,17 +22,17 @@ namespace UnityFx.AppStates
 	/// A generic application state.
 	/// </summary>
 	/// <remarks>
-	/// <para>By design an application flow is a sequence of state switches. A state may represent a single screen,
+	/// By design an application flow is a sequence of state switches. A state may represent a single screen,
 	/// a dialog, a menu or some process without any visual representation. States are supposed to be as independent
 	/// as possible. Only one state may be active (i.e. process user input) at time, but unlimited number of states may
-	/// exist (be rendered on the screen and execute their code) at the same time.</para>
+	/// exist (be rendered on the screen and execute their code) at the same time.
 	/// </remarks>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
 	public interface IAppState
 	{
 		/// <summary>
-		/// Gets unique state type identifier.
+		/// Gets unique static state type identifier.
 		/// </summary>
 		string Id { get; }
 

@@ -74,15 +74,12 @@ namespace UnityFx.AppStates
 
 			if (!IsCompletedSuccessfully)
 			{
-				if (_state != null)
-				{
-					_state.Pop(this);
-					_state = null;
-				}
-
-				_pushOp = null;
-				_transitionOp = null;
+				_state?.Pop(this);
 			}
+
+			_state = null;
+			_pushOp = null;
+			_transitionOp = null;
 		}
 
 		#endregion
