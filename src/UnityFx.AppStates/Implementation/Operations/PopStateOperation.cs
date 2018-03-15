@@ -37,10 +37,23 @@ namespace UnityFx.AppStates
 			try
 			{
 				StateManager.TryDeactivateTopState(this);
-				StateManager.PopStateDependencies(this, _state);
 
-				_transitionOp = TransitionManager.PlayPopTransition(_state.View);
-				_transitionOp.AddCompletionCallback(OnTransitionCompleted);
+				if (_state != null)
+				{
+					StateManager.PopStates(this, _state);
+
+					_transitionOp = TransitionManager.PlayPopTransition(_state.View);
+					_transitionOp.AddCompletionCallback(OnTransitionCompleted);
+				}
+				else
+				{
+					while (States.TryPeek(out var state))
+					{
+						state.Pop(this);
+					}
+
+					TrySetCompleted(false);
+				}
 			}
 			catch (Exception e)
 			{
@@ -53,7 +66,7 @@ namespace UnityFx.AppStates
 			try
 			{
 				// Make sure the state is popped. This method can be safely called multiple times.
-				_state.Pop(this);
+				_state?.Pop(this);
 			}
 			finally
 			{
@@ -70,7 +83,14 @@ namespace UnityFx.AppStates
 
 		public override string ToString()
 		{
-			return "PopState " + State.Id;
+			if (_state != null)
+			{
+				return "PopState " + _state.Id;
+			}
+			else
+			{
+				return "PopAll";
+			}
 		}
 
 		#endregion
@@ -83,7 +103,7 @@ namespace UnityFx.AppStates
 			{
 				if (ProcessNonSuccess(op))
 				{
-					_state.Pop(this);
+					_state?.Pop(this);
 					TrySetCompleted(false);
 				}
 			}

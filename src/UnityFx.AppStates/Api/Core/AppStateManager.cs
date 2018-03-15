@@ -168,6 +168,21 @@ namespace UnityFx.AppStates
 			_states.Clear();
 		}
 
+		internal void PopStates(IAppStateOperationInfo op, IAppState targetState)
+		{
+			while (_states.TryPeek(out var state))
+			{
+				if (state == targetState)
+				{
+					break;
+				}
+				else
+				{
+					state.Pop(op);
+				}
+			}
+		}
+
 		internal void PopStateDependencies(IAppStateOperationInfo op, IAppState state)
 		{
 			foreach (var s in _states.ToArray())
@@ -281,7 +296,7 @@ namespace UnityFx.AppStates
 			ThrowIfDisposed();
 			ThrowIfInvalidState(state);
 
-			return PopStateInternal(state, null, null);
+			return PopStateInternal(state as AppState, null, null);
 		}
 
 #if UNITYFX_SUPPORT_TAP
@@ -305,7 +320,7 @@ namespace UnityFx.AppStates
 			ThrowIfInvalidState(state);
 
 			var tcs = new TaskCompletionSource<IAppState>();
-			PopStateInternal(state, PushPopCompletionCallback, tcs);
+			PopStateInternal(state as AppState, PushPopCompletionCallback, tcs);
 			return tcs.Task;
 		}
 
@@ -340,7 +355,7 @@ namespace UnityFx.AppStates
 			}
 			else if (args.Options == PushOptions.Reset)
 			{
-				result = new ResetStateOperation(this, controllerType, args, asyncCallback, asyncState);
+				result = new SetStateOperation(this, null, controllerType, args, asyncCallback, asyncState);
 			}
 			else
 			{
@@ -351,21 +366,11 @@ namespace UnityFx.AppStates
 			return result;
 		}
 
-		private AppStateOperation PopStateInternal(IAppState state, AsyncCallback asyncCallback, object asyncState)
+		private AppStateOperation PopStateInternal(AppState state, AsyncCallback asyncCallback, object asyncState)
 		{
 			Debug.Assert(!_disposed);
 
-			AppStateOperation result;
-
-			if (state != null)
-			{
-				result = new PopStateOperation(this, state as AppState, asyncCallback, asyncState);
-			}
-			else
-			{
-				result = new PopAllStatesOperation(this, asyncCallback, asyncState);
-			}
-
+			var result = new PopStateOperation(this, state, asyncCallback, asyncState);
 			QueueOperation(result);
 			return result;
 		}

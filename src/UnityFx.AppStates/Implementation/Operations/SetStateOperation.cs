@@ -13,8 +13,9 @@ namespace UnityFx.AppStates
 
 		private readonly Type _controllerType;
 		private readonly PushStateArgs _args;
-		private readonly AppState _ownerState;
+		private readonly bool _isReset;
 
+		private AppState _ownerState;
 		private AppState _state;
 		private IAsyncOperation _pushOp;
 		private IAsyncOperation _transitionOp;
@@ -29,6 +30,7 @@ namespace UnityFx.AppStates
 			_controllerType = controllerType;
 			_args = args;
 			_ownerState = ownerState;
+			_isReset = ownerState == null;
 		}
 
 		#endregion
@@ -42,7 +44,20 @@ namespace UnityFx.AppStates
 			try
 			{
 				StateManager.TryDeactivateTopState(this);
-				StateManager.PopStateDependencies(this, _ownerState);
+
+				if (_ownerState != null)
+				{
+					StateManager.PopStates(this, _ownerState);
+				}
+				else if (States.Count > 1)
+				{
+					_ownerState = States[0];
+					StateManager.PopStates(this, _ownerState);
+				}
+				else if (States.Count == 1)
+				{
+					_ownerState = States[0];
+				}
 
 				_state = new AppState(StateManager, null, _controllerType, _args);
 				_pushOp = _state.Push(this);
@@ -65,6 +80,7 @@ namespace UnityFx.AppStates
 			}
 			finally
 			{
+				_ownerState = null;
 				_state = null;
 				_pushOp = null;
 				_transitionOp = null;
@@ -79,7 +95,14 @@ namespace UnityFx.AppStates
 
 		public override string ToString()
 		{
-			return "SetState " + GetStateDesc(_controllerType, _args);
+			if (_isReset)
+			{
+				return "ResetState " + GetStateDesc(_controllerType, _args);
+			}
+			else
+			{
+				return "SetState " + GetStateDesc(_controllerType, _args);
+			}
 		}
 
 		#endregion
@@ -93,7 +116,16 @@ namespace UnityFx.AppStates
 				if (ProcessNonSuccess(op))
 				{
 					_pushOp = null;
-					_transitionOp = TransitionManager.PlayTransition(_ownerState.View, _state.View);
+
+					if (_ownerState != null)
+					{
+						_transitionOp = TransitionManager.PlayTransition(_ownerState.View, _state.View);
+					}
+					else
+					{
+						_transitionOp = TransitionManager.PlayPushTransition(_state.View);
+					}
+
 					_transitionOp.AddCompletionCallback(OnTransitionCompleted);
 				}
 			}
@@ -109,7 +141,7 @@ namespace UnityFx.AppStates
 			{
 				if (ProcessNonSuccess(op))
 				{
-					_ownerState.Pop(this);
+					_ownerState?.Pop(this);
 					TrySetResult(_state, false);
 				}
 			}
