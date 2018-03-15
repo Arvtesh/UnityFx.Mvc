@@ -168,6 +168,17 @@ namespace UnityFx.AppStates
 			_states.Clear();
 		}
 
+		internal void PopStateDependencies(IAppStateOperationInfo op, IAppState state)
+		{
+			foreach (var s in _states.ToArray())
+			{
+				if (s.OwnerState == state)
+				{
+					s.Pop(op);
+				}
+			}
+		}
+
 		internal bool TryActivateTopState(IAppStateOperationInfo op)
 		{
 			Debug.Assert(!_disposed);

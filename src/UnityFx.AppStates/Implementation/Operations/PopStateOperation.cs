@@ -37,6 +37,7 @@ namespace UnityFx.AppStates
 			try
 			{
 				StateManager.TryDeactivateTopState(this);
+				StateManager.PopStateDependencies(this, _state);
 
 				_transitionOp = TransitionManager.PlayPopTransition(_state.View);
 				_transitionOp.AddCompletionCallback(OnTransitionCompleted);

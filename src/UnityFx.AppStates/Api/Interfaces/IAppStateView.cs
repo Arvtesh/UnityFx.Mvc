@@ -17,10 +17,9 @@ namespace UnityFx.AppStates
 		string Id { get; }
 
 		/// <summary>
-		/// Gets or sets a value indicating whether the view is enabled (enabled views are visible, disabled ones
-		/// are neither visible nor interactable).
+		/// Gets or sets a value indicating whether the view is visible.
 		/// </summary>
-		bool Enabled { get; set; }
+		bool Visible { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether input processing is enabled for the view. Note that disabled views do not process input.
