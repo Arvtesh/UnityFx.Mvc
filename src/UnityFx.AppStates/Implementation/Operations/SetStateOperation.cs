@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
@@ -13,6 +14,10 @@ namespace UnityFx.AppStates
 		private readonly Type _controllerType;
 		private readonly PushStateArgs _args;
 		private readonly AppState _ownerState;
+
+		private AppState _state;
+		private IAsyncOperation _pushOp;
+		private IAsyncOperation _transitionOp;
 
 		#endregion
 
@@ -34,7 +39,38 @@ namespace UnityFx.AppStates
 		{
 			base.OnStarted();
 
-			// TODO
+			try
+			{
+				StateManager.TryDeactivateTopState(this);
+				StateManager.PopStateDependencies(this, _ownerState);
+
+				_state = new AppState(StateManager, null, _controllerType, _args);
+				_pushOp = _state.Push(this);
+				_pushOp.AddCompletionCallback(OnStatePushed);
+			}
+			catch (Exception e)
+			{
+				Fail(e);
+			}
+		}
+
+		protected override void OnCompleted()
+		{
+			try
+			{
+				if (!IsCompletedSuccessfully)
+				{
+					_state?.Pop(this);
+				}
+			}
+			finally
+			{
+				_state = null;
+				_pushOp = null;
+				_transitionOp = null;
+
+				base.OnCompleted();
+			}
 		}
 
 		#endregion
@@ -43,14 +79,44 @@ namespace UnityFx.AppStates
 
 		public override string ToString()
 		{
-			var text = "SetState " + AppState.GetStateName(_controllerType);
+			return "SetState " + GetStateDesc(_controllerType, _args);
+		}
 
-			if (_args != null)
+		#endregion
+
+		#region implementation
+
+		private void OnStatePushed(IAsyncOperation op)
+		{
+			try
 			{
-				text += _args.ToString();
+				if (ProcessNonSuccess(op))
+				{
+					_pushOp = null;
+					_transitionOp = TransitionManager.PlayTransition(_ownerState.View, _state.View);
+					_transitionOp.AddCompletionCallback(OnTransitionCompleted);
+				}
 			}
+			catch (Exception e)
+			{
+				Fail(e);
+			}
+		}
 
-			return text;
+		private void OnTransitionCompleted(IAsyncOperation op)
+		{
+			try
+			{
+				if (ProcessNonSuccess(op))
+				{
+					_ownerState.Pop(this);
+					TrySetResult(_state, false);
+				}
+			}
+			catch (Exception e)
+			{
+				Fail(e);
+			}
 		}
 
 		#endregion

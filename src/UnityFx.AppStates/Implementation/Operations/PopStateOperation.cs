@@ -44,17 +44,24 @@ namespace UnityFx.AppStates
 			}
 			catch (Exception e)
 			{
-				TraceException(e);
-				TrySetException(e, false);
+				Fail(e);
 			}
 		}
 
 		protected override void OnCompleted()
 		{
-			base.OnCompleted();
+			try
+			{
+				// Make sure the state is popped. This method can be safely called multiple times.
+				_state.Pop(this);
+			}
+			finally
+			{
+				_state = null;
+				_transitionOp = null;
 
-			_state = null;
-			_transitionOp = null;
+				base.OnCompleted();
+			}
 		}
 
 		#endregion
@@ -74,26 +81,15 @@ namespace UnityFx.AppStates
 		{
 			try
 			{
-				if (op.IsFaulted)
-				{
-					TrySetException(op.Exception, false);
-				}
-				else if (op.IsCanceled)
-				{
-					TrySetCanceled(false);
-				}
-				else
+				if (ProcessNonSuccess(op))
 				{
 					_state.Pop(this);
-
-					StateManager.TryActivateTopState(this);
 					TrySetCompleted(false);
 				}
 			}
 			catch (Exception e)
 			{
-				TraceException(e);
-				TrySetException(e, false);
+				Fail(e);
 			}
 		}
 

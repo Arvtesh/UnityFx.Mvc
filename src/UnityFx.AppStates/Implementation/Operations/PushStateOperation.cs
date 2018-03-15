@@ -63,23 +63,28 @@ namespace UnityFx.AppStates
 			}
 			catch (Exception e)
 			{
-				TraceException(e);
-				TrySetException(e, false);
+				Fail(e);
 			}
 		}
 
 		protected override void OnCompleted()
 		{
-			base.OnCompleted();
-
-			if (!IsCompletedSuccessfully)
+			try
 			{
-				_state?.Pop(this);
+				if (!IsCompletedSuccessfully)
+				{
+					// Make sure the state is popped in case of an error.
+					_state?.Pop(this);
+				}
 			}
+			finally
+			{
+				_state = null;
+				_pushOp = null;
+				_transitionOp = null;
 
-			_state = null;
-			_pushOp = null;
-			_transitionOp = null;
+				base.OnCompleted();
+			}
 		}
 
 		#endregion
@@ -99,24 +104,16 @@ namespace UnityFx.AppStates
 		{
 			try
 			{
-				if (op.IsFaulted)
+				if (ProcessNonSuccess(op))
 				{
-					TrySetException(op.Exception, false);
-				}
-				else if (op.IsCanceled)
-				{
-					TrySetCanceled(false);
-				}
-				else
-				{
+					_pushOp = null;
 					_transitionOp = TransitionManager.PlayPushTransition(_state.View);
 					_transitionOp.AddCompletionCallback(OnTransitionCompleted);
 				}
 			}
 			catch (Exception e)
 			{
-				TraceException(e);
-				TrySetException(e, false);
+				Fail(e);
 			}
 		}
 
@@ -124,24 +121,14 @@ namespace UnityFx.AppStates
 		{
 			try
 			{
-				if (op.IsFaulted)
+				if (ProcessNonSuccess(op))
 				{
-					TrySetException(op.Exception, false);
-				}
-				else if (op.IsCanceled)
-				{
-					TrySetCanceled(false);
-				}
-				else
-				{
-					StateManager.TryActivateTopState(this);
 					TrySetResult(_state, false);
 				}
 			}
 			catch (Exception e)
 			{
-				TraceException(e);
-				TrySetException(e, false);
+				Fail(e);
 			}
 		}
 

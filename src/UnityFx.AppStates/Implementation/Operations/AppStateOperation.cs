@@ -66,6 +66,28 @@ namespace UnityFx.AppStates
 			_traceSource.TraceData(eventType, _id, data);
 		}
 
+		protected bool ProcessNonSuccess(IAsyncOperation op)
+		{
+			if (op.IsFaulted)
+			{
+				TrySetException(op.Exception, false);
+				return false;
+			}
+			else if (op.IsCanceled)
+			{
+				TrySetCanceled(false);
+				return false;
+			}
+
+			return true;
+		}
+
+		protected void Fail(Exception e)
+		{
+			TraceException(e);
+			TrySetException(e, false);
+		}
+
 		internal virtual void Cancel()
 		{
 			TrySetCanceled(false);
@@ -83,7 +105,24 @@ namespace UnityFx.AppStates
 		protected override void OnStatusChanged(AsyncOperationStatus status)
 		{
 			base.OnStatusChanged(status);
-			TraceStartStop(status);
+
+			if (status == AsyncOperationStatus.Running)
+			{
+				TraceStart();
+			}
+		}
+
+		protected override void OnCompleted()
+		{
+			try
+			{
+				StateManager.TryActivateTopState(this);
+			}
+			finally
+			{
+				TraceStop(Status);
+				base.OnCompleted();
+			}
 		}
 
 		#endregion
@@ -114,20 +153,21 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private void TraceStartStop(AsyncOperationStatus status)
+		private void TraceStart()
 		{
-			if (status == AsyncOperationStatus.Running)
+			var s = _name;
+
+			if (!string.IsNullOrEmpty(_comment))
 			{
-				var s = _name;
-
-				if (!string.IsNullOrEmpty(_comment))
-				{
-					s += ": " + _comment;
-				}
-
-				_traceSource.TraceEvent(TraceEventType.Start, _id, s);
+				s += ": " + _comment;
 			}
-			else if (status == AsyncOperationStatus.RanToCompletion)
+
+			_traceSource.TraceEvent(TraceEventType.Start, _id, s);
+		}
+
+		private void TraceStop(AsyncOperationStatus status)
+		{
+			if (status == AsyncOperationStatus.RanToCompletion)
 			{
 				_traceSource.TraceEvent(TraceEventType.Stop, _id, _name + " completed");
 			}
