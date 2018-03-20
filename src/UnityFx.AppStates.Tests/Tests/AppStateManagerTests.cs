@@ -47,17 +47,6 @@ namespace UnityFx.AppStates
 		}
 
 		[Fact]
-		public void AllMethodsThrowWhenDisposed()
-		{
-			_stateManager.Dispose();
-
-			Assert.Throws<ObjectDisposedException>(() => _stateManager.GetStatesRecursive());
-			Assert.Throws<ObjectDisposedException>(() => _stateManager.GetStatesRecursive(new List<IAppState>()));
-			Assert.Throws<ObjectDisposedException>(() => _stateManager.States);
-			Assert.Throws<ObjectDisposedException>(() => _stateManager.PushStateTaskAsync(typeof(TestController_Minimal), PushStateArgs.Default).Wait());
-		}
-
-		[Fact]
 		public async Task PushStateAsync_Succeeds()
 		{
 			// Arrange
