@@ -97,6 +97,11 @@ namespace UnityFx.AppStates
 		event EventHandler<PopStateCompletedEventArgs> PopStateCompleted;
 
 		/// <summary>
+		/// Gets a value indicating whether there are any pending operations.
+		/// </summary>
+		bool IsBusy { get; }
+
+		/// <summary>
 		/// Gets the child states.
 		/// </summary>
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>

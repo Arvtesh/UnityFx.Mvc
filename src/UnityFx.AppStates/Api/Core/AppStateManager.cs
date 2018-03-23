@@ -125,7 +125,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(parentState != null);
 			Debug.Assert(parentStateManager != null);
 
-			_shared = _parentStateManager._shared;
+			_shared = parentStateManager._shared;
 			_states = new AppStateStack();
 			_stackOperations = new AsyncResultQueue<AppStateOperation>(_shared.SynchronizationContext);
 			_parentState = parentState;
@@ -241,14 +241,10 @@ namespace UnityFx.AppStates
 		public event EventHandler<PopStateCompletedEventArgs> PopStateCompleted;
 
 		/// <inheritdoc/>
-		public IAppStateStack States
-		{
-			get
-			{
-				ThrowIfDisposed();
-				return _states;
-			}
-		}
+		public bool IsBusy => !_stackOperations.IsEmpty;
+
+		/// <inheritdoc/>
+		public IAppStateStack States => _states;
 
 		/// <inheritdoc/>
 		public IEnumerable<IAppState> GetStatesRecursive()

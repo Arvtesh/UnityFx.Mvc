@@ -172,14 +172,9 @@ namespace UnityFx.AppStates
 				}
 			}
 
-			for (; i >= 0; --i)
+			if (i >= 0)
 			{
-				var view = _stack[i]._view;
-
-				if (view != null)
-				{
-					return view;
-				}
+				return _stack[i].View;
 			}
 
 			return _parentState?.GetPrevView();
