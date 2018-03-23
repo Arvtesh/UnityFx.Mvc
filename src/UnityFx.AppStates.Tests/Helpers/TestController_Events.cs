@@ -16,11 +16,11 @@ namespace UnityFx.AppStates
 		{
 			_calls = context.CreationArgs.Data as ICollection<MethodCallInfo>;
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.Ctor));
+			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnPush));
 		}
 
 		protected override IAsyncOperation OnLoadContent()
 		{
-			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnPush));
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnLoadContent));
 			return base.OnLoadContent();
 		}

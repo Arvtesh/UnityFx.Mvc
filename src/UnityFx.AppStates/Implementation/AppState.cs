@@ -170,6 +170,10 @@ namespace UnityFx.AppStates
 				{
 					--i;
 				}
+				else
+				{
+					break;
+				}
 			}
 
 			if (i >= 0)
