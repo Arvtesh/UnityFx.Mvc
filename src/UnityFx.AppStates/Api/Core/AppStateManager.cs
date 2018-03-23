@@ -7,9 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-#if UNITYFX_SUPPORT_TAP
-using System.Threading.Tasks;
-#endif
 using UnityFx.Async;
 
 namespace UnityFx.AppStates
@@ -299,33 +296,6 @@ namespace UnityFx.AppStates
 			return PopStateInternal(state as AppState, null, null);
 		}
 
-#if UNITYFX_SUPPORT_TAP
-
-		/// <inheritdoc/>
-		public Task<IAppState> PushStateTaskAsync(Type controllerType, PushStateArgs args)
-		{
-			ThrowIfDisposed();
-			ThrowIfInvalidControllerType(controllerType);
-			ThrowIfInvalidArgs(args);
-
-			var tcs = new TaskCompletionSource<IAppState>();
-			PushStateInternal(controllerType, args, PushPopCompletionCallback, tcs);
-			return tcs.Task;
-		}
-
-		/// <inheritdoc/>
-		public Task PopStateTaskAsync(IAppState state)
-		{
-			ThrowIfDisposed();
-			ThrowIfInvalidState(state);
-
-			var tcs = new TaskCompletionSource<IAppState>();
-			PopStateInternal(state as AppState, PushPopCompletionCallback, tcs);
-			return tcs.Task;
-		}
-
-#endif
-
 		#endregion
 
 		#region IDisposable
@@ -379,29 +349,6 @@ namespace UnityFx.AppStates
 		{
 			_stackOperations.Add(op);
 		}
-
-#if UNITYFX_SUPPORT_TAP
-
-		private static void PushPopCompletionCallback(IAsyncResult asyncResult)
-		{
-			var storeOp = asyncResult as IAsyncOperation<IAppState>;
-			var tcs = asyncResult.AsyncState as TaskCompletionSource<IAppState>;
-
-			if (storeOp.IsCompletedSuccessfully)
-			{
-				tcs.TrySetResult(storeOp.Result);
-			}
-			else if (storeOp.IsCanceled)
-			{
-				tcs.TrySetCanceled();
-			}
-			else
-			{
-				tcs.TrySetException(storeOp.Exception);
-			}
-		}
-
-#endif
 
 		private string GetFullName()
 		{

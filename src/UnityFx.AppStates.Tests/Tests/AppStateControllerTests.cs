@@ -67,7 +67,7 @@ namespace UnityFx.AppStates
 		[Fact]
 		public void InvalidControllerTypeShouldThrow()
 		{
-			Assert.ThrowsAsync<ArgumentException>(() => _stateManager.PushStateTaskAsync(typeof(TestController_Invalid), PushStateArgs.Default));
+			Assert.ThrowsAsync<ArgumentException>(() => _stateManager.PushStateAsync(typeof(TestController_Invalid), PushStateArgs.Default).ToTask());
 		}
 
 		[Fact]
@@ -134,7 +134,7 @@ namespace UnityFx.AppStates
 		[InlineData(ControllerMethodId.OnActivate)]
 		public async Task PushExceptionIsForwarded(ControllerMethodId method)
 		{
-			await Assert.ThrowsAsync<Exception>(() => _stateManager.PushStateTaskAsync(typeof(TestController_EventErrors), new PushStateArgs(PushOptions.Push, method)));
+			await Assert.ThrowsAsync<Exception>(() => _stateManager.PushStateAsync(typeof(TestController_EventErrors), new PushStateArgs(PushOptions.Push, method)).ToTask());
 
 			if (method == ControllerMethodId.OnActivate)
 			{
@@ -153,7 +153,7 @@ namespace UnityFx.AppStates
 		public async Task PopExceptionIsForwarded(ControllerMethodId method)
 		{
 			var state = await _stateManager.PushStateAsync(typeof(TestController_EventErrors), new PushStateArgs(PushOptions.Push, method));
-			await Assert.ThrowsAsync<Exception>(() => _stateManager.PopStateTaskAsync(state));
+			await Assert.ThrowsAsync<Exception>(() => _stateManager.PopStateAsync(state).ToTask());
 			Assert.Empty(_stateManager.States);
 		}
 

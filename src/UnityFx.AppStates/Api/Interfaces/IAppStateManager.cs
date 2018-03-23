@@ -3,9 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-#if UNITYFX_SUPPORT_TAP
-using System.Threading.Tasks;
-#endif
 using UnityFx.Async;
 
 namespace UnityFx.AppStates
@@ -145,37 +142,5 @@ namespace UnityFx.AppStates
 		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap">Event-based Asynchronous Pattern (EAP)</seealso>
 		/// <seealso cref="PushStateAsync(Type, PushStateArgs)"/>
 		IAsyncOperation PopStateAsync(IAppState state);
-
-#if UNITYFX_SUPPORT_TAP
-
-		/// <summary>
-		/// Pushes a <paramref name="controllerType"/> instance on top of the states stack.
-		/// </summary>
-		/// <remarks>
-		/// The method schedules an operation to run on the main thread. The operation instantiates a new state,
-		/// the controller the specified type, loads it content and activates it.
-		/// </remarks>
-		/// <param name="controllerType">Type of the state controller.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
-		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
-		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/task-based-asynchronous-pattern-tap">Task-based Asynchronous Pattern (TAP)</seealso>
-		/// <seealso cref="PopStateTaskAsync(IAppState)"/>
-		Task<IAppState> PushStateTaskAsync(Type controllerType, PushStateArgs args);
-
-		/// <summary>
-		/// Removes the specified state from the stack.
-		/// </summary>
-		/// <param name="state">The state to remove.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="state"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Thrown if the <paramref name="state"/> does not belong to this manager.</exception>
-		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/task-based-asynchronous-pattern-tap">Task-based Asynchronous Pattern (TAP)</seealso>
-		/// <seealso cref="PushStateTaskAsync(Type, PushStateArgs)"/>
-		Task PopStateTaskAsync(IAppState state);
-
-#endif
 	}
 }
