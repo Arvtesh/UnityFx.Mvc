@@ -35,7 +35,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the parent state.
 		/// </summary>
-		protected IAppState State => _context.State;
+		protected AppState State => _context.State;
 
 		/// <summary>
 		/// Gets the parent state manager.

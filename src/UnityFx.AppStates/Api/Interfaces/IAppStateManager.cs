@@ -67,7 +67,7 @@ namespace UnityFx.AppStates
 	/// </summary>
 	/// <threadsafety static="true" instance="false"/>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
-	/// <seealso cref="IAppState"/>
+	/// <seealso cref="AppState"/>
 	public interface IAppStateManager
 	{
 		/// <summary>
@@ -86,14 +86,14 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Raised when a new pop operation is initiated.
 		/// </summary>
-		/// <seealso cref="PopStateAsync(IAppState)"/>
+		/// <seealso cref="PopStateAsync(AppState)"/>
 		event EventHandler<PopStateInitiatedEventArgs> PopStateInitiated;
 
 		/// <summary>
 		/// Raised when a pop operation is completed (either successfully or not).
 		/// </summary>
 		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap">Event-based Asynchronous Pattern (EAP)</seealso>
-		/// <seealso cref="PopStateAsync(IAppState)"/>
+		/// <seealso cref="PopStateAsync(AppState)"/>
 		event EventHandler<PopStateCompletedEventArgs> PopStateCompleted;
 
 		/// <summary>
@@ -105,19 +105,19 @@ namespace UnityFx.AppStates
 		/// Gets the child states.
 		/// </summary>
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
-		IAppStateStack States { get; }
+		AppStateStack States { get; }
 
 		/// <summary>
 		/// Enumerates child states recursively.
 		/// </summary>
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
-		IEnumerable<IAppState> GetStatesRecursive();
+		IEnumerable<AppState> GetStatesRecursive();
 
 		/// <summary>
 		/// Enumerates child states recursively.
 		/// </summary>
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
-		void GetStatesRecursive(ICollection<IAppState> states);
+		void GetStatesRecursive(ICollection<AppState> states);
 
 		/// <summary>
 		/// Pushes a <paramref name="controllerType"/> instance on top of the states stack.
@@ -134,8 +134,8 @@ namespace UnityFx.AppStates
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
 		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap">Event-based Asynchronous Pattern (EAP)</seealso>
-		/// <seealso cref="PopStateAsync(IAppState)"/>
-		IAsyncOperation<IAppState> PushStateAsync(Type controllerType, PushStateArgs args);
+		/// <seealso cref="PopStateAsync(AppState)"/>
+		IAsyncOperation<AppState> PushStateAsync(Type controllerType, PushStateArgs args);
 
 		/// <summary>
 		/// Removes the specified state from the stack.
@@ -146,6 +146,6 @@ namespace UnityFx.AppStates
 		/// <exception cref="InvalidOperationException">Thrown if the <paramref name="state"/> does not belong to this manager.</exception>
 		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap">Event-based Asynchronous Pattern (EAP)</seealso>
 		/// <seealso cref="PushStateAsync(Type, PushStateArgs)"/>
-		IAsyncOperation PopStateAsync(IAppState state);
+		IAsyncOperation PopStateAsync(AppState state);
 	}
 }

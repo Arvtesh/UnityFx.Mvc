@@ -15,7 +15,7 @@ namespace UnityFx.AppStates
 
 		private readonly int _id;
 		private readonly AppStateOperationType _type;
-		private readonly IAppState _state;
+		private readonly AppState _state;
 
 		#endregion
 
@@ -24,12 +24,12 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets a state being popped.
 		/// </summary>
-		public IAppState State => _state;
+		public AppState State => _state;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PopStateCompletedEventArgs"/> class.
 		/// </summary>
-		public PopStateCompletedEventArgs(IAppStateOperationInfo op, IAppState state)
+		public PopStateCompletedEventArgs(IAppStateOperationInfo op, AppState state)
 			: base(null, false, op.UserState)
 		{
 			_id = op.OperationId;
@@ -40,7 +40,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PopStateCompletedEventArgs"/> class.
 		/// </summary>
-		public PopStateCompletedEventArgs(IAppStateOperationInfo op, IAppState state, Exception e, bool canceled)
+		public PopStateCompletedEventArgs(IAppStateOperationInfo op, AppState state, Exception e, bool canceled)
 			: base(e, canceled, op.UserState)
 		{
 			_id = op.OperationId;

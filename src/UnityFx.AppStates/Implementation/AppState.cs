@@ -23,9 +23,29 @@ namespace UnityFx.AppStates
 	}
 
 	/// <summary>
-	/// Implementation of <see cref="IAppState"/>.
+	/// Enumerates state-related flags.
 	/// </summary>
-	internal sealed class AppState : IAppState, IAppStateContext, IReadOnlyCollection<IAppState>, IDisposable
+	[Flags]
+	public enum AppStateFlags
+	{
+		/// <summary>
+		/// No flags.
+		/// </summary>
+		None = 0
+	}
+
+	/// <summary>
+	/// A generic application state.
+	/// </summary>
+	/// <remarks>
+	/// By design an application flow is a sequence of state switches. A state may represent a single screen,
+	/// a dialog, a menu or some process without any visual representation. States are supposed to be as independent
+	/// as possible. Only one state may be active (i.e. process user input) at time, but unlimited number of states may
+	/// exist (be rendered on the screen and execute their code) at the same time.
+	/// </remarks>
+	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
+	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
+	public class AppState : IAppStateContext, IDisposable
 	{
 		#region data
 
@@ -33,7 +53,7 @@ namespace UnityFx.AppStates
 		private readonly IAppStateController _controller;
 		private readonly IAppStateView _view;
 		private readonly AppState _parentState;
-		private readonly IAppState _ownerState;
+		private readonly AppState _ownerState;
 
 		private readonly TraceSource _console;
 		private readonly AppStateStack _stack;
@@ -52,7 +72,7 @@ namespace UnityFx.AppStates
 
 		internal bool Enabled => _state == AppStateState.Pushed;
 
-		internal AppState(AppStateManager parentStateManager, IAppState owner, Type controllerType, PushStateArgs args)
+		internal AppState(AppStateManager parentStateManager, AppState owner, Type controllerType, PushStateArgs args)
 		{
 			Debug.Assert(parentStateManager != null);
 			Debug.Assert(controllerType != null);
@@ -62,7 +82,7 @@ namespace UnityFx.AppStates
 			_ownerState = owner;
 			_args = args;
 			_console = parentStateManager.TraceSource;
-			_stack = parentStateManager.StatesEx;
+			_stack = parentStateManager.States;
 
 			if (Attribute.GetCustomAttribute(controllerType, typeof(AppStateControllerAttribute)) is AppStateControllerAttribute paramsAttr)
 			{
@@ -150,7 +170,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		internal void GetStatesRecursive(ICollection<IAppState> states)
+		internal void GetStatesRecursive(ICollection<AppState> states)
 		{
 			Debug.Assert(_state != AppStateState.Disposed);
 
@@ -260,9 +280,9 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		public IAppState ParentState => _parentState;
+		public AppState ParentState => _parentState;
 
-		public IAppState OwnerState => _ownerState;
+		public AppState OwnerState => _ownerState;
 
 		public IAppStateView View => _view;
 
@@ -270,33 +290,17 @@ namespace UnityFx.AppStates
 
 		public bool IsActive => _isActive;
 
-		public IReadOnlyCollection<IAppState> ChildStates => this;
+		public IReadOnlyCollection<AppState> ChildStates => _substateManager?.States ?? null;
 
 		#endregion
 
 		#region IAppStateContext
 
-		public object Args => _args;
+		AppState IAppStateContext.State => this;
 
-		public IAppState State
-		{
-			get
-			{
-				ThrowIfDisposed();
-				return this;
-			}
-		}
+		IAppStateManager IAppStateContext.StateManager => _parentStateManager;
 
-		public IAppStateManager StateManager
-		{
-			get
-			{
-				ThrowIfDisposed();
-				return _parentStateManager;
-			}
-		}
-
-		public IAppStateManager SubstateManager
+		IAppStateManager IAppStateContext.SubstateManager
 		{
 			get
 			{
@@ -309,27 +313,6 @@ namespace UnityFx.AppStates
 
 				return _substateManager;
 			}
-		}
-
-		#endregion
-
-		#region IReadOnlyCollection
-
-		public int Count => _substateManager?.States.Count ?? 0;
-
-		#endregion
-
-		#region IEnumerable
-
-		public IEnumerator<IAppState> GetEnumerator()
-		{
-			ThrowIfDisposed();
-			return _substateManager?.States.GetEnumerator() ?? Enumerable.Empty<IAppState>().GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return (this as IEnumerable<IAppState>).GetEnumerator();
 		}
 
 		#endregion

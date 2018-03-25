@@ -15,7 +15,7 @@ namespace UnityFx.AppStates
 
 		private readonly int _id;
 		private readonly AppStateOperationType _type;
-		private readonly IAppState _state;
+		private readonly AppState _state;
 
 		#endregion
 
@@ -24,12 +24,12 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets a target state.
 		/// </summary>
-		public IAppState State => _state;
+		public AppState State => _state;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PushStateCompletedEventArgs"/> class.
 		/// </summary>
-		public PushStateCompletedEventArgs(IAppStateOperationInfo op, IAppState state)
+		public PushStateCompletedEventArgs(IAppStateOperationInfo op, AppState state)
 			: base(null, false, op.UserState)
 		{
 			_id = op.OperationId;
@@ -40,7 +40,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PushStateCompletedEventArgs"/> class.
 		/// </summary>
-		public PushStateCompletedEventArgs(IAppStateOperationInfo op, IAppState state, Exception e, bool canceled)
+		public PushStateCompletedEventArgs(IAppStateOperationInfo op, AppState state, Exception e, bool canceled)
 			: base(e, canceled, op.UserState)
 		{
 			_id = op.OperationId;

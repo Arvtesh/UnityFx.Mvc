@@ -8,7 +8,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Represents state controller context.
 	/// </summary>
-	/// <seealso cref="IAppState"/>
+	/// <seealso cref="AppState"/>
 	public interface IAppStateContext
 	{
 		/// <summary>
@@ -19,7 +19,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets parent state.
 		/// </summary>
-		IAppState State { get; }
+		AppState State { get; }
 
 		/// <summary>
 		/// Gets a view attached to the state.

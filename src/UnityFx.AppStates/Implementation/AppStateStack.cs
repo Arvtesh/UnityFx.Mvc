@@ -11,7 +11,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Implementation of <see cref="IAppStateStack"/>.
 	/// </summary>
-	internal sealed class AppStateStack : IAppStateStack
+	public sealed class AppStateStack : IReadOnlyCollection<AppState>
 	{
 		#region data
 
@@ -21,19 +21,9 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		public AppState this[int index] => _states[index];
+		internal AppState this[int index] => _states[index];
 
-		public IEnumerator<AppState> GetEnumerator()
-		{
-			var n = _states?.Count - 1 ?? -1;
-
-			while (n >= 0)
-			{
-				yield return _states[n--];
-			}
-		}
-
-		public void Add(AppState state)
+		internal void Add(AppState state)
 		{
 			if (_states == null)
 			{
@@ -43,12 +33,23 @@ namespace UnityFx.AppStates
 			_states.Add(state);
 		}
 
-		public void Remove(AppState state)
+		internal void Remove(AppState state)
 		{
 			if (_states != null && _states.Remove(state))
 			{
 				// ...
 			}
+		}
+
+		internal void Clear()
+		{
+			_states?.Clear();
+		}
+
+		public AppState Peek()
+		{
+			ThrowIfEmpty();
+			return _states[_states.Count - 1];
 		}
 
 		public bool TryPeek(out AppState result)
@@ -60,7 +61,7 @@ namespace UnityFx.AppStates
 				if (childCount > 0)
 				{
 					result = _states[childCount - 1];
-					return result != null;
+					return true;
 				}
 			}
 
@@ -81,38 +82,6 @@ namespace UnityFx.AppStates
 			return result;
 		}
 
-		public void Clear()
-		{
-			_states?.Clear();
-		}
-
-		#endregion
-
-		#region IAppStateStack
-
-		IAppState IAppStateStack.Peek()
-		{
-			ThrowIfEmpty();
-			return _states[_states.Count - 1];
-		}
-
-		bool IAppStateStack.TryPeek(out IAppState result)
-		{
-			if (_states != null)
-			{
-				var childCount = _states.Count;
-
-				if (childCount > 0)
-				{
-					result = _states[childCount - 1];
-					return true;
-				}
-			}
-
-			result = null;
-			return false;
-		}
-
 		#endregion
 
 		#region IReadOnlyColection
@@ -123,7 +92,7 @@ namespace UnityFx.AppStates
 
 		#region IEnumerable
 
-		IEnumerator<IAppState> IEnumerable<IAppState>.GetEnumerator()
+		public IEnumerator<AppState> GetEnumerator()
 		{
 			var n = _states?.Count - 1 ?? -1;
 
@@ -135,7 +104,7 @@ namespace UnityFx.AppStates
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return (this as IEnumerable<IAppState>).GetEnumerator();
+			return (this as IEnumerable<AppState>).GetEnumerator();
 		}
 
 		#endregion

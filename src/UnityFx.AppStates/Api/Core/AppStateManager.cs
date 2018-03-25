@@ -118,8 +118,6 @@ namespace UnityFx.AppStates
 
 		internal AppState ParentState => _parentState;
 
-		internal AppStateStack StatesEx => _states;
-
 		internal AppStateManager(AppState parentState, AppStateManager parentStateManager)
 		{
 			Debug.Assert(parentState != null);
@@ -165,7 +163,7 @@ namespace UnityFx.AppStates
 			_states.Clear();
 		}
 
-		internal void PopStates(IAppStateOperationInfo op, IAppState targetState)
+		internal void PopStates(IAppStateOperationInfo op, AppState targetState)
 		{
 			while (_states.TryPeek(out var state))
 			{
@@ -180,7 +178,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		internal void PopStateDependencies(IAppStateOperationInfo op, IAppState state)
+		internal void PopStateDependencies(IAppStateOperationInfo op, AppState state)
 		{
 			foreach (var s in _states.ToArray())
 			{
@@ -244,20 +242,20 @@ namespace UnityFx.AppStates
 		public bool IsBusy => !_stackOperations.IsEmpty;
 
 		/// <inheritdoc/>
-		public IAppStateStack States => _states;
+		public AppStateStack States => _states;
 
 		/// <inheritdoc/>
-		public IEnumerable<IAppState> GetStatesRecursive()
+		public IEnumerable<AppState> GetStatesRecursive()
 		{
 			ThrowIfDisposed();
 
-			var list = new List<IAppState>();
+			var list = new List<AppState>();
 			GetStatesRecursive(list);
 			return list;
 		}
 
 		/// <inheritdoc/>
-		public void GetStatesRecursive(ICollection<IAppState> states)
+		public void GetStatesRecursive(ICollection<AppState> states)
 		{
 			ThrowIfDisposed();
 
@@ -274,7 +272,7 @@ namespace UnityFx.AppStates
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<IAppState> PushStateAsync(Type controllerType, PushStateArgs args)
+		public IAsyncOperation<AppState> PushStateAsync(Type controllerType, PushStateArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
@@ -284,7 +282,7 @@ namespace UnityFx.AppStates
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation PopStateAsync(IAppState state)
+		public IAsyncOperation PopStateAsync(AppState state)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidState(state);
@@ -364,7 +362,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		private void ThrowIfInvalidState(IAppState state)
+		private void ThrowIfInvalidState(AppState state)
 		{
 			if (state == null)
 			{
