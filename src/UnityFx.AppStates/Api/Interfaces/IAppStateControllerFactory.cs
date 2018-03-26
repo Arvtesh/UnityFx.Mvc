@@ -8,7 +8,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A factory for state controllers instances.
 	/// </summary>
-	/// <seealso cref="IAppState"/>
+	/// <seealso cref="AppState"/>
 	public interface IAppStateControllerFactory
 	{
 		/// <summary>

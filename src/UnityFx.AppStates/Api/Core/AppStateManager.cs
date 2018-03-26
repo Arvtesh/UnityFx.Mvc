@@ -12,9 +12,9 @@ using UnityFx.Async;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// A manager of application states (<see cref="IAppState"/>).
+	/// A manager of application states (<see cref="AppState"/>).
 	/// </summary>
-	/// <seealso cref="IAppState"/>
+	/// <seealso cref="AppState"/>
 	public class AppStateManager : IAppStateManager, IDisposable
 	{
 		#region data

@@ -12,17 +12,6 @@ using UnityFx.Async;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Enumerates states of <see cref="AppState"/>.
-	/// </summary>
-	internal enum AppStateState
-	{
-		Created,
-		Pushed,
-		Popped,
-		Disposed
-	}
-
-	/// <summary>
 	/// Enumerates state-related flags.
 	/// </summary>
 	[Flags]
@@ -48,6 +37,14 @@ namespace UnityFx.AppStates
 	public class AppState : IAppStateContext, IDisposable
 	{
 		#region data
+
+		private enum AppStateState
+		{
+			Created,
+			Pushed,
+			Popped,
+			Disposed
+		}
 
 		private readonly AppStateManager _parentStateManager;
 		private readonly IAppStateController _controller;
@@ -102,8 +99,8 @@ namespace UnityFx.AppStates
 				_id = GetStateNameSimple(controllerType);
 			}
 
-			_view = parentStateManager.Shared.CreateView(this);
-			_controller = parentStateManager.Shared.CreateController(this, controllerType);
+			_view = parentStateManager.Shared.ViewManager.CreateView(_id, GetPrevView());
+			_controller = parentStateManager.Shared.ControllerFactory.CreateController(controllerType, this);
 		}
 
 		internal IAsyncOperation Push(IAppStateOperationInfo op)
@@ -239,12 +236,21 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region IAppState
+		#region interface
 
+		/// <summary>
+		/// Gets the state type identifier.
+		/// </summary>
 		public string Id => _id;
 
+		/// <summary>
+		/// Gets the state flags.
+		/// </summary>
 		public AppStateFlags Flags => _flags;
 
+		/// <summary>
+		/// Gets the state path.
+		/// </summary>
 		public string Path
 		{
 			get
@@ -260,8 +266,14 @@ namespace UnityFx.AppStates
 			}
 		}
 
+		/// <summary>
+		/// Gets the state creation arguments.
+		/// </summary>
 		public PushStateArgs CreationArgs => _args;
 
+		/// <summary>
+		/// Gets a deeplink representing this state.
+		/// </summary>
 		public Uri Deeplink
 		{
 			get
@@ -280,26 +292,58 @@ namespace UnityFx.AppStates
 			}
 		}
 
+		/// <summary>
+		/// Gets a parent state.
+		/// </summary>
 		public AppState ParentState => _parentState;
 
+		/// <summary>
+		/// Gets a state that created this one (or <see langword="null"/>).
+		/// </summary>
 		public AppState OwnerState => _ownerState;
 
+		/// <summary>
+		/// Gets a view instance attached to the state.
+		/// </summary>
 		public IAppStateView View => _view;
 
+		/// <summary>
+		/// Gets a controller attached to the state.
+		/// </summary>
 		public IAppStateController Controller => _controller;
 
+		/// <summary>
+		/// Gets a value indicating whether the state is active.
+		/// </summary>
 		public bool IsActive => _isActive;
 
-		public IReadOnlyCollection<AppState> ChildStates => _substateManager?.States ?? null;
+		/// <summary>
+		/// Gets a collection of the state's children.
+		/// </summary>
+		public IReadOnlyCollection<AppState> ChildStates => _substateManager?.States ?? EmptyCollection<AppState>.Instance;
+
+		/// <summary>
+		/// Throws <see cref="ObjectDisposedException"/> if the instance is disposed.
+		/// </summary>
+		protected void ThrowIfDisposed()
+		{
+			if (_state == AppStateState.Disposed)
+			{
+				throw new ObjectDisposedException(_id);
+			}
+		}
 
 		#endregion
 
 		#region IAppStateContext
 
+		/// <inheritdoc/>
 		AppState IAppStateContext.State => this;
 
+		/// <inheritdoc/>
 		IAppStateManager IAppStateContext.StateManager => _parentStateManager;
 
+		/// <inheritdoc/>
 		IAppStateManager IAppStateContext.SubstateManager
 		{
 			get
@@ -319,6 +363,7 @@ namespace UnityFx.AppStates
 
 		#region IDisposable
 
+		/// <inheritdoc/>
 		public void Dispose()
 		{
 			if (_state != AppStateState.Disposed)
@@ -375,14 +420,6 @@ namespace UnityFx.AppStates
 		private void PopInternal()
 		{
 			// do nothing
-		}
-
-		private void ThrowIfDisposed()
-		{
-			if (_state == AppStateState.Disposed)
-			{
-				throw new ObjectDisposedException(_id);
-			}
 		}
 
 		#endregion

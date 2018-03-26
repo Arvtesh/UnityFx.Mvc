@@ -4,14 +4,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Implementation of <see cref="IAppStateStack"/>.
+	/// A LIFO collection of states.
 	/// </summary>
-	public sealed class AppStateStack : IReadOnlyCollection<AppState>
+	public class AppStateStack : IReadOnlyCollection<AppState>
 	{
 		#region data
 
@@ -20,6 +19,56 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// Returns top element of the stack.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Thrown if the collection is empty.</exception>
+		public AppState Peek()
+		{
+			ThrowIfEmpty();
+			return _states[_states.Count - 1];
+		}
+
+		/// <summary>
+		/// Attempts to get top element of the stack.
+		/// </summary>
+		public bool TryPeek(out AppState result)
+		{
+			if (_states != null)
+			{
+				var childCount = _states.Count;
+
+				if (childCount > 0)
+				{
+					result = _states[childCount - 1];
+					return true;
+				}
+			}
+
+			result = null;
+			return false;
+		}
+
+		/// <summary>
+		/// Returns the collection content as array.
+		/// </summary>
+		public AppState[] ToArray()
+		{
+			var childCount = _states?.Count ?? 0;
+			var result = new AppState[childCount];
+
+			for (var i = 0; i < childCount; ++i)
+			{
+				result[i] = _states[childCount - i - 1];
+			}
+
+			return result;
+		}
+
+		#endregion
+
+		#region internals
 
 		internal AppState this[int index] => _states[index];
 
@@ -46,52 +95,18 @@ namespace UnityFx.AppStates
 			_states?.Clear();
 		}
 
-		public AppState Peek()
-		{
-			ThrowIfEmpty();
-			return _states[_states.Count - 1];
-		}
-
-		public bool TryPeek(out AppState result)
-		{
-			if (_states != null)
-			{
-				var childCount = _states.Count;
-
-				if (childCount > 0)
-				{
-					result = _states[childCount - 1];
-					return true;
-				}
-			}
-
-			result = null;
-			return false;
-		}
-
-		public AppState[] ToArray()
-		{
-			var childCount = _states?.Count ?? 0;
-			var result = new AppState[childCount];
-
-			for (var i = 0; i < childCount; ++i)
-			{
-				result[i] = _states[childCount - i - 1];
-			}
-
-			return result;
-		}
-
 		#endregion
 
 		#region IReadOnlyColection
 
+		/// <inheritdoc/>
 		public int Count => _states?.Count ?? 0;
 
 		#endregion
 
 		#region IEnumerable
 
+		/// <inheritdoc/>
 		public IEnumerator<AppState> GetEnumerator()
 		{
 			var n = _states?.Count - 1 ?? -1;
@@ -102,6 +117,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
+		/// <inheritdoc/>
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return (this as IEnumerable<AppState>).GetEnumerator();
@@ -111,7 +127,7 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		public void ThrowIfEmpty()
+		private void ThrowIfEmpty()
 		{
 			if (_states == null || _states.Count == 0)
 			{
