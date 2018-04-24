@@ -88,11 +88,6 @@ namespace UnityFx.AppStates
 			TrySetException(e, false);
 		}
 
-		internal virtual void Cancel()
-		{
-			TrySetCanceled(false);
-		}
-
 		protected static string GetStateDesc(Type controllerType, PushStateArgs args)
 		{
 			return AppState.GetStateName(controllerType) + " (" + args.ToString() + ')';
@@ -123,6 +118,11 @@ namespace UnityFx.AppStates
 				TraceStop(Status);
 				base.OnCompleted();
 			}
+		}
+
+		protected override void OnCancel()
+		{
+			TrySetCanceled(false);
 		}
 
 		#endregion

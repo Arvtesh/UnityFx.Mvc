@@ -33,20 +33,6 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region AppStateOperation
-
-		internal override void Cancel()
-		{
-			if (_transitionOp != null)
-			{
-				TransitionManager.CancelTransition(_transitionOp);
-			}
-
-			base.Cancel();
-		}
-
-		#endregion
-
 		#region AsyncResult
 
 		protected sealed override void OnStarted()
@@ -85,6 +71,16 @@ namespace UnityFx.AppStates
 
 				base.OnCompleted();
 			}
+		}
+
+		protected override void OnCancel()
+		{
+			if (_transitionOp != null)
+			{
+				TransitionManager.CancelTransition(_transitionOp);
+			}
+
+			base.OnCancel();
 		}
 
 		#endregion
