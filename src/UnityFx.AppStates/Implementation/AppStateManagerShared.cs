@@ -48,7 +48,7 @@ namespace UnityFx.AppStates
 			_serviceProvider = services;
 		}
 
-		internal IAppStateController CreateController(AppState state, Type controllerType)
+		internal AppStateController CreateController(AppState state, Type controllerType)
 		{
 			Debug.Assert(state != null);
 			Debug.Assert(controllerType != null);

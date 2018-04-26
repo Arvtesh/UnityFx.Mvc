@@ -29,7 +29,7 @@ namespace UnityFx.AppStates
 
 		#region IAppStateControllerFactory
 
-		public IAppStateController CreateController(Type controllerType, AppState state)
+		public AppStateController CreateController(Type controllerType, AppState state)
 		{
 			Debug.Assert(controllerType != null);
 			Debug.Assert(state != null);
@@ -49,11 +49,11 @@ namespace UnityFx.AppStates
 						args[i] = GetServiceInstance(parameters[i].ParameterType, state);
 					}
 
-					return c.Invoke(args) as IAppStateController;
+					return c.Invoke(args) as AppStateController;
 				}
 				else
 				{
-					return Activator.CreateInstance(controllerType) as IAppStateController;
+					return Activator.CreateInstance(controllerType) as AppStateController;
 				}
 			}
 			catch (TargetInvocationException e)

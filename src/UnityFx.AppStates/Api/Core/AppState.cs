@@ -47,7 +47,7 @@ namespace UnityFx.AppStates
 		}
 
 		private readonly AppStateManager _parentStateManager;
-		private readonly IAppStateController _controller;
+		private readonly AppStateController _controller;
 		private readonly IAppStateView _view;
 		private readonly AppState _parentState;
 		private readonly AppState _ownerState;
@@ -336,7 +336,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets a controller attached to the state.
 		/// </summary>
-		public IAppStateController Controller => _controller;
+		public AppStateController Controller => _controller;
 
 		/// <summary>
 		/// Gets a value indicating whether the state is active.

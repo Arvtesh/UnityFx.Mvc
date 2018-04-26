@@ -82,7 +82,6 @@ namespace UnityFx.AppStates
 			Assert.NotNull(state);
 			Assert.NotNull(controller);
 			Assert.Equal(_serviceProvider, controller.ServiceProvider);
-			Assert.Equal<object>(state, controller.Context);
 			Assert.Equal(testDependency, controller.Obj);
 		}
 

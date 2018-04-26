@@ -17,6 +17,6 @@ namespace UnityFx.AppStates
 		/// <param name="controllerType">Type of the controller to be created.</param>
 		/// <param name="state">State.</param>
 		/// <returns></returns>
-		IAppStateController CreateController(Type controllerType, AppState state);
+		AppStateController CreateController(Type controllerType, AppState state);
 	}
 }

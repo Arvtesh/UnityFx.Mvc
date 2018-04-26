@@ -5,18 +5,16 @@ using System;
 
 namespace UnityFx.AppStates
 {
-	internal class TestController_ConstructorWithMultipleArguments : IAppStateController
+	internal class TestController_ConstructorWithMultipleArguments : AppStateController
 	{
 		public IServiceProvider ServiceProvider { get; }
 
-		public AppState Context { get; }
-
 		public object Obj { get; }
 
-		public TestController_ConstructorWithMultipleArguments(IServiceProvider sp, AppState c, object o)
+		public TestController_ConstructorWithMultipleArguments(IServiceProvider sp, AppState s, object o)
+			: base(s)
 		{
 			ServiceProvider = sp;
-			Context = c;
 			Obj = o;
 		}
 	}

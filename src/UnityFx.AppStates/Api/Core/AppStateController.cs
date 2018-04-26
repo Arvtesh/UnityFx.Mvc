@@ -10,7 +10,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// tt
 	/// </summary>
-	public class AppStateController : IAppStateController, IDisposable
+	public class AppStateController : IDisposable
 	{
 		#region data
 

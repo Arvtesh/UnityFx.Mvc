@@ -387,9 +387,9 @@ namespace UnityFx.AppStates
 				throw new ArgumentException($"Cannot instantiate abstract type {controllerType.Name}", nameof(controllerType));
 			}
 
-			if (controllerType.IsValueType)
+			if (!controllerType.IsSubclassOf(typeof(AppStateController)))
 			{
-				throw new ArgumentException($"A state instance cannot be value-type", nameof(controllerType));
+				throw new ArgumentException($"A state controller is expected to inherit " + typeof(AppStateController).Name, nameof(controllerType));
 			}
 		}
 
