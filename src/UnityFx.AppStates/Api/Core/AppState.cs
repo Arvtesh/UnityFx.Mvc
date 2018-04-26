@@ -34,7 +34,7 @@ namespace UnityFx.AppStates
 	/// </remarks>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
-	public class AppState : IAppStateContext, IDisposable
+	public class AppState : IDisposable
 	{
 		#region data
 
@@ -67,7 +67,33 @@ namespace UnityFx.AppStates
 
 		#region interface
 
+		/// <summary>
+		/// Gets whether the state is enabled.
+		/// </summary>
 		internal bool Enabled => _state == AppStateState.Pushed;
+
+		/// <summary>
+		/// Gets a parent state manager instance.
+		/// </summary>
+		internal IAppStateManager StateManager => _parentStateManager;
+
+		/// <summary>
+		/// Gets a substate manager instance.
+		/// </summary>
+		internal IAppStateManager SubstateManager
+		{
+			get
+			{
+				ThrowIfDisposed();
+
+				if (_substateManager == null)
+				{
+					_substateManager = _parentStateManager.CreateSubstateManager(this, _parentStateManager);
+				}
+
+				return _substateManager;
+			}
+		}
 
 		internal AppState(AppStateManager parentStateManager, AppState owner, Type controllerType, PushStateArgs args)
 		{
@@ -320,7 +346,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets a collection of the state's children.
 		/// </summary>
-		public IReadOnlyCollection<AppState> ChildStates => _substateManager?.States ?? EmptyCollection<AppState>.Instance;
+		public IReadOnlyCollection<AppState> Substates => _substateManager?.States ?? EmptyCollection<AppState>.Instance;
 
 		/// <summary>
 		/// Throws <see cref="ObjectDisposedException"/> if the instance is disposed.
@@ -330,32 +356,6 @@ namespace UnityFx.AppStates
 			if (_state == AppStateState.Disposed)
 			{
 				throw new ObjectDisposedException(_id);
-			}
-		}
-
-		#endregion
-
-		#region IAppStateContext
-
-		/// <inheritdoc/>
-		AppState IAppStateContext.State => this;
-
-		/// <inheritdoc/>
-		IAppStateManager IAppStateContext.StateManager => _parentStateManager;
-
-		/// <inheritdoc/>
-		IAppStateManager IAppStateContext.SubstateManager
-		{
-			get
-			{
-				ThrowIfDisposed();
-
-				if (_substateManager == null)
-				{
-					_substateManager = _parentStateManager.CreateSubstateManager(this, _parentStateManager);
-				}
-
-				return _substateManager;
 			}
 		}
 

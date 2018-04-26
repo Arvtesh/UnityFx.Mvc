@@ -14,7 +14,7 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private readonly IAppStateContext _context;
+		private readonly AppState _state;
 
 		private bool _disposed;
 
@@ -23,36 +23,31 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
-		/// Gets the state context.
-		/// </summary>
-		protected IAppStateContext Context => _context;
-
-		/// <summary>
 		/// Gets a view instance attached to the state.
 		/// </summary>
-		protected IAppStateView View => _context.View;
+		protected IAppStateView View => _state.View;
 
 		/// <summary>
 		/// Gets the parent state.
 		/// </summary>
-		protected AppState State => _context.State;
+		protected AppState State => _state;
 
 		/// <summary>
 		/// Gets the parent state manager.
 		/// </summary>
-		protected IAppStateManager StateManager => _context.StateManager;
+		protected IAppStateManager StateManager => _state.StateManager;
 
 		/// <summary>
 		/// Gets a manager for substates.
 		/// </summary>
-		protected IAppStateManager SubstateManager => _context.SubstateManager;
+		protected IAppStateManager SubstateManager => _state.SubstateManager;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppStateController"/> class.
 		/// </summary>
-		protected AppStateController(IAppStateContext context)
+		protected AppStateController(AppState state)
 		{
-			_context = context;
+			_state = state;
 		}
 
 		/// <summary>
@@ -62,7 +57,7 @@ namespace UnityFx.AppStates
 		protected void Close()
 		{
 			ThrowIfDisposed();
-			_context.StateManager.PopStateAsync(_context.State);
+			_state.StateManager.PopStateAsync(_state);
 		}
 
 		/// <summary>

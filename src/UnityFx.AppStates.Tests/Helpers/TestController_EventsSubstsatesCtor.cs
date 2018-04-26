@@ -10,10 +10,10 @@ namespace UnityFx.AppStates
 {
 	internal class TestController_EventsSubstsatesCtor : TestController_Events
 	{
-		public TestController_EventsSubstsatesCtor(IAppStateContext context)
-			: base(context)
+		public TestController_EventsSubstsatesCtor(AppState state)
+			: base(state)
 		{
-			context.SubstateManager.PushStateAsync(typeof(TestController_Events), context.State.CreationArgs);
+			SubstateManager.PushStateAsync(typeof(TestController_Events), state.CreationArgs);
 		}
 	}
 }

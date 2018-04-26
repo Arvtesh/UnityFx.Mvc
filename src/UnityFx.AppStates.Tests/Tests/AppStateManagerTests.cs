@@ -60,7 +60,7 @@ namespace UnityFx.AppStates
 			Assert.NotNull(state.Controller);
 			Assert.True(state.IsActive);
 			Assert.NotEmpty(_stateManager.States);
-			Assert.Empty(state.ChildStates);
+			Assert.Empty(state.Substates);
 			Assert.IsType<TestController_Minimal>(state.Controller);
 			Assert.Contains(state, _stateManager.States);
 		}

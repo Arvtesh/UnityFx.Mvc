@@ -75,11 +75,7 @@ namespace UnityFx.AppStates
 
 		protected override void OnCancel()
 		{
-			if (_transitionOp != null)
-			{
-				TransitionManager.CancelTransition(_transitionOp);
-			}
-
+			_transitionOp?.Cancel();
 			base.OnCancel();
 		}
 

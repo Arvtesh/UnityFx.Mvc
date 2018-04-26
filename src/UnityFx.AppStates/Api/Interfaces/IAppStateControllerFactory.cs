@@ -15,8 +15,8 @@ namespace UnityFx.AppStates
 		/// Creates a new instance of state controller and injects its dependencies (if needed).
 		/// </summary>
 		/// <param name="controllerType">Type of the controller to be created.</param>
-		/// <param name="stateContext">State context.</param>
+		/// <param name="state">State.</param>
 		/// <returns></returns>
-		IAppStateController CreateController(Type controllerType, IAppStateContext stateContext);
+		IAppStateController CreateController(Type controllerType, AppState state);
 	}
 }

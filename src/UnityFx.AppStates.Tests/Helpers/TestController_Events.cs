@@ -11,7 +11,7 @@ namespace UnityFx.AppStates
 	{
 		private readonly ICollection<MethodCallInfo> _calls;
 
-		public TestController_Events(IAppStateContext context)
+		public TestController_Events(AppState context)
 			: base(context)
 		{
 			_calls = context.CreationArgs.Data as ICollection<MethodCallInfo>;

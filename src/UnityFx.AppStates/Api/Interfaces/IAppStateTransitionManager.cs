@@ -32,11 +32,5 @@ namespace UnityFx.AppStates
 		/// <param name="view">A view being popped.</param>
 		/// <returns></returns>
 		IAsyncOperation PlayPopTransition(IAppStateView view);
-
-		/// <summary>
-		/// Cancels the specified <paramref name="transition"/>.
-		/// </summary>
-		/// <param name="transition">A transition to cancel.</param>
-		void CancelTransition(IAsyncOperation transition);
 	}
 }

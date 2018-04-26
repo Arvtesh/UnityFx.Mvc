@@ -12,7 +12,7 @@ namespace UnityFx.AppStates
 	{
 		private readonly ControllerMethodId _errorId;
 
-		public TestController_EventErrors(IAppStateContext context)
+		public TestController_EventErrors(AppState context)
 			: base(context)
 		{
 			_errorId = (ControllerMethodId)context.CreationArgs.Data;

@@ -9,11 +9,11 @@ namespace UnityFx.AppStates
 	{
 		public IServiceProvider ServiceProvider { get; }
 
-		public IAppStateContext Context { get; }
+		public AppState Context { get; }
 
 		public object Obj { get; }
 
-		public TestController_ConstructorWithMultipleArguments(IServiceProvider sp, IAppStateContext c, object o)
+		public TestController_ConstructorWithMultipleArguments(IServiceProvider sp, AppState c, object o)
 		{
 			ServiceProvider = sp;
 			Context = c;

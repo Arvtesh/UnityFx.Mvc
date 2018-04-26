@@ -29,10 +29,10 @@ namespace UnityFx.AppStates
 
 		#region IAppStateControllerFactory
 
-		public IAppStateController CreateController(Type controllerType, IAppStateContext stateContext)
+		public IAppStateController CreateController(Type controllerType, AppState state)
 		{
 			Debug.Assert(controllerType != null);
-			Debug.Assert(stateContext != null);
+			Debug.Assert(state != null);
 
 			try
 			{
@@ -46,7 +46,7 @@ namespace UnityFx.AppStates
 
 					for (int i = 0; i < args.Length; i++)
 					{
-						args[i] = GetServiceInstance(parameters[i].ParameterType, stateContext);
+						args[i] = GetServiceInstance(parameters[i].ParameterType, state);
 					}
 
 					return c.Invoke(args) as IAppStateController;
@@ -66,27 +66,23 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private object GetServiceInstance(Type serviceType, IAppStateContext stateContext)
+		private object GetServiceInstance(Type serviceType, AppState state)
 		{
-			if (serviceType == typeof(IAppStateContext))
+			if (serviceType == typeof(AppState))
 			{
-				return stateContext;
+				return state;
 			}
 			else if (serviceType == typeof(IServiceProvider))
 			{
 				return _serviceProvider;
 			}
-			else if (serviceType == typeof(AppState))
-			{
-				return stateContext.State;
-			}
 			else if (serviceType == typeof(IAppStateView))
 			{
-				return stateContext.View;
+				return state.View;
 			}
 			else if (serviceType == typeof(IAppStateManager))
 			{
-				return stateContext.StateManager;
+				return state.StateManager;
 			}
 
 			return _serviceProvider.GetService(serviceType);
