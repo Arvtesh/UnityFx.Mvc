@@ -14,12 +14,11 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A manager of application states (<see cref="AppState"/>).
 	/// </summary>
+	/// <threadsafety static="true" instance="false"/>
 	/// <seealso cref="AppState"/>
 	public class AppStateService : IAppStateService, IDisposable
 	{
 		#region data
-
-		private const string _serviceName = "StateManager";
 
 		private readonly AppStateManagerShared _shared;
 		private readonly AppStateCollection _states;
@@ -32,6 +31,11 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// The service name.
+		/// </summary>
+		public const string Name = "StateManager";
 
 		/// <summary>
 		/// Gets the <see cref="System.Diagnostics.TraceSource"/> instance used by the service.
@@ -251,6 +255,15 @@ namespace UnityFx.AppStates
 			_stackOperations.Suspended = false;
 		}
 
+		internal IAsyncOperation<AppState> PushStateAsync(Type controllerType, PushOptions options, PushStateArgs args)
+		{
+			ThrowIfDisposed();
+			ThrowIfInvalidControllerType(controllerType);
+			ThrowIfInvalidArgs(args);
+
+			return PushStateInternal(controllerType, options, args, null, null);
+		}
+
 		#endregion
 
 		#region IAppStateService
@@ -268,7 +281,7 @@ namespace UnityFx.AppStates
 		public event EventHandler<PopStateCompletedEventArgs> PopStateCompleted;
 
 		/// <inheritdoc/>
-		public IAppStateServiceSettings Settings => _shared;
+		public AppStateServiceSettings Settings => _shared;
 
 		/// <inheritdoc/>
 		public bool IsBusy => !_stackOperations.IsEmpty;
@@ -310,7 +323,7 @@ namespace UnityFx.AppStates
 			ThrowIfInvalidControllerType(controllerType);
 			ThrowIfInvalidArgs(args);
 
-			return PushStateInternal(controllerType, args, null, null);
+			return PushStateInternal(controllerType, args.Options, args, null, null);
 		}
 
 		/// <inheritdoc/>
@@ -319,7 +332,7 @@ namespace UnityFx.AppStates
 			ThrowIfDisposed();
 			ThrowIfInvalidState(state);
 
-			return PopStateInternal(state as AppState, null, null);
+			return PopStateInternal(state, null, null);
 		}
 
 		#endregion
@@ -337,7 +350,7 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private AppStateOperation PushStateInternal(Type controllerType, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
+		private AppStateOperation PushStateInternal(Type controllerType, PushOptions optinos, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
 		{
 			Debug.Assert(!_disposed);
 			Debug.Assert(controllerType != null);
@@ -345,11 +358,11 @@ namespace UnityFx.AppStates
 
 			AppStateOperation result;
 
-			if (args.Options == PushOptions.Set)
+			if (optinos == PushOptions.Set)
 			{
 				result = new SetStateOperation(this, _parentState, controllerType, args, asyncCallback, asyncState);
 			}
-			else if (args.Options == PushOptions.Reset)
+			else if (optinos == PushOptions.Reset)
 			{
 				result = new SetStateOperation(this, null, controllerType, args, asyncCallback, asyncState);
 			}
@@ -380,10 +393,10 @@ namespace UnityFx.AppStates
 		{
 			if (_parentState != null)
 			{
-				return _parentState.Path + '.' + _serviceName;
+				return _parentState.Path + '.' + Name;
 			}
 
-			return _serviceName;
+			return Name;
 		}
 
 		private void ThrowIfInvalidArgs(PushStateArgs args)

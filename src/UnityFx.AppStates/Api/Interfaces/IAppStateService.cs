@@ -65,40 +65,33 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A generic application state service.
 	/// </summary>
-	/// <threadsafety static="true" instance="false"/>
 	/// <seealso cref="AppState"/>
 	public interface IAppStateService : IDisposable
 	{
 		/// <summary>
 		/// Raised when a new push operation is initiated.
 		/// </summary>
-		/// <seealso cref="PushStateAsync(Type, PushStateArgs)"/>
 		event EventHandler<PushStateInitiatedEventArgs> PushStateInitiated;
 
 		/// <summary>
 		/// Raised when a push operation is completed (either successfully or not).
 		/// </summary>
-		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap">Event-based Asynchronous Pattern (EAP)</seealso>
-		/// <seealso cref="PushStateAsync(Type, PushStateArgs)"/>
 		event EventHandler<PushStateCompletedEventArgs> PushStateCompleted;
 
 		/// <summary>
 		/// Raised when a new pop operation is initiated.
 		/// </summary>
-		/// <seealso cref="PopStateAsync(AppState)"/>
 		event EventHandler<PopStateInitiatedEventArgs> PopStateInitiated;
 
 		/// <summary>
 		/// Raised when a pop operation is completed (either successfully or not).
 		/// </summary>
-		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap">Event-based Asynchronous Pattern (EAP)</seealso>
-		/// <seealso cref="PopStateAsync(AppState)"/>
 		event EventHandler<PopStateCompletedEventArgs> PopStateCompleted;
 
 		/// <summary>
 		/// Gets the service settings.
 		/// </summary>
-		IAppStateServiceSettings Settings { get; }
+		AppStateServiceSettings Settings { get; }
 
 		/// <summary>
 		/// Gets the child states.
@@ -133,7 +126,6 @@ namespace UnityFx.AppStates
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
 		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap">Event-based Asynchronous Pattern (EAP)</seealso>
-		/// <seealso cref="PopStateAsync(AppState)"/>
 		IAsyncOperation<AppState> PushStateAsync(Type controllerType, PushStateArgs args);
 	}
 }

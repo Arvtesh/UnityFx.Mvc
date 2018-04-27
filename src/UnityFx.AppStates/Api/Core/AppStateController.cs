@@ -80,7 +80,7 @@ namespace UnityFx.AppStates
 		protected IAsyncOperation<AppState> PushStateAsync(Type controllerType, PushOptions options, PushStateArgs args)
 		{
 			ThrowIfDisposed();
-			return _state.StateManager.PushStateAsync(controllerType, args);
+			return _state.StateManager.PushStateAsync(controllerType, options, args);
 		}
 
 		/// <summary>
@@ -107,7 +107,7 @@ namespace UnityFx.AppStates
 		protected IAsyncOperation<AppState> PushStateAsync<TController>(PushOptions options, PushStateArgs args) where TController : AppStateController
 		{
 			ThrowIfDisposed();
-			return _state.StateManager.PushStateAsync(typeof(TController), args);
+			return _state.StateManager.PushStateAsync(typeof(TController), options, args);
 		}
 
 		/// <summary>
@@ -145,7 +145,7 @@ namespace UnityFx.AppStates
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
 		protected void Dismiss()
 		{
-			_state.PopAsync();
+			_state.DismissAsync();
 		}
 
 		/// <summary>

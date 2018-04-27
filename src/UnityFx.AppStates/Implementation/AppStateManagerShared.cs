@@ -9,11 +9,10 @@ using System.Threading;
 
 namespace UnityFx.AppStates
 {
-	internal class AppStateManagerShared : IAppStateServiceSettings
+	internal class AppStateManagerShared : AppStateServiceSettings
 	{
 		#region data
 
-		private readonly TraceSource _console = new TraceSource("AppStates");
 		private readonly SynchronizationContext _synchronizationContext;
 		private readonly IAppStateControllerFactory _controllerFactory;
 		private readonly IAppStateViewManager _viewManager;
@@ -27,7 +26,6 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		internal TraceSource TraceSource => _console;
 		internal SynchronizationContext SynchronizationContext => _synchronizationContext;
 		internal IAppStateControllerFactory ControllerFactory => _controllerFactory;
 		internal IAppStateViewManager ViewManager => _viewManager;
@@ -61,59 +59,6 @@ namespace UnityFx.AppStates
 			Debug.Assert(state != null);
 
 			return _viewManager.CreateView(state.Id, state.GetPrevView());
-		}
-
-		#endregion
-
-		#region IAppStateServiceSettings
-
-		public SourceSwitch TraceSwitch { get => _console.Switch; set => _console.Switch = value; }
-		public TraceListenerCollection TraceListeners => _console.Listeners;
-
-		public int MaxNumberOfPendingOperations
-		{
-			get
-			{
-				return 0;
-			}
-			set
-			{
-				throw new NotImplementedException();
-			}
-		}
-
-		public string DeeplinkDomain
-		{
-			get
-			{
-				return _deeplinkDomain;
-			}
-			set
-			{
-				_deeplinkDomain = value ?? throw new ArgumentNullException(nameof(value));
-			}
-		}
-
-		public string DeeplinkScheme
-		{
-			get
-			{
-				return _deeplinkScheme;
-			}
-			set
-			{
-				if (value == null)
-				{
-					throw new ArgumentNullException(nameof(value));
-				}
-
-				if (!Uri.CheckSchemeName(value))
-				{
-					throw new ArgumentException("Invalid scheme value.", nameof(value));
-				}
-
-				_deeplinkScheme = value;
-			}
 		}
 
 		#endregion

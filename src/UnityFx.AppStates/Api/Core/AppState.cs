@@ -368,7 +368,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="ObjectDisposedException">Thrown if the state is disposed.</exception>
-		public IAsyncOperation PopAsync()
+		public IAsyncOperation DismissAsync()
 		{
 			ThrowIfDisposed();
 			return _parentStateManager.PopStateAsync(this);
