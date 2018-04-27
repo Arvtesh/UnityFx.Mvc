@@ -6,7 +6,7 @@ using System;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Event arguments for <see cref="IAppStateManager.PopStateInitiated"/>.
+	/// Event arguments for <see cref="IAppStateService.PopStateInitiated"/>.
 	/// </summary>
 	public class PopStateInitiatedEventArgs : EventArgs, IAppStateOperationInfo
 	{

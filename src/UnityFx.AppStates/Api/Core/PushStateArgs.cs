@@ -8,7 +8,7 @@ using System.Text;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Arguments for <see cref="IAppStateManager.PushStateAsync(Type, PushStateArgs)"/>.
+	/// Arguments for <see cref="IAppStateService.PushStateAsync(Type, PushStateArgs)"/>.
 	/// </summary>
 	public class PushStateArgs
 	{

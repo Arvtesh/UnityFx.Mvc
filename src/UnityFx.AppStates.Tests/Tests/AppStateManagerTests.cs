@@ -25,7 +25,7 @@ namespace UnityFx.AppStates
 		{
 			var viewFactory = Substitute.For<IAppStateViewManager>();
 			var serviceProvider = Substitute.For<IServiceProvider>();
-			_stateManager = new AppStateService(SynchronizationContext.Current, viewFactory, serviceProvider);
+			_stateManager = new AppStateService(viewFactory, serviceProvider);
 			_stateManager.Settings.DeeplinkScheme = "myapp";
 			_stateManager.Settings.DeeplinkDomain = "game";
 		}

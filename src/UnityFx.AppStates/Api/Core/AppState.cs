@@ -45,7 +45,7 @@ namespace UnityFx.AppStates
 			Disposed
 		}
 
-		private readonly AppStateManager _parentStateManager;
+		private readonly AppStateService _parentStateManager;
 		private readonly AppStateController _controller;
 		private readonly IAppStateView _view;
 		private readonly AppState _parentState;
@@ -57,7 +57,7 @@ namespace UnityFx.AppStates
 		private readonly AppStateFlags _flags;
 		private readonly PushStateArgs _args;
 
-		private AppStateManager _substateManager;
+		private AppStateService _substateManager;
 		private AppStateState _state;
 		private bool _isActive;
 
@@ -73,12 +73,12 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets a parent state manager instance.
 		/// </summary>
-		internal IAppStateManager StateManager => _parentStateManager;
+		internal AppStateService StateManager => _parentStateManager;
 
 		/// <summary>
 		/// Gets a substate manager instance.
 		/// </summary>
-		internal IAppStateManager SubstateManager
+		internal AppStateService SubstateManager
 		{
 			get
 			{
@@ -93,7 +93,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		internal AppState(AppStateManager parentStateManager, AppState owner, Type controllerType, PushStateArgs args)
+		internal AppState(AppStateService parentStateManager, AppState owner, Type controllerType, PushStateArgs args)
 		{
 			Debug.Assert(parentStateManager != null);
 			Debug.Assert(controllerType != null);

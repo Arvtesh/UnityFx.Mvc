@@ -7,7 +7,7 @@ using System.ComponentModel;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Event arguments for <see cref="IAppStateManager.PopStateCompleted"/>.
+	/// Event arguments for <see cref="IAppStateService.PopStateCompleted"/>.
 	/// </summary>
 	public class PopStateCompletedEventArgs : AsyncCompletedEventArgs, IAppStateOperationInfo
 	{

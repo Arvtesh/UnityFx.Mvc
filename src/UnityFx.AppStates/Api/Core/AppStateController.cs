@@ -69,11 +69,42 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Pushes a new state with the specified controller onto the stack.
 		/// </summary>
+		/// <param name="controllerType">Type of the state controller.</param>
+		/// <param name="options">Push options.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
+		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
+		protected IAsyncOperation<AppState> PushStateAsync(Type controllerType, PushOptions options, PushStateArgs args)
+		{
+			ThrowIfDisposed();
+			return _state.StateManager.PushStateAsync(controllerType, args);
+		}
+
+		/// <summary>
+		/// Pushes a new state with the specified controller onto the stack.
+		/// </summary>
 		/// <param name="args">Controller arguments.</param>
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
 		protected IAsyncOperation<AppState> PushStateAsync<TController>(PushStateArgs args) where TController : AppStateController
+		{
+			ThrowIfDisposed();
+			return _state.StateManager.PushStateAsync(typeof(TController), args);
+		}
+
+		/// <summary>
+		/// Pushes a new state with the specified controller onto the stack.
+		/// </summary>
+		/// <param name="options">Push options.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
+		protected IAsyncOperation<AppState> PushStateAsync<TController>(PushOptions options, PushStateArgs args) where TController : AppStateController
 		{
 			ThrowIfDisposed();
 			return _state.StateManager.PushStateAsync(typeof(TController), args);

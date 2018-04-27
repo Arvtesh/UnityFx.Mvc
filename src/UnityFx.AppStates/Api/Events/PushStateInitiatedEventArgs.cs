@@ -6,7 +6,7 @@ using System;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Event arguments for <see cref="IAppStateManager.PushStateInitiated"/>.
+	/// Event arguments for <see cref="IAppStateService.PushStateInitiated"/>.
 	/// </summary>
 	public class PushStateInitiatedEventArgs : EventArgs, IAppStateOperationInfo
 	{

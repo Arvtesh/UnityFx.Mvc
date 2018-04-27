@@ -7,7 +7,7 @@ using System.ComponentModel;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Event arguments for <see cref="IAppStateManager.PushStateCompleted"/>.
+	/// Event arguments for <see cref="IAppStateService.PushStateCompleted"/>.
 	/// </summary>
 	public class PushStateCompletedEventArgs : AsyncCompletedEventArgs, IAppStateOperationInfo
 	{

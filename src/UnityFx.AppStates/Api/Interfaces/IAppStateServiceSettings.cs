@@ -7,9 +7,9 @@ using System.Diagnostics;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Settings of a <see cref="IAppStateManager"/>.
+	/// Settings of a <see cref="IAppStateService"/>.
 	/// </summary>
-	/// <seealso cref="IAppStateManager"/>
+	/// <seealso cref="IAppStateService"/>
 	public interface IAppStateServiceSettings
 	{
 		/// <summary>

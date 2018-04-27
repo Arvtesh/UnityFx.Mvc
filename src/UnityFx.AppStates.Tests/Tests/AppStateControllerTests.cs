@@ -52,7 +52,7 @@ namespace UnityFx.AppStates
 		{
 			_viewFactory = Substitute.For<IAppStateViewManager>();
 			_serviceProvider = Substitute.For<IServiceProvider>();
-			_stateManager = new AppStateService(SynchronizationContext.Current, _viewFactory, _serviceProvider);
+			_stateManager = new AppStateService(_viewFactory, _serviceProvider);
 		}
 
 		public void Dispose()

@@ -22,7 +22,7 @@ namespace UnityFx.AppStates
 		private readonly int _id;
 		private readonly string _name;
 		private readonly string _comment;
-		private readonly AppStateManager _stateManager;
+		private readonly AppStateService _stateManager;
 		private readonly TraceSource _traceSource;
 
 		private static int _lastId;
@@ -33,11 +33,11 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		protected AppStateManager StateManager => _stateManager;
+		protected AppStateService StateManager => _stateManager;
 		protected AppStateCollection States => _stateManager.States;
 		protected IAppStateTransitionManager TransitionManager => _stateManager.Shared.TransitionManager;
 
-		protected AppStateOperation(AppStateManager stateManager, AppStateOperationType opType, AsyncCallback asyncCallback, object asyncState, string comment)
+		protected AppStateOperation(AppStateService stateManager, AppStateOperationType opType, AsyncCallback asyncCallback, object asyncState, string comment)
 		{
 			_id = (++_lastId << 3) | (int)opType;
 			_name = opType.ToString();
