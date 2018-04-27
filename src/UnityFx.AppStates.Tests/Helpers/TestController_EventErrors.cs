@@ -28,9 +28,9 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		protected override void OnActivate(bool firstActivated)
+		protected override void OnActivate()
 		{
-			base.OnActivate(firstActivated);
+			base.OnActivate();
 
 			if (_errorId == ControllerMethodId.OnActivate)
 			{
@@ -48,14 +48,14 @@ namespace UnityFx.AppStates
 			base.OnDeactivate();
 		}
 
-		protected override IAsyncOperation OnLoadContent()
+		protected override IAsyncOperation LoadContent()
 		{
 			if (_errorId == ControllerMethodId.OnLoadContent)
 			{
 				throw new Exception();
 			}
 
-			return base.OnLoadContent();
+			return base.LoadContent();
 		}
 
 		protected override void Dispose(bool disposing)

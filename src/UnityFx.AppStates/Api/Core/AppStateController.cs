@@ -23,7 +23,7 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
-		/// Gets a view instance attached to the state.
+		/// Gets a view instance attached to the controller.
 		/// </summary>
 		protected IAppStateView View => _state.View;
 
@@ -33,14 +33,14 @@ namespace UnityFx.AppStates
 		protected AppState State => _state;
 
 		/// <summary>
-		/// Gets the parent state manager.
+		/// Gets the state creation arguments.
 		/// </summary>
-		protected IAppStateManager StateManager => _state.StateManager;
+		protected PushStateArgs CreationArgs => _state.CreationArgs;
 
 		/// <summary>
-		/// Gets a manager for substates.
+		/// Gets a value indicating whether the state is active.
 		/// </summary>
-		protected IAppStateManager SubstateManager => _state.SubstateManager;
+		protected bool IsActive => _state.IsActive;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppStateController"/> class.
@@ -51,17 +51,74 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// Exits the state.
+		/// Pushes a new state with the specified controller onto the stack.
 		/// </summary>
-		/// <exception cref="ObjectDisposedException">Thrown if the controller instance is disposed.</exception>
-		protected void Close()
+		/// <param name="controllerType">Type of the state controller.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
+		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
+		protected IAsyncOperation<AppState> PushStateAsync(Type controllerType, PushStateArgs args)
 		{
 			ThrowIfDisposed();
-			_state.StateManager.PopStateAsync(_state);
+			return _state.StateManager.PushStateAsync(controllerType, args);
 		}
 
 		/// <summary>
-		/// Throws an <see cref="ObjectDisposedException"/> if the instance is already disposed.
+		/// Pushes a new state with the specified controller onto the stack.
+		/// </summary>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
+		protected IAsyncOperation<AppState> PushStateAsync<TController>(PushStateArgs args) where TController : AppStateController
+		{
+			ThrowIfDisposed();
+			return _state.StateManager.PushStateAsync(typeof(TController), args);
+		}
+
+		/// <summary>
+		/// Pushes a new substate with the specified controller onto the child stack.
+		/// </summary>
+		/// <param name="controllerType">Type of the state controller.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
+		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
+		protected IAsyncOperation<AppState> PushSubstateAsync(Type controllerType, PushStateArgs args)
+		{
+			ThrowIfDisposed();
+			return _state.SubstateManager.PushStateAsync(controllerType, args);
+		}
+
+		/// <summary>
+		/// Pushes a new substate with the specified controller onto the child stack.
+		/// </summary>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
+		protected IAsyncOperation<AppState> PushSubstateAsync<TController>(PushStateArgs args) where TController : AppStateController
+		{
+			ThrowIfDisposed();
+			return _state.SubstateManager.PushStateAsync(typeof(TController), args);
+		}
+
+		/// <summary>
+		/// Initiates the parent state exit process.
+		/// </summary>
+		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
+		protected void Dismiss()
+		{
+			_state.PopAsync();
+		}
+
+		/// <summary>
+		/// Throws an <see cref="ObjectDisposedException"/> if the controller is disposed.
 		/// </summary>
 		/// <seealso cref="Dispose()"/>
 		/// <seealso cref="Dispose(bool)"/>
@@ -73,18 +130,21 @@ namespace UnityFx.AppStates
 			}
 		}
 
+		#endregion
+
+		#region virtuals
+
 		/// <summary>
-		/// Called before the first activation to load state content. Default implementation does nothing.
+		/// Called when the state conent is loaded. Default implementation does nothing.
 		/// </summary>
-		protected internal virtual IAsyncOperation OnLoadContent()
+		protected internal virtual void OnLoaded()
 		{
-			return AsyncResult.CompletedOperation;
 		}
 
 		/// <summary>
 		/// Called right before the state becomes active. Default implementation does nothing.
 		/// </summary>
-		protected internal virtual void OnActivate(bool firstActivated)
+		protected internal virtual void OnActivate()
 		{
 		}
 
@@ -93,6 +153,21 @@ namespace UnityFx.AppStates
 		/// </summary>
 		protected internal virtual void OnDeactivate()
 		{
+		}
+
+		/// <summary>
+		/// Called when the state is about to be popped. Default implementation does nothing.
+		/// </summary>
+		protected internal virtual void OnDismiss()
+		{
+		}
+
+		/// <summary>
+		/// Called before the first activation to load state content. Default implementation does nothing.
+		/// </summary>
+		protected internal virtual IAsyncOperation LoadContent()
+		{
+			return AsyncResult.CompletedOperation;
 		}
 
 		/// <summary>
@@ -110,7 +185,13 @@ namespace UnityFx.AppStates
 
 		#region IDisposable
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Releases resources used by the controller.
+		/// </summary>
+		/// <remarks>
+		/// This method is called by parent state. It should not be called by user code.
+		/// </remarks>
+		/// <seealso cref="Dispose(bool)"/>
 		public void Dispose()
 		{
 			Dispose(true);

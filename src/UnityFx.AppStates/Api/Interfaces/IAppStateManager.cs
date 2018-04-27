@@ -105,7 +105,7 @@ namespace UnityFx.AppStates
 		/// Gets the child states.
 		/// </summary>
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
-		AppStateStack States { get; }
+		AppStateCollection States { get; }
 
 		/// <summary>
 		/// Enumerates child states recursively.

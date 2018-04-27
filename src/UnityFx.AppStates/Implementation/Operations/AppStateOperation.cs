@@ -34,7 +34,7 @@ namespace UnityFx.AppStates
 		#region interface
 
 		protected AppStateManager StateManager => _stateManager;
-		protected AppStateStack States => _stateManager.States;
+		protected AppStateCollection States => _stateManager.States;
 		protected IAppStateTransitionManager TransitionManager => _stateManager.Shared.TransitionManager;
 
 		protected AppStateOperation(AppStateManager stateManager, AppStateOperationType opType, AsyncCallback asyncCallback, object asyncState, string comment)

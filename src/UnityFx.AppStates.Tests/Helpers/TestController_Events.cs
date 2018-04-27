@@ -19,15 +19,15 @@ namespace UnityFx.AppStates
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnPush));
 		}
 
-		protected override IAsyncOperation OnLoadContent()
+		protected override IAsyncOperation LoadContent()
 		{
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnLoadContent));
-			return base.OnLoadContent();
+			return base.LoadContent();
 		}
 
-		protected override void OnActivate(bool firstActivated)
+		protected override void OnActivate()
 		{
-			base.OnActivate(firstActivated);
+			base.OnActivate();
 			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnActivate));
 		}
 

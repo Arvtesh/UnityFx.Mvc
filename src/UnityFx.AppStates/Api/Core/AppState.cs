@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using UnityFx.Async;
 
@@ -53,7 +52,7 @@ namespace UnityFx.AppStates
 		private readonly AppState _ownerState;
 
 		private readonly TraceSource _console;
-		private readonly AppStateStack _stack;
+		private readonly AppStateCollection _stack;
 		private readonly string _id;
 		private readonly AppStateFlags _flags;
 		private readonly PushStateArgs _args;
@@ -61,14 +60,13 @@ namespace UnityFx.AppStates
 		private AppStateManager _substateManager;
 		private AppStateState _state;
 		private bool _isActive;
-		private bool _isActivated;
 
 		#endregion
 
 		#region interface
 
 		/// <summary>
-		/// Gets whether the state is enabled.
+		/// Gets a value indicating whether the state is enabled.
 		/// </summary>
 		internal bool Enabled => _state == AppStateState.Pushed;
 
@@ -138,7 +136,7 @@ namespace UnityFx.AppStates
 			_state = AppStateState.Pushed;
 			_substateManager?.SetEnabled();
 
-			return PushInternal();
+			return _controller.LoadContent();
 		}
 
 		internal void Pop(IAppStateOperationInfo op)
@@ -164,10 +162,7 @@ namespace UnityFx.AppStates
 
 				_view.Interactable = true;
 				_isActive = true;
-
-				ActivateInternal();
-
-				_isActivated = true;
+				_controller.OnActivate();
 				_substateManager?.TryActivateTopState(op);
 			}
 		}
@@ -183,23 +178,13 @@ namespace UnityFx.AppStates
 				try
 				{
 					_substateManager?.TryDeactivateTopState(op);
-					DeactivateInternal();
+					_controller.OnDeactivate();
 				}
 				finally
 				{
 					_view.Interactable = false;
 					_isActive = false;
 				}
-			}
-		}
-
-		internal void GetStatesRecursive(ICollection<AppState> states)
-		{
-			Debug.Assert(_state != AppStateState.Disposed);
-
-			if (_substateManager != null)
-			{
-				_substateManager.GetStatesRecursive(states);
 			}
 		}
 
@@ -346,7 +331,48 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets a collection of the state's children.
 		/// </summary>
-		public IReadOnlyCollection<AppState> Substates => _substateManager?.States ?? EmptyCollection<AppState>.Instance;
+		public AppStateCollection Substates
+		{
+			get
+			{
+				if (_substateManager != null)
+				{
+					return _substateManager.States;
+				}
+
+				return AppStateCollection.Empty;
+			}
+		}
+
+		/// <summary>
+		/// Enumerates child states.
+		/// </summary>
+		/// <param name="states">A collection to store results to.</param>
+		/// <exception cref="ObjectDisposedException">Thrown if the state is disposed.</exception>
+		public void GetSubstates(ICollection<AppState> states)
+		{
+			_substateManager?.States.CopyTo(states);
+		}
+
+		/// <summary>
+		/// Enumerates child states recursively.
+		/// </summary>
+		/// <param name="states">A collection to store results to.</param>
+		public void GetSubstatesRecursive(ICollection<AppState> states)
+		{
+			_substateManager?.GetStatesRecursive(states);
+		}
+
+		/// <summary>
+		/// Removes the specified state from the stack.
+		/// </summary>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ObjectDisposedException">Thrown if the state is disposed.</exception>
+		public IAsyncOperation PopAsync()
+		{
+			ThrowIfDisposed();
+			return _parentStateManager.PopStateAsync(this);
+		}
 
 		/// <summary>
 		/// Throws <see cref="ObjectDisposedException"/> if the instance is disposed.
@@ -373,12 +399,13 @@ namespace UnityFx.AppStates
 
 				try
 				{
-					_substateManager?.Dispose();
-
-					if (_controller is IDisposable d)
+					if (_substateManager != null)
 					{
-						d.Dispose();
+						_substateManager.Dispose();
+						_substateManager = null;
 					}
+
+					_controller.Dispose();
 				}
 				finally
 				{
@@ -390,38 +417,6 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region implementation
-
-		private IAsyncOperation PushInternal()
-		{
-			if (_controller is AppStateController c)
-			{
-				return c.OnLoadContent();
-			}
-
-			return AsyncResult.CompletedOperation;
-		}
-
-		private void ActivateInternal()
-		{
-			if (_controller is AppStateController c)
-			{
-				c.OnActivate(_isActivated);
-			}
-		}
-
-		private void DeactivateInternal()
-		{
-			if (_controller is AppStateController c)
-			{
-				c.OnDeactivate();
-			}
-		}
-
-		private void PopInternal()
-		{
-			// do nothing
-		}
-
 		#endregion
 	}
 }

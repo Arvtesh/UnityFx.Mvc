@@ -13,7 +13,7 @@ namespace UnityFx.AppStates
 		public TestController_EventsSubstsatesCtor(AppState state)
 			: base(state)
 		{
-			SubstateManager.PushStateAsync(typeof(TestController_Events), state.CreationArgs);
+			PushSubstateAsync(typeof(TestController_Events), state.CreationArgs);
 		}
 	}
 }

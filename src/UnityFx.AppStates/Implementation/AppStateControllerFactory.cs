@@ -32,6 +32,7 @@ namespace UnityFx.AppStates
 		public AppStateController CreateController(Type controllerType, AppState state)
 		{
 			Debug.Assert(controllerType != null);
+			Debug.Assert(controllerType.IsSubclassOf(typeof(AppStateController)));
 			Debug.Assert(state != null);
 
 			try

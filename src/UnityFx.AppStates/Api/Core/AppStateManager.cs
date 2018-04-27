@@ -22,7 +22,7 @@ namespace UnityFx.AppStates
 		private const string _serviceName = "StateManager";
 
 		private readonly AppStateManagerShared _shared;
-		private readonly AppStateStack _states;
+		private readonly AppStateCollection _states;
 		private readonly AsyncResultQueue<AppStateOperation> _stackOperations;
 		private readonly AppState _parentState;
 		private readonly AppStateManager _parentStateManager;
@@ -60,7 +60,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(services != null);
 
 			_shared = new AppStateManagerShared(syncContext, controllerFactory, viewManager, transitionManager, services);
-			_states = new AppStateStack();
+			_states = new AppStateCollection();
 			_stackOperations = new AsyncResultQueue<AppStateOperation>(syncContext);
 		}
 
@@ -88,7 +88,7 @@ namespace UnityFx.AppStates
 				}
 
 				// 3) Dispose child states.
-				foreach (var state in _states)
+				foreach (var state in _states.GetEnumerableLifo())
 				{
 					state.Dispose();
 				}
@@ -124,7 +124,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(parentStateManager != null);
 
 			_shared = parentStateManager._shared;
-			_states = new AppStateStack();
+			_states = new AppStateCollection();
 			_stackOperations = new AsyncResultQueue<AppStateOperation>(_shared.SynchronizationContext);
 			_parentState = parentState;
 			_parentStateManager = parentStateManager;
@@ -155,7 +155,7 @@ namespace UnityFx.AppStates
 			}
 
 			// 3) Pop child states.
-			foreach (var state in _states)
+			foreach (var state in _states.GetEnumerableLifo())
 			{
 				state.Pop(op);
 			}
@@ -180,7 +180,7 @@ namespace UnityFx.AppStates
 
 		internal void PopStateDependencies(IAppStateOperationInfo op, AppState state)
 		{
-			foreach (var s in _states.ToArray())
+			foreach (var s in _states.ToArrayLifo())
 			{
 				if (s.OwnerState == state)
 				{
@@ -242,7 +242,7 @@ namespace UnityFx.AppStates
 		public bool IsBusy => !_stackOperations.IsEmpty;
 
 		/// <inheritdoc/>
-		public AppStateStack States => _states;
+		public AppStateCollection States => _states;
 
 		/// <inheritdoc/>
 		public IEnumerable<AppState> GetStatesRecursive()
@@ -267,7 +267,7 @@ namespace UnityFx.AppStates
 			foreach (var state in _states)
 			{
 				states.Add(state);
-				state.GetStatesRecursive(states);
+				state.GetSubstatesRecursive(states);
 			}
 		}
 

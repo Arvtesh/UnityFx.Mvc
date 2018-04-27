@@ -4,21 +4,29 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// A LIFO collection of states.
+	/// A collection of states.
 	/// </summary>
-	public class AppStateStack : IReadOnlyCollection<AppState>
+	public class AppStateCollection : IReadOnlyCollection<AppState>
 	{
 		#region data
+
+		private static AppStateCollection _empty = new AppStateCollection();
 
 		private List<AppState> _states;
 
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// Gets an empty states collection.
+		/// </summary>
+		public static AppStateCollection Empty => _empty;
 
 		/// <summary>
 		/// Returns top element of the stack.
@@ -51,9 +59,65 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// Returns the collection content as array.
+		/// Enumerates the collectin elements in LIFO order.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<AppState> GetEnumerableLifo()
+		{
+			var n = _states?.Count - 1 ?? -1;
+
+			while (n >= 0)
+			{
+				yield return _states[n--];
+			}
+		}
+
+		/// <summary>
+		/// Copies the collection content to an array.
+		/// </summary>
+		public void CopyTo(AppState[] states)
+		{
+			_states?.CopyTo(states);
+		}
+
+		/// <summary>
+		/// Copies the collection content to an array.
+		/// </summary>
+		public void CopyTo(AppState[] states, int arrayIndex)
+		{
+			_states?.CopyTo(states, arrayIndex);
+		}
+
+		/// <summary>
+		/// Copies the collection content to another collection.
+		/// </summary>
+		public void CopyTo(ICollection<AppState> states)
+		{
+			if (_states != null)
+			{
+				foreach (var state in _states)
+				{
+					states.Add(state);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns the collection content as an array.
 		/// </summary>
 		public AppState[] ToArray()
+		{
+#if NET35
+			return _states?.ToArray() ?? new AppState[0];
+#else
+			return _states?.ToArray() ?? Array.Empty<AppState>();
+#endif
+		}
+
+		/// <summary>
+		/// Returns the collection content as LIFO array.
+		/// </summary>
+		public AppState[] ToArrayLifo()
 		{
 			var childCount = _states?.Count ?? 0;
 			var result = new AppState[childCount];
@@ -107,14 +171,15 @@ namespace UnityFx.AppStates
 		#region IEnumerable
 
 		/// <inheritdoc/>
-		public IEnumerator<AppState> GetEnumerator()
+		public List<AppState>.Enumerator GetEnumerator()
 		{
-			var n = _states?.Count - 1 ?? -1;
+			return _states?.GetEnumerator() ?? new List<AppState>.Enumerator();
+		}
 
-			while (n >= 0)
-			{
-				yield return _states[n--];
-			}
+		/// <inheritdoc/>
+		IEnumerator<AppState> IEnumerable<AppState>.GetEnumerator()
+		{
+			return _states?.GetEnumerator() ?? Enumerable.Empty<AppState>().GetEnumerator();
 		}
 
 		/// <inheritdoc/>
