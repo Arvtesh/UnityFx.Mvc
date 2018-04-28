@@ -166,9 +166,9 @@ namespace UnityFx.AppStates
 		#region virtuals
 
 		/// <summary>
-		/// Called when the state conent is loaded. Default implementation does nothing.
+		/// Called when the transition animation has completed. Default implementation does nothing.
 		/// </summary>
-		protected internal virtual void OnLoaded()
+		protected internal virtual void OnPresent()
 		{
 		}
 
@@ -187,18 +187,10 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// Called when the state is about to be popped. Default implementation does nothing.
+		/// Called when the state is about to be dismissed. Default implementation does nothing.
 		/// </summary>
 		protected internal virtual void OnDismiss()
 		{
-		}
-
-		/// <summary>
-		/// Called before the first activation to load state content. Default implementation does nothing.
-		/// </summary>
-		protected internal virtual IAsyncOperation LoadContent()
-		{
-			return AsyncResult.CompletedOperation;
 		}
 
 		/// <summary>

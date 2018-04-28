@@ -136,7 +136,7 @@ namespace UnityFx.AppStates
 			_state = AppStateState.Pushed;
 			_substateManager?.SetEnabled();
 
-			return _controller.LoadContent();
+			return AsyncResult.CompletedOperation;
 		}
 
 		internal void Pop(IAppStateOperationInfo op)

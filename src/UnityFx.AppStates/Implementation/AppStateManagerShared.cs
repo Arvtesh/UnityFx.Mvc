@@ -19,9 +19,6 @@ namespace UnityFx.AppStates
 		private readonly IAppStateTransitionManager _transitionManager;
 		private readonly IServiceProvider _serviceProvider;
 
-		private string _deeplinkScheme;
-		private string _deeplinkDomain = string.Empty;
-
 		#endregion
 
 		#region interface

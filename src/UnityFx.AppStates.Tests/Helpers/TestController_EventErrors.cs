@@ -48,16 +48,6 @@ namespace UnityFx.AppStates
 			base.OnDeactivate();
 		}
 
-		protected override IAsyncOperation LoadContent()
-		{
-			if (_errorId == ControllerMethodId.OnLoadContent)
-			{
-				throw new Exception();
-			}
-
-			return base.LoadContent();
-		}
-
 		protected override void Dispose(bool disposing)
 		{
 			if (_errorId == ControllerMethodId.OnPop)
