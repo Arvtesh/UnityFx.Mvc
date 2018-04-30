@@ -111,35 +111,6 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// Pushes a new substate with the specified controller onto the child stack.
-		/// </summary>
-		/// <param name="controllerType">Type of the state controller.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
-		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation<AppState> PushSubstateAsync(Type controllerType, PushStateArgs args)
-		{
-			ThrowIfDisposed();
-			return _state.SubstateManager.PushStateAsync(controllerType, args);
-		}
-
-		/// <summary>
-		/// Pushes a new substate with the specified controller onto the child stack.
-		/// </summary>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation<AppState> PushSubstateAsync<TController>(PushStateArgs args) where TController : AppStateController
-		{
-			ThrowIfDisposed();
-			return _state.SubstateManager.PushStateAsync(typeof(TController), args);
-		}
-
-		/// <summary>
 		/// Initiates the parent state exit process.
 		/// </summary>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
@@ -166,9 +137,9 @@ namespace UnityFx.AppStates
 		#region virtuals
 
 		/// <summary>
-		/// Called when the transition animation has completed. Default implementation does nothing.
+		/// Called when the view is loaded (before transition animation). Default implementation does nothing.
 		/// </summary>
-		protected internal virtual void OnPresent()
+		protected internal virtual void OnViewLoaded()
 		{
 		}
 
@@ -187,7 +158,7 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// Called when the state is about to be dismissed. Default implementation does nothing.
+		/// Called when the state is about to be dismissed (before transition animation). Default implementation does nothing.
 		/// </summary>
 		protected internal virtual void OnDismiss()
 		{

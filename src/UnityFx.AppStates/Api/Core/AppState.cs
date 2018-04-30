@@ -66,9 +66,9 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
-		/// Gets a value indicating whether the state is enabled.
+		/// Gets a value indicating whether the state is pushed.
 		/// </summary>
-		internal bool Enabled => _state == AppStateState.Pushed;
+		internal bool IsPushed => _state == AppStateState.Pushed;
 
 		/// <summary>
 		/// Gets a parent state manager instance.
@@ -364,7 +364,7 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// Removes the specified state from the stack.
+		/// Removes the state from the stack.
 		/// </summary>
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="ObjectDisposedException">Thrown if the state is disposed.</exception>

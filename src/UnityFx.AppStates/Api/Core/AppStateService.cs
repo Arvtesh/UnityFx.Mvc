@@ -161,7 +161,7 @@ namespace UnityFx.AppStates
 			_stackOperations = new AsyncResultQueue<AppStateOperation>(_shared.SynchronizationContext);
 			_parentState = parentState;
 			_parentStateManager = parentStateManager;
-			_stackOperations.Suspended = !parentState.Enabled;
+			_stackOperations.Suspended = !parentState.IsPushed;
 		}
 
 		internal AppStateService CreateSubstateManager(AppState state, AppStateService parentStateManager)
