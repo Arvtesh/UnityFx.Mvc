@@ -17,20 +17,20 @@ namespace UnityFx.AppStates
 		/// <param name="fromView"></param>
 		/// <param name="toView"></param>
 		/// <returns></returns>
-		IAsyncOperation PlayTransition(IAppStateView fromView, IAppStateView toView);
+		IAsyncOperation PlayTransition(AppStateView fromView, AppStateView toView);
 
 		/// <summary>
 		/// tt
 		/// </summary>
 		/// <param name="view">A view being pushed.</param>
 		/// <returns></returns>
-		IAsyncOperation PlayPushTransition(IAppStateView view);
+		IAsyncOperation PlayPushTransition(AppStateView view);
 
 		/// <summary>
 		/// tt
 		/// </summary>
 		/// <param name="view">A view being popped.</param>
 		/// <returns></returns>
-		IAsyncOperation PlayPopTransition(IAppStateView view);
+		IAsyncOperation PlayPopTransition(AppStateView view);
 	}
 }

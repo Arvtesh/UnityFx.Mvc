@@ -47,7 +47,7 @@ namespace UnityFx.AppStates
 
 		private readonly AppStateService _parentStateManager;
 		private readonly AppStateController _controller;
-		private readonly IAppStateView _view;
+		private readonly AppStateView _view;
 		private readonly AppState _parentState;
 		private readonly AppState _ownerState;
 
@@ -123,7 +123,7 @@ namespace UnityFx.AppStates
 				_id = GetStateNameSimple(controllerType);
 			}
 
-			_view = parentStateManager.Shared.ViewManager.CreateView(_id, GetPrevView());
+			_view = parentStateManager.Shared.ViewManager.CreateView(_id, AppStateViewOptions.None, GetPrevView());
 			_controller = parentStateManager.Shared.ControllerFactory.CreateController(controllerType, this);
 		}
 
@@ -136,7 +136,7 @@ namespace UnityFx.AppStates
 			_state = AppStateState.Pushed;
 			_substateManager?.SetEnabled();
 
-			return AsyncResult.CompletedOperation;
+			return _view.Load();
 		}
 
 		internal void Pop(IAppStateOperationInfo op)
@@ -160,7 +160,7 @@ namespace UnityFx.AppStates
 			{
 				_console.TraceEvent(TraceEventType.Verbose, op.OperationId, "ActivateState " + _id);
 
-				_view.Interactable = true;
+				_view.Enabled = true;
 				_isActive = true;
 				_controller.OnActivate();
 				_substateManager?.TryActivateTopState(op);
@@ -182,13 +182,13 @@ namespace UnityFx.AppStates
 				}
 				finally
 				{
-					_view.Interactable = false;
+					_view.Enabled = false;
 					_isActive = false;
 				}
 			}
 		}
 
-		internal IAppStateView GetPrevView()
+		internal AppStateView GetPrevView()
 		{
 			var i = _stack.Count - 1;
 
@@ -316,7 +316,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets a view instance attached to the state.
 		/// </summary>
-		public IAppStateView View => _view;
+		public AppStateView View => _view;
 
 		/// <summary>
 		/// Gets a controller attached to the state.

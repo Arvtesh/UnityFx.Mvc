@@ -7,7 +7,7 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class PushStateOperation : AppStateOperation
+	internal class PushStateOperation : AppStateOperation, IAsyncContinuation
 	{
 		#region data
 
@@ -45,7 +45,7 @@ namespace UnityFx.AppStates
 
 				_state = new AppState(StateManager, _ownerState, _controllerType, _args);
 				_pushOp = _state.Push(this);
-				_pushOp.AddCompletionCallback(OnStatePushed);
+				_pushOp.AddContinuation(this);
 			}
 			catch (Exception e)
 			{
@@ -90,40 +90,36 @@ namespace UnityFx.AppStates
 
 		#endregion
 
+		#region IAsyncContinuation
+
+		public void Invoke(IAsyncOperation op, bool inline)
+		{
+			try
+			{
+				if (ProcessNonSuccess(op))
+				{
+					if (_pushOp != null)
+					{
+						_pushOp = null;
+						_state.Controller.OnPresent();
+						_transitionOp = TransitionManager.PlayPushTransition(_state.View);
+						_transitionOp.AddContinuation(this);
+					}
+					else
+					{
+						TrySetResult(_state, false);
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				Fail(e);
+			}
+		}
+
+		#endregion
+
 		#region implementation
-
-		private void OnStatePushed(IAsyncOperation op)
-		{
-			try
-			{
-				if (ProcessNonSuccess(op))
-				{
-					_pushOp = null;
-					_transitionOp = TransitionManager.PlayPushTransition(_state.View);
-					_transitionOp.AddCompletionCallback(OnTransitionCompleted);
-				}
-			}
-			catch (Exception e)
-			{
-				Fail(e);
-			}
-		}
-
-		private void OnTransitionCompleted(IAsyncOperation op)
-		{
-			try
-			{
-				if (ProcessNonSuccess(op))
-				{
-					TrySetResult(_state, false);
-				}
-			}
-			catch (Exception e)
-			{
-				Fail(e);
-			}
-		}
-
 		#endregion
 	}
 }

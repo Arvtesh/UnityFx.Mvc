@@ -25,7 +25,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets a view instance attached to the controller.
 		/// </summary>
-		protected IAppStateView View => _state.View;
+		protected AppStateView View => _state.View;
 
 		/// <summary>
 		/// Gets the parent state.

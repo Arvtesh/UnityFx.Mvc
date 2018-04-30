@@ -43,21 +43,6 @@ namespace UnityFx.AppStates
 			_serviceProvider = services;
 		}
 
-		internal AppStateController CreateController(AppState state, Type controllerType)
-		{
-			Debug.Assert(state != null);
-			Debug.Assert(controllerType != null);
-
-			return _controllerFactory.CreateController(controllerType, state);
-		}
-
-		internal IAppStateView CreateView(AppState state)
-		{
-			Debug.Assert(state != null);
-
-			return _viewManager.CreateView(state.Id, state.GetPrevView());
-		}
-
 		#endregion
 
 		#region implementation
