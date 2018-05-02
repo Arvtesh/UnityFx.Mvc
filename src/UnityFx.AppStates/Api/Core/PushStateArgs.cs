@@ -17,7 +17,6 @@ namespace UnityFx.AppStates
 		private static Dictionary<string, string> _emptyQuery = new Dictionary<string, string>();
 		private static PushStateArgs _defaultArgs;
 
-		private readonly PushOptions _options;
 		private readonly object _data;
 		private readonly Dictionary<string, string> _query;
 		private readonly string _fragment;
@@ -35,7 +34,7 @@ namespace UnityFx.AppStates
 			{
 				if (_defaultArgs == null)
 				{
-					_defaultArgs = new PushStateArgs(PushOptions.Push);
+					_defaultArgs = new PushStateArgs();
 				}
 
 				return _defaultArgs;
@@ -59,7 +58,7 @@ namespace UnityFx.AppStates
 
 			if (string.IsNullOrEmpty(query))
 			{
-				return new PushStateArgs(PushOptions.Push, deeplink, _emptyQuery, fragment);
+				return new PushStateArgs(deeplink, _emptyQuery, fragment);
 			}
 			else
 			{
@@ -84,14 +83,9 @@ namespace UnityFx.AppStates
 					}
 				}
 
-				return new PushStateArgs(PushOptions.Push, deeplink, queryMap, fragment);
+				return new PushStateArgs(deeplink, queryMap, fragment);
 			}
 		}
-
-		/// <summary>
-		/// Gets state creation options.
-		/// </summary>
-		public PushOptions Options => _options;
 
 		/// <summary>
 		/// Gets user data attached to this object.
@@ -115,10 +109,8 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PushStateArgs"/> class.
 		/// </summary>
-		/// <param name="options"></param>
-		public PushStateArgs(PushOptions options)
+		public PushStateArgs()
 		{
-			_options = options;
 			_query = _emptyQuery;
 			_fragment = string.Empty;
 		}
@@ -126,11 +118,9 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PushStateArgs"/> class.
 		/// </summary>
-		/// <param name="options"></param>
 		/// <param name="userData"></param>
-		public PushStateArgs(PushOptions options, object userData)
+		public PushStateArgs(object userData)
 		{
-			_options = options;
 			_data = userData;
 			_query = _emptyQuery;
 			_fragment = string.Empty;
@@ -139,22 +129,20 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PushStateArgs"/> class.
 		/// </summary>
-		/// <param name="options"></param>
 		/// <param name="userData"></param>
 		/// <param name="queryParams"></param>
-		public PushStateArgs(PushOptions options, object userData, IEnumerable<KeyValuePair<string, string>> queryParams)
-			: this(options, userData, queryParams, string.Empty)
+		public PushStateArgs(IEnumerable<KeyValuePair<string, string>> queryParams, object userData)
+			: this(queryParams, string.Empty, userData)
 		{
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PushStateArgs"/> class.
 		/// </summary>
-		/// <param name="options"></param>
 		/// <param name="userData"></param>
 		/// <param name="queryParams"></param>
 		/// <param name="fragmentParams"></param>
-		public PushStateArgs(PushOptions options, object userData, IEnumerable<KeyValuePair<string, string>> queryParams, string fragmentParams)
+		public PushStateArgs(IEnumerable<KeyValuePair<string, string>> queryParams, string fragmentParams, object userData)
 		{
 			if (queryParams == null)
 			{
@@ -168,15 +156,13 @@ namespace UnityFx.AppStates
 				data.Add(item.Key, item.Value);
 			}
 
-			_options = options;
 			_data = userData;
 			_query = data;
 			_fragment = fragmentParams ?? string.Empty;
 		}
 
-		private PushStateArgs(PushOptions options, Uri deeplink, Dictionary<string, string> query, string fragment)
+		private PushStateArgs(Uri deeplink, Dictionary<string, string> query, string fragment)
 		{
-			_options = options;
 			_data = deeplink;
 			_query = query;
 			_fragment = fragment ?? string.Empty;

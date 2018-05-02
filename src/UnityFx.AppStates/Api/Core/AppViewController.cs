@@ -137,7 +137,20 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region state management
+		#region child states
+
+		/// <summary>
+		/// tt
+		/// </summary>
+		/// <param name="controllerType"></param>
+		/// <param name="options"></param>
+		/// <param name="args"></param>
+		/// <returns></returns>
+		protected IAsyncOperation<AppState> PresentAsync(Type controllerType, PresentOptions options, PushStateArgs args)
+		{
+			ThrowIfDisposed();
+			throw new NotImplementedException();
+		}
 
 		/// <summary>
 		/// Pushes a new state with the specified controller onto the stack.
@@ -166,7 +179,7 @@ namespace UnityFx.AppStates
 		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation<AppState> PushStateAsync(Type controllerType, PushOptions options, PushStateArgs args)
+		protected IAsyncOperation<AppState> PushStateAsync(Type controllerType, PresentOptions options, PushStateArgs args)
 		{
 			ThrowIfDisposed();
 			return _state.StateManager.PushStateAsync(controllerType, options, args);
@@ -193,7 +206,7 @@ namespace UnityFx.AppStates
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation<AppState> PushStateAsync<TController>(PushOptions options, PushStateArgs args) where TController : AppViewController
+		protected IAsyncOperation<AppState> PushStateAsync<TController>(PresentOptions options, PushStateArgs args) where TController : AppViewController
 		{
 			ThrowIfDisposed();
 			return _state.StateManager.PushStateAsync(typeof(TController), options, args);

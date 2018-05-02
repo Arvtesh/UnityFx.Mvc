@@ -255,7 +255,7 @@ namespace UnityFx.AppStates
 			_stackOperations.Suspended = false;
 		}
 
-		internal IAsyncOperation<AppState> PushStateAsync(Type controllerType, PushOptions options, PushStateArgs args)
+		internal IAsyncOperation<AppState> PushStateAsync(Type controllerType, PresentOptions options, PushStateArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
@@ -323,7 +323,7 @@ namespace UnityFx.AppStates
 			ThrowIfInvalidControllerType(controllerType);
 			ThrowIfInvalidArgs(args);
 
-			return PushStateInternal(controllerType, args.Options, args, null, null);
+			return PushStateInternal(controllerType, PresentOptions.None, args, null, null);
 		}
 
 		/// <inheritdoc/>
@@ -350,7 +350,7 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private AppStateOperation PushStateInternal(Type controllerType, PushOptions optinos, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
+		private AppStateOperation PushStateInternal(Type controllerType, PresentOptions options, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
 		{
 			Debug.Assert(!_disposed);
 			Debug.Assert(controllerType != null);
@@ -358,13 +358,13 @@ namespace UnityFx.AppStates
 
 			AppStateOperation result;
 
-			if (optinos == PushOptions.Set)
-			{
-				result = new SetStateOperation(this, _parentState, controllerType, args, asyncCallback, asyncState);
-			}
-			else if (optinos == PushOptions.Reset)
+			if ((options & PresentOptions.DismissAllStates) == PresentOptions.DismissAllStates)
 			{
 				result = new SetStateOperation(this, null, controllerType, args, asyncCallback, asyncState);
+			}
+			else if ((options & PresentOptions.DismissCurrentState) != 0)
+			{
+				result = new SetStateOperation(this, _parentState, controllerType, args, asyncCallback, asyncState);
 			}
 			else
 			{

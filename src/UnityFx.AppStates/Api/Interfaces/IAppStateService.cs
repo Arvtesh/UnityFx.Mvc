@@ -41,25 +41,23 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Enumerates state controller push options.
 	/// </summary>
-	public enum PushOptions
+	[Flags]
+	public enum PresentOptions
 	{
 		/// <summary>
 		/// Default options (push). The new state is pushed onto the stack.
 		/// </summary>
-		/// <seealso cref="AppStateOperationType.Push"/>
-		Push,
+		None = 0,
 
 		/// <summary>
 		/// Pushes new state onto the stack instead of the previous one.
 		/// </summary>
-		/// <seealso cref="AppStateOperationType.Set"/>
-		Set,
+		DismissCurrentState = 1,
 
 		/// <summary>
 		/// Pushes new state onto the stack instead of all other states.
 		/// </summary>
-		/// <seealso cref="AppStateOperationType.Reset"/>
-		Reset
+		DismissAllStates = 3,
 	}
 
 	/// <summary>

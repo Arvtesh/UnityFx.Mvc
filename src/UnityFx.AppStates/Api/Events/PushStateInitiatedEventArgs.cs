@@ -15,7 +15,7 @@ namespace UnityFx.AppStates
 		private readonly int _id;
 		private readonly AppStateOperationType _type;
 		private readonly object _userState;
-		private readonly PushOptions _options;
+		private readonly PresentOptions _options;
 
 		#endregion
 
@@ -24,12 +24,12 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets push options.
 		/// </summary>
-		public PushOptions Options => _options;
+		public PresentOptions Options => _options;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PushStateInitiatedEventArgs"/> class.
 		/// </summary>
-		public PushStateInitiatedEventArgs(IAppStateOperationInfo op, PushOptions options)
+		public PushStateInitiatedEventArgs(IAppStateOperationInfo op, PresentOptions options)
 		{
 			_id = op.OperationId;
 			_type = op.OperationType;
