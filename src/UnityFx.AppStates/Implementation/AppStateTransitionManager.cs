@@ -12,17 +12,17 @@ namespace UnityFx.AppStates
 		{
 		}
 
-		public IAsyncOperation PlayPopTransition(AppStateView view)
+		public IAsyncOperation PlayPopTransition(AppView view)
 		{
 			return AsyncResult.CompletedOperation;
 		}
 
-		public IAsyncOperation PlayPushTransition(AppStateView view)
+		public IAsyncOperation PlayPushTransition(AppView view)
 		{
 			return AsyncResult.CompletedOperation;
 		}
 
-		public IAsyncOperation PlayTransition(AppStateView fromView, AppStateView toView)
+		public IAsyncOperation PlayTransition(AppView fromView, AppView toView)
 		{
 			return AsyncResult.CompletedOperation;
 		}

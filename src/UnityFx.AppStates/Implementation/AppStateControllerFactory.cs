@@ -29,10 +29,10 @@ namespace UnityFx.AppStates
 
 		#region IAppStateControllerFactory
 
-		public AppStateController CreateController(Type controllerType, AppState state)
+		public AppViewController CreateController(Type controllerType, AppState state)
 		{
 			Debug.Assert(controllerType != null);
-			Debug.Assert(controllerType.IsSubclassOf(typeof(AppStateController)));
+			Debug.Assert(controllerType.IsSubclassOf(typeof(AppViewController)));
 			Debug.Assert(state != null);
 
 			try
@@ -50,11 +50,11 @@ namespace UnityFx.AppStates
 						args[i] = GetServiceInstance(parameters[i].ParameterType, state);
 					}
 
-					return c.Invoke(args) as AppStateController;
+					return c.Invoke(args) as AppViewController;
 				}
 				else
 				{
-					return Activator.CreateInstance(controllerType) as AppStateController;
+					return Activator.CreateInstance(controllerType) as AppViewController;
 				}
 			}
 			catch (TargetInvocationException e)
@@ -77,7 +77,7 @@ namespace UnityFx.AppStates
 			{
 				return _serviceProvider;
 			}
-			else if (serviceType == typeof(AppStateView))
+			else if (serviceType == typeof(AppView))
 			{
 				return state.View;
 			}

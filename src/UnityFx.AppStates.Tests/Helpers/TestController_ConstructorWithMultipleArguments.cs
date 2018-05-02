@@ -5,7 +5,7 @@ using System;
 
 namespace UnityFx.AppStates
 {
-	internal class TestController_ConstructorWithMultipleArguments : AppStateController
+	internal class TestController_ConstructorWithMultipleArguments : AppViewController
 	{
 		public IServiceProvider ServiceProvider { get; }
 

@@ -7,15 +7,15 @@ using UnityFx.Async;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// A factory for <see cref="AppStateView"/> instances.
+	/// A factory for <see cref="AppView"/> instances.
 	/// </summary>
-	/// <seealso cref="AppStateView"/>
+	/// <seealso cref="AppView"/>
 	public interface IAppStateViewManager
 	{
 		/// <summary>
 		/// Creates an empty view with the specified <paramref name="id"/> on top of the <paramref name="insertAfter"/> one.
 		/// If <paramref name="insertAfter"/> is <see langword="null"/> the view is created below all others.
 		/// </summary>
-		AppStateView CreateView(string id, AppStateViewOptions options, AppStateView insertAfter);
+		AppView CreateView(string id, AppStateViewOptions options, AppView insertAfter);
 	}
 }

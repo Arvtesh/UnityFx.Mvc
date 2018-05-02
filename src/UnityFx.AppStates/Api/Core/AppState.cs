@@ -23,13 +23,34 @@ namespace UnityFx.AppStates
 	}
 
 	/// <summary>
+	/// Enumerates state presentation modes.
+	/// </summary>
+	public enum AppStatePresentationMode
+	{
+		/// <summary>
+		/// Default (non-modal popup).
+		/// </summary>
+		Default,
+
+		/// <summary>
+		/// Exclusive (covers whole screen).
+		/// </summary>
+		Exclusive,
+
+		/// <summary>
+		/// Modal popup (appears on top of non-modal views).
+		/// </summary>
+		Modal,
+	}
+
+	/// <summary>
 	/// A generic application state.
 	/// </summary>
 	/// <remarks>
 	/// By design an application flow is a sequence of state switches. A state may represent a single screen,
-	/// a dialog, a menu or some process without any visual representation. States are supposed to be as independent
-	/// as possible. Only one state may be active (i.e. process user input) at time, but unlimited number of states may
-	/// exist (be rendered on the screen and execute their code) at the same time.
+	/// a dialog or a menu. States are supposed to be as independent as possible. Only one state may be active
+	/// (i.e. process user input) at time, but unlimited number of states may exist (be rendered on the screen
+	/// and execute their code) at the same time.
 	/// </remarks>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
@@ -46,8 +67,8 @@ namespace UnityFx.AppStates
 		}
 
 		private readonly AppStateService _parentStateManager;
-		private readonly AppStateController _controller;
-		private readonly AppStateView _view;
+		private readonly AppViewController _controller;
+		private readonly AppView _view;
 		private readonly AppState _parentState;
 		private readonly AppState _ownerState;
 
@@ -162,7 +183,7 @@ namespace UnityFx.AppStates
 
 				_view.Enabled = true;
 				_isActive = true;
-				_controller.OnActivate();
+				_controller.InvokeOnActivate();
 				_substateManager?.TryActivateTopState(op);
 			}
 		}
@@ -178,7 +199,7 @@ namespace UnityFx.AppStates
 				try
 				{
 					_substateManager?.TryDeactivateTopState(op);
-					_controller.OnDeactivate();
+					_controller.InvokeOnDeactivate();
 				}
 				finally
 				{
@@ -188,7 +209,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		internal AppStateView GetPrevView()
+		internal AppView GetPrevView()
 		{
 			var i = _stack.Count - 1;
 
@@ -247,7 +268,7 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region interface
+		#region IAppState
 
 		/// <summary>
 		/// Gets the state type identifier.
@@ -304,29 +325,23 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// Gets a parent state.
-		/// </summary>
-		public AppState ParentState => _parentState;
-
-		/// <summary>
-		/// Gets a state that created this one (or <see langword="null"/>).
-		/// </summary>
-		public AppState OwnerState => _ownerState;
-
-		/// <summary>
 		/// Gets a view instance attached to the state.
 		/// </summary>
-		public AppStateView View => _view;
+		public AppView View => _view;
 
 		/// <summary>
 		/// Gets a controller attached to the state.
 		/// </summary>
-		public AppStateController Controller => _controller;
+		public AppViewController Controller => _controller;
 
 		/// <summary>
 		/// Gets a value indicating whether the state is active.
 		/// </summary>
 		public bool IsActive => _isActive;
+
+		#endregion
+
+		#region tt
 
 		/// <summary>
 		/// Gets a collection of the state's children.
@@ -343,6 +358,16 @@ namespace UnityFx.AppStates
 				return AppStateCollection.Empty;
 			}
 		}
+
+		/// <summary>
+		/// Gets a parent state.
+		/// </summary>
+		public AppState ParentState => _parentState;
+
+		/// <summary>
+		/// Gets a state that created this one (or <see langword="null"/>).
+		/// </summary>
+		public AppState OwnerState => _ownerState;
 
 		/// <summary>
 		/// Enumerates child states.

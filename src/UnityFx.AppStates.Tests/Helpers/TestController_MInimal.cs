@@ -5,7 +5,7 @@ using System;
 
 namespace UnityFx.AppStates
 {
-	internal class TestController_Minimal : AppStateController
+	internal class TestController_Minimal : AppViewController
 	{
 		public TestController_Minimal(AppState state)
 			: base(state)

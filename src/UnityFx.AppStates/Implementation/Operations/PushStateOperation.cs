@@ -101,7 +101,7 @@ namespace UnityFx.AppStates
 					if (_pushOp != null)
 					{
 						_pushOp = null;
-						_state.Controller.OnViewLoaded();
+						_state.Controller.InvokeOnViewLoaded();
 						_transitionOp = TransitionManager.PlayPushTransition(_state.View);
 						_transitionOp.AddContinuation(this);
 					}

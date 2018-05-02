@@ -8,7 +8,7 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class TestController_EventErrors : AppStateController
+	internal class TestController_EventErrors : AppViewController
 	{
 		private readonly ControllerMethodId _errorId;
 

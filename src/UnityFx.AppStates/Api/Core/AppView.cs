@@ -7,7 +7,7 @@ using UnityFx.Async;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Creation options for <see cref="AppStateView"/>.
+	/// Creation options for <see cref="AppView"/>.
 	/// </summary>
 	[Flags]
 	public enum AppStateViewOptions
@@ -21,7 +21,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A generic composite view.
 	/// </summary>
-	public abstract class AppStateView : IComponentContainer, IDisposable
+	public abstract class AppView : IComponentContainer, IDisposable
 	{
 		#region data
 
@@ -109,11 +109,11 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="AppStateView"/> class.
+		/// Initializes a new instance of the <see cref="AppView"/> class.
 		/// </summary>
 		/// <param name="name">Name of the view.</param>
 		/// <param name="options"></param>
-		protected AppStateView(string name, AppStateViewOptions options)
+		protected AppView(string name, AppStateViewOptions options)
 		{
 			_name = name;
 			_options = options;

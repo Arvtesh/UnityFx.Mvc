@@ -7,7 +7,7 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class TestController_Events : AppStateController
+	internal class TestController_Events : AppViewController
 	{
 		private readonly ICollection<MethodCallInfo> _calls;
 
