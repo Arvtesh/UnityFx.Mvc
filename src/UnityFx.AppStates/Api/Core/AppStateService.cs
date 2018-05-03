@@ -215,7 +215,7 @@ namespace UnityFx.AppStates
 		{
 			foreach (var s in _states.ToArrayLifo())
 			{
-				if (s.OwnerState == state)
+				if (s.Parent == state)
 				{
 					s.Pop(op);
 				}

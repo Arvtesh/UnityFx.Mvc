@@ -70,7 +70,6 @@ namespace UnityFx.AppStates
 		private readonly AppViewController _controller;
 		private readonly AppView _view;
 		private readonly AppState _parentState;
-		private readonly AppState _ownerState;
 
 		private readonly TraceSource _console;
 		private readonly AppStateCollection _stack;
@@ -78,7 +77,6 @@ namespace UnityFx.AppStates
 		private readonly AppStateFlags _flags;
 		private readonly PresentArgs _args;
 
-		private AppStateService _substateManager;
 		private AppStateState _state;
 		private bool _isActive;
 
@@ -96,32 +94,13 @@ namespace UnityFx.AppStates
 		/// </summary>
 		internal AppStateService StateManager => _parentStateManager;
 
-		/// <summary>
-		/// Gets a substate manager instance.
-		/// </summary>
-		internal AppStateService SubstateManager
-		{
-			get
-			{
-				ThrowIfDisposed();
-
-				if (_substateManager == null)
-				{
-					_substateManager = _parentStateManager.CreateSubstateManager(this, _parentStateManager);
-				}
-
-				return _substateManager;
-			}
-		}
-
-		internal AppState(AppStateService parentStateManager, AppState owner, Type controllerType, PresentArgs args)
+		internal AppState(AppStateService parentStateManager, AppState parentState, Type controllerType, PresentArgs args)
 		{
 			Debug.Assert(parentStateManager != null);
 			Debug.Assert(controllerType != null);
 
 			_parentStateManager = parentStateManager;
-			_parentState = parentStateManager.ParentState;
-			_ownerState = owner;
+			_parentState = parentState;
 			_args = args;
 			_console = parentStateManager.TraceSource;
 			_stack = parentStateManager.States;
@@ -155,7 +134,6 @@ namespace UnityFx.AppStates
 			_console.TraceData(TraceEventType.Verbose, op.OperationId, "PushState " + _id);
 			_stack.Add(this);
 			_state = AppStateState.Pushed;
-			_substateManager?.SetEnabled();
 
 			return _view.Load();
 		}
@@ -164,7 +142,6 @@ namespace UnityFx.AppStates
 		{
 			if (_state == AppStateState.Pushed)
 			{
-				_substateManager?.Pop(op);
 				_console.TraceData(TraceEventType.Verbose, op.OperationId, "PopState " + _id);
 				_stack.Remove(this);
 				_state = AppStateState.Popped;
@@ -184,7 +161,6 @@ namespace UnityFx.AppStates
 				_view.Enabled = true;
 				_isActive = true;
 				_controller.InvokeOnActivate();
-				_substateManager?.TryActivateTopState(op);
 			}
 		}
 
@@ -198,7 +174,6 @@ namespace UnityFx.AppStates
 
 				try
 				{
-					_substateManager?.TryDeactivateTopState(op);
 					_controller.InvokeOnDeactivate();
 				}
 				finally
@@ -291,7 +266,7 @@ namespace UnityFx.AppStates
 
 				if (_parentState == null)
 				{
-					return _ownerState?.Path + localPath ?? localPath;
+					return _parentState?.Path + localPath ?? localPath;
 				}
 
 				return _parentState.Path;
@@ -350,24 +325,14 @@ namespace UnityFx.AppStates
 		{
 			get
 			{
-				if (_substateManager != null)
-				{
-					return _substateManager.States;
-				}
-
-				return AppStateCollection.Empty;
+				throw new NotImplementedException();
 			}
 		}
 
 		/// <summary>
 		/// Gets a parent state.
 		/// </summary>
-		public AppState ParentState => _parentState;
-
-		/// <summary>
-		/// Gets a state that created this one (or <see langword="null"/>).
-		/// </summary>
-		public AppState OwnerState => _ownerState;
+		public AppState Parent => _parentState;
 
 		/// <summary>
 		/// Enumerates child states.
@@ -376,7 +341,7 @@ namespace UnityFx.AppStates
 		/// <exception cref="ObjectDisposedException">Thrown if the state is disposed.</exception>
 		public void GetSubstates(ICollection<AppState> states)
 		{
-			_substateManager?.States.CopyTo(states);
+			// TODO
 		}
 
 		/// <summary>
@@ -385,7 +350,7 @@ namespace UnityFx.AppStates
 		/// <param name="states">A collection to store results to.</param>
 		public void GetSubstatesRecursive(ICollection<AppState> states)
 		{
-			_substateManager?.GetStatesRecursive(states);
+			// TODO
 		}
 
 		/// <summary>
@@ -424,12 +389,6 @@ namespace UnityFx.AppStates
 
 				try
 				{
-					if (_substateManager != null)
-					{
-						_substateManager.Dispose();
-						_substateManager = null;
-					}
-
 					_controller.Dispose();
 				}
 				finally
