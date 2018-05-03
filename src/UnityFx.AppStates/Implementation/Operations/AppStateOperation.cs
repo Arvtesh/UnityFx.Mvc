@@ -88,7 +88,7 @@ namespace UnityFx.AppStates
 			TrySetException(e, false);
 		}
 
-		protected static string GetStateDesc(Type controllerType, PushStateArgs args)
+		protected static string GetStateDesc(Type controllerType, PresentArgs args)
 		{
 			return AppState.GetStateName(controllerType) + " (" + args.ToString() + ')';
 		}

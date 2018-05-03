@@ -8,14 +8,14 @@ using System.Text;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Arguments for <see cref="IAppStateService.PushStateAsync(Type, PushStateArgs)"/>.
+	/// Arguments for <see cref="IAppStateService.PresentAsync(Type, PresentArgs)"/>.
 	/// </summary>
-	public class PushStateArgs
+	public class PresentArgs
 	{
 		#region data
 
 		private static Dictionary<string, string> _emptyQuery = new Dictionary<string, string>();
-		private static PushStateArgs _defaultArgs;
+		private static PresentArgs _defaultArgs;
 
 		private readonly object _data;
 		private readonly Dictionary<string, string> _query;
@@ -28,13 +28,13 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets default arguments value.
 		/// </summary>
-		public static PushStateArgs Default
+		public static PresentArgs Default
 		{
 			get
 			{
 				if (_defaultArgs == null)
 				{
-					_defaultArgs = new PushStateArgs();
+					_defaultArgs = new PresentArgs();
 				}
 
 				return _defaultArgs;
@@ -42,11 +42,11 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// Creates a <see cref="PushStateArgs"/> instance from a <paramref name="deeplink"/> specified.
+		/// Creates a <see cref="PresentArgs"/> instance from a <paramref name="deeplink"/> specified.
 		/// </summary>
 		/// <param name="deeplink">A deeplink.</param>
-		/// <returns>A <see cref="PushStateArgs"/> instance representing the specified deeplink.</returns>
-		public static PushStateArgs FromDeeplink(Uri deeplink)
+		/// <returns>A <see cref="PresentArgs"/> instance representing the specified deeplink.</returns>
+		public static PresentArgs FromDeeplink(Uri deeplink)
 		{
 			if (deeplink == null)
 			{
@@ -58,7 +58,7 @@ namespace UnityFx.AppStates
 
 			if (string.IsNullOrEmpty(query))
 			{
-				return new PushStateArgs(deeplink, _emptyQuery, fragment);
+				return new PresentArgs(deeplink, _emptyQuery, fragment);
 			}
 			else
 			{
@@ -83,7 +83,7 @@ namespace UnityFx.AppStates
 					}
 				}
 
-				return new PushStateArgs(deeplink, queryMap, fragment);
+				return new PresentArgs(deeplink, queryMap, fragment);
 			}
 		}
 
@@ -107,19 +107,19 @@ namespace UnityFx.AppStates
 		public string Fragment => _fragment;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="PushStateArgs"/> class.
+		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
 		/// </summary>
-		public PushStateArgs()
+		public PresentArgs()
 		{
 			_query = _emptyQuery;
 			_fragment = string.Empty;
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="PushStateArgs"/> class.
+		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
 		/// </summary>
 		/// <param name="userData"></param>
-		public PushStateArgs(object userData)
+		public PresentArgs(object userData)
 		{
 			_data = userData;
 			_query = _emptyQuery;
@@ -127,22 +127,22 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="PushStateArgs"/> class.
+		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
 		/// </summary>
 		/// <param name="userData"></param>
 		/// <param name="queryParams"></param>
-		public PushStateArgs(IEnumerable<KeyValuePair<string, string>> queryParams, object userData)
+		public PresentArgs(IEnumerable<KeyValuePair<string, string>> queryParams, object userData)
 			: this(queryParams, string.Empty, userData)
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="PushStateArgs"/> class.
+		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
 		/// </summary>
 		/// <param name="userData"></param>
 		/// <param name="queryParams"></param>
 		/// <param name="fragmentParams"></param>
-		public PushStateArgs(IEnumerable<KeyValuePair<string, string>> queryParams, string fragmentParams, object userData)
+		public PresentArgs(IEnumerable<KeyValuePair<string, string>> queryParams, string fragmentParams, object userData)
 		{
 			if (queryParams == null)
 			{
@@ -161,7 +161,7 @@ namespace UnityFx.AppStates
 			_fragment = fragmentParams ?? string.Empty;
 		}
 
-		private PushStateArgs(Uri deeplink, Dictionary<string, string> query, string fragment)
+		private PresentArgs(Uri deeplink, Dictionary<string, string> query, string fragment)
 		{
 			_data = deeplink;
 			_query = query;

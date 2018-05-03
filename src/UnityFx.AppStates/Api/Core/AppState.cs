@@ -76,7 +76,7 @@ namespace UnityFx.AppStates
 		private readonly AppStateCollection _stack;
 		private readonly string _id;
 		private readonly AppStateFlags _flags;
-		private readonly PushStateArgs _args;
+		private readonly PresentArgs _args;
 
 		private AppStateService _substateManager;
 		private AppStateState _state;
@@ -114,7 +114,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		internal AppState(AppStateService parentStateManager, AppState owner, Type controllerType, PushStateArgs args)
+		internal AppState(AppStateService parentStateManager, AppState owner, Type controllerType, PresentArgs args)
 		{
 			Debug.Assert(parentStateManager != null);
 			Debug.Assert(controllerType != null);
@@ -301,7 +301,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the state creation arguments.
 		/// </summary>
-		public PushStateArgs CreationArgs => _args;
+		public PresentArgs CreationArgs => _args;
 
 		/// <summary>
 		/// Gets a deeplink representing this state.

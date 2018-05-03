@@ -50,7 +50,7 @@ namespace UnityFx.AppStates
 		public async Task PushStateAsync_Succeeds()
 		{
 			// Arrange
-			var op = _stateManager.PushStateAsync(typeof(TestController_Minimal), PushStateArgs.Default);
+			var op = _stateManager.PresentAsync(typeof(TestController_Minimal), PresentArgs.Default);
 
 			// Act
 			var state = await op;
@@ -69,7 +69,7 @@ namespace UnityFx.AppStates
 		public async Task PopStateAsync_Succeeds()
 		{
 			// Arrange
-			var state = await _stateManager.PushStateAsync(typeof(TestController_Minimal), PushStateArgs.Default);
+			var state = await _stateManager.PresentAsync(typeof(TestController_Minimal), PresentArgs.Default);
 
 			// Act
 			await _stateManager.PopStateAsync(state);

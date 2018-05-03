@@ -40,7 +40,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the state creation arguments.
 		/// </summary>
-		protected PushStateArgs CreationArgs => _state.CreationArgs;
+		protected PresentArgs CreationArgs => _state.CreationArgs;
 
 		/// <summary>
 		/// Gets a value indicating whether the state is active.
@@ -137,16 +137,20 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region child states
+		#region state management
 
 		/// <summary>
-		/// tt
+		/// Presents a new state with the specified controller as a child state.
 		/// </summary>
-		/// <param name="controllerType"></param>
-		/// <param name="options"></param>
-		/// <param name="args"></param>
-		/// <returns></returns>
-		protected IAsyncOperation<AppState> PresentAsync(Type controllerType, PresentOptions options, PushStateArgs args)
+		/// <param name="controllerType">Type of the view controller to present.</param>
+		/// <param name="options">Presentation options.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
+		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
+		protected IAsyncOperation<AppState> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			throw new NotImplementedException();
@@ -162,40 +166,10 @@ namespace UnityFx.AppStates
 		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation<AppState> PushStateAsync(Type controllerType, PushStateArgs args)
+		protected IAsyncOperation<AppState> PresentAsync(Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
-			return _state.StateManager.PushStateAsync(controllerType, args);
-		}
-
-		/// <summary>
-		/// Pushes a new state with the specified controller onto the stack.
-		/// </summary>
-		/// <param name="controllerType">Type of the state controller.</param>
-		/// <param name="options">Push options.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
-		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation<AppState> PushStateAsync(Type controllerType, PresentOptions options, PushStateArgs args)
-		{
-			ThrowIfDisposed();
-			return _state.StateManager.PushStateAsync(controllerType, options, args);
-		}
-
-		/// <summary>
-		/// Pushes a new state with the specified controller onto the stack.
-		/// </summary>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation<AppState> PushStateAsync<TController>(PushStateArgs args) where TController : AppViewController
-		{
-			ThrowIfDisposed();
-			return _state.StateManager.PushStateAsync(typeof(TController), args);
+			throw new NotImplementedException();
 		}
 
 		/// <summary>
@@ -206,10 +180,23 @@ namespace UnityFx.AppStates
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation<AppState> PushStateAsync<TController>(PresentOptions options, PushStateArgs args) where TController : AppViewController
+		protected IAsyncOperation<AppState> PresentAsync<TController>(PresentOptions options, PresentArgs args) where TController : AppViewController
 		{
 			ThrowIfDisposed();
-			return _state.StateManager.PushStateAsync(typeof(TController), options, args);
+			throw new NotImplementedException();
+		}
+
+		/// <summary>
+		/// Pushes a new state with the specified controller onto the stack.
+		/// </summary>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
+		protected IAsyncOperation<AppState> PresentAsync<TController>(PresentArgs args) where TController : AppViewController
+		{
+			ThrowIfDisposed();
+			throw new NotImplementedException();
 		}
 
 		/// <summary>

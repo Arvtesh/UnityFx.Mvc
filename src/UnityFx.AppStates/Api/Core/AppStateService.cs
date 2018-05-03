@@ -255,7 +255,7 @@ namespace UnityFx.AppStates
 			_stackOperations.Suspended = false;
 		}
 
-		internal IAsyncOperation<AppState> PushStateAsync(Type controllerType, PresentOptions options, PushStateArgs args)
+		internal IAsyncOperation<AppState> PushStateAsync(Type controllerType, PresentOptions options, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
@@ -317,7 +317,7 @@ namespace UnityFx.AppStates
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<AppState> PushStateAsync(Type controllerType, PushStateArgs args)
+		public IAsyncOperation<AppState> PresentAsync(Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
@@ -350,7 +350,7 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private AppStateOperation PushStateInternal(Type controllerType, PresentOptions options, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
+		private AppStateOperation PushStateInternal(Type controllerType, PresentOptions options, PresentArgs args, AsyncCallback asyncCallback, object asyncState)
 		{
 			Debug.Assert(!_disposed);
 			Debug.Assert(controllerType != null);
@@ -399,7 +399,7 @@ namespace UnityFx.AppStates
 			return Name;
 		}
 
-		private void ThrowIfInvalidArgs(PushStateArgs args)
+		private void ThrowIfInvalidArgs(PresentArgs args)
 		{
 			if (args == null)
 			{

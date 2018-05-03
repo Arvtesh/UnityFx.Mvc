@@ -39,28 +39,6 @@ namespace UnityFx.AppStates
 	}
 
 	/// <summary>
-	/// Enumerates state controller push options.
-	/// </summary>
-	[Flags]
-	public enum PresentOptions
-	{
-		/// <summary>
-		/// Default options (push). The new state is pushed onto the stack.
-		/// </summary>
-		None = 0,
-
-		/// <summary>
-		/// Pushes new state onto the stack instead of the previous one.
-		/// </summary>
-		DismissCurrentState = 1,
-
-		/// <summary>
-		/// Pushes new state onto the stack instead of all other states.
-		/// </summary>
-		DismissAllStates = 3,
-	}
-
-	/// <summary>
 	/// A generic application state service.
 	/// </summary>
 	/// <seealso cref="AppState"/>
@@ -124,6 +102,6 @@ namespace UnityFx.AppStates
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
 		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap">Event-based Asynchronous Pattern (EAP)</seealso>
-		IAsyncOperation<AppState> PushStateAsync(Type controllerType, PushStateArgs args);
+		IAsyncOperation<AppState> PresentAsync(Type controllerType, PresentArgs args);
 	}
 }

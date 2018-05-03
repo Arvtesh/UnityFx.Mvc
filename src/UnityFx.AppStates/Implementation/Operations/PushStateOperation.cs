@@ -12,7 +12,7 @@ namespace UnityFx.AppStates
 		#region data
 
 		private readonly Type _controllerType;
-		private readonly PushStateArgs _args;
+		private readonly PresentArgs _args;
 		private readonly AppState _ownerState;
 
 		private AppState _state;
@@ -23,7 +23,7 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		public PushStateOperation(AppStateService stateManager, AppState ownerState, Type controllerType, PushStateArgs args, AsyncCallback asyncCallback, object asyncState)
+		public PushStateOperation(AppStateService stateManager, AppState ownerState, Type controllerType, PresentArgs args, AsyncCallback asyncCallback, object asyncState)
 			: base(stateManager, AppStateOperationType.Push, asyncCallback, asyncState, GetStateDesc(controllerType, args))
 		{
 			_controllerType = controllerType;
