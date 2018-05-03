@@ -8,20 +8,24 @@ using System.Reflection;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Default implementation of <see cref="IAppStateControllerFactory"/>.
+	/// Default implementation of <see cref="IAppControllerFactory"/>.
 	/// </summary>
-	internal sealed class AppStateControllerFactory : IAppStateControllerFactory
+	internal sealed class AppViewControllerFactory : IAppControllerFactory
 	{
 		#region data
 
+		private readonly IAppStateService _stateManager;
+		private readonly IAppViewManager _viewManager;
 		private readonly IServiceProvider _serviceProvider;
 
 		#endregion
 
 		#region interface
 
-		public AppStateControllerFactory(IServiceProvider serviceProvider)
+		public AppViewControllerFactory(IAppStateService stateManager, IAppViewManager viewManager, IServiceProvider serviceProvider)
 		{
+			_stateManager = stateManager;
+			_viewManager = viewManager;
 			_serviceProvider = serviceProvider;
 		}
 
@@ -77,13 +81,13 @@ namespace UnityFx.AppStates
 			{
 				return _serviceProvider;
 			}
-			else if (serviceType == typeof(AppView))
-			{
-				return state.View;
-			}
 			else if (serviceType == typeof(IAppStateService))
 			{
-				return state.StateManager;
+				return _stateManager;
+			}
+			else if (serviceType == typeof(IAppViewManager))
+			{
+				return _viewManager;
 			}
 
 			return _serviceProvider.GetService(serviceType);

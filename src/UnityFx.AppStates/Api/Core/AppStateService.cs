@@ -48,7 +48,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// /// <param name="viewManager"></param>
 		/// <param name="services"></param>
-		public AppStateService(IAppStateViewManager viewManager, IServiceProvider services)
+		public AppStateService(IAppViewManager viewManager, IServiceProvider services)
 			: this(viewManager, services, SynchronizationContext.Current)
 		{
 		}
@@ -60,14 +60,14 @@ namespace UnityFx.AppStates
 		/// <param name="services"></param>
 		/// <param name="viewManager"></param>
 		public AppStateService(
-			IAppStateViewManager viewManager,
+			IAppViewManager viewManager,
 			IServiceProvider services,
 			SynchronizationContext syncContext)
 		{
 			Debug.Assert(viewManager != null);
 			Debug.Assert(services != null);
 
-			_shared = new AppStateManagerShared(syncContext, new AppStateControllerFactory(services), viewManager, null, services);
+			_shared = new AppStateManagerShared(syncContext, new AppViewControllerFactory(this, viewManager, services), viewManager, null, services);
 			_states = new AppStateCollection();
 			_stackOperations = new AsyncResultQueue<AppStateOperation>(syncContext);
 		}
@@ -81,8 +81,8 @@ namespace UnityFx.AppStates
 		/// <param name="services"></param>
 		/// <param name="controllerFactory"></param>
 		public AppStateService(
-			IAppStateControllerFactory controllerFactory,
-			IAppStateViewManager viewManager,
+			IAppControllerFactory controllerFactory,
+			IAppViewManager viewManager,
 			IAppStateTransitionManager transitionManager,
 			IServiceProvider services,
 			SynchronizationContext syncContext)

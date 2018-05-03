@@ -73,8 +73,6 @@ namespace UnityFx.AppStates
 
 		private readonly TraceSource _console;
 		private readonly AppStateCollection _stack;
-		private readonly string _id;
-		private readonly AppStateFlags _flags;
 		private readonly PresentArgs _args;
 
 		private AppStateState _state;
@@ -105,25 +103,8 @@ namespace UnityFx.AppStates
 			_console = parentStateManager.TraceSource;
 			_stack = parentStateManager.States;
 
-			if (Attribute.GetCustomAttribute(controllerType, typeof(AppStateControllerAttribute)) is AppStateControllerAttribute paramsAttr)
-			{
-				if (string.IsNullOrEmpty(paramsAttr.Id))
-				{
-					_id = GetStateNameSimple(controllerType);
-				}
-				else
-				{
-					_id = paramsAttr.Id;
-				}
-
-				_flags = paramsAttr.Flags;
-			}
-			else
-			{
-				_id = GetStateNameSimple(controllerType);
-			}
-
-			_view = parentStateManager.Shared.ViewManager.CreateView(_id, AppStateViewOptions.None, GetPrevView());
+			// TODO: move view creation code to controller ctor
+			_view = parentStateManager.Shared.ViewManager.CreateView(AppViewController.GetId(controllerType), AppStateViewOptions.None, GetPrevView());
 			_controller = parentStateManager.Shared.ControllerFactory.CreateController(controllerType, this);
 		}
 
@@ -131,7 +112,7 @@ namespace UnityFx.AppStates
 		{
 			Debug.Assert(_state == AppStateState.Created);
 
-			_console.TraceData(TraceEventType.Verbose, op.OperationId, "PushState " + _id);
+			_console.TraceData(TraceEventType.Verbose, op.OperationId, "PushState " + _controller.Id);
 			_stack.Add(this);
 			_state = AppStateState.Pushed;
 
@@ -142,7 +123,7 @@ namespace UnityFx.AppStates
 		{
 			if (_state == AppStateState.Pushed)
 			{
-				_console.TraceData(TraceEventType.Verbose, op.OperationId, "PopState " + _id);
+				_console.TraceData(TraceEventType.Verbose, op.OperationId, "PopState " + _controller.Id);
 				_stack.Remove(this);
 				_state = AppStateState.Popped;
 			}
@@ -156,7 +137,7 @@ namespace UnityFx.AppStates
 
 			if (!_isActive && (_parentState == null || _parentState.IsActive))
 			{
-				_console.TraceEvent(TraceEventType.Verbose, op.OperationId, "ActivateState " + _id);
+				_console.TraceEvent(TraceEventType.Verbose, op.OperationId, "ActivateState " + _controller.Id);
 
 				_view.Enabled = true;
 				_isActive = true;
@@ -170,7 +151,7 @@ namespace UnityFx.AppStates
 
 			if (_isActive)
 			{
-				_console.TraceData(TraceEventType.Verbose, op.OperationId, "DeactivateState " + _id);
+				_console.TraceData(TraceEventType.Verbose, op.OperationId, "DeactivateState " + _controller.Id);
 
 				try
 				{
@@ -248,12 +229,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the state type identifier.
 		/// </summary>
-		public string Id => _id;
-
-		/// <summary>
-		/// Gets the state flags.
-		/// </summary>
-		public AppStateFlags Flags => _flags;
+		public string Id => _controller.Id;
 
 		/// <summary>
 		/// Gets the state path.
@@ -262,7 +238,7 @@ namespace UnityFx.AppStates
 		{
 			get
 			{
-				var localPath = '/' + _id;
+				var localPath = '/' + _controller.Id;
 
 				if (_parentState == null)
 				{
@@ -292,7 +268,7 @@ namespace UnityFx.AppStates
 
 				if (_parentState != null)
 				{
-					uriBuilder.Fragment = _id;
+					uriBuilder.Fragment = _controller.Id;
 				}
 
 				return uriBuilder.Uri;
@@ -321,7 +297,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets a collection of the state's children.
 		/// </summary>
-		public AppStateCollection Substates
+		public IReadOnlyCollection<AppState> Substates
 		{
 			get
 			{
@@ -371,7 +347,7 @@ namespace UnityFx.AppStates
 		{
 			if (_state == AppStateState.Disposed)
 			{
-				throw new ObjectDisposedException(_id);
+				throw new ObjectDisposedException(_controller.Id);
 			}
 		}
 

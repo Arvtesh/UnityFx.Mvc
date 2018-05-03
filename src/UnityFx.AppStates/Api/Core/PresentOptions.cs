@@ -17,13 +17,18 @@ namespace UnityFx.AppStates
 		None = 0,
 
 		/// <summary>
-		/// Pushes new state onto the stack instead of the previous one.
+		/// Presents a new state and dismisses the previous one.
 		/// </summary>
 		DismissCurrentState = 1,
 
 		/// <summary>
-		/// Pushes new state onto the stack instead of all other states.
+		/// Presents a new state and dismisses all other states.
 		/// </summary>
-		DismissAllStates = 3,
+		DismissAllStates = 2,
+
+		/// <summary>
+		/// When presented, the target controller will not be activated.
+		/// </summary>
+		DoNotActivate = 4,
 	}
 }

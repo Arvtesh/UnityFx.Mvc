@@ -16,6 +16,7 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
+		private readonly string _id;
 		private readonly AppState _state;
 		private readonly AppView _view;
 
@@ -28,24 +29,29 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
+		/// Gets the controller identifier.
+		/// </summary>
+		public string Id => _id;
+
+		/// <summary>
+		/// Gets a view instance attached to the controller.
+		/// </summary>
+		public AppView View => _view;
+
+		/// <summary>
+		/// Gets a value indicating whether the state is active.
+		/// </summary>
+		public bool IsActive => _state.IsActive;
+
+		/// <summary>
 		/// Gets the parent state.
 		/// </summary>
 		protected AppState State => _state;
 
 		/// <summary>
-		/// Gets a view instance attached to the controller.
-		/// </summary>
-		protected AppView View => _view;
-
-		/// <summary>
 		/// Gets the state creation arguments.
 		/// </summary>
 		protected PresentArgs CreationArgs => _state.CreationArgs;
-
-		/// <summary>
-		/// Gets a value indicating whether the state is active.
-		/// </summary>
-		protected bool IsActive => _state.IsActive;
 
 		/// <summary>
 		/// Gets a value indicating whether the controller is disposed.
@@ -57,17 +63,9 @@ namespace UnityFx.AppStates
 		/// </summary>
 		protected AppViewController(AppState state)
 		{
+			_id = GetId(GetType());
 			_state = state ?? throw new ArgumentNullException(nameof(state));
 			_view = state.View;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AppViewController"/> class.
-		/// </summary>
-		protected AppViewController(AppState state, AppView view)
-		{
-			_state = state ?? throw new ArgumentNullException(nameof(state));
-			_view = view ?? throw new ArgumentNullException(nameof(view));
 		}
 
 		/// <summary>
@@ -262,6 +260,35 @@ namespace UnityFx.AppStates
 			}
 
 			OnDismiss();
+		}
+
+		internal static string GetId(Type controllerType)
+		{
+			if (Attribute.GetCustomAttribute(controllerType, typeof(AppStateControllerAttribute)) is AppStateControllerAttribute attr)
+			{
+				if (string.IsNullOrEmpty(attr.Id))
+				{
+					return GetIdSimple(controllerType);
+				}
+				else
+				{
+					return attr.Id;
+				}
+			}
+
+			return GetIdSimple(controllerType);
+		}
+
+		internal static string GetIdSimple(Type controllerType)
+		{
+			var name = controllerType.Name;
+
+			if (name.EndsWith("Controller"))
+			{
+				name = name.Substring(0, name.Length - 10).ToLowerInvariant();
+			}
+
+			return name;
 		}
 
 		#endregion

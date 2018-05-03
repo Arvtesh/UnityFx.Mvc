@@ -10,7 +10,7 @@ namespace UnityFx.AppStates
 	/// A factory for <see cref="AppView"/> instances.
 	/// </summary>
 	/// <seealso cref="AppView"/>
-	public interface IAppStateViewManager
+	public interface IAppViewManager
 	{
 		/// <summary>
 		/// Creates an empty view with the specified <paramref name="id"/> on top of the <paramref name="insertAfter"/> one.

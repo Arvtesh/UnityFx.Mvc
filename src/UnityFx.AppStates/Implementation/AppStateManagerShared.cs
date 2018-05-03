@@ -14,8 +14,8 @@ namespace UnityFx.AppStates
 		#region data
 
 		private readonly SynchronizationContext _synchronizationContext;
-		private readonly IAppStateControllerFactory _controllerFactory;
-		private readonly IAppStateViewManager _viewManager;
+		private readonly IAppControllerFactory _controllerFactory;
+		private readonly IAppViewManager _viewManager;
 		private readonly IAppStateTransitionManager _transitionManager;
 		private readonly IServiceProvider _serviceProvider;
 
@@ -24,15 +24,15 @@ namespace UnityFx.AppStates
 		#region interface
 
 		internal SynchronizationContext SynchronizationContext => _synchronizationContext;
-		internal IAppStateControllerFactory ControllerFactory => _controllerFactory;
-		internal IAppStateViewManager ViewManager => _viewManager;
+		internal IAppControllerFactory ControllerFactory => _controllerFactory;
+		internal IAppViewManager ViewManager => _viewManager;
 		internal IAppStateTransitionManager TransitionManager => _transitionManager;
 		internal IServiceProvider ServiceProvider => _serviceProvider;
 
 		internal AppStateManagerShared(
 			SynchronizationContext syncContext,
-			IAppStateControllerFactory controllerFactory,
-			IAppStateViewManager viewManager,
+			IAppControllerFactory controllerFactory,
+			IAppViewManager viewManager,
 			IAppStateTransitionManager transitionManager,
 			IServiceProvider services)
 		{
