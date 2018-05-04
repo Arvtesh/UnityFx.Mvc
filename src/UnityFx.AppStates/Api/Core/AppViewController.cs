@@ -16,11 +16,12 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private readonly string _id;
 		private readonly AppState _state;
+		private readonly AppViewController _parentController;
 		private readonly AppView _view;
+		private readonly string _id;
+		private readonly object _args;
 
-		private AppViewController _parentController;
 		private List<AppViewController> _childControllers;
 		private bool _disposed;
 
@@ -54,6 +55,11 @@ namespace UnityFx.AppStates
 		protected PresentArgs CreationArgs => _state.CreationArgs;
 
 		/// <summary>
+		/// Gets the controller creation arguments.
+		/// </summary>
+		protected object Args => _args;
+
+		/// <summary>
 		/// Gets a value indicating whether the controller is disposed.
 		/// </summary>
 		protected bool IsDisposed => _disposed;
@@ -63,9 +69,19 @@ namespace UnityFx.AppStates
 		/// </summary>
 		protected AppViewController(AppState state)
 		{
-			_id = GetId(GetType());
 			_state = state ?? throw new ArgumentNullException(nameof(state));
-			_view = state.View;
+			_id = GetId(GetType());
+			_parentController = state.TmpController;
+			_args = state.TmpControllerArgs;
+
+			if ((state.TmpControllerOptions & PresentOptions.ReuseParentView) != 0)
+			{
+				_view = _parentController.View;
+			}
+			else
+			{
+				_view = state.ViewManager.CreateView(_id, AppStateViewOptions.None, state.GetPrevView());
+			}
 		}
 
 		/// <summary>
@@ -103,7 +119,7 @@ namespace UnityFx.AppStates
 				throw new ArgumentNullException(nameof(controllerType));
 			}
 
-			return AddChildControllerInternal(controllerType);
+			return AddChildControllerInternal(controllerType, PresentOptions.None, null);
 		}
 
 		/// <summary>
@@ -115,7 +131,7 @@ namespace UnityFx.AppStates
 		/// <returns>Returns the created controller instance.</returns>
 		protected TController AddChildController<TController>() where TController : AppViewController
 		{
-			return AddChildControllerInternal(typeof(TController)) as TController;
+			return AddChildControllerInternal(typeof(TController), PresentOptions.None, null) as TController;
 		}
 
 		/// <summary>
@@ -218,20 +234,22 @@ namespace UnityFx.AppStates
 			{
 				foreach (var controller in _childControllers)
 				{
-					controller.OnViewLoaded();
+					controller.InvokeOnViewLoaded();
 				}
 			}
 		}
 
 		internal void InvokeOnActivate()
 		{
+			_view.Enabled = true;
+
 			OnActivate();
 
 			if (_childControllers != null)
 			{
 				foreach (var controller in _childControllers)
 				{
-					controller.OnActivate();
+					controller.InvokeOnActivate();
 				}
 			}
 		}
@@ -242,11 +260,13 @@ namespace UnityFx.AppStates
 			{
 				foreach (var controller in _childControllers)
 				{
-					controller.OnDeactivate();
+					controller.InvokeOnDeactivate();
 				}
 			}
 
 			OnDeactivate();
+
+			_view.Enabled = false;
 		}
 
 		internal void InvokeOnDismiss()
@@ -255,7 +275,7 @@ namespace UnityFx.AppStates
 			{
 				foreach (var controller in _childControllers)
 				{
-					controller.OnDismiss();
+					controller.InvokeOnDismiss();
 				}
 			}
 
@@ -360,11 +380,8 @@ namespace UnityFx.AppStates
 
 		private void DisposeInternal()
 		{
-			if (_parentController != null)
-			{
-				_parentController.RemoveChildController(this);
-				_parentController = null;
-			}
+			_parentController?.RemoveChildController(this);
+			_view.Dispose();
 
 			if (_childControllers != null)
 			{
@@ -378,8 +395,12 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		private AppViewController AddChildControllerInternal(Type controllerType)
+		private AppViewController AddChildControllerInternal(Type controllerType, PresentOptions options, object args)
 		{
+			Debug.Assert(_state.TmpController == null);
+			Debug.Assert(_state.TmpControllerOptions == PresentOptions.None);
+			Debug.Assert(_state.TmpControllerArgs == null);
+
 			ThrowIfDisposed();
 
 			if (_childControllers == null)
@@ -387,15 +408,27 @@ namespace UnityFx.AppStates
 				_childControllers = new List<AppViewController>();
 			}
 
-			var c = _state.StateManager.Shared.ControllerFactory.CreateController(controllerType, _state);
+			_state.TmpController = this;
+			_state.TmpControllerOptions = options;
+			_state.TmpControllerArgs = args;
 
-			if (!c.IsDisposed)
+			try
 			{
-				c._parentController = this;
-				_childControllers.Add(c);
-			}
+				var controller = _state.ControllerFactory.CreateController(controllerType, _state);
 
-			return c;
+				if (!controller.IsDisposed)
+				{
+					_childControllers.Add(controller);
+				}
+
+				return controller;
+			}
+			finally
+			{
+				_state.TmpControllerArgs = null;
+				_state.TmpControllerOptions = PresentOptions.None;
+				_state.TmpController = null;
+			}
 		}
 
 		#endregion

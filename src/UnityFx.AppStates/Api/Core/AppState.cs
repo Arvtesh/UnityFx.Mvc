@@ -68,7 +68,6 @@ namespace UnityFx.AppStates
 
 		private readonly AppStateService _parentStateManager;
 		private readonly AppViewController _controller;
-		private readonly AppView _view;
 		private readonly AppState _parentState;
 
 		private readonly TraceSource _console;
@@ -82,15 +81,14 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		/// <summary>
-		/// Gets a value indicating whether the state is pushed.
-		/// </summary>
 		internal bool IsPushed => _state == AppStateState.Pushed;
-
-		/// <summary>
-		/// Gets a parent state manager instance.
-		/// </summary>
 		internal AppStateService StateManager => _parentStateManager;
+		internal IAppViewManager ViewManager => _parentStateManager.Shared.ViewManager;
+		internal IAppControllerFactory ControllerFactory => _parentStateManager.Shared.ControllerFactory;
+
+		internal AppViewController TmpController { get; set; }
+		internal PresentOptions TmpControllerOptions { get; set; }
+		internal object TmpControllerArgs { get; set; }
 
 		internal AppState(AppStateService parentStateManager, AppState parentState, Type controllerType, PresentArgs args)
 		{
@@ -102,9 +100,6 @@ namespace UnityFx.AppStates
 			_args = args;
 			_console = parentStateManager.TraceSource;
 			_stack = parentStateManager.States;
-
-			// TODO: move view creation code to controller ctor
-			_view = parentStateManager.Shared.ViewManager.CreateView(AppViewController.GetId(controllerType), AppStateViewOptions.None, GetPrevView());
 			_controller = parentStateManager.Shared.ControllerFactory.CreateController(controllerType, this);
 		}
 
@@ -116,7 +111,7 @@ namespace UnityFx.AppStates
 			_stack.Add(this);
 			_state = AppStateState.Pushed;
 
-			return _view.Load();
+			return _controller.View.Load();
 		}
 
 		internal void Pop(IAppStateOperationInfo op)
@@ -139,7 +134,6 @@ namespace UnityFx.AppStates
 			{
 				_console.TraceEvent(TraceEventType.Verbose, op.OperationId, "ActivateState " + _controller.Id);
 
-				_view.Enabled = true;
 				_isActive = true;
 				_controller.InvokeOnActivate();
 			}
@@ -159,7 +153,6 @@ namespace UnityFx.AppStates
 				}
 				finally
 				{
-					_view.Enabled = false;
 					_isActive = false;
 				}
 			}
@@ -278,7 +271,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets a view instance attached to the state.
 		/// </summary>
-		public AppView View => _view;
+		public AppView View => _controller.View;
 
 		/// <summary>
 		/// Gets a controller attached to the state.
@@ -362,15 +355,7 @@ namespace UnityFx.AppStates
 			{
 				_state = AppStateState.Disposed;
 				_stack.Remove(this);
-
-				try
-				{
-					_controller.Dispose();
-				}
-				finally
-				{
-					_view.Dispose();
-				}
+				_controller.Dispose();
 			}
 		}
 
