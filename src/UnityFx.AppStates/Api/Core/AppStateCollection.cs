@@ -15,18 +15,11 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private static AppStateCollection _empty = new AppStateCollection();
-
 		private List<AppState> _states;
 
 		#endregion
 
 		#region interface
-
-		/// <summary>
-		/// Gets an empty states collection.
-		/// </summary>
-		public static AppStateCollection Empty => _empty;
 
 		/// <summary>
 		/// Returns top element of the stack.
@@ -56,20 +49,6 @@ namespace UnityFx.AppStates
 
 			result = null;
 			return false;
-		}
-
-		/// <summary>
-		/// Enumerates the collectin elements in LIFO order.
-		/// </summary>
-		/// <returns></returns>
-		public IEnumerable<AppState> GetEnumerableLifo()
-		{
-			var n = _states?.Count - 1 ?? -1;
-
-			while (n >= 0)
-			{
-				yield return _states[n--];
-			}
 		}
 
 		/// <summary>
@@ -114,22 +93,6 @@ namespace UnityFx.AppStates
 #endif
 		}
 
-		/// <summary>
-		/// Returns the collection content as LIFO array.
-		/// </summary>
-		public AppState[] ToArrayLifo()
-		{
-			var childCount = _states?.Count ?? 0;
-			var result = new AppState[childCount];
-
-			for (var i = 0; i < childCount; ++i)
-			{
-				result[i] = _states[childCount - i - 1];
-			}
-
-			return result;
-		}
-
 		#endregion
 
 		#region internals
@@ -157,6 +120,29 @@ namespace UnityFx.AppStates
 		internal void Clear()
 		{
 			_states?.Clear();
+		}
+
+		internal IEnumerable<AppState> GetEnumerableLifo()
+		{
+			var n = _states?.Count - 1 ?? -1;
+
+			while (n >= 0)
+			{
+				yield return _states[n--];
+			}
+		}
+
+		internal AppState[] ToArrayLifo()
+		{
+			var childCount = _states?.Count ?? 0;
+			var result = new AppState[childCount];
+
+			for (var i = 0; i < childCount; ++i)
+			{
+				result[i] = _states[childCount - i - 1];
+			}
+
+			return result;
 		}
 
 		#endregion

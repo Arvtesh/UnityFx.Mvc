@@ -11,18 +11,6 @@ using UnityFx.Async;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Enumerates state-related flags.
-	/// </summary>
-	[Flags]
-	public enum AppStateFlags
-	{
-		/// <summary>
-		/// No flags.
-		/// </summary>
-		None = 0
-	}
-
-	/// <summary>
 	/// Enumerates state presentation modes.
 	/// </summary>
 	public enum AppStatePresentationMode
@@ -66,12 +54,11 @@ namespace UnityFx.AppStates
 			Disposed
 		}
 
-		private readonly AppStateService _parentStateManager;
+		private readonly AppStateService _stateManager;
 		private readonly AppViewController _controller;
 		private readonly AppState _parentState;
 
 		private readonly TraceSource _console;
-		private readonly AppStateCollection _stack;
 		private readonly PresentArgs _args;
 
 		private AppStateState _state;
@@ -82,25 +69,24 @@ namespace UnityFx.AppStates
 		#region interface
 
 		internal bool IsPushed => _state == AppStateState.Pushed;
-		internal AppStateService StateManager => _parentStateManager;
-		internal IAppViewManager ViewManager => _parentStateManager.Shared.ViewManager;
-		internal IAppControllerFactory ControllerFactory => _parentStateManager.Shared.ControllerFactory;
+		internal AppStateService StateManager => _stateManager;
+		internal IAppViewManager ViewManager => _stateManager.Shared.ViewManager;
+		internal IAppControllerFactory ControllerFactory => _stateManager.Shared.ControllerFactory;
 
 		internal AppViewController TmpController { get; set; }
 		internal PresentOptions TmpControllerOptions { get; set; }
 		internal object TmpControllerArgs { get; set; }
 
-		internal AppState(AppStateService parentStateManager, AppState parentState, Type controllerType, PresentArgs args)
+		internal AppState(AppStateService stateManager, AppState parentState, Type controllerType, PresentArgs args)
 		{
-			Debug.Assert(parentStateManager != null);
+			Debug.Assert(stateManager != null);
 			Debug.Assert(controllerType != null);
 
-			_parentStateManager = parentStateManager;
+			_stateManager = stateManager;
 			_parentState = parentState;
 			_args = args;
-			_console = parentStateManager.TraceSource;
-			_stack = parentStateManager.States;
-			_controller = parentStateManager.Shared.ControllerFactory.CreateController(controllerType, this);
+			_console = stateManager.TraceSource;
+			_controller = stateManager.Shared.ControllerFactory.CreateController(controllerType, this);
 		}
 
 		internal IAsyncOperation Push(IAppStateOperationInfo op)
@@ -108,7 +94,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(_state == AppStateState.Created);
 
 			_console.TraceData(TraceEventType.Verbose, op.OperationId, "PushState " + _controller.Id);
-			_stack.Add(this);
+			_stateManager.States.Add(this);
 			_state = AppStateState.Pushed;
 
 			return _controller.View.Load();
@@ -119,7 +105,7 @@ namespace UnityFx.AppStates
 			if (_state == AppStateState.Pushed)
 			{
 				_console.TraceData(TraceEventType.Verbose, op.OperationId, "PopState " + _controller.Id);
-				_stack.Remove(this);
+				_stateManager.States.Remove(this);
 				_state = AppStateState.Popped;
 			}
 
@@ -160,11 +146,11 @@ namespace UnityFx.AppStates
 
 		internal AppView GetPrevView()
 		{
-			var i = _stack.Count - 1;
+			var i = _stateManager.States.Count - 1;
 
 			while (i >= 0)
 			{
-				if (_stack[i] != this)
+				if (_stateManager.States[i] != this)
 				{
 					--i;
 				}
@@ -176,43 +162,10 @@ namespace UnityFx.AppStates
 
 			if (i >= 0)
 			{
-				return _stack[i].View;
+				return _stateManager.States[i].View;
 			}
 
 			return _parentState?.GetPrevView();
-		}
-
-		internal static string GetStateName(Type controllerType)
-		{
-			if (Attribute.GetCustomAttribute(controllerType, typeof(AppStateControllerAttribute)) is AppStateControllerAttribute attr)
-			{
-				if (string.IsNullOrEmpty(attr.Id))
-				{
-					return GetStateNameSimple(controllerType);
-				}
-				else
-				{
-					return attr.Id;
-				}
-			}
-
-			return GetStateNameSimple(controllerType);
-		}
-
-		internal static string GetStateNameSimple(Type controllerType)
-		{
-			var name = controllerType.Name;
-
-			if (name.EndsWith("State"))
-			{
-				name = name.Substring(0, name.Length - 5).ToLowerInvariant();
-			}
-			else if (name.EndsWith("Controller"))
-			{
-				name = name.Substring(0, name.Length - 10).ToLowerInvariant();
-			}
-
-			return name;
 		}
 
 		#endregion
@@ -254,7 +207,7 @@ namespace UnityFx.AppStates
 		{
 			get
 			{
-				var uriBuilder = new UriBuilder(_parentStateManager.Shared.DeeplinkScheme, _parentStateManager.Shared.DeeplinkDomain)
+				var uriBuilder = new UriBuilder(_stateManager.Shared.DeeplinkScheme, _stateManager.Shared.DeeplinkDomain)
 				{
 					Path = Path
 				};
@@ -330,7 +283,7 @@ namespace UnityFx.AppStates
 		public IAsyncOperation DismissAsync()
 		{
 			ThrowIfDisposed();
-			return _parentStateManager.PopStateAsync(this);
+			return _stateManager.PopStateAsync(this);
 		}
 
 		/// <summary>
@@ -354,7 +307,7 @@ namespace UnityFx.AppStates
 			if (_state != AppStateState.Disposed)
 			{
 				_state = AppStateState.Disposed;
-				_stack.Remove(this);
+				_stateManager.States.Remove(this);
 				_controller.Dispose();
 			}
 		}

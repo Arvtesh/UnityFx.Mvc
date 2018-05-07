@@ -7,14 +7,13 @@ using System.ComponentModel;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Event arguments for <see cref="IAppStateService.PopStateCompleted"/>.
+	/// Event arguments for <see cref="IAppStateService.DismissCompleted"/>.
 	/// </summary>
-	public class PopStateCompletedEventArgs : AsyncCompletedEventArgs, IAppStateOperationInfo
+	public class DismissCompletedEventArgs : AsyncCompletedEventArgs, IAppStateOperationInfo
 	{
 		#region data
 
 		private readonly int _id;
-		private readonly AppStateOperationType _type;
 		private readonly AppState _state;
 
 		#endregion
@@ -27,24 +26,22 @@ namespace UnityFx.AppStates
 		public AppState State => _state;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="PopStateCompletedEventArgs"/> class.
+		/// Initializes a new instance of the <see cref="DismissCompletedEventArgs"/> class.
 		/// </summary>
-		public PopStateCompletedEventArgs(IAppStateOperationInfo op, AppState state)
+		public DismissCompletedEventArgs(IAppStateOperationInfo op, AppState state)
 			: base(null, false, op.UserState)
 		{
 			_id = op.OperationId;
-			_type = op.OperationType;
 			_state = state;
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="PopStateCompletedEventArgs"/> class.
+		/// Initializes a new instance of the <see cref="DismissCompletedEventArgs"/> class.
 		/// </summary>
-		public PopStateCompletedEventArgs(IAppStateOperationInfo op, AppState state, Exception e, bool canceled)
+		public DismissCompletedEventArgs(IAppStateOperationInfo op, AppState state, Exception e, bool canceled)
 			: base(e, canceled, op.UserState)
 		{
 			_id = op.OperationId;
-			_type = op.OperationType;
 			_state = state;
 		}
 
@@ -54,9 +51,6 @@ namespace UnityFx.AppStates
 
 		/// <inheritdoc/>
 		public int OperationId => _id;
-
-		/// <inheritdoc/>
-		public AppStateOperationType OperationType => _type;
 
 		#endregion
 	}

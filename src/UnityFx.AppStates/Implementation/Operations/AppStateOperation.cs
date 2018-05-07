@@ -90,7 +90,7 @@ namespace UnityFx.AppStates
 
 		protected static string GetStateDesc(Type controllerType, PresentArgs args)
 		{
-			return AppState.GetStateName(controllerType) + " (" + args.ToString() + ')';
+			return AppViewController.GetId(controllerType) + " (" + args.ToString() + ')';
 		}
 
 		#endregion

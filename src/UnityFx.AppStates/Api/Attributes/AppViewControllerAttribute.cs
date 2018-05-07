@@ -9,7 +9,7 @@ namespace UnityFx.AppStates
 	/// Stores static parameters applicable to state controller implementation.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class)]
-	public sealed class AppStateControllerAttribute : Attribute
+	public sealed class AppViewControllerAttribute : Attribute
 	{
 		/// <summary>
 		/// Gets an unique controller (state) identifier that may be used to identify the its type (in deeplinks).
@@ -17,17 +17,17 @@ namespace UnityFx.AppStates
 		public string Id { get; }
 
 		/// <summary>
-		/// Gets controller (state) flags.
+		/// Gets the controller creation options.
 		/// </summary>
-		public AppStateFlags Flags { get; }
+		public AppViewControllerOptions Options { get; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="AppStateControllerAttribute"/> class.
+		/// Initializes a new instance of the <see cref="AppViewControllerAttribute"/> class.
 		/// </summary>
-		public AppStateControllerAttribute(string id, AppStateFlags flags = AppStateFlags.None)
+		public AppViewControllerAttribute(string id, AppViewControllerOptions flags = AppViewControllerOptions.None)
 		{
 			Id = id;
-			Flags = flags;
+			Options = flags;
 		}
 	}
 }

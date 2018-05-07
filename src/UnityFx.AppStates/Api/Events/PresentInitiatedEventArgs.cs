@@ -6,14 +6,13 @@ using System;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Event arguments for <see cref="IAppStateService.PushStateInitiated"/>.
+	/// Event arguments for <see cref="IAppStateService.PresentInitiated"/>.
 	/// </summary>
-	public class PushStateInitiatedEventArgs : EventArgs, IAppStateOperationInfo
+	public class PresentInitiatedEventArgs : EventArgs, IAppStateOperationInfo
 	{
 		#region data
 
 		private readonly int _id;
-		private readonly AppStateOperationType _type;
 		private readonly object _userState;
 		private readonly PresentOptions _options;
 
@@ -27,12 +26,11 @@ namespace UnityFx.AppStates
 		public PresentOptions Options => _options;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="PushStateInitiatedEventArgs"/> class.
+		/// Initializes a new instance of the <see cref="PresentInitiatedEventArgs"/> class.
 		/// </summary>
-		public PushStateInitiatedEventArgs(IAppStateOperationInfo op, PresentOptions options)
+		public PresentInitiatedEventArgs(IAppStateOperationInfo op, PresentOptions options)
 		{
 			_id = op.OperationId;
-			_type = op.OperationType;
 			_userState = op.UserState;
 			_options = options;
 		}
@@ -43,9 +41,6 @@ namespace UnityFx.AppStates
 
 		/// <inheritdoc/>
 		public int OperationId => _id;
-
-		/// <inheritdoc/>
-		public AppStateOperationType OperationType => _type;
 
 		/// <inheritdoc/>
 		public object UserState => _userState;

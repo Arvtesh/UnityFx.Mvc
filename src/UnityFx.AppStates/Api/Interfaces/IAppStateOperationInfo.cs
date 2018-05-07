@@ -19,12 +19,6 @@ namespace UnityFx.AppStates
 		int OperationId { get; }
 
 		/// <summary>
-		/// Gets the operation type identifier.
-		/// </summary>
-		/// <value>Type of the operation.</value>
-		AppStateOperationType OperationType { get; }
-
-		/// <summary>
 		/// Gets user-defined data assosiated with the operation (if any).
 		/// </summary>
 		/// <value>User-defined data.</value>

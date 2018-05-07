@@ -24,7 +24,6 @@ namespace UnityFx.AppStates
 		private readonly AppStateCollection _states;
 		private readonly AsyncResultQueue<AppStateOperation> _stackOperations;
 		private readonly AppState _parentState;
-		private readonly AppStateService _parentStateManager;
 
 		private bool _disposed;
 
@@ -149,30 +148,6 @@ namespace UnityFx.AppStates
 
 		internal AppStateManagerShared Shared => _shared;
 
-		internal AppState ParentState => _parentState;
-
-		internal AppStateService(AppState parentState, AppStateService parentStateManager)
-		{
-			Debug.Assert(parentState != null);
-			Debug.Assert(parentStateManager != null);
-
-			_shared = parentStateManager._shared;
-			_states = new AppStateCollection();
-			_stackOperations = new AsyncResultQueue<AppStateOperation>(_shared.SynchronizationContext);
-			_parentState = parentState;
-			_parentStateManager = parentStateManager;
-			_stackOperations.Suspended = !parentState.IsPushed;
-		}
-
-		internal AppStateService CreateSubstateManager(AppState state, AppStateService parentStateManager)
-		{
-			Debug.Assert(state != null);
-			Debug.Assert(parentStateManager != null);
-			Debug.Assert(!_disposed);
-
-			return new AppStateService(state, parentStateManager);
-		}
-
 		internal void Pop(IAppStateOperationInfo op)
 		{
 			// 1) Stop operation processing.
@@ -250,11 +225,6 @@ namespace UnityFx.AppStates
 			return false;
 		}
 
-		internal void SetEnabled()
-		{
-			_stackOperations.Suspended = false;
-		}
-
 		internal IAsyncOperation<AppState> PushStateAsync(Type controllerType, PresentOptions options, PresentArgs args)
 		{
 			ThrowIfDisposed();
@@ -269,16 +239,16 @@ namespace UnityFx.AppStates
 		#region IAppStateService
 
 		/// <inheritdoc/>
-		public event EventHandler<PushStateInitiatedEventArgs> PushStateInitiated;
+		public event EventHandler<PresentInitiatedEventArgs> PresentInitiated;
 
 		/// <inheritdoc/>
-		public event EventHandler<PushStateCompletedEventArgs> PushStateCompleted;
+		public event EventHandler<PresentCompletedEventArgs> PresentCompleted;
 
 		/// <inheritdoc/>
-		public event EventHandler<PopStateInitiatedEventArgs> PopStateInitiated;
+		public event EventHandler<DismissInitiatedEventArgs> DismissInitiated;
 
 		/// <inheritdoc/>
-		public event EventHandler<PopStateCompletedEventArgs> PopStateCompleted;
+		public event EventHandler<DismissCompletedEventArgs> DismissCompleted;
 
 		/// <inheritdoc/>
 		public AppStateServiceSettings Settings => _shared;
@@ -288,33 +258,6 @@ namespace UnityFx.AppStates
 
 		/// <inheritdoc/>
 		public AppStateCollection States => _states;
-
-		/// <inheritdoc/>
-		public IEnumerable<AppState> GetStatesRecursive()
-		{
-			ThrowIfDisposed();
-
-			var list = new List<AppState>();
-			GetStatesRecursive(list);
-			return list;
-		}
-
-		/// <inheritdoc/>
-		public void GetStatesRecursive(ICollection<AppState> states)
-		{
-			ThrowIfDisposed();
-
-			if (states == null)
-			{
-				throw new ArgumentNullException(nameof(states));
-			}
-
-			foreach (var state in _states)
-			{
-				states.Add(state);
-				state.GetSubstatesRecursive(states);
-			}
-		}
 
 		/// <inheritdoc/>
 		public IAsyncOperation<AppState> PresentAsync(Type controllerType, PresentArgs args)

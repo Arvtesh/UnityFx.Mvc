@@ -16,6 +16,12 @@ namespace UnityFx.AppStates
 		/// Creates an empty view with the specified <paramref name="id"/> on top of the <paramref name="insertAfter"/> one.
 		/// If <paramref name="insertAfter"/> is <see langword="null"/> the view is created below all others.
 		/// </summary>
-		AppView CreateView(string id, AppStateViewOptions options, AppView insertAfter);
+		AppView CreateView(string id, AppView insertAfter, AppViewOptions options);
+
+		/// <summary>
+		/// Creates an empty view with the specified <paramref name="id"/> on top of the <paramref name="parent"/> one.
+		/// If <paramref name="parent"/> is <see langword="null"/> the view is created below all others.
+		/// </summary>
+		AppView CreateChildView(string id, AppView parent, AppViewOptions options);
 	}
 }

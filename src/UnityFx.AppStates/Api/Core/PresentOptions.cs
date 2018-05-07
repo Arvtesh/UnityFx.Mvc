@@ -29,11 +29,6 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// When presented, the target controller will not be activated.
 		/// </summary>
-		DoNotActivate = 4,
-
-		/// <summary>
-		/// If set controller reuses view of the parent controller (usable for child view controllers only).
-		/// </summary>
-		ReuseParentView = 8
+		DoNotActivate = 4
 	}
 }

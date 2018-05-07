@@ -6,14 +6,13 @@ using System;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Event arguments for <see cref="IAppStateService.PopStateInitiated"/>.
+	/// Event arguments for <see cref="IAppStateService.DismissInitiated"/>.
 	/// </summary>
-	public class PopStateInitiatedEventArgs : EventArgs, IAppStateOperationInfo
+	public class DismissInitiatedEventArgs : EventArgs, IAppStateOperationInfo
 	{
 		#region data
 
 		private readonly int _id;
-		private readonly AppStateOperationType _type;
 		private readonly object _userState;
 
 		#endregion
@@ -21,12 +20,11 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="PopStateInitiatedEventArgs"/> class.
+		/// Initializes a new instance of the <see cref="DismissInitiatedEventArgs"/> class.
 		/// </summary>
-		public PopStateInitiatedEventArgs(IAppStateOperationInfo op)
+		public DismissInitiatedEventArgs(IAppStateOperationInfo op)
 		{
 			_id = op.OperationId;
-			_type = op.OperationType;
 			_userState = op.UserState;
 		}
 
@@ -36,9 +34,6 @@ namespace UnityFx.AppStates
 
 		/// <inheritdoc/>
 		public int OperationId => _id;
-
-		/// <inheritdoc/>
-		public AppStateOperationType OperationType => _type;
 
 		/// <inheritdoc/>
 		public object UserState => _userState;

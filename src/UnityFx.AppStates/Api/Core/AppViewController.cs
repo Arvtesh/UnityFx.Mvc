@@ -20,9 +20,11 @@ namespace UnityFx.AppStates
 		private readonly AppViewController _parentController;
 		private readonly AppView _view;
 		private readonly string _id;
+		private readonly AppViewControllerOptions _options;
 		private readonly object _args;
 
 		private List<AppViewController> _childControllers;
+		private bool _active;
 		private bool _disposed;
 
 		#endregion
@@ -42,17 +44,17 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets a value indicating whether the state is active.
 		/// </summary>
-		public bool IsActive => _state.IsActive;
+		public bool IsActive => _active;
+
+		/// <summary>
+		/// Gets creation options for the controller.
+		/// </summary>
+		protected AppViewControllerOptions CreationOptions => _options;
 
 		/// <summary>
 		/// Gets the parent state.
 		/// </summary>
 		protected AppState State => _state;
-
-		/// <summary>
-		/// Gets the state creation arguments.
-		/// </summary>
-		protected PresentArgs CreationArgs => _state.CreationArgs;
 
 		/// <summary>
 		/// Gets the controller creation arguments.
@@ -71,16 +73,21 @@ namespace UnityFx.AppStates
 		{
 			_state = state ?? throw new ArgumentNullException(nameof(state));
 			_id = GetId(GetType());
+			_options = GetOptions(GetType());
 			_parentController = state.TmpController;
 			_args = state.TmpControllerArgs;
 
-			if ((state.TmpControllerOptions & PresentOptions.ReuseParentView) != 0)
+			if (_parentController == null)
 			{
-				_view = _parentController.View;
+				_view = state.ViewManager.CreateView(_id, state.GetPrevView(), AppViewOptions.None);
+			}
+			else if ((_options & AppViewControllerOptions.ReuseParentView) != 0)
+			{
+				_view = state.ViewManager.CreateChildView(_id, _parentController.View, AppViewOptions.None);
 			}
 			else
 			{
-				_view = state.ViewManager.CreateView(_id, AppStateViewOptions.None, state.GetPrevView());
+				_view = state.ViewManager.CreateView(_id, _parentController.GetTopView(), AppViewOptions.None);
 			}
 		}
 
@@ -93,7 +100,7 @@ namespace UnityFx.AppStates
 		{
 			if (_disposed)
 			{
-				throw new ObjectDisposedException(GetType().Name);
+				throw new ObjectDisposedException(_id);
 			}
 		}
 
@@ -229,44 +236,44 @@ namespace UnityFx.AppStates
 		internal void InvokeOnViewLoaded()
 		{
 			OnViewLoaded();
-
-			if (_childControllers != null)
-			{
-				foreach (var controller in _childControllers)
-				{
-					controller.InvokeOnViewLoaded();
-				}
-			}
 		}
 
 		internal void InvokeOnActivate()
 		{
-			_view.Enabled = true;
-
-			OnActivate();
-
-			if (_childControllers != null)
+			if (!_active)
 			{
-				foreach (var controller in _childControllers)
+				_active = true;
+				_view.Enabled = true;
+
+				OnActivate();
+
+				if (_childControllers != null)
 				{
-					controller.InvokeOnActivate();
+					foreach (var controller in _childControllers)
+					{
+						controller.InvokeOnActivate();
+					}
 				}
 			}
 		}
 
 		internal void InvokeOnDeactivate()
 		{
-			if (_childControllers != null)
+			if (_active)
 			{
-				foreach (var controller in _childControllers)
+				if (_childControllers != null)
 				{
-					controller.InvokeOnDeactivate();
+					foreach (var controller in _childControllers)
+					{
+						controller.InvokeOnDeactivate();
+					}
 				}
+
+				OnDeactivate();
+
+				_view.Enabled = false;
+				_active = false;
 			}
-
-			OnDeactivate();
-
-			_view.Enabled = false;
 		}
 
 		internal void InvokeOnDismiss()
@@ -284,7 +291,7 @@ namespace UnityFx.AppStates
 
 		internal static string GetId(Type controllerType)
 		{
-			if (Attribute.GetCustomAttribute(controllerType, typeof(AppStateControllerAttribute)) is AppStateControllerAttribute attr)
+			if (Attribute.GetCustomAttribute(controllerType, typeof(AppViewControllerAttribute)) is AppViewControllerAttribute attr)
 			{
 				if (string.IsNullOrEmpty(attr.Id))
 				{
@@ -309,6 +316,16 @@ namespace UnityFx.AppStates
 			}
 
 			return name;
+		}
+
+		internal static AppViewControllerOptions GetOptions(Type controllerType)
+		{
+			if (Attribute.GetCustomAttribute(controllerType, typeof(AppViewControllerAttribute)) is AppViewControllerAttribute attr)
+			{
+				return attr.Options;
+			}
+
+			return AppViewControllerOptions.None;
 		}
 
 		#endregion
@@ -395,12 +412,18 @@ namespace UnityFx.AppStates
 			}
 		}
 
+		private AppView GetTopView()
+		{
+			if (_childControllers != null && _childControllers.Count > 0)
+			{
+				return _childControllers[_childControllers.Count - 1].GetTopView();
+			}
+
+			return _view;
+		}
+
 		private AppViewController AddChildControllerInternal(Type controllerType, PresentOptions options, object args)
 		{
-			Debug.Assert(_state.TmpController == null);
-			Debug.Assert(_state.TmpControllerOptions == PresentOptions.None);
-			Debug.Assert(_state.TmpControllerArgs == null);
-
 			ThrowIfDisposed();
 
 			if (_childControllers == null)
@@ -419,6 +442,15 @@ namespace UnityFx.AppStates
 				if (!controller.IsDisposed)
 				{
 					_childControllers.Add(controller);
+
+					if (controller.View.IsLoaded)
+					{
+						OnViewLoaded(AsyncResult.CompletedOperation);
+					}
+					else
+					{
+						controller.View.Load().AddCompletionCallback(OnViewLoaded);
+					}
 				}
 
 				return controller;
@@ -428,6 +460,16 @@ namespace UnityFx.AppStates
 				_state.TmpControllerArgs = null;
 				_state.TmpControllerOptions = PresentOptions.None;
 				_state.TmpController = null;
+			}
+		}
+
+		private void OnViewLoaded(IAsyncOperation op)
+		{
+			InvokeOnViewLoaded();
+
+			if (_state.IsActive)
+			{
+				InvokeOnActivate();
 			}
 		}
 

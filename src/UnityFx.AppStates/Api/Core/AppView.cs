@@ -10,7 +10,7 @@ namespace UnityFx.AppStates
 	/// Creation options for <see cref="AppView"/>.
 	/// </summary>
 	[Flags]
-	public enum AppStateViewOptions
+	public enum AppViewOptions
 	{
 		/// <summary>
 		/// Default options.
@@ -37,7 +37,8 @@ namespace UnityFx.AppStates
 		}
 
 		private readonly string _name;
-		private readonly AppStateViewOptions _options;
+		private readonly AppViewOptions _options;
+		private readonly AppView _parent;
 
 		private IAsyncOperation _loadOp;
 		private Flags _flags;
@@ -54,7 +55,12 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the view creation options.
 		/// </summary>
-		public AppStateViewOptions Options => _options;
+		public AppViewOptions Options => _options;
+
+		/// <summary>
+		/// Gets a parent view (if any).
+		/// </summary>
+		public AppView Parent => _parent;
 
 		/// <summary>
 		/// Gets a value indicating whether the view is loaded or not.
@@ -113,10 +119,23 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <param name="name">Name of the view.</param>
 		/// <param name="options"></param>
-		protected AppView(string name, AppStateViewOptions options)
+		protected AppView(string name, AppViewOptions options)
 		{
 			_name = name;
 			_options = options;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="AppView"/> class.
+		/// </summary>
+		/// <param name="name">Name of the view.</param>
+		/// <param name="parent"></param>
+		/// <param name="options"></param>
+		protected AppView(string name, AppView parent, AppViewOptions options)
+		{
+			_name = name;
+			_options = options;
+			_parent = parent;
 		}
 
 		/// <summary>

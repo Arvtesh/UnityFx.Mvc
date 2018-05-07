@@ -47,22 +47,22 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Raised when a new push operation is initiated.
 		/// </summary>
-		event EventHandler<PushStateInitiatedEventArgs> PushStateInitiated;
+		event EventHandler<PresentInitiatedEventArgs> PresentInitiated;
 
 		/// <summary>
 		/// Raised when a push operation is completed (either successfully or not).
 		/// </summary>
-		event EventHandler<PushStateCompletedEventArgs> PushStateCompleted;
+		event EventHandler<PresentCompletedEventArgs> PresentCompleted;
 
 		/// <summary>
 		/// Raised when a new pop operation is initiated.
 		/// </summary>
-		event EventHandler<PopStateInitiatedEventArgs> PopStateInitiated;
+		event EventHandler<DismissInitiatedEventArgs> DismissInitiated;
 
 		/// <summary>
 		/// Raised when a pop operation is completed (either successfully or not).
 		/// </summary>
-		event EventHandler<PopStateCompletedEventArgs> PopStateCompleted;
+		event EventHandler<DismissCompletedEventArgs> DismissCompleted;
 
 		/// <summary>
 		/// Gets the service settings.
@@ -76,16 +76,9 @@ namespace UnityFx.AppStates
 		AppStateCollection States { get; }
 
 		/// <summary>
-		/// Enumerates child states recursively.
+		/// Gets a value indicating whether thare are any pending operations.
 		/// </summary>
-		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
-		IEnumerable<AppState> GetStatesRecursive();
-
-		/// <summary>
-		/// Enumerates child states recursively.
-		/// </summary>
-		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
-		void GetStatesRecursive(ICollection<AppState> states);
+		bool IsBusy { get; }
 
 		/// <summary>
 		/// Pushes a <paramref name="controllerType"/> instance on top of the states stack.
