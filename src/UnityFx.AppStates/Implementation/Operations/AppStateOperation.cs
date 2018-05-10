@@ -130,7 +130,6 @@ namespace UnityFx.AppStates
 		#region IAppStateOperationInfo
 
 		public int OperationId => _id;
-		public AppStateOperationType OperationType => (AppStateOperationType)(_id & _typeMask);
 		public object UserState => AsyncState;
 
 		#endregion

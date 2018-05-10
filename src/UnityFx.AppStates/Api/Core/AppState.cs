@@ -54,15 +54,16 @@ namespace UnityFx.AppStates
 			Disposed
 		}
 
+		private readonly TraceSource _console;
 		private readonly AppStateService _stateManager;
 		private readonly AppViewController _controller;
 		private readonly AppState _parentState;
 
-		private readonly TraceSource _console;
-		private readonly PresentArgs _args;
-
 		private AppStateState _state;
 		private bool _isActive;
+
+		private AppState _prev;
+		private AppState _next;
 
 		#endregion
 
@@ -75,16 +76,18 @@ namespace UnityFx.AppStates
 
 		internal AppViewController TmpController { get; set; }
 		internal PresentOptions TmpControllerOptions { get; set; }
-		internal object TmpControllerArgs { get; set; }
+		internal PresentArgs TmpControllerArgs { get; set; }
 
-		internal AppState(AppStateService stateManager, AppState parentState, Type controllerType, PresentArgs args)
+		internal AppState(AppStateService stateManager, AppState parentState, Type controllerType, PresentOptions options, PresentArgs args)
 		{
 			Debug.Assert(stateManager != null);
 			Debug.Assert(controllerType != null);
 
+			TmpControllerOptions = options;
+			TmpControllerArgs = args;
+
 			_stateManager = stateManager;
 			_parentState = parentState;
-			_args = args;
 			_console = stateManager.TraceSource;
 			_controller = stateManager.Shared.ControllerFactory.CreateController(controllerType, this);
 		}
@@ -196,11 +199,6 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// Gets the state creation arguments.
-		/// </summary>
-		public PresentArgs CreationArgs => _args;
-
-		/// <summary>
 		/// Gets a deeplink representing this state.
 		/// </summary>
 		public Uri Deeplink
@@ -236,10 +234,6 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public bool IsActive => _isActive;
 
-		#endregion
-
-		#region tt
-
 		/// <summary>
 		/// Gets a collection of the state's children.
 		/// </summary>
@@ -255,25 +249,6 @@ namespace UnityFx.AppStates
 		/// Gets a parent state.
 		/// </summary>
 		public AppState Parent => _parentState;
-
-		/// <summary>
-		/// Enumerates child states.
-		/// </summary>
-		/// <param name="states">A collection to store results to.</param>
-		/// <exception cref="ObjectDisposedException">Thrown if the state is disposed.</exception>
-		public void GetSubstates(ICollection<AppState> states)
-		{
-			// TODO
-		}
-
-		/// <summary>
-		/// Enumerates child states recursively.
-		/// </summary>
-		/// <param name="states">A collection to store results to.</param>
-		public void GetSubstatesRecursive(ICollection<AppState> states)
-		{
-			// TODO
-		}
 
 		/// <summary>
 		/// Removes the state from the stack.

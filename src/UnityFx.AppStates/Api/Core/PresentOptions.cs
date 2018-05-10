@@ -12,23 +12,28 @@ namespace UnityFx.AppStates
 	public enum PresentOptions
 	{
 		/// <summary>
-		/// Default options (push). The new state is pushed onto the stack.
+		/// Default options. The new state is pushed onto the stack.
 		/// </summary>
 		None = 0,
 
 		/// <summary>
+		/// tt
+		/// </summary>
+		Child = 1,
+
+		/// <summary>
 		/// Presents a new state and dismisses the previous one.
 		/// </summary>
-		DismissCurrentState = 1,
+		DismissCurrentState = 0x00001000,
 
 		/// <summary>
 		/// Presents a new state and dismisses all other states.
 		/// </summary>
-		DismissAllStates = 2,
+		DismissAllStates = 0x00002000,
 
 		/// <summary>
 		/// When presented, the target controller will not be activated.
 		/// </summary>
-		DoNotActivate = 4
+		DoNotActivate = 0x00010000,
 	}
 }

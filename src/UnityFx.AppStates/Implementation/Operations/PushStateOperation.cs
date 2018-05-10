@@ -43,7 +43,7 @@ namespace UnityFx.AppStates
 			{
 				StateManager.TryDeactivateTopState(this);
 
-				_state = new AppState(StateManager, _ownerState, _controllerType, _args);
+				_state = new AppState(StateManager, _ownerState, _controllerType, PresentOptions.None, _args);
 				_pushOp = _state.Push(this);
 				_pushOp.AddContinuation(this);
 			}

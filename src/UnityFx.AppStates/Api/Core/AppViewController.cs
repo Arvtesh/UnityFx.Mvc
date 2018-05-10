@@ -20,8 +20,9 @@ namespace UnityFx.AppStates
 		private readonly AppViewController _parentController;
 		private readonly AppView _view;
 		private readonly string _id;
-		private readonly AppViewControllerOptions _options;
-		private readonly object _args;
+		private readonly AppViewControllerOptions _createOptions;
+		private readonly PresentOptions _presentOptions;
+		private readonly PresentArgs _presentArgs;
 
 		private List<AppViewController> _childControllers;
 		private bool _active;
@@ -47,19 +48,24 @@ namespace UnityFx.AppStates
 		public bool IsActive => _active;
 
 		/// <summary>
-		/// Gets creation options for the controller.
-		/// </summary>
-		protected AppViewControllerOptions CreationOptions => _options;
-
-		/// <summary>
 		/// Gets the parent state.
 		/// </summary>
 		protected AppState State => _state;
 
 		/// <summary>
+		/// Gets creation options for the controller.
+		/// </summary>
+		protected AppViewControllerOptions CreationOptions => _createOptions;
+
+		/// <summary>
+		/// Gets the controller creation options.
+		/// </summary>
+		protected PresentOptions PresentOptions => _presentOptions;
+
+		/// <summary>
 		/// Gets the controller creation arguments.
 		/// </summary>
-		protected object Args => _args;
+		protected PresentArgs Args => _presentArgs;
 
 		/// <summary>
 		/// Gets a value indicating whether the controller is disposed.
@@ -67,27 +73,43 @@ namespace UnityFx.AppStates
 		protected bool IsDisposed => _disposed;
 
 		/// <summary>
+		/// Gets child view controllers.
+		/// </summary>
+		protected IEnumerable<AppViewController> ChildControllers => _childControllers ?? Enumerable.Empty<AppViewController>();
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="AppViewController"/> class.
 		/// </summary>
 		protected AppViewController(AppState state)
 		{
-			_state = state ?? throw new ArgumentNullException(nameof(state));
-			_id = GetId(GetType());
-			_options = GetOptions(GetType());
-			_parentController = state.TmpController;
-			_args = state.TmpControllerArgs;
+			try
+			{
+				_state = state ?? throw new ArgumentNullException(nameof(state));
 
-			if (_parentController == null)
-			{
-				_view = state.ViewManager.CreateView(_id, state.GetPrevView(), AppViewOptions.None);
+				_id = GetId(GetType());
+				_createOptions = GetOptions(GetType());
+				_parentController = state.TmpController;
+				_presentOptions = state.TmpControllerOptions;
+				_presentArgs = state.TmpControllerArgs;
+
+				if (_parentController == null)
+				{
+					_view = state.ViewManager.CreateView(_id, state.GetPrevView(), AppViewOptions.None);
+				}
+				else if ((_createOptions & AppViewControllerOptions.ReuseParentView) != 0)
+				{
+					_view = state.ViewManager.CreateChildView(_id, _parentController.View, AppViewOptions.None);
+				}
+				else
+				{
+					_view = state.ViewManager.CreateView(_id, _parentController.GetTopView(), AppViewOptions.None);
+				}
 			}
-			else if ((_options & AppViewControllerOptions.ReuseParentView) != 0)
+			finally
 			{
-				_view = state.ViewManager.CreateChildView(_id, _parentController.View, AppViewOptions.None);
-			}
-			else
-			{
-				_view = state.ViewManager.CreateView(_id, _parentController.GetTopView(), AppViewOptions.None);
+				state.TmpControllerArgs = null;
+				state.TmpControllerOptions = PresentOptions.None;
+				state.TmpController = null;
 			}
 		}
 
@@ -104,61 +126,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		#region child controllers
-
-		/// <summary>
-		/// Gets child view controllers.
-		/// </summary>
-		protected IEnumerable<AppViewController> ChildControllers => _childControllers ?? Enumerable.Empty<AppViewController>();
-
-		/// <summary>
-		/// Adds a new child controller. The controller created is attached to the same state and view as the caller controller.
-		/// </summary>
-		/// <param name="controllerType">Type of the controller to instantiate.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate a controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
-		/// <returns>Returns the created controller instance.</returns>
-		protected AppViewController AddChildController(Type controllerType)
-		{
-			if (controllerType == null)
-			{
-				throw new ArgumentNullException(nameof(controllerType));
-			}
-
-			return AddChildControllerInternal(controllerType, PresentOptions.None, null);
-		}
-
-		/// <summary>
-		/// Adds a new child controller. The controller created is attached to the same state and view as the caller controller.
-		/// </summary>
-		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate a controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
-		/// <returns>Returns the created controller instance.</returns>
-		protected TController AddChildController<TController>() where TController : AppViewController
-		{
-			return AddChildControllerInternal(typeof(TController), PresentOptions.None, null) as TController;
-		}
-
-		/// <summary>
-		/// Removes the specified controller from the list of child controllers. Does not dispose the controller.
-		/// </summary>
-		/// <param name="controller">The controller instance to remove. This value can be <see langword="null"/>.</param>
-		/// <returns>Returns <see langword="true"/> if controller is successfully removed; otherwise, <see langword="false"/>.</returns>
-		protected bool RemoveChildController(AppViewController controller)
-		{
-			if (controller != null && _childControllers != null)
-			{
-				return _childControllers.Remove(controller);
-			}
-
-			return false;
-		}
-
-		#endregion
-
-		#region state management
+		#region presentation
 
 		/// <summary>
 		/// Presents a new state with the specified controller as a child state.
@@ -171,10 +139,19 @@ namespace UnityFx.AppStates
 		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation<AppState> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args)
+		protected IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args)
 		{
 			ThrowIfDisposed();
-			throw new NotImplementedException();
+			ValidateControllerType(controllerType);
+
+			if ((options & PresentOptions.Child) != 0)
+			{
+				return AsyncResult.FromResult(AddChildController(controllerType, options, args));
+			}
+			else
+			{
+				throw new NotImplementedException();
+			}
 		}
 
 		/// <summary>
@@ -187,9 +164,11 @@ namespace UnityFx.AppStates
 		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation<AppState> PresentAsync(Type controllerType, PresentArgs args)
+		protected IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
+			ValidateControllerType(controllerType);
+
 			throw new NotImplementedException();
 		}
 
@@ -201,10 +180,9 @@ namespace UnityFx.AppStates
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation<AppState> PresentAsync<TController>(PresentOptions options, PresentArgs args) where TController : AppViewController
+		protected IAsyncOperation<TController> PresentAsync<TController>(PresentOptions options, PresentArgs args) where TController : AppViewController
 		{
-			ThrowIfDisposed();
-			throw new NotImplementedException();
+			return PresentAsync(typeof(TController), options, args) as IAsyncOperation<TController>;
 		}
 
 		/// <summary>
@@ -214,19 +192,28 @@ namespace UnityFx.AppStates
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation<AppState> PresentAsync<TController>(PresentArgs args) where TController : AppViewController
+		protected IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : AppViewController
 		{
-			ThrowIfDisposed();
-			throw new NotImplementedException();
+			return PresentAsync(typeof(TController), args) as IAsyncOperation<TController>;
 		}
 
 		/// <summary>
-		/// Initiates the parent state dismissal.
+		/// Dismisses the controller and its view.
 		/// </summary>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
 		protected void Dismiss()
 		{
-			_state.DismissAsync();
+			ThrowIfDisposed();
+
+			if (_parentController != null)
+			{
+				InvokeOnDismiss();
+				Dispose();
+			}
+			else
+			{
+				_state.DismissAsync();
+			}
 		}
 
 		#endregion
@@ -236,6 +223,11 @@ namespace UnityFx.AppStates
 		internal void InvokeOnViewLoaded()
 		{
 			OnViewLoaded();
+		}
+
+		internal void InvokeOnPresent()
+		{
+			OnPresent();
 		}
 
 		internal void InvokeOnActivate()
@@ -289,6 +281,24 @@ namespace UnityFx.AppStates
 			OnDismiss();
 		}
 
+		internal static void ValidateControllerType(Type controllerType)
+		{
+			if (controllerType == null)
+			{
+				throw new ArgumentNullException(nameof(controllerType));
+			}
+
+			if (controllerType.IsAbstract)
+			{
+				throw new ArgumentException($"Cannot instantiate abstract type {controllerType.Name}", nameof(controllerType));
+			}
+
+			if (!controllerType.IsSubclassOf(typeof(AppViewController)))
+			{
+				throw new ArgumentException($"A state controller is expected to inherit " + typeof(AppViewController).Name, nameof(controllerType));
+			}
+		}
+
 		internal static string GetId(Type controllerType)
 		{
 			if (Attribute.GetCustomAttribute(controllerType, typeof(AppViewControllerAttribute)) is AppViewControllerAttribute attr)
@@ -333,28 +343,35 @@ namespace UnityFx.AppStates
 		#region virtuals
 
 		/// <summary>
-		/// Called when the view is loaded (before transition animation). Default implementation does nothing.
+		/// Called when the controller view is loaded (before transition animation). Default implementation does nothing.
 		/// </summary>
 		protected virtual void OnViewLoaded()
 		{
 		}
 
 		/// <summary>
-		/// Called right before the state becomes active. Default implementation does nothing.
+		/// Called right after the controller transition animation finishes. Default implementation does nothing.
+		/// </summary>
+		protected virtual void OnPresent()
+		{
+		}
+
+		/// <summary>
+		/// Called right before the controller becomes active. Default implementation does nothing.
 		/// </summary>
 		protected virtual void OnActivate()
 		{
 		}
 
 		/// <summary>
-		/// Called when the state is about to become inactive. Default implementation does nothing.
+		/// Called when the controller is about to become inactive. Default implementation does nothing.
 		/// </summary>
 		protected virtual void OnDeactivate()
 		{
 		}
 
 		/// <summary>
-		/// Called when the state is about to be dismissed (before transition animation). Default implementation does nothing.
+		/// Called when the controller is about to be dismissed (before transition animation). Default implementation does nothing.
 		/// </summary>
 		protected virtual void OnDismiss()
 		{
@@ -422,9 +439,11 @@ namespace UnityFx.AppStates
 			return _view;
 		}
 
-		private AppViewController AddChildControllerInternal(Type controllerType, PresentOptions options, object args)
+		private AppViewController AddChildController(Type controllerType, PresentOptions options, PresentArgs args)
 		{
-			ThrowIfDisposed();
+			Debug.Assert(_state.TmpController == null);
+			Debug.Assert(_state.TmpControllerOptions == PresentOptions.None);
+			Debug.Assert(_state.TmpControllerArgs == null);
 
 			if (_childControllers == null)
 			{
@@ -463,13 +482,27 @@ namespace UnityFx.AppStates
 			}
 		}
 
+		private bool RemoveChildController(AppViewController controller)
+		{
+			if (controller != null && _childControllers != null)
+			{
+				return _childControllers.Remove(controller);
+			}
+
+			return false;
+		}
+
 		private void OnViewLoaded(IAsyncOperation op)
 		{
-			InvokeOnViewLoaded();
-
-			if (_state.IsActive)
+			if (op.IsCompletedSuccessfully)
 			{
-				InvokeOnActivate();
+				InvokeOnViewLoaded();
+				InvokeOnPresent();
+
+				if (_state.IsActive)
+				{
+					InvokeOnActivate();
+				}
 			}
 		}
 

@@ -59,7 +59,7 @@ namespace UnityFx.AppStates
 					_ownerState = States[0];
 				}
 
-				_state = new AppState(StateManager, null, _controllerType, _args);
+				_state = new AppState(StateManager, null, _controllerType, PresentOptions.None, _args);
 				_pushOp = _state.Push(this);
 				_pushOp.AddCompletionCallback(OnStatePushed);
 			}

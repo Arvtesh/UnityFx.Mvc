@@ -14,9 +14,6 @@ namespace UnityFx.AppStates
 		public TestController_Events(AppState context)
 			: base(context)
 		{
-			_calls = context.CreationArgs.Data as ICollection<MethodCallInfo>;
-			_calls.Add(new MethodCallInfo(this, ControllerMethodId.Ctor));
-			_calls.Add(new MethodCallInfo(this, ControllerMethodId.OnPush));
 		}
 
 		protected override void OnActivate()
