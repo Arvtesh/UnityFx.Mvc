@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace UnityFx.AppStates
@@ -15,7 +16,9 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private List<AppState> _states;
+		private AppState _first;
+		private AppState _last;
+		private int _count;
 
 		#endregion
 
@@ -28,7 +31,7 @@ namespace UnityFx.AppStates
 		public AppState Peek()
 		{
 			ThrowIfEmpty();
-			return _states[_states.Count - 1];
+			return _last;
 		}
 
 		/// <summary>
@@ -36,19 +39,8 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public bool TryPeek(out AppState result)
 		{
-			if (_states != null)
-			{
-				var childCount = _states.Count;
-
-				if (childCount > 0)
-				{
-					result = _states[childCount - 1];
-					return true;
-				}
-			}
-
-			result = null;
-			return false;
+			result = _last;
+			return result != null;
 		}
 
 		/// <summary>
@@ -56,15 +48,24 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public void CopyTo(AppState[] states)
 		{
-			_states?.CopyTo(states);
-		}
+			if (states == null)
+			{
+				throw new ArgumentNullException(nameof(states));
+			}
 
-		/// <summary>
-		/// Copies the collection content to an array.
-		/// </summary>
-		public void CopyTo(AppState[] states, int arrayIndex)
-		{
-			_states?.CopyTo(states, arrayIndex);
+			if (states.Length != _count)
+			{
+				throw new InvalidOperationException();
+			}
+
+			var cur = _first;
+			var index = 0;
+
+			while (cur != null)
+			{
+				states[index++] = cur;
+				cur = cur.NextState;
+			}
 		}
 
 		/// <summary>
@@ -72,12 +73,17 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public void CopyTo(ICollection<AppState> states)
 		{
-			if (_states != null)
+			if (states == null)
 			{
-				foreach (var state in _states)
-				{
-					states.Add(state);
-				}
+				throw new ArgumentNullException(nameof(states));
+			}
+
+			var cur = _first;
+
+			while (cur != null)
+			{
+				states.Add(cur);
+				cur = cur.NextState;
 			}
 		}
 
@@ -86,63 +92,204 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public AppState[] ToArray()
 		{
+			if (_count > 0)
+			{
+				var result = new AppState[_count];
+				var cur = _first;
+				var index = 0;
+
+				while (cur != null)
+				{
+					result[index++] = cur;
+					cur = cur.NextState;
+				}
+
+				return result;
+			}
+			else
+			{
 #if NET35
-			return _states?.ToArray() ?? new AppState[0];
+				return new AppState[0];
 #else
-			return _states?.ToArray() ?? Array.Empty<AppState>();
+				return Array.Empty<AppState>();
 #endif
+			}
 		}
 
 		#endregion
 
 		#region internals
 
-		internal AppState this[int index] => _states[index];
+		internal AppState First => _first;
+		internal AppState Last => _last;
 
 		internal void Add(AppState state)
 		{
-			if (_states == null)
-			{
-				_states = new List<AppState>();
-			}
+			Debug.Assert(state != null);
 
-			_states.Add(state);
+			if (_first != null)
+			{
+				Debug.Assert(_last != null);
+				Debug.Assert(_count > 0);
+
+				_last.NextState = state;
+				state.PrevState = _last;
+				++_count;
+			}
+			else
+			{
+				_first = state;
+				_last = state;
+				_count = 1;
+			}
+		}
+
+		internal void AddFirst(AppState state)
+		{
+			Debug.Assert(state != null);
+
+			if (_first != null)
+			{
+				Debug.Assert(_last != null);
+				Debug.Assert(_count > 0);
+
+				_first.PrevState = state;
+				state.NextState = _first;
+				_first = state;
+				++_count;
+			}
+			else
+			{
+				_first = state;
+				_last = state;
+				_count = 1;
+			}
+		}
+
+		internal void AddLast(AppState state)
+		{
+			Debug.Assert(state != null);
+
+			if (_last != null)
+			{
+				Debug.Assert(_first != null);
+				Debug.Assert(_count > 0);
+
+				_last.NextState = state;
+				state.PrevState = _last;
+				_last = state;
+				++_count;
+			}
+			else
+			{
+				_first = state;
+				_last = state;
+				_count = 1;
+			}
+		}
+
+		internal void Add(AppState state, AppState insertAfter)
+		{
+			Debug.Assert(state != null);
+
+			if (insertAfter != null)
+			{
+				insertAfter.NextState = state;
+				state.PrevState = insertAfter;
+
+				if (insertAfter == _last)
+				{
+					_last = state;
+				}
+
+				++_count;
+			}
+			else
+			{
+				AddFirst(state);
+			}
 		}
 
 		internal void Remove(AppState state)
 		{
-			if (_states != null && _states.Remove(state))
+			if (state != null)
 			{
-				// ...
+				var prev = state.PrevState;
+				var next = state.NextState;
+
+				if (prev != null)
+				{
+					prev.NextState = next;
+				}
+
+				if (next != null)
+				{
+					next.PrevState = prev;
+				}
+
+				state.PrevState = null;
+				state.NextState = null;
+
+				if (_first == state)
+				{
+					_first = next;
+				}
+
+				if (_last == state)
+				{
+					_last = prev;
+				}
+
+				--_count;
 			}
 		}
 
 		internal void Clear()
 		{
-			_states?.Clear();
+			var cur = _first;
+
+			while (cur != null)
+			{
+				var next = cur.NextState;
+				cur.NextState = null;
+				cur.PrevState = null;
+				cur = next;
+			}
+
+			_first = null;
+			_last = null;
+			_count = 0;
 		}
 
-		internal IEnumerable<AppState> GetEnumerableLifo()
+		internal Enumerable GetEnumerableLifo()
 		{
-			var n = _states?.Count - 1 ?? -1;
-
-			while (n >= 0)
-			{
-				yield return _states[n--];
-			}
+			return new Enumerable(_last, false);
 		}
 
 		internal AppState[] ToArrayLifo()
 		{
-			var childCount = _states?.Count ?? 0;
-			var result = new AppState[childCount];
-
-			for (var i = 0; i < childCount; ++i)
+			if (_count > 0)
 			{
-				result[i] = _states[childCount - i - 1];
-			}
+				var result = new AppState[_count];
+				var cur = _last;
+				var index = 0;
 
-			return result;
+				while (cur != null)
+				{
+					result[index++] = cur;
+					cur = cur.PrevState;
+				}
+
+				return result;
+			}
+			else
+			{
+#if NET35
+				return new AppState[0];
+#else
+				return Array.Empty<AppState>();
+#endif
+			}
 		}
 
 		#endregion
@@ -150,29 +297,112 @@ namespace UnityFx.AppStates
 		#region IReadOnlyColection
 
 		/// <inheritdoc/>
-		public int Count => _states?.Count ?? 0;
+		public int Count => _count;
 
 		#endregion
 
 		#region IEnumerable
 
-		/// <inheritdoc/>
-		public List<AppState>.Enumerator GetEnumerator()
+		/// <summary>
+		/// App states enumerable.
+		/// </summary>
+		public struct Enumerable : IEnumerable<AppState>
 		{
-			return _states?.GetEnumerator() ?? new List<AppState>.Enumerator();
+			private AppState _first;
+			private bool _fwd;
+
+			internal Enumerable(AppState first, bool forward)
+			{
+				_first = first;
+				_fwd = forward;
+			}
+
+			/// <inheritdoc/>
+			public Enumerator GetEnumerator()
+			{
+				return new Enumerator(_first, _fwd);
+			}
+
+			/// <inheritdoc/>
+			IEnumerator<AppState> IEnumerable<AppState>.GetEnumerator()
+			{
+				throw new NotImplementedException();
+			}
+
+			/// <inheritdoc/>
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				throw new NotImplementedException();
+			}
+		}
+
+		/// <summary>
+		/// App states enumerator.
+		/// </summary>
+		public struct Enumerator : IEnumerator<AppState>
+		{
+			private AppState _first;
+			private AppState _current;
+			private bool _fwd;
+
+			/// <inheritdoc/>
+			public AppState Current => _current;
+
+			/// <inheritdoc/>
+			object IEnumerator.Current => _current;
+
+			internal Enumerator(AppState first, bool forward)
+			{
+				_first = first;
+				_current = null;
+				_fwd = forward;
+			}
+
+			/// <inheritdoc/>
+			public bool MoveNext()
+			{
+				if (_first != null)
+				{
+					if (_current == null)
+					{
+						_current = _first;
+					}
+					else
+					{
+						_current = _fwd ? _current.NextState : _current.PrevState;
+
+						if (_current == null)
+						{
+							_first = null;
+						}
+					}
+				}
+
+				return false;
+			}
+
+			/// <inheritdoc/>
+			public void Reset()
+			{
+				throw new NotSupportedException();
+			}
+
+			/// <inheritdoc/>
+			public void Dispose()
+			{
+				_first = null;
+				_current = null;
+			}
 		}
 
 		/// <inheritdoc/>
-		IEnumerator<AppState> IEnumerable<AppState>.GetEnumerator()
-		{
-			return _states?.GetEnumerator() ?? Enumerable.Empty<AppState>().GetEnumerator();
-		}
+		public Enumerator GetEnumerator() => new Enumerator(_first, true);
 
 		/// <inheritdoc/>
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return (this as IEnumerable<AppState>).GetEnumerator();
-		}
+		IEnumerator<AppState> IEnumerable<AppState>.GetEnumerator() => new Enumerator(_first, true);
+
+		/// <inheritdoc/>
+		IEnumerator IEnumerable.GetEnumerator() => new Enumerator(_first, true);
 
 		#endregion
 
@@ -180,7 +410,7 @@ namespace UnityFx.AppStates
 
 		private void ThrowIfEmpty()
 		{
-			if (_states == null || _states.Count == 0)
+			if (_count == 0)
 			{
 				throw new InvalidOperationException("The stack is empty.");
 			}

@@ -62,9 +62,6 @@ namespace UnityFx.AppStates
 		private AppStateState _state;
 		private bool _isActive;
 
-		private AppState _prev;
-		private AppState _next;
-
 		#endregion
 
 		#region interface
@@ -73,6 +70,9 @@ namespace UnityFx.AppStates
 		internal AppStateService StateManager => _stateManager;
 		internal IAppViewManager ViewManager => _stateManager.Shared.ViewManager;
 		internal IAppControllerFactory ControllerFactory => _stateManager.Shared.ControllerFactory;
+
+		internal AppState PrevState { get; set; }
+		internal AppState NextState { get; set; }
 
 		internal AppViewController TmpController { get; set; }
 		internal PresentOptions TmpControllerOptions { get; set; }
@@ -149,26 +149,7 @@ namespace UnityFx.AppStates
 
 		internal AppView GetPrevView()
 		{
-			var i = _stateManager.States.Count - 1;
-
-			while (i >= 0)
-			{
-				if (_stateManager.States[i] != this)
-				{
-					--i;
-				}
-				else
-				{
-					break;
-				}
-			}
-
-			if (i >= 0)
-			{
-				return _stateManager.States[i].View;
-			}
-
-			return _parentState?.GetPrevView();
+			return PrevState?.Controller.GetTopView();
 		}
 
 		#endregion

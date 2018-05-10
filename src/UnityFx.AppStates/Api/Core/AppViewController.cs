@@ -281,6 +281,16 @@ namespace UnityFx.AppStates
 			OnDismiss();
 		}
 
+		internal AppView GetTopView()
+		{
+			if (_childControllers != null && _childControllers.Count > 0)
+			{
+				return _childControllers[_childControllers.Count - 1].GetTopView();
+			}
+
+			return _view;
+		}
+
 		internal static void ValidateControllerType(Type controllerType)
 		{
 			if (controllerType == null)
@@ -402,10 +412,13 @@ namespace UnityFx.AppStates
 		/// <seealso cref="Dispose(bool)"/>
 		public void Dispose()
 		{
-			_disposed = true;
-			Dispose(true);
-			DisposeInternal();
-			GC.SuppressFinalize(this);
+			if (!_disposed)
+			{
+				_disposed = true;
+				Dispose(true);
+				DisposeInternal();
+				GC.SuppressFinalize(this);
+			}
 		}
 
 		#endregion
@@ -427,16 +440,6 @@ namespace UnityFx.AppStates
 				_childControllers.Clear();
 				_childControllers = null;
 			}
-		}
-
-		private AppView GetTopView()
-		{
-			if (_childControllers != null && _childControllers.Count > 0)
-			{
-				return _childControllers[_childControllers.Count - 1].GetTopView();
-			}
-
-			return _view;
 		}
 
 		private AppViewController AddChildController(Type controllerType, PresentOptions options, PresentArgs args)
