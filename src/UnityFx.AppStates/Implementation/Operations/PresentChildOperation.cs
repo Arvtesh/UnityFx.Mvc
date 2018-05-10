@@ -25,7 +25,7 @@ namespace UnityFx.AppStates
 		#region interface
 
 		public PresentChildOperation(AppStateService stateManager, AppViewController parent, Type controllerType, PresentOptions options, PresentArgs args)
-			: base(stateManager, AppStateOperationType.Push, null, null, GetStateDesc(controllerType, args))
+			: base(stateManager, "Present", GetStateDesc(controllerType, args))
 		{
 			_controllerType = controllerType;
 			_options = options;
@@ -102,13 +102,13 @@ namespace UnityFx.AppStates
 					{
 						_pushOp = null;
 						_controller.InvokeOnViewLoaded();
-						_transitionOp = TransitionManager.PlayPresentTransition(_controller.View);
+						_transitionOp = ViewManager.PlayPresentTransition(_controller.View);
 						_transitionOp.AddContinuation(this);
 					}
 					else
 					{
 						_controller.InvokeOnPresent();
-						TrySetResult(_controller.State, false);
+						TrySetResult(_controller, false);
 					}
 				}
 			}

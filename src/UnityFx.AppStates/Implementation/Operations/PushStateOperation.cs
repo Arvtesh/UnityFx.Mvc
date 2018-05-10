@@ -23,8 +23,8 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		public PushStateOperation(AppStateService stateManager, AppState ownerState, Type controllerType, PresentArgs args, AsyncCallback asyncCallback, object asyncState)
-			: base(stateManager, AppStateOperationType.Push, asyncCallback, asyncState, GetStateDesc(controllerType, args))
+		public PushStateOperation(AppStateService stateManager, AppState ownerState, Type controllerType, PresentArgs args)
+			: base(stateManager, "Present", GetStateDesc(controllerType, args))
 		{
 			_controllerType = controllerType;
 			_args = args;
@@ -102,13 +102,13 @@ namespace UnityFx.AppStates
 					{
 						_pushOp = null;
 						_state.Controller.InvokeOnViewLoaded();
-						_transitionOp = TransitionManager.PlayPresentTransition(_state.View);
+						_transitionOp = ViewManager.PlayPresentTransition(_state.View);
 						_transitionOp.AddContinuation(this);
 					}
 					else
 					{
 						_state.Controller.InvokeOnPresent();
-						TrySetResult(_state, false);
+						TrySetResult(_state.Controller, false);
 					}
 				}
 			}

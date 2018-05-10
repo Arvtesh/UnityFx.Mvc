@@ -23,7 +23,7 @@ namespace UnityFx.AppStates
 
 		public AppStateManagerTests()
 		{
-			var viewFactory = Substitute.For<IAppViewManager>();
+			var viewFactory = Substitute.For<IAppViewService>();
 			var serviceProvider = Substitute.For<IServiceProvider>();
 			_stateManager = new AppStateService(viewFactory, serviceProvider);
 			_stateManager.Settings.DeeplinkScheme = "myapp";
@@ -53,31 +53,29 @@ namespace UnityFx.AppStates
 			var op = _stateManager.PresentAsync(typeof(TestController_Minimal), PresentArgs.Default);
 
 			// Act
-			var state = await op;
+			var controller = await op;
 
 			// Assert
-			Assert.NotNull(state);
-			Assert.NotNull(state.Controller);
-			Assert.True(state.IsActive);
+			Assert.NotNull(controller);
+			Assert.True(controller.IsActive);
 			Assert.NotEmpty(_stateManager.States);
-			Assert.Empty(state.Substates);
-			Assert.IsType<TestController_Minimal>(state.Controller);
-			Assert.Contains(state, _stateManager.States);
+			Assert.Empty(controller.State.Substates);
+			Assert.IsType<TestController_Minimal>(controller);
+			Assert.Contains(controller.State, _stateManager.States);
 		}
 
 		[Fact]
 		public async Task PopStateAsync_Succeeds()
 		{
 			// Arrange
-			var state = await _stateManager.PresentAsync(typeof(TestController_Minimal), PresentArgs.Default);
+			var controller = await _stateManager.PresentAsync(typeof(TestController_Minimal), PresentArgs.Default);
 
 			// Act
-			await _stateManager.PopStateAsync(state);
+			await controller.DismissAsync();
 
 			// Assert
-			Assert.NotNull(state);
-			Assert.NotNull(state.Controller);
-			Assert.False(state.IsActive);
+			Assert.NotNull(controller);
+			Assert.False(controller.IsActive);
 			Assert.Empty(_stateManager.States);
 		}
 

@@ -24,8 +24,8 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		public SetStateOperation(AppStateService stateManager, AppState ownerState, Type controllerType, PresentArgs args, AsyncCallback asyncCallback, object asyncState)
-			: base(stateManager, AppStateOperationType.Set, asyncCallback, asyncState, GetStateDesc(controllerType, args))
+		public SetStateOperation(AppStateService stateManager, AppState ownerState, Type controllerType, PresentArgs args)
+			: base(stateManager, "Present", GetStateDesc(controllerType, args))
 		{
 			_controllerType = controllerType;
 			_args = args;
@@ -119,11 +119,11 @@ namespace UnityFx.AppStates
 
 					if (_ownerState != null)
 					{
-						_transitionOp = TransitionManager.PlayTransition(_ownerState.View, _state.View);
+						_transitionOp = ViewManager.PlayTransition(_ownerState.View, _state.View);
 					}
 					else
 					{
-						_transitionOp = TransitionManager.PlayPresentTransition(_state.View);
+						_transitionOp = ViewManager.PlayPresentTransition(_state.View);
 					}
 
 					_transitionOp.AddCompletionCallback(OnTransitionCompleted);
@@ -143,7 +143,7 @@ namespace UnityFx.AppStates
 				{
 					_ownerState?.Pop(this);
 					_state.Controller.InvokeOnPresent();
-					TrySetResult(_state, false);
+					TrySetResult(_state.Controller, false);
 				}
 			}
 			catch (Exception e)

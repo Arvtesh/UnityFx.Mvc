@@ -72,7 +72,6 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the child states.
 		/// </summary>
-		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
 		AppStateCollection States { get; }
 
 		/// <summary>
@@ -95,6 +94,6 @@ namespace UnityFx.AppStates
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the manager is disposed.</exception>
 		/// <seealso href="https://docs.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap">Event-based Asynchronous Pattern (EAP)</seealso>
-		IAsyncOperation<AppState> PresentAsync(Type controllerType, PresentArgs args);
+		IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentArgs args);
 	}
 }

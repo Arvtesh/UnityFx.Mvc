@@ -7,7 +7,7 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class PopStateOperation : AppStateOperation
+	internal class DismissStateOperation : AppStateOperation
 	{
 		#region data
 
@@ -20,8 +20,8 @@ namespace UnityFx.AppStates
 
 		public AppState State => _state;
 
-		public PopStateOperation(AppStateService stateManager, AppState state, AsyncCallback asyncCallback, object asyncState)
-			: base(stateManager, AppStateOperationType.Pop, asyncCallback, asyncState, null)
+		public DismissStateOperation(AppStateService stateManager, AppState state)
+			: base(stateManager, "Dismiss", null)
 		{
 			_state = state;
 		}
@@ -42,7 +42,7 @@ namespace UnityFx.AppStates
 				{
 					StateManager.PopStates(this, _state);
 
-					_transitionOp = TransitionManager.PlayDismissTransition(_state.View);
+					_transitionOp = ViewManager.PlayDismissTransition(_state.View);
 					_transitionOp.AddCompletionCallback(OnTransitionCompleted);
 				}
 				else

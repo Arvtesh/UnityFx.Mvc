@@ -22,8 +22,7 @@ namespace UnityFx.AppStates
 
 		private readonly SynchronizationContext _synchronizationContext;
 		private readonly IAppControllerFactory _controllerFactory;
-		private readonly IAppViewManager _viewManager;
-		private readonly IAppStateTransitionManager _transitionManager;
+		private readonly IAppViewService _viewManager;
 		private readonly IServiceProvider _serviceProvider;
 
 		private readonly AppStateServiceSettings _settings;
@@ -58,7 +57,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// /// <param name="viewManager"></param>
 		/// <param name="services"></param>
-		public AppStateService(IAppViewManager viewManager, IServiceProvider services)
+		public AppStateService(IAppViewService viewManager, IServiceProvider services)
 			: this(viewManager, services, SynchronizationContext.Current)
 		{
 		}
@@ -70,7 +69,7 @@ namespace UnityFx.AppStates
 		/// <param name="services"></param>
 		/// <param name="viewManager"></param>
 		public AppStateService(
-			IAppViewManager viewManager,
+			IAppViewService viewManager,
 			IServiceProvider services,
 			SynchronizationContext syncContext)
 		{
@@ -91,25 +90,21 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <param name="syncContext"></param>
 		/// <param name="viewManager"></param>
-		/// <param name="transitionManager"></param>
 		/// <param name="services"></param>
 		/// <param name="controllerFactory"></param>
 		public AppStateService(
 			IAppControllerFactory controllerFactory,
-			IAppViewManager viewManager,
-			IAppStateTransitionManager transitionManager,
+			IAppViewService viewManager,
 			IServiceProvider services,
 			SynchronizationContext syncContext)
 		{
 			Debug.Assert(controllerFactory != null);
 			Debug.Assert(viewManager != null);
-			Debug.Assert(transitionManager != null);
 			Debug.Assert(services != null);
 
 			_synchronizationContext = syncContext;
 			_controllerFactory = controllerFactory;
 			_viewManager = viewManager;
-			_transitionManager = transitionManager;
 			_serviceProvider = services;
 			_settings = new AppStateServiceSettings();
 			_states = new AppStateCollection();
@@ -167,8 +162,7 @@ namespace UnityFx.AppStates
 		#region internals
 
 		internal IAppControllerFactory ControllerFactory => _controllerFactory;
-		internal IAppViewManager ViewManager => _viewManager;
-		internal IAppStateTransitionManager TransitionManager => _transitionManager;
+		internal IAppViewService ViewManager => _viewManager;
 		internal IServiceProvider ServiceProvider => _serviceProvider;
 
 		internal void Pop(IAppStateOperationInfo op)
@@ -248,13 +242,13 @@ namespace UnityFx.AppStates
 			return false;
 		}
 
-		internal IAsyncOperation<AppState> PushStateAsync(Type controllerType, PresentOptions options, PresentArgs args)
+		internal IAsyncOperation<AppViewController> PushStateAsync(Type controllerType, PresentOptions options, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 			ThrowIfInvalidArgs(args);
 
-			return PushStateInternal(controllerType, options, args, null, null);
+			return PushStateInternal(controllerType, options, args);
 		}
 
 		#endregion
@@ -283,22 +277,13 @@ namespace UnityFx.AppStates
 		public AppStateCollection States => _states;
 
 		/// <inheritdoc/>
-		public IAsyncOperation<AppState> PresentAsync(Type controllerType, PresentArgs args)
+		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 			ThrowIfInvalidArgs(args);
 
-			return PushStateInternal(controllerType, PresentOptions.None, args, null, null);
-		}
-
-		/// <inheritdoc/>
-		public IAsyncOperation PopStateAsync(AppState state)
-		{
-			ThrowIfDisposed();
-			ThrowIfInvalidState(state);
-
-			return PopStateInternal(state, null, null);
+			return PushStateInternal(controllerType, PresentOptions.None, args);
 		}
 
 		#endregion
@@ -316,7 +301,7 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private AppStateOperation PushStateInternal(Type controllerType, PresentOptions options, PresentArgs args, AsyncCallback asyncCallback, object asyncState)
+		private AppStateOperation PushStateInternal(Type controllerType, PresentOptions options, PresentArgs args)
 		{
 			Debug.Assert(!_disposed);
 			Debug.Assert(controllerType != null);
@@ -326,26 +311,26 @@ namespace UnityFx.AppStates
 
 			if ((options & PresentOptions.DismissAllStates) == PresentOptions.DismissAllStates)
 			{
-				result = new SetStateOperation(this, null, controllerType, args, asyncCallback, asyncState);
+				result = new SetStateOperation(this, null, controllerType, args);
 			}
 			else if ((options & PresentOptions.DismissCurrentState) != 0)
 			{
-				result = new SetStateOperation(this, _parentState, controllerType, args, asyncCallback, asyncState);
+				result = new SetStateOperation(this, _parentState, controllerType, args);
 			}
 			else
 			{
-				result = new PushStateOperation(this, _parentState, controllerType, args, asyncCallback, asyncState);
+				result = new PushStateOperation(this, _parentState, controllerType, args);
 			}
 
 			QueueOperation(result);
 			return result;
 		}
 
-		private AppStateOperation PopStateInternal(AppState state, AsyncCallback asyncCallback, object asyncState)
+		private AppStateOperation PopStateInternal(AppState state)
 		{
 			Debug.Assert(!_disposed);
 
-			var result = new PopStateOperation(this, state, asyncCallback, asyncState);
+			var result = new DismissStateOperation(this, state);
 			QueueOperation(result);
 			return result;
 		}

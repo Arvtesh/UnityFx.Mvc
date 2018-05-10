@@ -6,9 +6,9 @@ using System;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// A collection of states.
+	/// A collection of views.
 	/// </summary>
-	public class AppStateCollection : LinkedListCollection<AppState>
+	public class AppViewCollection : LinkedListCollection<AppView>
 	{
 	}
 }

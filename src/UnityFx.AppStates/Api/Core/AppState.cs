@@ -42,7 +42,7 @@ namespace UnityFx.AppStates
 	/// </remarks>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
-	public class AppState : IDisposable
+	public class AppState : LinkedListNode<AppState>, IDisposable
 	{
 		#region data
 
@@ -57,7 +57,6 @@ namespace UnityFx.AppStates
 		private readonly TraceSource _console;
 		private readonly AppStateService _stateManager;
 		private readonly AppViewController _controller;
-		private readonly AppState _parentState;
 
 		private AppStateState _state;
 		private bool _isActive;
@@ -67,17 +66,15 @@ namespace UnityFx.AppStates
 		#region interface
 
 		internal bool IsPushed => _state == AppStateState.Pushed;
-		internal IAppViewManager ViewManager => _stateManager.ViewManager;
+		internal IAppViewService ViewManager => _stateManager.ViewManager;
 		internal IAppControllerFactory ControllerFactory => _stateManager.ControllerFactory;
-
-		internal AppState PrevState { get; set; }
-		internal AppState NextState { get; set; }
 
 		internal AppViewController TmpController { get; set; }
 		internal PresentOptions TmpControllerOptions { get; set; }
 		internal PresentArgs TmpControllerArgs { get; set; }
 
 		internal AppState(AppStateService stateManager, AppState parentState, Type controllerType, PresentOptions options, PresentArgs args)
+			: base(parentState)
 		{
 			Debug.Assert(stateManager != null);
 			Debug.Assert(controllerType != null);
@@ -86,7 +83,6 @@ namespace UnityFx.AppStates
 			TmpControllerArgs = args;
 
 			_stateManager = stateManager;
-			_parentState = parentState;
 			_console = stateManager.TraceSource;
 			_controller = stateManager.ControllerFactory.CreateController(controllerType, this);
 		}
@@ -118,7 +114,7 @@ namespace UnityFx.AppStates
 		{
 			Debug.Assert(_state == AppStateState.Pushed);
 
-			if (!_isActive && (_parentState == null || _parentState.IsActive))
+			if (!_isActive && (Parent == null || Parent.IsActive))
 			{
 				_console.TraceEvent(TraceEventType.Verbose, op.OperationId, "ActivateState " + _controller.Id);
 
@@ -148,7 +144,7 @@ namespace UnityFx.AppStates
 
 		internal AppView GetPrevView()
 		{
-			return PrevState?.Controller.GetTopView();
+			return Prev?.Controller.GetTopView();
 		}
 
 		#endregion
@@ -168,7 +164,7 @@ namespace UnityFx.AppStates
 			get
 			{
 				var localPath = '/' + _controller.Id;
-				return _parentState?.Path + localPath ?? localPath;
+				return Parent?.Path + localPath ?? localPath;
 			}
 		}
 
@@ -186,11 +182,6 @@ namespace UnityFx.AppStates
 		/// Gets a value indicating whether the state is active.
 		/// </summary>
 		public bool IsActive => _isActive;
-
-		/// <summary>
-		/// Gets a parent state.
-		/// </summary>
-		public AppState Parent => _parentState;
 
 		/// <summary>
 		/// Gets a collection of the state's children.
@@ -211,7 +202,8 @@ namespace UnityFx.AppStates
 		public IAsyncOperation DismissAsync()
 		{
 			ThrowIfDisposed();
-			return _stateManager.PopStateAsync(this);
+
+			throw new NotImplementedException();
 		}
 
 		/// <summary>

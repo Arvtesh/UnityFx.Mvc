@@ -21,7 +21,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A generic composite view.
 	/// </summary>
-	public abstract class AppView : IComponentContainer, IDisposable
+	public abstract class AppView : LinkedListNode<AppView>, IComponentContainer, IDisposable
 	{
 		#region data
 
@@ -38,7 +38,6 @@ namespace UnityFx.AppStates
 
 		private readonly string _name;
 		private readonly AppViewOptions _options;
-		private readonly AppView _parent;
 
 		private IAsyncOperation _loadOp;
 		private Flags _flags;
@@ -56,11 +55,6 @@ namespace UnityFx.AppStates
 		/// Gets the view creation options.
 		/// </summary>
 		public AppViewOptions Options => _options;
-
-		/// <summary>
-		/// Gets a parent view (if any).
-		/// </summary>
-		public AppView Parent => _parent;
 
 		/// <summary>
 		/// Gets a value indicating whether the view is loaded or not.
@@ -132,10 +126,10 @@ namespace UnityFx.AppStates
 		/// <param name="parent"></param>
 		/// <param name="options"></param>
 		protected AppView(string name, AppView parent, AppViewOptions options)
+			: base(parent)
 		{
 			_name = name;
 			_options = options;
-			_parent = parent;
 		}
 
 		/// <summary>

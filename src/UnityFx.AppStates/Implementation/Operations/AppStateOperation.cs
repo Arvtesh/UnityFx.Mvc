@@ -13,7 +13,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A yieldable asynchronous state operation.
 	/// </summary>
-	internal abstract class AppStateOperation : AsyncResult<AppState>, IAppStateOperationInfo
+	internal abstract class AppStateOperation : AsyncResult<AppViewController>, IAppStateOperationInfo
 	{
 		#region data
 
@@ -34,13 +34,13 @@ namespace UnityFx.AppStates
 		#region interface
 
 		protected AppStateService StateManager => _stateManager;
+		protected IAppViewService ViewManager => _stateManager.ViewManager;
 		protected AppStateCollection States => _stateManager.States;
-		protected IAppStateTransitionManager TransitionManager => _stateManager.TransitionManager;
 
-		protected AppStateOperation(AppStateService stateManager, AppStateOperationType opType, AsyncCallback asyncCallback, object asyncState, string comment)
+		protected AppStateOperation(AppStateService stateManager, string name, string comment)
 		{
-			_id = (++_lastId << 3) | (int)opType;
-			_name = opType.ToString();
+			_id = ++_lastId;
+			_name = name;
 			_stateManager = stateManager;
 			_traceSource = _stateManager.TraceSource;
 			_comment = comment;

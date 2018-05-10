@@ -201,7 +201,7 @@ namespace UnityFx.AppStates
 		/// Dismisses the controller and its view.
 		/// </summary>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation DismissAsync()
+		public IAsyncOperation DismissAsync()
 		{
 			ThrowIfDisposed();
 
