@@ -123,7 +123,7 @@ namespace UnityFx.AppStates
 					}
 					else
 					{
-						_transitionOp = TransitionManager.PlayPushTransition(_state.View);
+						_transitionOp = TransitionManager.PlayPresentTransition(_state.View);
 					}
 
 					_transitionOp.AddCompletionCallback(OnTransitionCompleted);
@@ -142,6 +142,7 @@ namespace UnityFx.AppStates
 				if (ProcessNonSuccess(op))
 				{
 					_ownerState?.Pop(this);
+					_state.Controller.InvokeOnPresent();
 					TrySetResult(_state, false);
 				}
 			}

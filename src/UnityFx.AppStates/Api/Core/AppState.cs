@@ -67,7 +67,6 @@ namespace UnityFx.AppStates
 		#region interface
 
 		internal bool IsPushed => _state == AppStateState.Pushed;
-		internal AppStateService StateManager => _stateManager;
 		internal IAppViewManager ViewManager => _stateManager.ViewManager;
 		internal IAppControllerFactory ControllerFactory => _stateManager.ControllerFactory;
 

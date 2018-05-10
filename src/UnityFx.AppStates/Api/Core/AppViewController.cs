@@ -38,6 +38,11 @@ namespace UnityFx.AppStates
 		public string Id => _id;
 
 		/// <summary>
+		/// Gets the parent state.
+		/// </summary>
+		public AppState State => _state;
+
+		/// <summary>
 		/// Gets a view instance attached to the controller.
 		/// </summary>
 		public AppView View => _view;
@@ -46,11 +51,6 @@ namespace UnityFx.AppStates
 		/// Gets a value indicating whether the state is active.
 		/// </summary>
 		public bool IsActive => _active;
-
-		/// <summary>
-		/// Gets the parent state.
-		/// </summary>
-		protected AppState State => _state;
 
 		/// <summary>
 		/// Gets creation options for the controller.
@@ -146,7 +146,7 @@ namespace UnityFx.AppStates
 
 			if ((options & PresentOptions.Child) != 0)
 			{
-				return AsyncResult.FromResult(AddChildController(controllerType, options, args));
+				return PresentChildController(controllerType, options, args);
 			}
 			else
 			{
@@ -201,18 +201,17 @@ namespace UnityFx.AppStates
 		/// Dismisses the controller and its view.
 		/// </summary>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected void Dismiss()
+		protected IAsyncOperation DismissAsync()
 		{
 			ThrowIfDisposed();
 
 			if (_parentController != null)
 			{
-				InvokeOnDismiss();
-				Dispose();
+				return _parentController.DismissChildController(this);
 			}
 			else
 			{
-				_state.DismissAsync();
+				return _state.DismissAsync();
 			}
 		}
 
@@ -442,7 +441,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		private AppViewController AddChildController(Type controllerType, PresentOptions options, PresentArgs args)
+		private IAsyncOperation<AppViewController> PresentChildController(Type controllerType, PresentOptions options, PresentArgs args)
 		{
 			Debug.Assert(_state.TmpController == null);
 			Debug.Assert(_state.TmpControllerOptions == PresentOptions.None);
@@ -459,6 +458,7 @@ namespace UnityFx.AppStates
 
 			try
 			{
+				// TODO: create specialized operation for this
 				var controller = _state.ControllerFactory.CreateController(controllerType, _state);
 
 				if (!controller.IsDisposed)
@@ -475,7 +475,7 @@ namespace UnityFx.AppStates
 					}
 				}
 
-				return controller;
+				return AsyncResult.FromResult(controller);
 			}
 			finally
 			{
@@ -483,6 +483,14 @@ namespace UnityFx.AppStates
 				_state.TmpControllerOptions = PresentOptions.None;
 				_state.TmpController = null;
 			}
+		}
+
+		private IAsyncOperation DismissChildController(AppViewController controller)
+		{
+			// TODO: create specialized operation for this
+			controller.InvokeOnDismiss();
+			controller.Dispose();
+			return AsyncResult.CompletedOperation;
 		}
 
 		private bool RemoveChildController(AppViewController controller)

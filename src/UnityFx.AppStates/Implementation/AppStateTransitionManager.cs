@@ -8,16 +8,12 @@ namespace UnityFx.AppStates
 {
 	internal class AppStateTransitionManager : IAppStateTransitionManager
 	{
-		public void CancelTransition(IAsyncOperation transition)
-		{
-		}
-
-		public IAsyncOperation PlayPopTransition(AppView view)
+		public IAsyncOperation PlayDismissTransition(AppView view)
 		{
 			return AsyncResult.CompletedOperation;
 		}
 
-		public IAsyncOperation PlayPushTransition(AppView view)
+		public IAsyncOperation PlayPresentTransition(AppView view)
 		{
 			return AsyncResult.CompletedOperation;
 		}
