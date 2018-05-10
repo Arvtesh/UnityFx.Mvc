@@ -20,7 +20,13 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private readonly AppStateManagerShared _shared;
+		private readonly SynchronizationContext _synchronizationContext;
+		private readonly IAppControllerFactory _controllerFactory;
+		private readonly IAppViewManager _viewManager;
+		private readonly IAppStateTransitionManager _transitionManager;
+		private readonly IServiceProvider _serviceProvider;
+
+		private readonly AppStateServiceSettings _settings;
 		private readonly AppStateCollection _states;
 		private readonly AsyncResultQueue<AppStateOperation> _stackOperations;
 		private readonly AppState _parentState;
@@ -40,7 +46,12 @@ namespace UnityFx.AppStates
 		/// Gets the <see cref="System.Diagnostics.TraceSource"/> instance used by the service.
 		/// </summary>
 		/// <value>A <see cref="System.Diagnostics.TraceSource"/> instance used for tracing.</value>
-		protected internal TraceSource TraceSource => _shared.TraceSource;
+		protected internal TraceSource TraceSource => _settings.TraceSource;
+
+		/// <summary>
+		/// Gets the <see cref="System.Threading.SynchronizationContext"/> instance used by the service.
+		/// </summary>
+		protected internal SynchronizationContext SynchronizationContext => _synchronizationContext;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppStateService"/> class.
@@ -66,7 +77,11 @@ namespace UnityFx.AppStates
 			Debug.Assert(viewManager != null);
 			Debug.Assert(services != null);
 
-			_shared = new AppStateManagerShared(syncContext, new AppViewControllerFactory(this, viewManager, services), viewManager, null, services);
+			_synchronizationContext = syncContext;
+			_controllerFactory = new AppViewControllerFactory(this, viewManager, services);
+			_viewManager = viewManager;
+			_serviceProvider = services;
+			_settings = new AppStateServiceSettings();
 			_states = new AppStateCollection();
 			_stackOperations = new AsyncResultQueue<AppStateOperation>(syncContext);
 		}
@@ -91,7 +106,12 @@ namespace UnityFx.AppStates
 			Debug.Assert(transitionManager != null);
 			Debug.Assert(services != null);
 
-			_shared = new AppStateManagerShared(syncContext, controllerFactory, viewManager, transitionManager, services);
+			_synchronizationContext = syncContext;
+			_controllerFactory = controllerFactory;
+			_viewManager = viewManager;
+			_transitionManager = transitionManager;
+			_serviceProvider = services;
+			_settings = new AppStateServiceSettings();
 			_states = new AppStateCollection();
 			_stackOperations = new AsyncResultQueue<AppStateOperation>(syncContext);
 		}
@@ -146,7 +166,10 @@ namespace UnityFx.AppStates
 
 		#region internals
 
-		internal AppStateManagerShared Shared => _shared;
+		internal IAppControllerFactory ControllerFactory => _controllerFactory;
+		internal IAppViewManager ViewManager => _viewManager;
+		internal IAppStateTransitionManager TransitionManager => _transitionManager;
+		internal IServiceProvider ServiceProvider => _serviceProvider;
 
 		internal void Pop(IAppStateOperationInfo op)
 		{
@@ -251,7 +274,7 @@ namespace UnityFx.AppStates
 		public event EventHandler<DismissCompletedEventArgs> DismissCompleted;
 
 		/// <inheritdoc/>
-		public AppStateServiceSettings Settings => _shared;
+		public AppStateServiceSettings Settings => _settings;
 
 		/// <inheritdoc/>
 		public bool IsBusy => !_stackOperations.IsEmpty;

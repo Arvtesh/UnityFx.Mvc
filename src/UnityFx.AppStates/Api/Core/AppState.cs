@@ -68,8 +68,8 @@ namespace UnityFx.AppStates
 
 		internal bool IsPushed => _state == AppStateState.Pushed;
 		internal AppStateService StateManager => _stateManager;
-		internal IAppViewManager ViewManager => _stateManager.Shared.ViewManager;
-		internal IAppControllerFactory ControllerFactory => _stateManager.Shared.ControllerFactory;
+		internal IAppViewManager ViewManager => _stateManager.ViewManager;
+		internal IAppControllerFactory ControllerFactory => _stateManager.ControllerFactory;
 
 		internal AppState PrevState { get; set; }
 		internal AppState NextState { get; set; }
@@ -89,7 +89,7 @@ namespace UnityFx.AppStates
 			_stateManager = stateManager;
 			_parentState = parentState;
 			_console = stateManager.TraceSource;
-			_controller = stateManager.Shared.ControllerFactory.CreateController(controllerType, this);
+			_controller = stateManager.ControllerFactory.CreateController(controllerType, this);
 		}
 
 		internal IAsyncOperation Push(IAppStateOperationInfo op)
@@ -169,34 +169,7 @@ namespace UnityFx.AppStates
 			get
 			{
 				var localPath = '/' + _controller.Id;
-
-				if (_parentState == null)
-				{
-					return _parentState?.Path + localPath ?? localPath;
-				}
-
-				return _parentState.Path;
-			}
-		}
-
-		/// <summary>
-		/// Gets a deeplink representing this state.
-		/// </summary>
-		public Uri Deeplink
-		{
-			get
-			{
-				var uriBuilder = new UriBuilder(_stateManager.Shared.DeeplinkScheme, _stateManager.Shared.DeeplinkDomain)
-				{
-					Path = Path
-				};
-
-				if (_parentState != null)
-				{
-					uriBuilder.Fragment = _controller.Id;
-				}
-
-				return uriBuilder.Uri;
+				return _parentState?.Path + localPath ?? localPath;
 			}
 		}
 
@@ -216,6 +189,11 @@ namespace UnityFx.AppStates
 		public bool IsActive => _isActive;
 
 		/// <summary>
+		/// Gets a parent state.
+		/// </summary>
+		public AppState Parent => _parentState;
+
+		/// <summary>
 		/// Gets a collection of the state's children.
 		/// </summary>
 		public IReadOnlyCollection<AppState> Substates
@@ -225,11 +203,6 @@ namespace UnityFx.AppStates
 				throw new NotImplementedException();
 			}
 		}
-
-		/// <summary>
-		/// Gets a parent state.
-		/// </summary>
-		public AppState Parent => _parentState;
 
 		/// <summary>
 		/// Removes the state from the stack.

@@ -35,7 +35,7 @@ namespace UnityFx.AppStates
 
 		protected AppStateService StateManager => _stateManager;
 		protected AppStateCollection States => _stateManager.States;
-		protected IAppStateTransitionManager TransitionManager => _stateManager.Shared.TransitionManager;
+		protected IAppStateTransitionManager TransitionManager => _stateManager.TransitionManager;
 
 		protected AppStateOperation(AppStateService stateManager, AppStateOperationType opType, AsyncCallback asyncCallback, object asyncState, string comment)
 		{
