@@ -226,16 +226,20 @@ namespace UnityFx.AppStates
 
 		internal void InvokeOnViewLoaded()
 		{
+			ThrowIfDisposed();
 			OnViewLoaded();
 		}
 
 		internal void InvokeOnPresent()
 		{
+			ThrowIfDisposed();
 			OnPresent();
 		}
 
 		internal void InvokeOnActivate()
 		{
+			ThrowIfDisposed();
+
 			if (!_active)
 			{
 				_active = true;
@@ -255,6 +259,8 @@ namespace UnityFx.AppStates
 
 		internal void InvokeOnDeactivate()
 		{
+			ThrowIfDisposed();
+
 			if (_active)
 			{
 				if (_childControllers != null)
@@ -274,6 +280,8 @@ namespace UnityFx.AppStates
 
 		internal void InvokeOnDismiss()
 		{
+			ThrowIfDisposed();
+
 			if (_childControllers != null)
 			{
 				foreach (var controller in _childControllers)
@@ -285,18 +293,10 @@ namespace UnityFx.AppStates
 			OnDismiss();
 		}
 
-		internal AppView GetTopView()
-		{
-			if (_childControllers != null && _childControllers.Count > 0)
-			{
-				return _childControllers[_childControllers.Count - 1].GetTopView();
-			}
-
-			return _view;
-		}
-
 		internal AppViewController CreateChildController(Type controllerType, PresentOptions options, PresentArgs args)
 		{
+			ThrowIfDisposed();
+
 			_state.TmpControllerArgs = args;
 			_state.TmpControllerOptions = options;
 			_state.TmpController = this;
@@ -313,6 +313,16 @@ namespace UnityFx.AppStates
 				_state.TmpControllerOptions = PresentOptions.None;
 				_state.TmpController = null;
 			}
+		}
+
+		internal AppView GetTopView()
+		{
+			if (_childControllers != null && _childControllers.Count > 0)
+			{
+				return _childControllers[_childControllers.Count - 1].GetTopView();
+			}
+
+			return _view;
 		}
 
 		internal static void ValidateControllerType(Type controllerType)

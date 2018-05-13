@@ -11,6 +11,8 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
+		private const string _opName = "Present";
+
 		private readonly Type _controllerType;
 		private readonly PresentOptions _options;
 		private readonly PresentArgs _args;
@@ -26,7 +28,7 @@ namespace UnityFx.AppStates
 		#region interface
 
 		public PresentOperation(AppStateService stateManager, AppState parentState, Type controllerType, PresentOptions options, PresentArgs args)
-			: base(stateManager, "Present", GetStateDesc(controllerType, args))
+			: base(stateManager, _opName, GetStateDesc(controllerType, args))
 		{
 			_controllerType = controllerType;
 			_options = options;
@@ -35,7 +37,7 @@ namespace UnityFx.AppStates
 		}
 
 		public PresentOperation(AppStateService stateManager, AppViewController parentController, Type controllerType, PresentOptions options, PresentArgs args)
-			: base(stateManager, "Present", GetStateDesc(controllerType, args))
+			: base(stateManager, _opName, GetStateDesc(controllerType, args))
 		{
 			_controllerType = controllerType;
 			_options = options;

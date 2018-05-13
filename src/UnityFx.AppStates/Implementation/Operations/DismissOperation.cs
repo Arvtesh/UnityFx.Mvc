@@ -112,6 +112,12 @@ namespace UnityFx.AppStates
 			}
 		}
 
+		protected override void OnCancel()
+		{
+			_transitionOp?.Cancel();
+			base.OnCancel();
+		}
+
 		#endregion
 
 		#region IAsyncContinuation

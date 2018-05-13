@@ -77,6 +77,8 @@ namespace UnityFx.AppStates
 			}
 			set
 			{
+				ThrowIfDisposed();
+
 				var visible = (_flags & Flags.Visible) != 0;
 
 				if (visible != value)
@@ -98,6 +100,8 @@ namespace UnityFx.AppStates
 			}
 			set
 			{
+				ThrowIfDisposed();
+
 				var enabled = (_flags & Flags.Enabled) != 0;
 
 				if (enabled != value)
@@ -137,6 +141,8 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public IAsyncOperation Load()
 		{
+			ThrowIfDisposed();
+
 			if ((_flags & Flags.Loaded) == 0)
 			{
 				if (_loadOp == null)
