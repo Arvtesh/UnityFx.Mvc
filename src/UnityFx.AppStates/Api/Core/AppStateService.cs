@@ -28,7 +28,6 @@ namespace UnityFx.AppStates
 		private readonly AppStateServiceSettings _settings;
 		private readonly AppStateCollection _states;
 		private readonly AsyncResultQueue<AppStateOperation> _stackOperations;
-		private readonly AppState _parentState;
 
 		private bool _disposed;
 
@@ -42,15 +41,20 @@ namespace UnityFx.AppStates
 		public const string Name = "StateManager";
 
 		/// <summary>
-		/// Gets the <see cref="System.Diagnostics.TraceSource"/> instance used by the service.
+		/// Gets a <see cref="System.Diagnostics.TraceSource"/> instance used by the service.
 		/// </summary>
 		/// <value>A <see cref="System.Diagnostics.TraceSource"/> instance used for tracing.</value>
 		protected internal TraceSource TraceSource => _settings.TraceSource;
 
 		/// <summary>
-		/// Gets the <see cref="System.Threading.SynchronizationContext"/> instance used by the service.
+		/// Gets a <see cref="System.Threading.SynchronizationContext"/> instance used by the service.
 		/// </summary>
 		protected internal SynchronizationContext SynchronizationContext => _synchronizationContext;
+
+		/// <summary>
+		/// Gets a <see cref="IServiceProvider"/> instance used by the service.
+		/// </summary>
+		protected internal IServiceProvider ServiceProvider => _serviceProvider;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppStateService"/> class.
@@ -153,7 +157,7 @@ namespace UnityFx.AppStates
 		{
 			if (_disposed)
 			{
-				throw new ObjectDisposedException(GetFullName());
+				throw new ObjectDisposedException(Name);
 			}
 		}
 
@@ -163,30 +167,6 @@ namespace UnityFx.AppStates
 
 		internal IAppControllerFactory ControllerFactory => _controllerFactory;
 		internal IAppViewService ViewManager => _viewManager;
-		internal IServiceProvider ServiceProvider => _serviceProvider;
-
-		internal void Pop(IAppStateOperationInfo op)
-		{
-			// 1) Stop operation processing.
-			_stackOperations.Suspended = true;
-
-			// 2) Cancel pending operations.
-			if (!_stackOperations.IsEmpty)
-			{
-				foreach (var o in _stackOperations.Release())
-				{
-					o.Cancel();
-				}
-			}
-
-			// 3) Pop child states.
-			foreach (var state in _states.GetEnumerableLifo())
-			{
-				state.Pop(op);
-			}
-
-			_states.Clear();
-		}
 
 		internal void PopStates(IAppStateOperationInfo op, AppState targetState)
 		{
@@ -242,13 +222,55 @@ namespace UnityFx.AppStates
 			return false;
 		}
 
-		internal IAsyncOperation<AppViewController> PushStateAsync(Type controllerType, PresentOptions options, PresentArgs args)
+		internal IAsyncOperation<AppViewController> PresentAsync(AppViewController parentController, Type controllerType, PresentOptions options, PresentArgs args)
+		{
+			ThrowIfDisposed();
+
+			var result = new PresentOperation(this, parentController, controllerType, options, args);
+			QueueOperation(result);
+			return result;
+		}
+
+		internal IAsyncOperation<AppViewController> PresentAsync(AppState state, Type controllerType, PresentOptions options, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
-			ThrowIfInvalidArgs(args);
 
-			return PushStateInternal(controllerType, options, args);
+			AppStateOperation result;
+
+			if ((options & PresentOptions.DismissAllStates) == PresentOptions.DismissAllStates)
+			{
+				result = new SetStateOperation(this, null, controllerType, args);
+			}
+			else if ((options & PresentOptions.DismissCurrentState) != 0)
+			{
+				result = new SetStateOperation(this, state, controllerType, args);
+			}
+			else
+			{
+				result = new PresentOperation(this, state, controllerType, options, args);
+			}
+
+			QueueOperation(result);
+			return result;
+		}
+
+		internal IAsyncOperation DismissAsync(AppViewController controller)
+		{
+			ThrowIfDisposed();
+
+			var result = new DismissOperation(this, controller);
+			QueueOperation(result);
+			return result;
+		}
+
+		internal IAsyncOperation DismissAsync(AppState state)
+		{
+			ThrowIfDisposed();
+
+			var result = new DismissOperation(this, state);
+			QueueOperation(result);
+			return result;
 		}
 
 		#endregion
@@ -279,11 +301,7 @@ namespace UnityFx.AppStates
 		/// <inheritdoc/>
 		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentArgs args)
 		{
-			ThrowIfDisposed();
-			ThrowIfInvalidControllerType(controllerType);
-			ThrowIfInvalidArgs(args);
-
-			return PushStateInternal(controllerType, PresentOptions.None, args);
+			return PresentAsync(default(AppState), controllerType, PresentOptions.None, args);
 		}
 
 		#endregion
@@ -301,53 +319,9 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private AppStateOperation PushStateInternal(Type controllerType, PresentOptions options, PresentArgs args)
-		{
-			Debug.Assert(!_disposed);
-			Debug.Assert(controllerType != null);
-			Debug.Assert(args != null);
-
-			AppStateOperation result;
-
-			if ((options & PresentOptions.DismissAllStates) == PresentOptions.DismissAllStates)
-			{
-				result = new SetStateOperation(this, null, controllerType, args);
-			}
-			else if ((options & PresentOptions.DismissCurrentState) != 0)
-			{
-				result = new SetStateOperation(this, _parentState, controllerType, args);
-			}
-			else
-			{
-				result = new PushStateOperation(this, _parentState, controllerType, args);
-			}
-
-			QueueOperation(result);
-			return result;
-		}
-
-		private AppStateOperation PopStateInternal(AppState state)
-		{
-			Debug.Assert(!_disposed);
-
-			var result = new DismissStateOperation(this, state);
-			QueueOperation(result);
-			return result;
-		}
-
 		private void QueueOperation(AppStateOperation op)
 		{
 			_stackOperations.Add(op);
-		}
-
-		private string GetFullName()
-		{
-			if (_parentState != null)
-			{
-				return _parentState.Path + '.' + Name;
-			}
-
-			return Name;
 		}
 
 		private void ThrowIfInvalidArgs(PresentArgs args)

@@ -60,7 +60,7 @@ namespace UnityFx.AppStates
 				}
 
 				_state = new AppState(StateManager, null, _controllerType, PresentOptions.None, _args);
-				_pushOp = _state.Push(this);
+				_pushOp = _state.View.Load();
 				_pushOp.AddCompletionCallback(OnStatePushed);
 			}
 			catch (Exception e)
@@ -119,7 +119,7 @@ namespace UnityFx.AppStates
 
 					if (_ownerState != null)
 					{
-						_transitionOp = ViewManager.PlayTransition(_ownerState.View, _state.View);
+						_transitionOp = ViewManager.PlayPresentTransition(_ownerState.View, _state.View);
 					}
 					else
 					{

@@ -268,6 +268,11 @@ namespace UnityFx.AppStates
 			_count = 0;
 		}
 
+		internal ChildEnumerable GetChildren(T item)
+		{
+			return new ChildEnumerable(item);
+		}
+
 		internal Enumerable GetEnumerableLifo()
 		{
 			return new Enumerable(_last, false);
@@ -311,7 +316,64 @@ namespace UnityFx.AppStates
 		#region IEnumerable
 
 		/// <summary>
-		/// App states enumerable.
+		/// Child elements enumerable.
+		/// </summary>
+		public class ChildEnumerable : IReadOnlyCollection<T>
+		{
+			private T _parent;
+
+			internal ChildEnumerable(T first)
+			{
+				_parent = first;
+			}
+
+			/// <inheritdoc/>
+			public int Count
+			{
+				get
+				{
+					var cur = _parent.Next;
+					var count = 0;
+
+					while (cur != null)
+					{
+						if (cur.Parent == _parent)
+						{
+							++count;
+						}
+
+						cur = cur.Next;
+					}
+
+					return count;
+				}
+			}
+
+			/// <inheritdoc/>
+			IEnumerator<T> IEnumerable<T>.GetEnumerator()
+			{
+				var cur = _parent.Next;
+
+				while (cur != null)
+				{
+					if (cur.Parent == _parent)
+					{
+						yield return cur;
+					}
+
+					cur = cur.Next;
+				}
+			}
+
+			/// <inheritdoc/>
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return (this as IEnumerable<T>).GetEnumerator();
+			}
+		}
+
+		/// <summary>
+		/// Items enumerable.
 		/// </summary>
 		public struct Enumerable : IEnumerable<T>
 		{
@@ -344,7 +406,7 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// App states enumerator.
+		/// Items enumerator.
 		/// </summary>
 		public struct Enumerator : IEnumerator<T>
 		{

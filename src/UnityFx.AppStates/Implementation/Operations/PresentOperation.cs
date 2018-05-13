@@ -7,15 +7,17 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class PushStateOperation : AppStateOperation, IAsyncContinuation
+	internal class PresentOperation : AppStateOperation, IAsyncContinuation
 	{
 		#region data
 
 		private readonly Type _controllerType;
+		private readonly PresentOptions _options;
 		private readonly PresentArgs _args;
-		private readonly AppState _ownerState;
+		private readonly AppState _parentState;
+		private readonly AppViewController _parentController;
 
-		private AppState _state;
+		private AppViewController _controller;
 		private IAsyncOperation _pushOp;
 		private IAsyncOperation _transitionOp;
 
@@ -23,12 +25,23 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		public PushStateOperation(AppStateService stateManager, AppState ownerState, Type controllerType, PresentArgs args)
+		public PresentOperation(AppStateService stateManager, AppState parentState, Type controllerType, PresentOptions options, PresentArgs args)
 			: base(stateManager, "Present", GetStateDesc(controllerType, args))
 		{
 			_controllerType = controllerType;
+			_options = options;
 			_args = args;
-			_ownerState = ownerState;
+			_parentState = parentState;
+		}
+
+		public PresentOperation(AppStateService stateManager, AppViewController parentController, Type controllerType, PresentOptions options, PresentArgs args)
+			: base(stateManager, "Present", GetStateDesc(controllerType, args))
+		{
+			_controllerType = controllerType;
+			_options = options;
+			_args = args;
+			_parentState = parentController.State;
+			_parentController = parentController;
 		}
 
 		#endregion
@@ -41,10 +54,18 @@ namespace UnityFx.AppStates
 
 			try
 			{
-				StateManager.TryDeactivateTopState(this);
+				if (_parentController != null)
+				{
+					_controller = _parentController.CreateChildController(_controllerType, _options, _args);
+				}
+				else
+				{
+					StateManager.TryDeactivateTopState(this);
 
-				_state = new AppState(StateManager, _ownerState, _controllerType, PresentOptions.None, _args);
-				_pushOp = _state.Push(this);
+					_controller = new AppState(StateManager, _parentState, _controllerType, _options, _args).Controller;
+				}
+
+				_pushOp = _controller.View.Load();
 				_pushOp.AddContinuation(this);
 			}
 			catch (Exception e)
@@ -59,13 +80,19 @@ namespace UnityFx.AppStates
 			{
 				if (!IsCompletedSuccessfully)
 				{
-					// Make sure the state is popped in case of an error.
-					_state?.Pop(this);
+					if (_parentController != null)
+					{
+						_controller.Dispose();
+					}
+					else
+					{
+						_controller.State.Dispose();
+					}
 				}
 			}
 			finally
 			{
-				_state = null;
+				_controller = null;
 				_pushOp = null;
 				_transitionOp = null;
 
@@ -101,14 +128,14 @@ namespace UnityFx.AppStates
 					if (_pushOp != null)
 					{
 						_pushOp = null;
-						_state.Controller.InvokeOnViewLoaded();
-						_transitionOp = ViewManager.PlayPresentTransition(_state.View);
+						_controller.InvokeOnViewLoaded();
+						_transitionOp = ViewManager.PlayPresentTransition(_controller.View);
 						_transitionOp.AddContinuation(this);
 					}
 					else
 					{
-						_state.Controller.InvokeOnPresent();
-						TrySetResult(_state.Controller, false);
+						_controller.InvokeOnPresent();
+						TrySetResult(_controller, false);
 					}
 				}
 			}

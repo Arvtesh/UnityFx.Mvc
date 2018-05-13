@@ -65,7 +65,6 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		internal bool IsPushed => _state == AppStateState.Pushed;
 		internal IAppViewService ViewManager => _stateManager.ViewManager;
 		internal IAppControllerFactory ControllerFactory => _stateManager.ControllerFactory;
 
@@ -85,17 +84,21 @@ namespace UnityFx.AppStates
 			_stateManager = stateManager;
 			_console = stateManager.TraceSource;
 			_controller = stateManager.ControllerFactory.CreateController(controllerType, this);
+			_stateManager.States.Add(this);
 		}
 
-		internal IAsyncOperation Push(IAppStateOperationInfo op)
+		internal IAsyncOperation<AppViewController> PresentAsync(AppViewController parentController, Type controllerType, PresentOptions options, PresentArgs args)
 		{
-			Debug.Assert(_state == AppStateState.Created);
+			ThrowIfDisposed();
 
-			_console.TraceData(TraceEventType.Verbose, op.OperationId, "PushState " + _controller.Id);
-			_stateManager.States.Add(this);
-			_state = AppStateState.Pushed;
+			return _stateManager.PresentAsync(parentController, controllerType, options, args);
+		}
 
-			return _controller.View.Load();
+		internal IAsyncOperation DismissAsync(AppViewController controller)
+		{
+			ThrowIfDisposed();
+
+			return _stateManager.DismissAsync(controller);
 		}
 
 		internal void Pop(IAppStateOperationInfo op)
@@ -186,12 +189,24 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets a collection of the state's children.
 		/// </summary>
-		public IReadOnlyCollection<AppState> Substates
+		public IReadOnlyCollection<AppState> Substates => _stateManager.States.GetChildren(this);
+
+		/// <summary>
+		/// Presents a new state with the specified controller as a child state.
+		/// </summary>
+		/// <param name="controllerType">Type of the view controller to present.</param>
+		/// <param name="options">Presentation options.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
+		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
+		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args)
 		{
-			get
-			{
-				throw new NotImplementedException();
-			}
+			ThrowIfDisposed();
+
+			return _stateManager.PresentAsync(this, controllerType, options, args);
 		}
 
 		/// <summary>
@@ -203,7 +218,7 @@ namespace UnityFx.AppStates
 		{
 			ThrowIfDisposed();
 
-			throw new NotImplementedException();
+			return _stateManager.DismissAsync(this);
 		}
 
 		/// <summary>

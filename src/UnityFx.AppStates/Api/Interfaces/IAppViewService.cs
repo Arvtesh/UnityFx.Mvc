@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using UnityFx.Async;
 
 namespace UnityFx.AppStates
@@ -15,7 +16,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets child views.
 		/// </summary>
-		AppViewCollection Views { get; }
+		IReadOnlyCollection<AppView> Views { get; }
 
 		/// <summary>
 		/// Initiates an animated transition from <paramref name="fromView"/> to <paramref name="toView"/>.
@@ -23,7 +24,7 @@ namespace UnityFx.AppStates
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="fromView"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="toView"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the service is disposed.</exception>
-		IAsyncOperation PlayTransition(AppView fromView, AppView toView);
+		IAsyncOperation PlayPresentTransition(AppView fromView, AppView toView);
 
 		/// <summary>
 		/// Initiates a present animation for the <paramref name="view"/> specified.

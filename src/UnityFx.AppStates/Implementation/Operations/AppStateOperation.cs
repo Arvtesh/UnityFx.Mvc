@@ -27,8 +27,6 @@ namespace UnityFx.AppStates
 
 		private static int _lastId;
 
-		private List<Exception> _exceptions;
-
 		#endregion
 
 		#region interface
@@ -131,22 +129,6 @@ namespace UnityFx.AppStates
 
 		public int OperationId => _id;
 		public object UserState => AsyncState;
-
-		#endregion
-
-		#region IExceptionAggregator
-
-		public void AddException(Exception e)
-		{
-			if (_exceptions == null)
-			{
-				_exceptions = new List<Exception>() { e };
-			}
-			else
-			{
-				_exceptions.Add(e);
-			}
-		}
 
 		#endregion
 

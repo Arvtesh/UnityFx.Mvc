@@ -146,11 +146,16 @@ namespace UnityFx.AppStates
 
 			if ((options & PresentOptions.Child) != 0)
 			{
-				return PresentChildController(controllerType, options, args);
+				if (_childControllers == null)
+				{
+					_childControllers = new List<AppViewController>();
+				}
+
+				return _state.PresentAsync(this, controllerType, options, args);
 			}
 			else
 			{
-				throw new NotImplementedException();
+				return _state.PresentAsync(controllerType, options, args);
 			}
 		}
 
@@ -169,7 +174,7 @@ namespace UnityFx.AppStates
 			ThrowIfDisposed();
 			ValidateControllerType(controllerType);
 
-			throw new NotImplementedException();
+			return _state.PresentAsync(controllerType, PresentOptions.None, args);
 		}
 
 		/// <summary>
@@ -207,7 +212,7 @@ namespace UnityFx.AppStates
 
 			if (_parentController != null)
 			{
-				return _parentController.DismissChildController(this);
+				return _state.DismissAsync(this);
 			}
 			else
 			{
@@ -288,6 +293,26 @@ namespace UnityFx.AppStates
 			}
 
 			return _view;
+		}
+
+		internal AppViewController CreateChildController(Type controllerType, PresentOptions options, PresentArgs args)
+		{
+			_state.TmpControllerArgs = args;
+			_state.TmpControllerOptions = options;
+			_state.TmpController = this;
+
+			try
+			{
+				var controller = _state.ControllerFactory.CreateController(controllerType, _state);
+				_childControllers.Add(controller);
+				return controller;
+			}
+			finally
+			{
+				_state.TmpControllerArgs = null;
+				_state.TmpControllerOptions = PresentOptions.None;
+				_state.TmpController = null;
+			}
 		}
 
 		internal static void ValidateControllerType(Type controllerType)
@@ -441,58 +466,6 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		private IAsyncOperation<AppViewController> PresentChildController(Type controllerType, PresentOptions options, PresentArgs args)
-		{
-			Debug.Assert(_state.TmpController == null);
-			Debug.Assert(_state.TmpControllerOptions == PresentOptions.None);
-			Debug.Assert(_state.TmpControllerArgs == null);
-
-			if (_childControllers == null)
-			{
-				_childControllers = new List<AppViewController>();
-			}
-
-			_state.TmpController = this;
-			_state.TmpControllerOptions = options;
-			_state.TmpControllerArgs = args;
-
-			try
-			{
-				// TODO: create specialized operation for this
-				var controller = _state.ControllerFactory.CreateController(controllerType, _state);
-
-				if (!controller.IsDisposed)
-				{
-					_childControllers.Add(controller);
-
-					if (controller.View.IsLoaded)
-					{
-						OnViewLoaded(AsyncResult.CompletedOperation);
-					}
-					else
-					{
-						controller.View.Load().AddCompletionCallback(OnViewLoaded);
-					}
-				}
-
-				return AsyncResult.FromResult(controller);
-			}
-			finally
-			{
-				_state.TmpControllerArgs = null;
-				_state.TmpControllerOptions = PresentOptions.None;
-				_state.TmpController = null;
-			}
-		}
-
-		private IAsyncOperation DismissChildController(AppViewController controller)
-		{
-			// TODO: create specialized operation for this
-			controller.InvokeOnDismiss();
-			controller.Dispose();
-			return AsyncResult.CompletedOperation;
-		}
-
 		private bool RemoveChildController(AppViewController controller)
 		{
 			if (controller != null && _childControllers != null)
@@ -501,20 +474,6 @@ namespace UnityFx.AppStates
 			}
 
 			return false;
-		}
-
-		private void OnViewLoaded(IAsyncOperation op)
-		{
-			if (op.IsCompletedSuccessfully)
-			{
-				InvokeOnViewLoaded();
-				InvokeOnPresent();
-
-				if (_state.IsActive)
-				{
-					InvokeOnActivate();
-				}
-			}
 		}
 
 		#endregion
