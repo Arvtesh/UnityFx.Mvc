@@ -10,7 +10,7 @@ namespace UnityFx.AppStates
 	/// A store operation.
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
-	public interface IAppStateOperationInfo
+	public interface IAppOperationInfo
 	{
 		/// <summary>
 		/// Gets identifier of the corresponding operation.

@@ -12,7 +12,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// tt
 	/// </summary>
-	public class AppViewController : IDisposable
+	public class AppViewController : IPresenter, IDismissable
 	{
 		#region data
 
@@ -123,100 +123,6 @@ namespace UnityFx.AppStates
 			if (_disposed)
 			{
 				throw new ObjectDisposedException(_id);
-			}
-		}
-
-		#region presentation
-
-		/// <summary>
-		/// Presents a new state with the specified controller as a child state.
-		/// </summary>
-		/// <param name="controllerType">Type of the view controller to present.</param>
-		/// <param name="options">Presentation options.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
-		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args)
-		{
-			ThrowIfDisposed();
-			ValidateControllerType(controllerType);
-
-			if ((options & PresentOptions.Child) != 0)
-			{
-				if (_childControllers == null)
-				{
-					_childControllers = new List<AppViewController>();
-				}
-
-				return _state.PresentAsync(this, controllerType, options, args);
-			}
-			else
-			{
-				return _state.PresentAsync(controllerType, options, args);
-			}
-		}
-
-		/// <summary>
-		/// Pushes a new state with the specified controller onto the stack.
-		/// </summary>
-		/// <param name="controllerType">Type of the state controller.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
-		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentArgs args)
-		{
-			ThrowIfDisposed();
-			ValidateControllerType(controllerType);
-
-			return _state.PresentAsync(controllerType, PresentOptions.None, args);
-		}
-
-		/// <summary>
-		/// Pushes a new state with the specified controller onto the stack.
-		/// </summary>
-		/// <param name="options">Push options.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation<TController> PresentAsync<TController>(PresentOptions options, PresentArgs args) where TController : AppViewController
-		{
-			return PresentAsync(typeof(TController), options, args) as IAsyncOperation<TController>;
-		}
-
-		/// <summary>
-		/// Pushes a new state with the specified controller onto the stack.
-		/// </summary>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		protected IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : AppViewController
-		{
-			return PresentAsync(typeof(TController), args) as IAsyncOperation<TController>;
-		}
-
-		/// <summary>
-		/// Dismisses the controller and its view.
-		/// </summary>
-		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		public IAsyncOperation DismissAsync()
-		{
-			ThrowIfDisposed();
-
-			if (_parentController != null)
-			{
-				return _state.DismissAsync(this);
-			}
-			else
-			{
-				return _state.DismissAsync();
 			}
 		}
 
@@ -432,6 +338,67 @@ namespace UnityFx.AppStates
 		}
 
 		#endregion
+
+		#region IPresenter
+
+		/// <inheritdoc/>
+		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args)
+		{
+			ThrowIfDisposed();
+
+			if ((options & PresentOptions.Child) != 0)
+			{
+				if (_childControllers == null)
+				{
+					_childControllers = new List<AppViewController>();
+				}
+
+				return _state.PresentAsync(this, controllerType, options, args);
+			}
+			else
+			{
+				return _state.PresentAsync(controllerType, options, args);
+			}
+		}
+
+		/// <inheritdoc/>
+		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentArgs args)
+		{
+			ThrowIfDisposed();
+
+			return _state.PresentAsync(controllerType, args);
+		}
+
+		/// <inheritdoc/>
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentOptions options, PresentArgs args) where TController : AppViewController
+		{
+			return PresentAsync(typeof(TController), options, args) as IAsyncOperation<TController>;
+		}
+
+		/// <inheritdoc/>
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : AppViewController
+		{
+			return PresentAsync(typeof(TController), args) as IAsyncOperation<TController>;
+		}
+
+		#endregion
+
+		#region IDismissable
+
+		/// <inheritdoc/>
+		public IAsyncOperation DismissAsync()
+		{
+			ThrowIfDisposed();
+
+			if (_parentController != null)
+			{
+				return _state.DismissAsync(this);
+			}
+			else
+			{
+				return _state.DismissAsync();
+			}
+		}
 
 		#endregion
 

@@ -8,7 +8,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Event arguments for <see cref="IAppStateService.DismissInitiated"/>.
 	/// </summary>
-	public class DismissInitiatedEventArgs : EventArgs, IAppStateOperationInfo
+	public class DismissInitiatedEventArgs : EventArgs, IAppOperationInfo
 	{
 		#region data
 
@@ -22,7 +22,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DismissInitiatedEventArgs"/> class.
 		/// </summary>
-		public DismissInitiatedEventArgs(IAppStateOperationInfo op)
+		public DismissInitiatedEventArgs(IAppOperationInfo op)
 		{
 			_id = op.OperationId;
 			_userState = op.UserState;

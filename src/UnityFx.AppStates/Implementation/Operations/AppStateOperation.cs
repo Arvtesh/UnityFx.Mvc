@@ -13,7 +13,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A yieldable asynchronous state operation.
 	/// </summary>
-	internal abstract class AppStateOperation : AsyncResult<AppViewController>, IAppStateOperationInfo
+	internal abstract class AppStateOperation : AsyncResult<AppViewController>, IAppOperationInfo
 	{
 		#region data
 

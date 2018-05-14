@@ -8,7 +8,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Event arguments for <see cref="IAppStateService.PresentInitiated"/>.
 	/// </summary>
-	public class PresentInitiatedEventArgs : EventArgs, IAppStateOperationInfo
+	public class PresentInitiatedEventArgs : EventArgs, IAppOperationInfo
 	{
 		#region data
 
@@ -28,7 +28,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentInitiatedEventArgs"/> class.
 		/// </summary>
-		public PresentInitiatedEventArgs(IAppStateOperationInfo op, PresentOptions options)
+		public PresentInitiatedEventArgs(IAppOperationInfo op, PresentOptions options)
 		{
 			_id = op.OperationId;
 			_userState = op.UserState;

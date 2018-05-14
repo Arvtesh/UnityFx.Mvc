@@ -42,7 +42,7 @@ namespace UnityFx.AppStates
 	/// </remarks>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
-	public class AppState : LinkedListNode<AppState>, IDisposable
+	public class AppState : LinkedListNode<AppState>, IPresenter, IDismissable
 	{
 		#region data
 
@@ -101,7 +101,7 @@ namespace UnityFx.AppStates
 			return _stateManager.DismissAsync(controller);
 		}
 
-		internal void Pop(IAppStateOperationInfo op)
+		internal void Pop(IAppOperationInfo op)
 		{
 			if (_state == AppStateState.Pushed)
 			{
@@ -113,7 +113,7 @@ namespace UnityFx.AppStates
 			Dispose();
 		}
 
-		internal void Activate(IAppStateOperationInfo op)
+		internal void Activate(IAppOperationInfo op)
 		{
 			Debug.Assert(_state == AppStateState.Pushed);
 
@@ -126,7 +126,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		internal void Deactivate(IAppStateOperationInfo op)
+		internal void Deactivate(IAppOperationInfo op)
 		{
 			Debug.Assert(_state == AppStateState.Pushed);
 
@@ -192,36 +192,6 @@ namespace UnityFx.AppStates
 		public IReadOnlyCollection<AppState> Substates => _stateManager.States.GetChildren(this);
 
 		/// <summary>
-		/// Presents a new state with the specified controller as a child state.
-		/// </summary>
-		/// <param name="controllerType">Type of the view controller to present.</param>
-		/// <param name="options">Presentation options.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
-		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args)
-		{
-			ThrowIfDisposed();
-
-			return _stateManager.PresentAsync(this, controllerType, options, args);
-		}
-
-		/// <summary>
-		/// Removes the state from the stack.
-		/// </summary>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ObjectDisposedException">Thrown if the state is disposed.</exception>
-		public IAsyncOperation DismissAsync()
-		{
-			ThrowIfDisposed();
-
-			return _stateManager.DismissAsync(this);
-		}
-
-		/// <summary>
 		/// Throws <see cref="ObjectDisposedException"/> if the instance is disposed.
 		/// </summary>
 		protected void ThrowIfDisposed()
@@ -230,6 +200,50 @@ namespace UnityFx.AppStates
 			{
 				throw new ObjectDisposedException(_controller.Id);
 			}
+		}
+
+		#endregion
+
+		#region IPresenter
+
+		/// <inheritdoc/>
+		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args)
+		{
+			ThrowIfDisposed();
+
+			return _stateManager.PresentAsync(this, controllerType, options, args);
+		}
+
+		/// <inheritdoc/>
+		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentArgs args)
+		{
+			ThrowIfDisposed();
+
+			return _stateManager.PresentAsync(this, controllerType, PresentOptions.None, args);
+		}
+
+		/// <inheritdoc/>
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentOptions options, PresentArgs args) where TController : AppViewController
+		{
+			return PresentAsync(typeof(TController), options, args) as IAsyncOperation<TController>;
+		}
+
+		/// <inheritdoc/>
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : AppViewController
+		{
+			return PresentAsync(typeof(TController), args) as IAsyncOperation<TController>;
+		}
+
+		#endregion
+
+		#region IDismissable
+
+		/// <inheritdoc/>
+		public IAsyncOperation DismissAsync()
+		{
+			ThrowIfDisposed();
+
+			return _stateManager.DismissAsync(this);
 		}
 
 		#endregion

@@ -9,7 +9,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Event arguments for <see cref="IAppStateService.PresentCompleted"/>.
 	/// </summary>
-	public class PresentCompletedEventArgs : AsyncCompletedEventArgs, IAppStateOperationInfo
+	public class PresentCompletedEventArgs : AsyncCompletedEventArgs, IAppOperationInfo
 	{
 		#region data
 
@@ -28,7 +28,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentCompletedEventArgs"/> class.
 		/// </summary>
-		public PresentCompletedEventArgs(IAppStateOperationInfo op, AppState state)
+		public PresentCompletedEventArgs(IAppOperationInfo op, AppState state)
 			: base(null, false, op.UserState)
 		{
 			_id = op.OperationId;
@@ -38,7 +38,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentCompletedEventArgs"/> class.
 		/// </summary>
-		public PresentCompletedEventArgs(IAppStateOperationInfo op, AppState state, Exception e, bool canceled)
+		public PresentCompletedEventArgs(IAppOperationInfo op, AppState state, Exception e, bool canceled)
 			: base(e, canceled, op.UserState)
 		{
 			_id = op.OperationId;

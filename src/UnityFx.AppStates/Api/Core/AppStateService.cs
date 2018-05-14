@@ -16,7 +16,8 @@ namespace UnityFx.AppStates
 	/// </summary>
 	/// <threadsafety static="true" instance="false"/>
 	/// <seealso cref="AppState"/>
-	public class AppStateService : IAppStateService, IDisposable
+	/// <seealso cref="AppViewController"/>
+	public class AppStateService : IAppStateService
 	{
 		#region data
 
@@ -168,7 +169,7 @@ namespace UnityFx.AppStates
 		internal IAppViewControllerFactory ControllerFactory => _controllerFactory;
 		internal IAppViewService ViewManager => _viewManager;
 
-		internal void PopStates(IAppStateOperationInfo op, AppState targetState)
+		internal void PopStates(IAppOperationInfo op, AppState targetState)
 		{
 			while (_states.TryPeek(out var state))
 			{
@@ -183,7 +184,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		internal void PopStateDependencies(IAppStateOperationInfo op, AppState state)
+		internal void PopStateDependencies(IAppOperationInfo op, AppState state)
 		{
 			foreach (var s in _states.ToArrayLifo())
 			{
@@ -194,7 +195,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		internal bool TryActivateTopState(IAppStateOperationInfo op)
+		internal bool TryActivateTopState(IAppOperationInfo op)
 		{
 			Debug.Assert(!_disposed);
 			Debug.Assert(op != null);
@@ -208,7 +209,7 @@ namespace UnityFx.AppStates
 			return false;
 		}
 
-		internal bool TryDeactivateTopState(IAppStateOperationInfo op)
+		internal bool TryDeactivateTopState(IAppOperationInfo op)
 		{
 			Debug.Assert(!_disposed);
 			Debug.Assert(op != null);
@@ -298,10 +299,36 @@ namespace UnityFx.AppStates
 		/// <inheritdoc/>
 		public AppStateCollection States => _states;
 
+		#endregion
+
+		#region IPresenter
+
+		/// <inheritdoc/>
+		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args)
+		{
+			ThrowIfDisposed();
+
+			return PresentAsync(default(AppState), controllerType, options, args);
+		}
+
 		/// <inheritdoc/>
 		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentArgs args)
 		{
+			ThrowIfDisposed();
+
 			return PresentAsync(default(AppState), controllerType, PresentOptions.None, args);
+		}
+
+		/// <inheritdoc/>
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentOptions options, PresentArgs args) where TController : AppViewController
+		{
+			return PresentAsync(typeof(TController), options, args) as IAsyncOperation<TController>;
+		}
+
+		/// <inheritdoc/>
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : AppViewController
+		{
+			return PresentAsync(typeof(TController), args) as IAsyncOperation<TController>;
 		}
 
 		#endregion
