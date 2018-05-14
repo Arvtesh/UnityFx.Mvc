@@ -21,7 +21,7 @@ namespace UnityFx.AppStates
 		#region data
 
 		private readonly SynchronizationContext _synchronizationContext;
-		private readonly IAppControllerFactory _controllerFactory;
+		private readonly IAppViewControllerFactory _controllerFactory;
 		private readonly IAppViewService _viewManager;
 		private readonly IServiceProvider _serviceProvider;
 
@@ -97,7 +97,7 @@ namespace UnityFx.AppStates
 		/// <param name="services"></param>
 		/// <param name="controllerFactory"></param>
 		public AppStateService(
-			IAppControllerFactory controllerFactory,
+			IAppViewControllerFactory controllerFactory,
 			IAppViewService viewManager,
 			IServiceProvider services,
 			SynchronizationContext syncContext)
@@ -165,7 +165,7 @@ namespace UnityFx.AppStates
 
 		#region internals
 
-		internal IAppControllerFactory ControllerFactory => _controllerFactory;
+		internal IAppViewControllerFactory ControllerFactory => _controllerFactory;
 		internal IAppViewService ViewManager => _viewManager;
 
 		internal void PopStates(IAppStateOperationInfo op, AppState targetState)

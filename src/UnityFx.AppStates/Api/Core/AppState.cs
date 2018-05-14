@@ -66,7 +66,7 @@ namespace UnityFx.AppStates
 		#region interface
 
 		internal IAppViewService ViewManager => _stateManager.ViewManager;
-		internal IAppControllerFactory ControllerFactory => _stateManager.ControllerFactory;
+		internal IAppViewControllerFactory ControllerFactory => _stateManager.ControllerFactory;
 
 		internal AppViewController TmpController { get; set; }
 		internal PresentOptions TmpControllerOptions { get; set; }

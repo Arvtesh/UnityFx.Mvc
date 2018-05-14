@@ -8,9 +8,9 @@ using System.Reflection;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Default implementation of <see cref="IAppControllerFactory"/>.
+	/// Default implementation of <see cref="IAppViewControllerFactory"/>.
 	/// </summary>
-	internal sealed class AppViewControllerFactory : IAppControllerFactory
+	internal sealed class AppViewControllerFactory : IAppViewControllerFactory
 	{
 		#region data
 
