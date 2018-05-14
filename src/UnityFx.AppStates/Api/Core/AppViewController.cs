@@ -231,24 +231,6 @@ namespace UnityFx.AppStates
 			return _view;
 		}
 
-		internal static void ValidateControllerType(Type controllerType)
-		{
-			if (controllerType == null)
-			{
-				throw new ArgumentNullException(nameof(controllerType));
-			}
-
-			if (controllerType.IsAbstract)
-			{
-				throw new ArgumentException($"Cannot instantiate abstract type {controllerType.Name}", nameof(controllerType));
-			}
-
-			if (!controllerType.IsSubclassOf(typeof(AppViewController)))
-			{
-				throw new ArgumentException($"A state controller is expected to inherit " + typeof(AppViewController).Name, nameof(controllerType));
-			}
-		}
-
 		internal static string GetId(Type controllerType)
 		{
 			if (Attribute.GetCustomAttribute(controllerType, typeof(AppViewControllerAttribute)) is AppViewControllerAttribute attr)

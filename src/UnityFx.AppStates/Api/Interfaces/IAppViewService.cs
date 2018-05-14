@@ -11,7 +11,7 @@ namespace UnityFx.AppStates
 	/// A factory for <see cref="AppView"/> instances.
 	/// </summary>
 	/// <seealso cref="AppView"/>
-	public interface IAppViewService
+	public interface IAppViewService : IDisposable
 	{
 		/// <summary>
 		/// Gets child views.

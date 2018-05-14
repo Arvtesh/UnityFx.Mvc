@@ -374,7 +374,20 @@ namespace UnityFx.AppStates
 
 		private static void ThrowIfInvalidControllerType(Type controllerType)
 		{
-			AppViewController.ValidateControllerType(controllerType);
+			if (controllerType == null)
+			{
+				throw new ArgumentNullException(nameof(controllerType));
+			}
+
+			if (controllerType.IsAbstract)
+			{
+				throw new ArgumentException($"Cannot instantiate abstract type {controllerType.Name}", nameof(controllerType));
+			}
+
+			if (!controllerType.IsSubclassOf(typeof(AppViewController)))
+			{
+				throw new ArgumentException($"A state controller is expected to inherit " + typeof(AppViewController).Name, nameof(controllerType));
+			}
 		}
 
 		#endregion
