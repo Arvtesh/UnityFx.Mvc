@@ -42,7 +42,7 @@ namespace UnityFx.AppStates
 	/// </remarks>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
-	public class AppState : LinkedListNode<AppState>, IPresenter, IDismissable
+	public class AppState : LinkedListNode<AppState>, IAppViewControllerContext, IPresenter, IDismissable
 	{
 		#region data
 
@@ -61,6 +61,10 @@ namespace UnityFx.AppStates
 		private AppStateState _state;
 		private bool _isActive;
 
+		private AppViewController _tmpController;
+		private PresentOptions _tmpControllerOptions;
+		private PresentArgs _tmpControllerArgs;
+
 		#endregion
 
 		#region interface
@@ -68,37 +72,19 @@ namespace UnityFx.AppStates
 		internal IAppViewService ViewManager => _stateManager.ViewManager;
 		internal IAppViewControllerFactory ControllerFactory => _stateManager.ControllerFactory;
 
-		internal AppViewController TmpController { get; set; }
-		internal PresentOptions TmpControllerOptions { get; set; }
-		internal PresentArgs TmpControllerArgs { get; set; }
-
 		internal AppState(AppStateService stateManager, AppState parentState, Type controllerType, PresentOptions options, PresentArgs args)
 			: base(parentState)
 		{
 			Debug.Assert(stateManager != null);
 			Debug.Assert(controllerType != null);
 
-			TmpControllerOptions = options;
-			TmpControllerArgs = args;
+			_tmpControllerOptions = options;
+			_tmpControllerArgs = args;
 
 			_stateManager = stateManager;
 			_console = stateManager.TraceSource;
 			_controller = stateManager.ControllerFactory.CreateController(controllerType, this);
 			_stateManager.States.Add(this);
-		}
-
-		internal IAsyncOperation<AppViewController> PresentAsync(AppViewController parentController, Type controllerType, PresentOptions options, PresentArgs args)
-		{
-			ThrowIfDisposed();
-
-			return _stateManager.PresentAsync(parentController, controllerType, options, args);
-		}
-
-		internal IAsyncOperation DismissAsync(AppViewController controller)
-		{
-			ThrowIfDisposed();
-
-			return _stateManager.DismissAsync(controller);
 		}
 
 		internal void Pop(IAppOperationInfo op)
@@ -148,6 +134,28 @@ namespace UnityFx.AppStates
 		internal AppView GetPrevView()
 		{
 			return Prev?.Controller.GetTopView();
+		}
+
+		internal AppViewController CreateController(AppViewController c, Type controllerType, PresentOptions options, PresentArgs args)
+		{
+			ThrowIfDisposed();
+
+			_tmpControllerArgs = args;
+			_tmpControllerOptions = options;
+			_tmpController = c;
+
+			try
+			{
+				var controller = _stateManager.ControllerFactory.CreateController(controllerType, this);
+				c.AddChildController(controller);
+				return controller;
+			}
+			finally
+			{
+				_tmpControllerArgs = null;
+				_tmpControllerOptions = PresentOptions.None;
+				_tmpController = null;
+			}
 		}
 
 		#endregion
@@ -200,6 +208,57 @@ namespace UnityFx.AppStates
 			{
 				throw new ObjectDisposedException(_controller.Id);
 			}
+		}
+
+		#endregion
+
+		#region IAppViewControllerContext
+
+		/// <inheritdoc/>
+		PresentOptions IAppViewControllerContext.PresentOptions => _tmpControllerOptions;
+
+		/// <inheritdoc/>
+		PresentArgs IAppViewControllerContext.PresentArgs => _tmpControllerArgs;
+
+		/// <inheritdoc/>
+		AppViewController IAppViewControllerContext.ParentController => _tmpController;
+
+		/// <inheritdoc/>
+		AppState IAppViewControllerContext.ParentState => this;
+
+		/// <inheritdoc/>
+		AppView IAppViewControllerContext.CreateView(AppViewController c)
+		{
+			ThrowIfDisposed();
+
+			if (_tmpController == null)
+			{
+				return _stateManager.ViewManager.CreateView(c.Id, GetPrevView(), AppViewOptions.None);
+			}
+			else if ((c.CreationOptions & AppViewControllerOptions.ReuseParentView) != 0)
+			{
+				return _stateManager.ViewManager.CreateChildView(c.Id, _tmpController.View, AppViewOptions.None);
+			}
+			else
+			{
+				return _stateManager.ViewManager.CreateView(c.Id, _tmpController.GetTopView(), AppViewOptions.None);
+			}
+		}
+
+		/// <inheritdoc/>
+		IAsyncOperation<AppViewController> IAppViewControllerContext.PresentAsync(AppViewController parentController, Type controllerType, PresentOptions options, PresentArgs args)
+		{
+			ThrowIfDisposed();
+
+			return _stateManager.PresentAsync(parentController, controllerType, options, args);
+		}
+
+		/// <inheritdoc/>
+		IAsyncOperation IAppViewControllerContext.DismissAsync(AppViewController controller)
+		{
+			ThrowIfDisposed();
+
+			return _stateManager.DismissAsync(controller);
 		}
 
 		#endregion

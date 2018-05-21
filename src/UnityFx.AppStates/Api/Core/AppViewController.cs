@@ -16,13 +16,15 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
+		private readonly IAppViewControllerContext _context;
 		private readonly AppState _state;
 		private readonly AppViewController _parentController;
-		private readonly AppView _view;
+
 		private readonly string _id;
 		private readonly AppViewControllerOptions _createOptions;
 		private readonly PresentOptions _presentOptions;
 		private readonly PresentArgs _presentArgs;
+		private readonly AppView _view;
 
 		private List<AppViewController> _childControllers;
 		private bool _active;
@@ -55,7 +57,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets creation options for the controller.
 		/// </summary>
-		protected AppViewControllerOptions CreationOptions => _createOptions;
+		public AppViewControllerOptions CreationOptions => _createOptions;
 
 		/// <summary>
 		/// Gets the controller creation options.
@@ -80,37 +82,16 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppViewController"/> class.
 		/// </summary>
-		protected AppViewController(AppState state)
+		protected AppViewController(IAppViewControllerContext context)
 		{
-			try
-			{
-				_state = state ?? throw new ArgumentNullException(nameof(state));
-
-				_id = GetId(GetType());
-				_createOptions = GetOptions(GetType());
-				_parentController = state.TmpController;
-				_presentOptions = state.TmpControllerOptions;
-				_presentArgs = state.TmpControllerArgs;
-
-				if (_parentController == null)
-				{
-					_view = state.ViewManager.CreateView(_id, state.GetPrevView(), AppViewOptions.None);
-				}
-				else if ((_createOptions & AppViewControllerOptions.ReuseParentView) != 0)
-				{
-					_view = state.ViewManager.CreateChildView(_id, _parentController.View, AppViewOptions.None);
-				}
-				else
-				{
-					_view = state.ViewManager.CreateView(_id, _parentController.GetTopView(), AppViewOptions.None);
-				}
-			}
-			finally
-			{
-				state.TmpControllerArgs = null;
-				state.TmpControllerOptions = PresentOptions.None;
-				state.TmpController = null;
-			}
+			_context = context ?? throw new ArgumentNullException(nameof(context));
+			_id = GetId(GetType());
+			_createOptions = GetOptions(GetType());
+			_state = context.ParentState;
+			_parentController = context.ParentController;
+			_presentOptions = context.PresentOptions;
+			_presentArgs = context.PresentArgs;
+			_view = context.CreateView(this);
 		}
 
 		/// <summary>
@@ -199,26 +180,10 @@ namespace UnityFx.AppStates
 			OnDismiss();
 		}
 
-		internal AppViewController CreateChildController(Type controllerType, PresentOptions options, PresentArgs args)
+		internal void AddChildController(AppViewController controller)
 		{
-			ThrowIfDisposed();
-
-			_state.TmpControllerArgs = args;
-			_state.TmpControllerOptions = options;
-			_state.TmpController = this;
-
-			try
-			{
-				var controller = _state.ControllerFactory.CreateController(controllerType, _state);
-				_childControllers.Add(controller);
-				return controller;
-			}
-			finally
-			{
-				_state.TmpControllerArgs = null;
-				_state.TmpControllerOptions = PresentOptions.None;
-				_state.TmpController = null;
-			}
+			Debug.Assert(controller != null);
+			_childControllers.Add(controller);
 		}
 
 		internal AppView GetTopView()
@@ -335,11 +300,11 @@ namespace UnityFx.AppStates
 					_childControllers = new List<AppViewController>();
 				}
 
-				return _state.PresentAsync(this, controllerType, options, args);
+				return _context.PresentAsync(this, controllerType, options, args);
 			}
 			else
 			{
-				return _state.PresentAsync(controllerType, options, args);
+				return _context.PresentAsync(controllerType, options, args);
 			}
 		}
 
@@ -348,7 +313,7 @@ namespace UnityFx.AppStates
 		{
 			ThrowIfDisposed();
 
-			return _state.PresentAsync(controllerType, args);
+			return _context.PresentAsync(controllerType, PresentOptions.None, args);
 		}
 
 		/// <inheritdoc/>
@@ -374,11 +339,11 @@ namespace UnityFx.AppStates
 
 			if (_parentController != null)
 			{
-				return _state.DismissAsync(this);
+				return _context.DismissAsync(this);
 			}
 			else
 			{
-				return _state.DismissAsync();
+				return _context.DismissAsync();
 			}
 		}
 

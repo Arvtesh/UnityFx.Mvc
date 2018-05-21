@@ -58,7 +58,7 @@ namespace UnityFx.AppStates
 			{
 				if (_parentController != null)
 				{
-					_controller = _parentController.CreateChildController(_controllerType, _options, _args);
+					_controller = _parentState.CreateController(_parentController, _controllerType, _options, _args);
 				}
 				else
 				{
