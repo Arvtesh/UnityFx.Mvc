@@ -10,7 +10,7 @@ using UnityFx.Async;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// tt
+	/// Defines the shared behaviour that is common to all view controllers.
 	/// </summary>
 	public class AppViewController : IPresenter, IDismissable
 	{
@@ -82,6 +82,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppViewController"/> class.
 		/// </summary>
+		/// <param name="context">Context data for the controller instance.</param>
 		protected AppViewController(IAppViewControllerContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));

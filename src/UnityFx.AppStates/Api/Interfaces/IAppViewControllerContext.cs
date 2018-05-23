@@ -8,8 +8,10 @@ using UnityFx.Async;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// tt
+	/// Context data for an <see cref="AppViewController"/> instance. The interface is basically a link between <see cref="AppState"/> and child controllers.
+	/// It is here for the sake of testability/explicit dependencies for <see cref="AppViewController"/>.
 	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
 	public interface IAppViewControllerContext
 	{
 		/// <summary>
@@ -33,27 +35,27 @@ namespace UnityFx.AppStates
 		AppState ParentState { get; }
 
 		/// <summary>
-		/// tt
+		/// Creates a view for the specified controller.
 		/// </summary>
 		AppView CreateView(AppViewController c);
 
 		/// <summary>
-		/// tt
+		/// Presents a child controller of the specified type.
 		/// </summary>
 		IAsyncOperation<AppViewController> PresentAsync(AppViewController parentController, Type controllerType, PresentOptions options, PresentArgs args);
 
 		/// <summary>
-		/// tt
+		/// Presents a new state with a controller of the specified type.
 		/// </summary>
 		IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args);
 
 		/// <summary>
-		/// tt
+		/// Dismisses the specified child controller.
 		/// </summary>
 		IAsyncOperation DismissAsync(AppViewController c);
 
 		/// <summary>
-		/// tt
+		/// Dismisses the state with its controllers.
 		/// </summary>
 		IAsyncOperation DismissAsync();
 	}
