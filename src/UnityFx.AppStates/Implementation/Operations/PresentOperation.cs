@@ -42,7 +42,6 @@ namespace UnityFx.AppStates
 			_controllerType = controllerType;
 			_options = options;
 			_args = args;
-			_parentState = parentController.State;
 			_parentController = parentController;
 		}
 
@@ -58,11 +57,20 @@ namespace UnityFx.AppStates
 			{
 				if (_parentController != null)
 				{
-					_controller = _parentState.CreateController(_parentController, _controllerType, _options, _args);
+					_controller = _parentController.State.CreateController(_parentController, _controllerType, _options, _args);
 				}
 				else
 				{
 					TryDeactivateTopState();
+
+					if ((_options & PresentOptions.DismissAllStates) != 0)
+					{
+						DismissAllStates();
+					}
+					else if ((_options & PresentOptions.DismissCurrentState) != 0)
+					{
+						DismissStateChildren(_parentState);
+					}
 
 					_controller = new AppState(StateManager, _parentState, _controllerType, _options, _args).Controller;
 				}
@@ -114,7 +122,7 @@ namespace UnityFx.AppStates
 
 		public override string ToString()
 		{
-			return "PushState " + GetStateDesc(_controllerType, _args);
+			return _opName + ' ' + GetStateDesc(_controllerType, _args);
 		}
 
 		#endregion
@@ -131,11 +139,25 @@ namespace UnityFx.AppStates
 					{
 						_pushOp = null;
 						_controller.InvokeOnViewLoaded();
-						_transitionOp = ViewManager.PlayPresentTransition(_controller.View);
+
+						if (_parentState != null && (_options & PresentOptions.DismissCurrentState) != 0)
+						{
+							_transitionOp = ViewManager.PlayPresentTransition(_parentState.View, _controller.View);
+						}
+						else
+						{
+							_transitionOp = ViewManager.PlayPresentTransition(_controller.View);
+						}
+
 						_transitionOp.AddContinuation(this);
 					}
 					else
 					{
+						if (_parentState != null && (_options & PresentOptions.DismissCurrentState) != 0)
+						{
+							_parentState.Dispose();
+						}
+
 						_controller.InvokeOnPresent();
 						TrySetResult(_controller, false);
 					}

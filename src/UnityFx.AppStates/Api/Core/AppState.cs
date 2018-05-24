@@ -46,19 +46,11 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private enum AppStateState
-		{
-			Created,
-			Pushed,
-			Popped,
-			Disposed
-		}
-
 		private readonly AppStateService _stateManager;
 		private readonly AppViewController _controller;
 
-		private AppStateState _state;
 		private bool _isActive;
+		private bool _disposed;
 
 		private AppViewController _tmpController;
 		private PresentOptions _tmpControllerOptions;
@@ -85,23 +77,14 @@ namespace UnityFx.AppStates
 			_stateManager.States.Add(this);
 		}
 
-		internal void Pop(AppOperation op)
+		internal void DismissInternal(AppOperation op)
 		{
-			if (_state == AppStateState.Pushed)
-			{
-				op.TraceEvent(TraceEventType.Verbose, "DismissState " + _controller.TypeId);
-
-				_stateManager.States.Remove(this);
-				_state = AppStateState.Popped;
-			}
-
-			Dispose();
+			op.TraceEvent(TraceEventType.Verbose, "DismissState " + _controller.TypeId);
+			_controller.InvokeOnDismiss();
 		}
 
 		internal bool TryActivate(AppOperation op)
 		{
-			Debug.Assert(_state == AppStateState.Pushed);
-
 			if (!_isActive && (Parent == null || Parent.IsActive))
 			{
 				op.TraceEvent(TraceEventType.Verbose, "ActivateState " + _controller.TypeId);
@@ -117,8 +100,6 @@ namespace UnityFx.AppStates
 
 		internal bool TryDeactivate(AppOperation op)
 		{
-			Debug.Assert(_state == AppStateState.Pushed);
-
 			if (_isActive)
 			{
 				op.TraceEvent(TraceEventType.Verbose, "DeactivateState " + _controller.TypeId);
@@ -196,7 +177,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		protected void ThrowIfDisposed()
 		{
-			if (_state == AppStateState.Disposed)
+			if (_disposed)
 			{
 				throw new ObjectDisposedException(_controller.TypeId);
 			}
@@ -317,9 +298,9 @@ namespace UnityFx.AppStates
 		/// <inheritdoc/>
 		public void Dispose()
 		{
-			if (_state != AppStateState.Disposed)
+			if (!_disposed)
 			{
-				_state = AppStateState.Disposed;
+				_disposed = true;
 				_stateManager.States.Remove(this);
 				_controller.Dispose();
 			}

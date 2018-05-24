@@ -53,31 +53,15 @@ namespace UnityFx.AppStates
 
 					if (_state != null)
 					{
-						while (States.TryPeek(out var state))
-						{
-							if (state == _state)
-							{
-								break;
-							}
-							else
-							{
-								state.Controller.InvokeOnDismiss();
-								state.Dispose();
-							}
-						}
+						DismissStateChildren(_state);
+						_state.DismissInternal(this);
 
-						_state.Controller.InvokeOnDismiss();
 						_transitionOp = ViewManager.PlayDismissTransition(_state.View);
 						_transitionOp.AddContinuation(this);
 					}
 					else
 					{
-						while (States.TryPeek(out var state))
-						{
-							state.Controller.InvokeOnDismiss();
-							state.Dispose();
-						}
-
+						DismissAllStates();
 						TrySetCompleted(false);
 					}
 				}

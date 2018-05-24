@@ -51,6 +51,16 @@ namespace UnityFx.AppStates
 			_stateManager.TryDeactivateTopState(this);
 		}
 
+		protected void DismissAllStates()
+		{
+			_stateManager.DismissAllStates(this);
+		}
+
+		protected void DismissStateChildren(AppState state)
+		{
+			_stateManager.DismissStateChildren(this, state);
+		}
+
 		public void TraceError(string s)
 		{
 			_traceSource.TraceEvent(TraceEventType.Error, _id, _name + ": " + s);

@@ -169,29 +169,21 @@ namespace UnityFx.AppStates
 		internal IAppViewControllerFactory ControllerFactory => _controllerFactory;
 		internal IAppViewService ViewManager => _viewManager;
 
-		internal void PopStates(AppOperation op, AppState targetState)
+		internal void DismissAllStates(AppOperation op)
 		{
 			while (_states.TryPeek(out var state))
 			{
-				if (state == targetState)
-				{
-					break;
-				}
-				else
-				{
-					state.Pop(op);
-				}
+				state.DismissInternal(op);
+				state.Dispose();
 			}
 		}
 
-		internal void PopStateDependencies(AppOperation op, AppState state)
+		internal void DismissStateChildren(AppOperation op, AppState state)
 		{
-			foreach (var s in _states.ToArrayLifo())
+			foreach (var s in _states.GetChildren(state).Reverse())
 			{
-				if (s.Parent == state)
-				{
-					s.Pop(op);
-				}
+				state.DismissInternal(op);
+				state.Dispose();
 			}
 		}
 
@@ -235,21 +227,7 @@ namespace UnityFx.AppStates
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
-			AppOperation result;
-
-			if ((options & PresentOptions.DismissAllStates) == PresentOptions.DismissAllStates)
-			{
-				result = new SetStateOperation(this, null, controllerType, args);
-			}
-			else if ((options & PresentOptions.DismissCurrentState) != 0)
-			{
-				result = new SetStateOperation(this, state, controllerType, args);
-			}
-			else
-			{
-				result = new PresentOperation(this, state, controllerType, options, args);
-			}
-
+			var result = new PresentOperation(this, state, controllerType, options, args);
 			QueueOperation(result);
 			return result;
 		}
