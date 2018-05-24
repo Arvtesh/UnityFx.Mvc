@@ -9,48 +9,46 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Event arguments for <see cref="IAppStateService.PresentCompleted"/>.
 	/// </summary>
-	public class PresentCompletedEventArgs : AsyncCompletedEventArgs, IAppOperationInfo
+	public class PresentCompletedEventArgs : AsyncCompletedEventArgs
 	{
 		#region data
 
 		private readonly int _id;
-		private readonly AppState _state;
+		private readonly AppViewController _controller;
 
 		#endregion
 
 		#region interface
 
 		/// <summary>
-		/// Gets a target state.
+		/// Gets identifier of the present operation.
 		/// </summary>
-		public AppState State => _state;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PresentCompletedEventArgs"/> class.
-		/// </summary>
-		public PresentCompletedEventArgs(IAppOperationInfo op, AppState state)
-			: base(null, false, op.UserState)
-		{
-			_id = op.OperationId;
-			_state = state;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PresentCompletedEventArgs"/> class.
-		/// </summary>
-		public PresentCompletedEventArgs(IAppOperationInfo op, AppState state, Exception e, bool canceled)
-			: base(e, canceled, op.UserState)
-		{
-			_id = op.OperationId;
-			_state = state;
-		}
-
-		#endregion
-
-		#region IAppStateOperationInfo
-
-		/// <inheritdoc/>
 		public int OperationId => _id;
+
+		/// <summary>
+		/// Gets the controller presented.
+		/// </summary>
+		public AppViewController Controller => _controller;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PresentCompletedEventArgs"/> class.
+		/// </summary>
+		public PresentCompletedEventArgs(AppViewController controller, int opId, object userState)
+			: base(null, false, userState)
+		{
+			_id = opId;
+			_controller = controller;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PresentCompletedEventArgs"/> class.
+		/// </summary>
+		public PresentCompletedEventArgs(AppViewController controller, int opId, object userState, Exception e, bool canceled)
+			: base(e, canceled, userState)
+		{
+			_id = opId;
+			_controller = controller;
+		}
 
 		#endregion
 	}

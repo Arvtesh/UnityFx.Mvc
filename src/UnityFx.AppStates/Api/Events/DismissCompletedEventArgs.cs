@@ -9,48 +9,46 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Event arguments for <see cref="IAppStateService.DismissCompleted"/>.
 	/// </summary>
-	public class DismissCompletedEventArgs : AsyncCompletedEventArgs, IAppOperationInfo
+	public class DismissCompletedEventArgs : AsyncCompletedEventArgs
 	{
 		#region data
 
 		private readonly int _id;
-		private readonly AppState _state;
+		private readonly IDismissable _obj;
 
 		#endregion
 
 		#region interface
 
 		/// <summary>
-		/// Gets a state being popped.
+		/// Gets identifier of the dismiss operation.
 		/// </summary>
-		public AppState State => _state;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="DismissCompletedEventArgs"/> class.
-		/// </summary>
-		public DismissCompletedEventArgs(IAppOperationInfo op, AppState state)
-			: base(null, false, op.UserState)
-		{
-			_id = op.OperationId;
-			_state = state;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="DismissCompletedEventArgs"/> class.
-		/// </summary>
-		public DismissCompletedEventArgs(IAppOperationInfo op, AppState state, Exception e, bool canceled)
-			: base(e, canceled, op.UserState)
-		{
-			_id = op.OperationId;
-			_state = state;
-		}
-
-		#endregion
-
-		#region IAppStateOperationInfo
-
-		/// <inheritdoc/>
 		public int OperationId => _id;
+
+		/// <summary>
+		/// Gets an object being dismissed.
+		/// </summary>
+		public IDismissable Target => _obj;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DismissCompletedEventArgs"/> class.
+		/// </summary>
+		public DismissCompletedEventArgs(IDismissable obj, int opId, object userState)
+			: base(null, false, userState)
+		{
+			_id = opId;
+			_obj = obj;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DismissCompletedEventArgs"/> class.
+		/// </summary>
+		public DismissCompletedEventArgs(IDismissable obj, int opId, object userState, Exception e, bool canceled)
+			: base(e, canceled, userState)
+		{
+			_id = opId;
+			_obj = obj;
+		}
 
 		#endregion
 	}

@@ -7,7 +7,7 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class DismissOperation : AppStateOperation, IAsyncContinuation
+	internal class DismissOperation : AppOperation, IAsyncContinuation
 	{
 		#region data
 
@@ -49,7 +49,7 @@ namespace UnityFx.AppStates
 				}
 				else
 				{
-					StateManager.TryDeactivateTopState(this);
+					TryDeactivateTopState();
 
 					if (_state != null)
 					{
@@ -145,11 +145,11 @@ namespace UnityFx.AppStates
 		{
 			if (_state != null)
 			{
-				return "PopState " + _state.Id;
+				return "DismissState " + _state.TypeId;
 			}
 			else
 			{
-				return "PopAll";
+				return "DismissAll";
 			}
 		}
 

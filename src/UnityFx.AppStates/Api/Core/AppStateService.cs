@@ -28,7 +28,7 @@ namespace UnityFx.AppStates
 
 		private readonly AppStateServiceSettings _settings;
 		private readonly AppStateCollection _states;
-		private readonly AsyncResultQueue<AppStateOperation> _stackOperations;
+		private readonly AsyncResultQueue<AppOperation> _stackOperations;
 
 		private bool _disposed;
 
@@ -87,7 +87,7 @@ namespace UnityFx.AppStates
 			_serviceProvider = services;
 			_settings = new AppStateServiceSettings();
 			_states = new AppStateCollection();
-			_stackOperations = new AsyncResultQueue<AppStateOperation>(syncContext);
+			_stackOperations = new AsyncResultQueue<AppOperation>(syncContext);
 		}
 
 		/// <summary>
@@ -113,7 +113,7 @@ namespace UnityFx.AppStates
 			_serviceProvider = services;
 			_settings = new AppStateServiceSettings();
 			_states = new AppStateCollection();
-			_stackOperations = new AsyncResultQueue<AppStateOperation>(syncContext);
+			_stackOperations = new AsyncResultQueue<AppOperation>(syncContext);
 		}
 
 		/// <summary>
@@ -169,7 +169,7 @@ namespace UnityFx.AppStates
 		internal IAppViewControllerFactory ControllerFactory => _controllerFactory;
 		internal IAppViewService ViewManager => _viewManager;
 
-		internal void PopStates(IAppOperationInfo op, AppState targetState)
+		internal void PopStates(AppOperation op, AppState targetState)
 		{
 			while (_states.TryPeek(out var state))
 			{
@@ -184,7 +184,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		internal void PopStateDependencies(IAppOperationInfo op, AppState state)
+		internal void PopStateDependencies(AppOperation op, AppState state)
 		{
 			foreach (var s in _states.ToArrayLifo())
 			{
@@ -195,29 +195,27 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		internal bool TryActivateTopState(IAppOperationInfo op)
+		internal bool TryActivateTopState(AppOperation op)
 		{
 			Debug.Assert(!_disposed);
 			Debug.Assert(op != null);
 
 			if (_states.TryPeek(out var state) && _stackOperations.Count <= 1)
 			{
-				state.Activate(op);
-				return true;
+				return state.TryActivate(op);
 			}
 
 			return false;
 		}
 
-		internal bool TryDeactivateTopState(IAppOperationInfo op)
+		internal bool TryDeactivateTopState(AppOperation op)
 		{
 			Debug.Assert(!_disposed);
 			Debug.Assert(op != null);
 
 			if (_states.TryPeek(out var state))
 			{
-				state.Deactivate(op);
-				return true;
+				return state.TryDeactivate(op);
 			}
 
 			return false;
@@ -237,7 +235,7 @@ namespace UnityFx.AppStates
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
-			AppStateOperation result;
+			AppOperation result;
 
 			if ((options & PresentOptions.DismissAllStates) == PresentOptions.DismissAllStates)
 			{
@@ -346,7 +344,7 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private void QueueOperation(AppStateOperation op)
+		private void QueueOperation(AppOperation op)
 		{
 			_stackOperations.Add(op);
 		}

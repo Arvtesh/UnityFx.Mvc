@@ -8,7 +8,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Event arguments for <see cref="IAppStateService.PresentInitiated"/>.
 	/// </summary>
-	public class PresentInitiatedEventArgs : EventArgs, IAppOperationInfo
+	public class PresentInitiatedEventArgs : EventArgs
 	{
 		#region data
 
@@ -21,29 +21,29 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
-		/// Gets push options.
+		/// Gets identifier of the dismiss operation.
+		/// </summary>
+		public int OperationId => _id;
+
+		/// <summary>
+		/// Gets user-defined data assosisated with the operation.
+		/// </summary>
+		public object UserState => _userState;
+
+		/// <summary>
+		/// Gets present options.
 		/// </summary>
 		public PresentOptions Options => _options;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentInitiatedEventArgs"/> class.
 		/// </summary>
-		public PresentInitiatedEventArgs(IAppOperationInfo op, PresentOptions options)
+		public PresentInitiatedEventArgs(PresentOptions options, int opId, object userState)
 		{
-			_id = op.OperationId;
-			_userState = op.UserState;
+			_id = opId;
+			_userState = userState;
 			_options = options;
 		}
-
-		#endregion
-
-		#region IAppStateOperationInfo
-
-		/// <inheritdoc/>
-		public int OperationId => _id;
-
-		/// <inheritdoc/>
-		public object UserState => _userState;
 
 		#endregion
 	}

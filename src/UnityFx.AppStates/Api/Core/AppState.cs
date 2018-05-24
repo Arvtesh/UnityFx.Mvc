@@ -42,7 +42,7 @@ namespace UnityFx.AppStates
 	/// </remarks>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
-	public class AppState : LinkedListNode<AppState>, IAppViewControllerContext, IPresenter, IDismissable
+	public class AppState : LinkedListNode<AppState>, IAppViewControllerContext, IPresenter, IPresentable, IDismissable
 	{
 		#region data
 
@@ -54,7 +54,6 @@ namespace UnityFx.AppStates
 			Disposed
 		}
 
-		private readonly TraceSource _console;
 		private readonly AppStateService _stateManager;
 		private readonly AppViewController _controller;
 
@@ -82,16 +81,16 @@ namespace UnityFx.AppStates
 			_tmpControllerArgs = args;
 
 			_stateManager = stateManager;
-			_console = stateManager.TraceSource;
 			_controller = stateManager.ControllerFactory.CreateController(controllerType, this);
 			_stateManager.States.Add(this);
 		}
 
-		internal void Pop(IAppOperationInfo op)
+		internal void Pop(AppOperation op)
 		{
 			if (_state == AppStateState.Pushed)
 			{
-				_console.TraceData(TraceEventType.Verbose, op.OperationId, "PopState " + _controller.Id);
+				op.TraceEvent(TraceEventType.Verbose, "DismissState " + _controller.TypeId);
+
 				_stateManager.States.Remove(this);
 				_state = AppStateState.Popped;
 			}
@@ -99,36 +98,44 @@ namespace UnityFx.AppStates
 			Dispose();
 		}
 
-		internal void Activate(IAppOperationInfo op)
+		internal bool TryActivate(AppOperation op)
 		{
 			Debug.Assert(_state == AppStateState.Pushed);
 
 			if (!_isActive && (Parent == null || Parent.IsActive))
 			{
-				_console.TraceEvent(TraceEventType.Verbose, op.OperationId, "ActivateState " + _controller.Id);
+				op.TraceEvent(TraceEventType.Verbose, "ActivateState " + _controller.TypeId);
 
 				_isActive = true;
-				_controller.InvokeOnActivate();
+				_controller.TryActivate();
+
+				return true;
 			}
+
+			return false;
 		}
 
-		internal void Deactivate(IAppOperationInfo op)
+		internal bool TryDeactivate(AppOperation op)
 		{
 			Debug.Assert(_state == AppStateState.Pushed);
 
 			if (_isActive)
 			{
-				_console.TraceData(TraceEventType.Verbose, op.OperationId, "DeactivateState " + _controller.Id);
+				op.TraceEvent(TraceEventType.Verbose, "DeactivateState " + _controller.TypeId);
 
 				try
 				{
-					_controller.InvokeOnDeactivate();
+					_controller.TryDeactivate();
 				}
 				finally
 				{
 					_isActive = false;
 				}
+
+				return true;
 			}
+
+			return false;
 		}
 
 		internal AppView GetPrevView()
@@ -163,36 +170,21 @@ namespace UnityFx.AppStates
 		#region IAppState
 
 		/// <summary>
-		/// Gets the state type identifier.
-		/// </summary>
-		public string Id => _controller.Id;
-
-		/// <summary>
 		/// Gets the state path.
 		/// </summary>
 		public string Path
 		{
 			get
 			{
-				var localPath = '/' + _controller.Id;
+				var localPath = '/' + _controller.TypeId;
 				return Parent?.Path + localPath ?? localPath;
 			}
 		}
 
 		/// <summary>
-		/// Gets a view instance attached to the state.
-		/// </summary>
-		public AppView View => _controller.View;
-
-		/// <summary>
 		/// Gets a controller attached to the state.
 		/// </summary>
 		public AppViewController Controller => _controller;
-
-		/// <summary>
-		/// Gets a value indicating whether the state is active.
-		/// </summary>
-		public bool IsActive => _isActive;
 
 		/// <summary>
 		/// Gets a collection of the state's children.
@@ -206,7 +198,7 @@ namespace UnityFx.AppStates
 		{
 			if (_state == AppStateState.Disposed)
 			{
-				throw new ObjectDisposedException(_controller.Id);
+				throw new ObjectDisposedException(_controller.TypeId);
 			}
 		}
 
@@ -233,15 +225,15 @@ namespace UnityFx.AppStates
 
 			if (_tmpController == null)
 			{
-				return _stateManager.ViewManager.CreateView(c.Id, GetPrevView(), AppViewOptions.None);
+				return _stateManager.ViewManager.CreateView(c.TypeId, GetPrevView(), AppViewOptions.None);
 			}
 			else if ((c.CreationOptions & AppViewControllerOptions.ReuseParentView) != 0)
 			{
-				return _stateManager.ViewManager.CreateChildView(c.Id, _tmpController.View, AppViewOptions.None);
+				return _stateManager.ViewManager.CreateChildView(c.TypeId, _tmpController.View, AppViewOptions.None);
 			}
 			else
 			{
-				return _stateManager.ViewManager.CreateView(c.Id, _tmpController.GetTopView(), AppViewOptions.None);
+				return _stateManager.ViewManager.CreateView(c.TypeId, _tmpController.GetTopView(), AppViewOptions.None);
 			}
 		}
 
@@ -292,6 +284,19 @@ namespace UnityFx.AppStates
 		{
 			return PresentAsync(typeof(TController), args) as IAsyncOperation<TController>;
 		}
+
+		#endregion
+
+		#region IPresentable
+
+		/// <inheritdoc/>
+		public string TypeId => _controller.TypeId;
+
+		/// <inheritdoc/>
+		public AppView View => _controller.View;
+
+		/// <inheritdoc/>
+		public bool IsActive => _isActive;
 
 		#endregion
 

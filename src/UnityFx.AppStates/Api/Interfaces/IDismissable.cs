@@ -14,7 +14,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Dismisses this instance. When dismiss is complete <see cref="IDisposable.Dispose"/> is invoked.
 		/// </summary>
-		/// <exception cref="ObjectDisposedException">Thrown if either the object is disposed.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the object is disposed.</exception>
 		IAsyncOperation DismissAsync();
 	}
 }

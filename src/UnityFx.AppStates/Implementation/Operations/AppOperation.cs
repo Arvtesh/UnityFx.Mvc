@@ -13,7 +13,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A yieldable asynchronous state operation.
 	/// </summary>
-	internal abstract class AppStateOperation : AsyncResult<AppViewController>, IAppOperationInfo
+	internal abstract class AppOperation : AsyncResult<AppViewController>
 	{
 		#region data
 
@@ -31,11 +31,13 @@ namespace UnityFx.AppStates
 
 		#region interface
 
+		public int Id => _id;
+
 		protected AppStateService StateManager => _stateManager;
 		protected IAppViewService ViewManager => _stateManager.ViewManager;
 		protected AppStateCollection States => _stateManager.States;
 
-		protected AppStateOperation(AppStateService stateManager, string name, string comment)
+		protected AppOperation(AppStateService stateManager, string name, string comment)
 		{
 			_id = ++_lastId;
 			_name = name;
@@ -44,22 +46,27 @@ namespace UnityFx.AppStates
 			_comment = comment;
 		}
 
-		protected void TraceError(string s)
+		protected void TryDeactivateTopState()
+		{
+			_stateManager.TryDeactivateTopState(this);
+		}
+
+		public void TraceError(string s)
 		{
 			_traceSource.TraceEvent(TraceEventType.Error, _id, _name + ": " + s);
 		}
 
-		protected void TraceException(Exception e)
+		public void TraceException(Exception e)
 		{
 			_traceSource.TraceData(TraceEventType.Error, _id, e);
 		}
 
-		protected void TraceEvent(TraceEventType eventType, string s)
+		public void TraceEvent(TraceEventType eventType, string s)
 		{
 			_traceSource.TraceEvent(eventType, _id, s);
 		}
 
-		protected void TraceData(TraceEventType eventType, object data)
+		public void TraceData(TraceEventType eventType, object data)
 		{
 			_traceSource.TraceData(eventType, _id, data);
 		}
@@ -109,7 +116,7 @@ namespace UnityFx.AppStates
 		{
 			try
 			{
-				StateManager.TryActivateTopState(this);
+				_stateManager.TryActivateTopState(this);
 			}
 			finally
 			{
@@ -122,13 +129,6 @@ namespace UnityFx.AppStates
 		{
 			TrySetCanceled(false);
 		}
-
-		#endregion
-
-		#region IAppStateOperationInfo
-
-		public int OperationId => _id;
-		public object UserState => AsyncState;
 
 		#endregion
 

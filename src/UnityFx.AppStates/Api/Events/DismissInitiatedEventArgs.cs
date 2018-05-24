@@ -8,35 +8,42 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Event arguments for <see cref="IAppStateService.DismissInitiated"/>.
 	/// </summary>
-	public class DismissInitiatedEventArgs : EventArgs, IAppOperationInfo
+	public class DismissInitiatedEventArgs : EventArgs
 	{
 		#region data
 
 		private readonly int _id;
 		private readonly object _userState;
+		private readonly IDismissable _obj;
 
 		#endregion
 
 		#region interface
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="DismissInitiatedEventArgs"/> class.
+		/// Gets identifier of the dismiss operation.
 		/// </summary>
-		public DismissInitiatedEventArgs(IAppOperationInfo op)
-		{
-			_id = op.OperationId;
-			_userState = op.UserState;
-		}
-
-		#endregion
-
-		#region IAppStateOperationInfo
-
-		/// <inheritdoc/>
 		public int OperationId => _id;
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Gets user-defined data assosisated with the operation.
+		/// </summary>
 		public object UserState => _userState;
+
+		/// <summary>
+		/// Gets an object being dismissed.
+		/// </summary>
+		public IDismissable Target => _obj;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DismissInitiatedEventArgs"/> class.
+		/// </summary>
+		public DismissInitiatedEventArgs(IDismissable obj, int opId, object userState)
+		{
+			_id = opId;
+			_userState = userState;
+			_obj = obj;
+		}
 
 		#endregion
 	}

@@ -7,7 +7,7 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class PresentOperation : AppStateOperation, IAsyncContinuation
+	internal class PresentOperation : AppOperation, IAsyncContinuation
 	{
 		#region data
 
@@ -62,7 +62,7 @@ namespace UnityFx.AppStates
 				}
 				else
 				{
-					StateManager.TryDeactivateTopState(this);
+					TryDeactivateTopState();
 
 					_controller = new AppState(StateManager, _parentState, _controllerType, _options, _args).Controller;
 				}

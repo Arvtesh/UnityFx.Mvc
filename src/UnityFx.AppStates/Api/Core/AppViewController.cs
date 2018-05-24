@@ -12,7 +12,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Defines the shared behaviour that is common to all view controllers.
 	/// </summary>
-	public class AppViewController : IPresenter, IDismissable
+	public class AppViewController : IPresenter, IPresentable, IDismissable
 	{
 		#region data
 
@@ -20,7 +20,7 @@ namespace UnityFx.AppStates
 		private readonly AppState _state;
 		private readonly AppViewController _parentController;
 
-		private readonly string _id;
+		private readonly string _typeId;
 		private readonly AppViewControllerOptions _createOptions;
 		private readonly PresentOptions _presentOptions;
 		private readonly PresentArgs _presentArgs;
@@ -35,24 +35,9 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
-		/// Gets the controller identifier.
-		/// </summary>
-		public string Id => _id;
-
-		/// <summary>
 		/// Gets the parent state.
 		/// </summary>
 		public AppState State => _state;
-
-		/// <summary>
-		/// Gets a view instance attached to the controller.
-		/// </summary>
-		public AppView View => _view;
-
-		/// <summary>
-		/// Gets a value indicating whether the state is active.
-		/// </summary>
-		public bool IsActive => _active;
 
 		/// <summary>
 		/// Gets creation options for the controller.
@@ -86,7 +71,7 @@ namespace UnityFx.AppStates
 		protected AppViewController(IAppViewControllerContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
-			_id = GetId(GetType());
+			_typeId = GetId(GetType());
 			_createOptions = GetOptions(GetType());
 			_state = context.ParentState;
 			_parentController = context.ParentController;
@@ -104,7 +89,7 @@ namespace UnityFx.AppStates
 		{
 			if (_disposed)
 			{
-				throw new ObjectDisposedException(_id);
+				throw new ObjectDisposedException(_typeId);
 			}
 		}
 
@@ -124,7 +109,22 @@ namespace UnityFx.AppStates
 			OnPresent();
 		}
 
-		internal void InvokeOnActivate()
+		internal void InvokeOnDismiss()
+		{
+			ThrowIfDisposed();
+
+			if (_childControllers != null)
+			{
+				foreach (var controller in _childControllers)
+				{
+					controller.InvokeOnDismiss();
+				}
+			}
+
+			OnDismiss();
+		}
+
+		internal bool TryActivate()
 		{
 			ThrowIfDisposed();
 
@@ -139,13 +139,17 @@ namespace UnityFx.AppStates
 				{
 					foreach (var controller in _childControllers)
 					{
-						controller.InvokeOnActivate();
+						controller.TryActivate();
 					}
 				}
+
+				return true;
 			}
+
+			return false;
 		}
 
-		internal void InvokeOnDeactivate()
+		internal bool TryDeactivate()
 		{
 			ThrowIfDisposed();
 
@@ -155,7 +159,7 @@ namespace UnityFx.AppStates
 				{
 					foreach (var controller in _childControllers)
 					{
-						controller.InvokeOnDeactivate();
+						controller.TryDeactivate();
 					}
 				}
 
@@ -163,22 +167,11 @@ namespace UnityFx.AppStates
 
 				_view.Enabled = false;
 				_active = false;
-			}
-		}
 
-		internal void InvokeOnDismiss()
-		{
-			ThrowIfDisposed();
-
-			if (_childControllers != null)
-			{
-				foreach (var controller in _childControllers)
-				{
-					controller.InvokeOnDismiss();
-				}
+				return true;
 			}
 
-			OnDismiss();
+			return false;
 		}
 
 		internal void AddChildController(AppViewController controller)
@@ -328,6 +321,19 @@ namespace UnityFx.AppStates
 		{
 			return PresentAsync(typeof(TController), args) as IAsyncOperation<TController>;
 		}
+
+		#endregion
+
+		#region IPresentable
+
+		/// <inheritdoc/>
+		public string TypeId => _typeId;
+
+		/// <inheritdoc/>
+		public AppView View => _view;
+
+		/// <inheritdoc/>
+		public bool IsActive => _active;
 
 		#endregion
 
