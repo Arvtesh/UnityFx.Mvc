@@ -49,6 +49,7 @@ namespace UnityFx.AppStates
 		private readonly AppStateService _stateManager;
 		private readonly AppViewController _controller;
 
+		private IAsyncOperation _dismissOp;
 		private bool _isActive;
 		private bool _disposed;
 
@@ -286,9 +287,19 @@ namespace UnityFx.AppStates
 		/// <inheritdoc/>
 		public IAsyncOperation DismissAsync()
 		{
-			ThrowIfDisposed();
+			if (_dismissOp == null)
+			{
+				if (_disposed)
+				{
+					_dismissOp = AsyncResult.CompletedOperation;
+				}
+				else
+				{
+					_dismissOp = _stateManager.DismissAsync(this);
+				}
+			}
 
-			return _stateManager.DismissAsync(this);
+			return _dismissOp;
 		}
 
 		#endregion

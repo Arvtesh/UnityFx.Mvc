@@ -14,7 +14,10 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Dismisses this instance. When dismiss is complete <see cref="IDisposable.Dispose"/> is invoked.
 		/// </summary>
-		/// <exception cref="ObjectDisposedException">Thrown if the object is disposed.</exception>
+		/// <remarks>
+		/// Just like <see cref="IDisposable.Dispose"/> this method can be safely called multiple times even
+		/// if the object has been disposed.
+		/// </remarks>
 		IAsyncOperation DismissAsync();
 	}
 }

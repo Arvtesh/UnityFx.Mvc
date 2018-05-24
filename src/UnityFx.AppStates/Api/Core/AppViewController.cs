@@ -27,6 +27,7 @@ namespace UnityFx.AppStates
 		private readonly AppView _view;
 
 		private List<AppViewController> _childControllers;
+		private IAsyncOperation _dismissOp;
 		private bool _active;
 		private bool _disposed;
 
@@ -342,16 +343,23 @@ namespace UnityFx.AppStates
 		/// <inheritdoc/>
 		public IAsyncOperation DismissAsync()
 		{
-			ThrowIfDisposed();
+			if (_dismissOp == null)
+			{
+				if (_disposed)
+				{
+					_dismissOp = AsyncResult.CompletedOperation;
+				}
+				else if (_parentController != null)
+				{
+					_dismissOp = _context.DismissAsync(this);
+				}
+				else
+				{
+					_dismissOp = _context.DismissAsync();
+				}
+			}
 
-			if (_parentController != null)
-			{
-				return _context.DismissAsync(this);
-			}
-			else
-			{
-				return _context.DismissAsync();
-			}
+			return _dismissOp;
 		}
 
 		#endregion
