@@ -8,7 +8,7 @@ using System.Text;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Arguments for <see cref="IAppStateService.PresentAsync(Type, PresentArgs)"/>.
+	/// Arguments for <see cref="IPresenter.PresentAsync(Type, PresentArgs)"/>.
 	/// </summary>
 	public class PresentArgs
 	{
