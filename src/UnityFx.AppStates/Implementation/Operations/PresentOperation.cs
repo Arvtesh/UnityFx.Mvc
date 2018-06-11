@@ -76,7 +76,7 @@ namespace UnityFx.AppStates
 				}
 
 				_pushOp = _controller.View.Load();
-				_pushOp.AddContinuation(this);
+				_pushOp.AddCompletionCallback(this);
 			}
 			catch (Exception e)
 			{
@@ -129,7 +129,7 @@ namespace UnityFx.AppStates
 
 		#region IAsyncContinuation
 
-		public void Invoke(IAsyncOperation op, bool inline)
+		public void Invoke(IAsyncOperation op)
 		{
 			try
 			{
@@ -149,7 +149,7 @@ namespace UnityFx.AppStates
 							_transitionOp = ViewManager.PlayPresentTransition(_controller.View);
 						}
 
-						_transitionOp.AddContinuation(this);
+						_transitionOp.AddCompletionCallback(this);
 					}
 					else
 					{

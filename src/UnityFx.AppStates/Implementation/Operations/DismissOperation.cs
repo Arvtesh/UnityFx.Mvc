@@ -45,7 +45,7 @@ namespace UnityFx.AppStates
 				{
 					_controller.InvokeOnDismiss();
 					_transitionOp = ViewManager.PlayDismissTransition(_controller.View);
-					_transitionOp.AddContinuation(this);
+					_transitionOp.AddCompletionCallback(this);
 				}
 				else
 				{
@@ -57,7 +57,7 @@ namespace UnityFx.AppStates
 						_state.DismissInternal(this);
 
 						_transitionOp = ViewManager.PlayDismissTransition(_state.View);
-						_transitionOp.AddContinuation(this);
+						_transitionOp.AddCompletionCallback(this);
 					}
 					else
 					{
@@ -106,13 +106,13 @@ namespace UnityFx.AppStates
 
 		#region IAsyncContinuation
 
-		public void Invoke(IAsyncOperation op, bool inline)
+		public void Invoke(IAsyncOperation op)
 		{
 			try
 			{
 				if (ProcessNonSuccess(op))
 				{
-					TrySetCompleted(inline);
+					TrySetCompleted();
 				}
 			}
 			catch (Exception e)

@@ -149,7 +149,7 @@ namespace UnityFx.AppStates
 				{
 					_flags |= Flags.Loading;
 					_loadOp = LoadContent(_name);
-					_loadOp.AddContinuation(op =>
+					_loadOp.AddCompletionCallback(op =>
 					{
 						_loadOp = null;
 						_flags &= ~Flags.Loading;
