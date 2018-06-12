@@ -11,34 +11,12 @@ namespace UnityFx.AppStates
 	/// A factory for <see cref="AppView"/> instances.
 	/// </summary>
 	/// <seealso cref="AppView"/>
-	public interface IAppViewService : IDisposable
+	public interface IAppViewService : IAppViewTransitionFactory, IDisposable
 	{
 		/// <summary>
 		/// Gets child views.
 		/// </summary>
 		IReadOnlyCollection<AppView> Views { get; }
-
-		/// <summary>
-		/// Initiates an animated transition from <paramref name="fromView"/> to <paramref name="toView"/>.
-		/// </summary>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="fromView"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="toView"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the service is disposed.</exception>
-		IAsyncOperation PlayPresentTransition(AppView fromView, AppView toView);
-
-		/// <summary>
-		/// Initiates a present animation for the <paramref name="view"/> specified.
-		/// </summary>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the service is disposed.</exception>
-		IAsyncOperation PlayPresentTransition(AppView view);
-
-		/// <summary>
-		/// Initiates a dismiss animation for the <paramref name="view"/> specified.
-		/// </summary>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the service is disposed.</exception>
-		IAsyncOperation PlayDismissTransition(AppView view);
 
 		/// <summary>
 		/// Creates an empty view with the specified <paramref name="id"/> on top of the <paramref name="insertAfter"/> one.

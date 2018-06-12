@@ -44,7 +44,7 @@ namespace UnityFx.AppStates
 				if (_controller != null)
 				{
 					_controller.InvokeOnDismiss();
-					_transitionOp = ViewManager.PlayDismissTransition(_controller.View);
+					_transitionOp = ViewManager.PlayDismissTransition(_controller.View, _controller.Parent.View);
 					_transitionOp.AddCompletionCallback(this);
 				}
 				else
@@ -56,7 +56,7 @@ namespace UnityFx.AppStates
 						DismissStateChildren(_state);
 						_state.DismissInternal(this);
 
-						_transitionOp = ViewManager.PlayDismissTransition(_state.View);
+						_transitionOp = ViewManager.PlayDismissTransition(_state.View, _state.Parent?.View);
 						_transitionOp.AddCompletionCallback(this);
 					}
 					else

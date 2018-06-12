@@ -140,13 +140,13 @@ namespace UnityFx.AppStates
 						_pushOp = null;
 						_controller.InvokeOnViewLoaded();
 
-						if (_parentState != null && (_options & PresentOptions.DismissCurrentState) != 0)
+						if (_parentController != null)
 						{
-							_transitionOp = ViewManager.PlayPresentTransition(_parentState.View, _controller.View);
+							_transitionOp = ViewManager.PlayPresentTransition(_parentController.View, _controller.View, false);
 						}
 						else
 						{
-							_transitionOp = ViewManager.PlayPresentTransition(_controller.View);
+							_transitionOp = ViewManager.PlayPresentTransition(_parentState.View, _controller.View, (_options & PresentOptions.DismissCurrentState) != 0);
 						}
 
 						_transitionOp.AddCompletionCallback(this);

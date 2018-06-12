@@ -177,17 +177,17 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// tt
+		/// Switches view visibility flag.
 		/// </summary>
 		protected abstract void SetVisible(bool visible);
 
 		/// <summary>
-		/// tt
+		/// Enabled or disables the view.
 		/// </summary>
 		protected abstract void SetEnabled(bool visible);
 
 		/// <summary>
-		/// tt
+		/// Initiates loading of the view content.
 		/// </summary>
 		protected abstract IAsyncOperation LoadContent(string id);
 

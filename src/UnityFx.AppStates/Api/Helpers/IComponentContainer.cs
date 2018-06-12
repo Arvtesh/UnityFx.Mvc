@@ -6,27 +6,27 @@ using System;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// tt
+	/// A generic container of components.
 	/// </summary>
 	public interface IComponentContainer
 	{
 		/// <summary>
-		/// tt
+		/// Gets a component of the specified type (or <see langword="null"/> if not found).
 		/// </summary>
 		TComponent GetComponent<TComponent>();
 
 		/// <summary>
-		/// tt
+		/// Recursively searches for a component of the specified type (returns <see langword="null"/> if not found).
 		/// </summary>
 		TComponent GetComponentRecursive<TComponent>();
 
 		/// <summary>
-		/// tt
+		/// Gets all components of the specified type (or <see langword="null"/> if not found).
 		/// </summary>
 		TComponent[] GetComponents<TComponent>();
 
 		/// <summary>
-		/// tt
+		/// Recursively searches for components of the specified type (returns <see langword="null"/> if not found).
 		/// </summary>
 		TComponent[] GetComponentsRecursive<TComponent>();
 	}

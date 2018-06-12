@@ -46,6 +46,11 @@ namespace UnityFx.AppStates
 		public AppViewControllerOptions CreationOptions => _createOptions;
 
 		/// <summary>
+		/// Gets prent controller (if any).
+		/// </summary>
+		public AppViewController Parent => _parentController;
+
+		/// <summary>
 		/// Gets the controller creation options.
 		/// </summary>
 		protected PresentOptions PresentOptions => _presentOptions;

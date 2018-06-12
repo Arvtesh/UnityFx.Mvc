@@ -9,7 +9,7 @@ using System.Diagnostics;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// tt
+	/// A generic node of linked list.
 	/// </summary>
 	/// <typeparam name="T">Type of the node.</typeparam>
 	public class LinkedListNode<T> where T : class

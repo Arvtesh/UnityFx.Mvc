@@ -42,20 +42,18 @@ namespace UnityFx.AppStates
 			throw new NotImplementedException();
 		}
 
+		#endregion
+
+		#region IAppViewTransitionFactory
+
 		/// <inheritdoc/>
-		public IAsyncOperation PlayDismissTransition(AppView view)
+		public IAsyncOperation PlayPresentTransition(AppView fromView, AppView toView, bool replace)
 		{
 			throw new NotImplementedException();
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation PlayPresentTransition(AppView fromView, AppView toView)
-		{
-			throw new NotImplementedException();
-		}
-
-		/// <inheritdoc/>
-		public IAsyncOperation PlayPresentTransition(AppView view)
+		public IAsyncOperation PlayDismissTransition(AppView view, AppView toView)
 		{
 			throw new NotImplementedException();
 		}
