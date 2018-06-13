@@ -24,7 +24,7 @@ Please see the links below for extended information on the product:
 
 ## Contributing
 
-Please see [contributing guide](CONTRIBUTING.md) for details.
+Please see [contributing guide](.github/CONTRIBUTING.md) for details.
 
 ## License
 
