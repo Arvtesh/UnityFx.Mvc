@@ -2,10 +2,14 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using UnityEngine;
 
-namespace UnityFx.AppStates
+namespace UnityFx.AppStates.Samples
 {
-	internal class TestController_Invalid
+	/// <summary>
+	/// Application entry point.
+	/// </summary>
+	public class AppRoot : MonoBehaviour
 	{
 	}
 }

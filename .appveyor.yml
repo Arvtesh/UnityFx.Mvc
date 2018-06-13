@@ -16,9 +16,10 @@ build_script:
   - ps: .\build.ps1
 
 artifacts:
+  - path: .\bin\net35
+    name: UnityFx.AppStates-net35
   - path: .\bin\net46
     name: UnityFx.AppStates-net46
-
   - path: .\bin\netstandard2.0
     name: UnityFx.AppStates-netstandard2.0
 
@@ -26,7 +27,7 @@ dotnet_csproj:
   patch: true
   file: '**\*.csproj'
   version: '$(GitVersion_MajorMinorPatch)'
-  package_version: '$(GitVersion_SemVer)'
+  package_version: '$(GitVersion_NuGetVersionV2)'
   assembly_version: '$(GitVersion_AssemblySemVer)'
   file_version: '$(GitVersion_MajorMinorPatch).$(GitVersion_CommitsSinceVersionSource)'
   informational_version: '$(GitVersion_InformationalVersion)'

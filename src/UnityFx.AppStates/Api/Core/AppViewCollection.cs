@@ -5,7 +5,10 @@ using System;
 
 namespace UnityFx.AppStates
 {
-	internal class TestController_Invalid
+	/// <summary>
+	/// A collection of views.
+	/// </summary>
+	public class AppViewCollection : LinkedListCollection<AppView>
 	{
 	}
 }
