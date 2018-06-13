@@ -12,30 +12,6 @@ using NSubstitute;
 
 namespace UnityFx.AppStates
 {
-	public enum ControllerMethodId
-	{
-		None,
-		Ctor,
-		OnPush,
-		OnLoadContent,
-		OnActivate,
-		OnDectivate,
-		OnPop,
-		Dispose
-	}
-
-	public struct MethodCallInfo
-	{
-		public object Caller;
-		public ControllerMethodId Method;
-
-		public MethodCallInfo(object caller, ControllerMethodId method)
-		{
-			Caller = caller;
-			Method = method;
-		}
-	}
-
 	public class AppStateControllerTests : IDisposable
 	{
 		#region data
@@ -70,128 +46,9 @@ namespace UnityFx.AppStates
 			Assert.ThrowsAsync<ArgumentException>(() => _stateManager.PresentAsync(typeof(TestController_Invalid), PresentArgs.Default).ToTask());
 		}
 
-		[Fact]
-		public async Task MultipleConstructorArgumentsSupported()
-		{
-			var testDependency = new object();
-			_serviceProvider.GetService(typeof(object)).Returns(testDependency);
-
-			var controller = await _stateManager.PresentAsync(typeof(TestController_ConstructorWithMultipleArguments), PresentArgs.Default) as TestController_ConstructorWithMultipleArguments;
-
-			Assert.NotNull(controller);
-			Assert.Equal(_serviceProvider, controller.ServiceProvider);
-			Assert.Equal(testDependency, controller.Obj);
-		}
-
-		[Fact]
-		public async Task EventsAreTriggeredInCorrectOrder()
-		{
-			var eventList = new List<MethodCallInfo>();
-			var controller = await _stateManager.PresentAsync(typeof(TestController_Events), new PresentArgs(eventList));
-			await controller.DismissAsync();
-
-			Assert.Empty(_stateManager.States);
-			Assert.Equal(ControllerMethodId.Ctor, eventList[0].Method);
-			Assert.Equal(ControllerMethodId.OnPush, eventList[1].Method);
-			Assert.Equal(ControllerMethodId.OnLoadContent, eventList[2].Method);
-			Assert.Equal(ControllerMethodId.OnActivate, eventList[3].Method);
-			Assert.Equal(ControllerMethodId.OnDectivate, eventList[4].Method);
-			Assert.Equal(ControllerMethodId.OnPop, eventList[5].Method);
-			Assert.Equal(ControllerMethodId.Dispose, eventList[6].Method);
-		}
-
-		[Theory]
-		[InlineData(ControllerMethodId.OnPush, ControllerMethodId.Ctor)]
-		[InlineData(ControllerMethodId.OnActivate, ControllerMethodId.OnActivate)]
-		public async Task SubstateEventShouldComeAfter(ControllerMethodId stateEvent, ControllerMethodId substateEvent)
-		{
-			var eventList = new List<MethodCallInfo>();
-			var controller = await _stateManager.PresentAsync(typeof(TestController_EventsSubstsatesCtor), new PresentArgs(eventList));
-
-			AssertBefore(stateEvent, controller, substateEvent, eventList);
-		}
-
-		[Theory]
-		[InlineData(ControllerMethodId.OnDectivate, ControllerMethodId.OnDectivate)]
-		[InlineData(ControllerMethodId.OnPop, ControllerMethodId.Dispose)]
-		public async Task SubstateEventShouldComeBefore(ControllerMethodId stateEvent, ControllerMethodId substateEvent)
-		{
-			var eventList = new List<MethodCallInfo>();
-			var controller = await _stateManager.PresentAsync(typeof(TestController_EventsSubstsatesCtor), new PresentArgs(eventList));
-			await controller.DismissAsync();
-
-			AssertAfter(stateEvent, controller, substateEvent, eventList);
-		}
-
-		[Theory]
-		[InlineData(ControllerMethodId.Ctor)]
-		[InlineData(ControllerMethodId.OnPush)]
-		[InlineData(ControllerMethodId.OnLoadContent)]
-		[InlineData(ControllerMethodId.OnActivate)]
-		public async Task PushExceptionIsForwarded(ControllerMethodId method)
-		{
-			await Assert.ThrowsAsync<Exception>(() => _stateManager.PresentAsync(typeof(TestController_EventErrors), new PresentArgs(method)).ToTask());
-
-			if (method == ControllerMethodId.OnActivate)
-			{
-				Assert.Equal(1, _stateManager.States.Count);
-			}
-			else
-			{
-				Assert.Empty(_stateManager.States);
-			}
-		}
-
-		[Theory]
-		[InlineData(ControllerMethodId.OnDectivate)]
-		[InlineData(ControllerMethodId.OnPop)]
-		[InlineData(ControllerMethodId.Dispose)]
-		public async Task PopExceptionIsForwarded(ControllerMethodId method)
-		{
-			var controller = await _stateManager.PresentAsync(typeof(TestController_EventErrors), new PresentArgs(method));
-			await Assert.ThrowsAsync<Exception>(() => controller.DismissAsync().ToTask());
-			Assert.Empty(_stateManager.States);
-		}
-
 		#endregion
 
 		#region implementation
-
-		private static void AssertBefore(ControllerMethodId method, ControllerMethodId method2, List<MethodCallInfo> calls)
-		{
-			var index = calls.FindIndex(ci => ci.Method == method);
-			var index2 = calls.FindIndex(ci => ci.Method == method2);
-			Assert.NotEqual(-1, index);
-			Assert.NotEqual(-1, index2);
-			Assert.True(index < index2);
-		}
-
-		private static void AssertBefore(ControllerMethodId method, object caller, ControllerMethodId method2, List<MethodCallInfo> calls)
-		{
-			var index = calls.FindIndex(ci => ci.Caller == caller && ci.Method == method);
-			var index2 = calls.FindIndex(ci => ci.Caller != caller && ci.Method == method2);
-			Assert.NotEqual(-1, index);
-			Assert.NotEqual(-1, index2);
-			Assert.True(index < index2);
-		}
-
-		private static void AssertAfter(ControllerMethodId method, ControllerMethodId method2, List<MethodCallInfo> calls)
-		{
-			var index = calls.FindIndex(ci => ci.Method == method);
-			var index2 = calls.FindIndex(ci => ci.Method == method2);
-			Assert.NotEqual(-1, index);
-			Assert.NotEqual(-1, index2);
-			Assert.True(index > index2);
-		}
-
-		private static void AssertAfter(ControllerMethodId method, object caller, ControllerMethodId method2, List<MethodCallInfo> calls)
-		{
-			var index = calls.FindIndex(ci => ci.Caller == caller && ci.Method == method);
-			var index2 = calls.FindIndex(ci => ci.Caller != caller && ci.Method == method2);
-			Assert.NotEqual(-1, index);
-			Assert.NotEqual(-1, index2);
-			Assert.True(index > index2);
-		}
 
 		#endregion
 	}

@@ -40,46 +40,6 @@ namespace UnityFx.AppStates
 		#region tests
 
 		[Fact]
-		public void InitialStateIsCorrect()
-		{
-			Assert.NotNull(_stateManager.States);
-			Assert.Empty(_stateManager.States);
-		}
-
-		[Fact]
-		public async Task PushStateAsync_Succeeds()
-		{
-			// Arrange
-			var op = _stateManager.PresentAsync(typeof(TestController_Minimal), PresentArgs.Default);
-
-			// Act
-			var controller = await op;
-
-			// Assert
-			Assert.NotNull(controller);
-			Assert.True(controller.IsActive);
-			Assert.NotEmpty(_stateManager.States);
-			Assert.Empty(controller.State.Substates);
-			Assert.IsType<TestController_Minimal>(controller);
-			Assert.Contains(controller.State, _stateManager.States);
-		}
-
-		[Fact]
-		public async Task PopStateAsync_Succeeds()
-		{
-			// Arrange
-			var controller = await _stateManager.PresentAsync(typeof(TestController_Minimal), PresentArgs.Default);
-
-			// Act
-			await controller.DismissAsync();
-
-			// Assert
-			Assert.NotNull(controller);
-			Assert.False(controller.IsActive);
-			Assert.Empty(_stateManager.States);
-		}
-
-		[Fact]
 		public void Dispose_CanBeCalledMultipleTimes()
 		{
 			_stateManager.Dispose();
