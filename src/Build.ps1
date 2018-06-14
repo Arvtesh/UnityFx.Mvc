@@ -3,8 +3,7 @@ $solutionPath = Join-Path $scriptPath "UnityFx.AppStates.sln"
 $configuration = $args[0]
 $packagesPath = Join-Path $scriptPath "..\temp\BuildTools"
 $binPath = Join-Path $scriptPath "..\bin"
-$binPath46 = Join-Path $binPath "net46"
-$binPath20 = Join-Path $binPath "netstandard2.0"
+$assetStorePath = Join-Path $binPath "AssetStore"
 $msbuildPath = "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MsBuild.exe"
 $nugetPath = Join-Path $packagesPath "nuget.exe"
 $gitversionPath = Join-Path $packagesPath "gitversion.commandline\tools\gitversion.exe"
@@ -18,12 +17,14 @@ if (!(Test-Path $packagesPath)) {
 	New-Item $packagesPath -ItemType Directory
 }
 
-if (!(Test-Path $binPath46)) {
-	New-Item $binPath46 -ItemType Directory
+if (Test-Path $assetStorePath)
+{
+	Remove-Item $assetStorePath -Force -Recurse
+	New-Item $assetStorePath -ItemType Directory
 }
-
-if (!(Test-Path $binPath20)) {
-	New-Item $binPath20 -ItemType Directory
+else
+{
+	New-Item $assetStorePath -ItemType Directory
 }
 
 # download nuget.exe if not present
@@ -39,7 +40,7 @@ Write-Host "Install/update GetVersion" -Foreground Blue
 
 # build projects
 Write-Host "Building projects" -Foreground Blue
-& $nugetPath restore $solutionPath
+& $msbuildPath $solutionPath /m /v:m /t:Restore
 & $msbuildPath $solutionPath /m /t:Build /p:Configuration=$configuration
 
 # fail if solution build failed
@@ -53,18 +54,28 @@ if ($LastExitCode -ne 0) {
 }
 
 # publish build results to .\Build\Bin
-$filesToPublish46 =
-	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates.Core/bin" (Join-Path $configuration "net46\UnityFx.AppStates.Api.dll"))),
-	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates.Core/bin" (Join-Path $configuration "net46\UnityFx.AppStates.Api.xml"))),
-	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates.Core/bin" (Join-Path $configuration "net46\UnityFx.AppStates.Core.dll"))),
-	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates.Core/bin" (Join-Path $configuration "net46\UnityFx.AppStates.Core.xml")))
+$filesToPublish = (Join-Path $scriptPath (Join-Path "UnityFx.AppStates\bin" (Join-Path $configuration "\*")))
+Copy-Item -Path $filesToPublish -Destination $binPath -Force -Recurse
 
-Copy-Item -Path $filesToPublish46 -Destination $binPath46 -Force
+function _PublishAssetStorePackage
+{
+	param([string]$targetFramework)
 
-$filesToPublish20 =
-	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates.Core/bin" (Join-Path $configuration "netstandard2.0\UnityFx.AppStates.Api.dll"))),
-	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates.Core/bin" (Join-Path $configuration "netstandard2.0\UnityFx.AppStates.Api.xml"))),
-	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates.Core/bin" (Join-Path $configuration "netstandard2.0\UnityFx.AppStates.Core.dll"))),
-	(Join-Path $scriptPath (Join-Path "UnityFx.AppStates.Core/bin" (Join-Path $configuration "netstandard2.0\UnityFx.AppStates.Core.xml")))
+	$changelogPath = (Join-Path $scriptPath "..\CHANGELOG.md")
+	$readmePath = (Join-Path $scriptPath "UnityFx.AppStates\README.txt")
+	$filesToPublish = (Join-Path $scriptPath "UnityFx.AppStates.AssetStore\Assets\*")
+	$binToPublish =(Join-Path $binPath (Join-Path $targetFramework "\*")) 
+	$publishPath = (Join-Path $assetStorePath (Join-Path $targetFramework "Assets"))
+	$publishPath2 = (Join-Path $publishPath "UnityFx.AppStates")
+	$publishBinPath = (Join-Path $publishPath "UnityFx.AppStates\Bin")
+	
+	New-Item $publishBinPath -ItemType Directory
+	Copy-Item -Path $filesToPublish -Destination $publishPath -Force -Recurse
+	Copy-Item -Path $binToPublish -Destination $publishBinPath -Force -Recurse
+	Copy-Item -Path $changelogPath -Destination $publishPath2 -Force
+	Copy-Item -Path $readmePath -Destination $publishPath2 -Force
+}
 
-Copy-Item -Path $filesToPublish20 -Destination $binPath20 -Force
+_PublishAssetStorePackage "net35"
+_PublishAssetStorePackage "net46"
+_PublishAssetStorePackage "netstandard2.0"
