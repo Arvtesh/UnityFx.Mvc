@@ -180,7 +180,7 @@ namespace UnityFx.AppStates
 
 		internal void DismissStateChildren(AppOperation op, AppState state)
 		{
-			foreach (var s in _states.GetChildren(state).Reverse())
+			foreach (var s in state.Children.Reverse())
 			{
 				state.DismissInternal(op);
 				state.Dispose();
@@ -211,6 +211,16 @@ namespace UnityFx.AppStates
 			}
 
 			return false;
+		}
+
+		internal void AddState(AppState state)
+		{
+			_states.Add(state);
+		}
+
+		internal void RemoveState(AppState state)
+		{
+			_states.Remove(state);
 		}
 
 		internal IAsyncOperation<AppViewController> PresentAsync(AppViewController parentController, Type controllerType, PresentOptions options, PresentArgs args)
@@ -273,7 +283,7 @@ namespace UnityFx.AppStates
 		public bool IsBusy => !_stackOperations.IsEmpty;
 
 		/// <inheritdoc/>
-		public AppStateCollection States => _states;
+		public IReadOnlyCollection<AppState> States => _states;
 
 		#endregion
 

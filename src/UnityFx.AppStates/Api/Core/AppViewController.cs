@@ -68,7 +68,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets child view controllers.
 		/// </summary>
-		protected IEnumerable<AppViewController> ChildControllers => _childControllers ?? Enumerable.Empty<AppViewController>();
+		protected IEnumerable<AppViewController> Children => _childControllers ?? Enumerable.Empty<AppViewController>();
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppViewController"/> class.

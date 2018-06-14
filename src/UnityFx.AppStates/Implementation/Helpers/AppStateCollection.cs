@@ -5,10 +5,7 @@ using System;
 
 namespace UnityFx.AppStates
 {
-	/// <summary>
-	/// A collection of views.
-	/// </summary>
-	public class AppViewCollection : LinkedListCollection<AppView>
+	internal class AppStateCollection : LinkedListCollection<AppState>
 	{
 	}
 }

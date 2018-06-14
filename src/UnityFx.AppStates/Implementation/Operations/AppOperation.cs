@@ -35,7 +35,7 @@ namespace UnityFx.AppStates
 
 		protected AppStateService StateManager => _stateManager;
 		protected IAppViewService ViewManager => _stateManager.ViewManager;
-		protected AppStateCollection States => _stateManager.States;
+		protected IReadOnlyCollection<AppState> States => _stateManager.States;
 
 		protected AppOperation(AppStateService stateManager, string name, string comment)
 		{

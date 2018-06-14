@@ -75,7 +75,7 @@ namespace UnityFx.AppStates
 
 			_stateManager = stateManager;
 			_controller = stateManager.ControllerFactory.CreateController(controllerType, this);
-			_stateManager.States.Add(this);
+			_stateManager.AddState(this);
 		}
 
 		internal void DismissInternal(AppOperation op)
@@ -167,11 +167,6 @@ namespace UnityFx.AppStates
 		/// Gets a controller attached to the state.
 		/// </summary>
 		public AppViewController Controller => _controller;
-
-		/// <summary>
-		/// Gets a collection of the state's children.
-		/// </summary>
-		public IReadOnlyCollection<AppState> Substates => _stateManager.States.GetChildren(this);
 
 		/// <summary>
 		/// Throws <see cref="ObjectDisposedException"/> if the instance is disposed.
@@ -312,7 +307,7 @@ namespace UnityFx.AppStates
 			if (!_disposed)
 			{
 				_disposed = true;
-				_stateManager.States.Remove(this);
+				_stateManager.RemoveState(this);
 				_controller.Dispose();
 			}
 		}

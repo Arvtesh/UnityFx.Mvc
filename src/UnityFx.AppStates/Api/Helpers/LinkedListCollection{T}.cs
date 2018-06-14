@@ -12,7 +12,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A collection of states.
 	/// </summary>
-	public class LinkedListCollection<T> : IReadOnlyCollection<T> where T : LinkedListNode<T>
+	public class LinkedListCollection<T> : ICollection<T>, IReadOnlyCollection<T> where T : LinkedListNode<T>
 	{
 		#region data
 
@@ -130,27 +130,6 @@ namespace UnityFx.AppStates
 
 		#region internals
 
-		internal void Add(T node)
-		{
-			Debug.Assert(node != null);
-
-			if (_first != null)
-			{
-				Debug.Assert(_last != null);
-				Debug.Assert(_count > 0);
-
-				_last.Next = node;
-				node.Prev = _last;
-				++_count;
-			}
-			else
-			{
-				_first = node;
-				_last = node;
-				_count = 1;
-			}
-		}
-
 		internal void AddFirst(T node)
 		{
 			Debug.Assert(node != null);
@@ -217,62 +196,6 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		internal void Remove(T node)
-		{
-			if (node != null)
-			{
-				var prev = node.Prev;
-				var next = node.Next;
-
-				if (prev != null)
-				{
-					prev.Next = next;
-				}
-
-				if (next != null)
-				{
-					next.Prev = prev;
-				}
-
-				node.Prev = null;
-				node.Next = null;
-
-				if (_first == node)
-				{
-					_first = next;
-				}
-
-				if (_last == node)
-				{
-					_last = prev;
-				}
-
-				--_count;
-			}
-		}
-
-		internal void Clear()
-		{
-			var cur = _first;
-
-			while (cur != null)
-			{
-				var next = cur.Next;
-				cur.Next = null;
-				cur.Prev = null;
-				cur = next;
-			}
-
-			_first = null;
-			_last = null;
-			_count = 0;
-		}
-
-		internal ChildEnumerable GetChildren(T item)
-		{
-			return new ChildEnumerable(item);
-		}
-
 		internal Enumerable GetEnumerableLifo()
 		{
 			return new Enumerable(_last, false);
@@ -306,6 +229,135 @@ namespace UnityFx.AppStates
 
 		#endregion
 
+		#region ICollection
+
+		/// <inheritdoc/>
+		public bool IsReadOnly => false;
+
+		/// <inheritdoc/>
+		public void Add(T node)
+		{
+			Debug.Assert(node != null);
+
+			if (_first != null)
+			{
+				Debug.Assert(_last != null);
+				Debug.Assert(_count > 0);
+
+				_last.Next = node;
+				node.Prev = _last;
+				++_count;
+			}
+			else
+			{
+				_first = node;
+				_last = node;
+				_count = 1;
+			}
+		}
+
+		/// <inheritdoc/>
+		public bool Remove(T node)
+		{
+			if (node != null)
+			{
+				var prev = node.Prev;
+				var next = node.Next;
+
+				if (prev != null || next != null)
+				{
+					if (prev != null)
+					{
+						prev.Next = next;
+					}
+
+					if (next != null)
+					{
+						next.Prev = prev;
+					}
+
+					node.Prev = null;
+					node.Next = null;
+
+					if (_first == node)
+					{
+						_first = next;
+					}
+
+					if (_last == node)
+					{
+						_last = prev;
+					}
+
+					--_count;
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		/// <inheritdoc/>
+		public void Clear()
+		{
+			var cur = _first;
+
+			while (cur != null)
+			{
+				var next = cur.Next;
+				cur.Next = null;
+				cur.Prev = null;
+				cur = next;
+			}
+
+			_first = null;
+			_last = null;
+			_count = 0;
+		}
+
+		/// <inheritdoc/>
+		public bool Contains(T item)
+		{
+			var cur = _first;
+
+			while (cur != null)
+			{
+				if (cur == item)
+				{
+					return true;
+				}
+
+				cur = cur.Next;
+			}
+
+			return false;
+		}
+
+		/// <inheritdoc/>
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			if (array == null)
+			{
+				throw new ArgumentNullException(nameof(array));
+			}
+
+			if (array.Length >= arrayIndex + _count)
+			{
+				throw new InvalidOperationException();
+			}
+
+			var cur = _first;
+			var index = 0;
+
+			while (cur != null)
+			{
+				array[index++] = cur;
+				cur = cur.Next;
+			}
+		}
+
+		#endregion
+
 		#region IReadOnlyColection
 
 		/// <inheritdoc/>
@@ -314,63 +366,6 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region IEnumerable
-
-		/// <summary>
-		/// Child elements enumerable.
-		/// </summary>
-		public class ChildEnumerable : IReadOnlyCollection<T>
-		{
-			private T _parent;
-
-			internal ChildEnumerable(T first)
-			{
-				_parent = first;
-			}
-
-			/// <inheritdoc/>
-			public int Count
-			{
-				get
-				{
-					var cur = _parent.Next;
-					var count = 0;
-
-					while (cur != null)
-					{
-						if (cur.Parent == _parent)
-						{
-							++count;
-						}
-
-						cur = cur.Next;
-					}
-
-					return count;
-				}
-			}
-
-			/// <inheritdoc/>
-			IEnumerator<T> IEnumerable<T>.GetEnumerator()
-			{
-				var cur = _parent.Next;
-
-				while (cur != null)
-				{
-					if (cur.Parent == _parent)
-					{
-						yield return cur;
-					}
-
-					cur = cur.Next;
-				}
-			}
-
-			/// <inheritdoc/>
-			IEnumerator IEnumerable.GetEnumerator()
-			{
-				return (this as IEnumerable<T>).GetEnumerator();
-			}
-		}
 
 		/// <summary>
 		/// Items enumerable.

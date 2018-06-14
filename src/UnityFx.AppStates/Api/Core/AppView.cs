@@ -126,11 +126,11 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppView"/> class.
 		/// </summary>
+		/// <param name="parentView"></param>
 		/// <param name="name">Name of the view.</param>
-		/// <param name="parent"></param>
 		/// <param name="options"></param>
-		protected AppView(string name, AppView parent, AppViewOptions options)
-			: base(parent)
+		protected AppView(string name, AppView parentView, AppViewOptions options)
+			: base(parentView)
 		{
 			_name = name;
 			_options = options;
