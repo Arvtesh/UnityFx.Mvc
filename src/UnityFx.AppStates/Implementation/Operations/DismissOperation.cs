@@ -7,7 +7,7 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class DismissOperation : AppOperation, IAsyncContinuation
+	internal class DismissOperation : AppOperation<AppViewController>, IAsyncContinuation
 	{
 		#region data
 

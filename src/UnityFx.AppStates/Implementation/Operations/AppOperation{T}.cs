@@ -13,7 +13,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A yieldable asynchronous state operation.
 	/// </summary>
-	internal abstract class AppOperation : AsyncResult<AppViewController>
+	internal abstract class AppOperation<T> : AsyncResult<T>, ITraceable where T : class
 	{
 		#region data
 
@@ -30,8 +30,6 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region interface
-
-		public int Id => _id;
 
 		protected AppStateService StateManager => _stateManager;
 		protected IAppViewService ViewManager => _stateManager.ViewManager;
@@ -59,26 +57,6 @@ namespace UnityFx.AppStates
 		protected void DismissStateChildren(AppState state)
 		{
 			_stateManager.DismissStateChildren(this, state);
-		}
-
-		public void TraceError(string s)
-		{
-			_traceSource.TraceEvent(TraceEventType.Error, _id, _name + ": " + s);
-		}
-
-		public void TraceException(Exception e)
-		{
-			_traceSource.TraceData(TraceEventType.Error, _id, e);
-		}
-
-		public void TraceEvent(TraceEventType eventType, string s)
-		{
-			_traceSource.TraceEvent(eventType, _id, s);
-		}
-
-		public void TraceData(TraceEventType eventType, object data)
-		{
-			_traceSource.TraceData(eventType, _id, data);
 		}
 
 		protected bool ProcessNonSuccess(IAsyncOperation op)
@@ -138,6 +116,32 @@ namespace UnityFx.AppStates
 		protected override void OnCancel()
 		{
 			TrySetCanceled(false);
+		}
+
+		#endregion
+
+		#region ITraceable
+
+		public int Id => _id;
+
+		public void TraceError(string s)
+		{
+			_traceSource.TraceEvent(TraceEventType.Error, _id, _name + ": " + s);
+		}
+
+		public void TraceException(Exception e)
+		{
+			_traceSource.TraceData(TraceEventType.Error, _id, e);
+		}
+
+		public void TraceEvent(TraceEventType eventType, string s)
+		{
+			_traceSource.TraceEvent(eventType, _id, s);
+		}
+
+		public void TraceData(TraceEventType eventType, object data)
+		{
+			_traceSource.TraceData(eventType, _id, data);
 		}
 
 		#endregion

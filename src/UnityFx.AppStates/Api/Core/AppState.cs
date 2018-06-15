@@ -42,7 +42,7 @@ namespace UnityFx.AppStates
 	/// </remarks>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
-	public class AppState : LinkedListNode<AppState>, IAppViewControllerContext, IPresenter, IPresentable, IDismissable
+	public class AppState : TreeListNode<AppState>, IAppViewControllerContext, IPresenter, IPresentable, IDismissable
 	{
 		#region data
 
@@ -78,13 +78,13 @@ namespace UnityFx.AppStates
 			_stateManager.AddState(this);
 		}
 
-		internal void DismissInternal(AppOperation op)
+		internal void DismissInternal(ITraceable op)
 		{
 			op.TraceEvent(TraceEventType.Verbose, "DismissState " + _controller.TypeId);
 			_controller.InvokeOnDismiss();
 		}
 
-		internal bool TryActivate(AppOperation op)
+		internal bool TryActivate(ITraceable op)
 		{
 			if (!_isActive && (Parent == null || Parent.IsActive))
 			{
@@ -99,7 +99,7 @@ namespace UnityFx.AppStates
 			return false;
 		}
 
-		internal bool TryDeactivate(AppOperation op)
+		internal bool TryDeactivate(ITraceable op)
 		{
 			if (_isActive)
 			{
@@ -253,13 +253,17 @@ namespace UnityFx.AppStates
 		/// <inheritdoc/>
 		public IAsyncOperation<TController> PresentAsync<TController>(PresentOptions options, PresentArgs args) where TController : AppViewController
 		{
-			return PresentAsync(typeof(TController), options, args) as IAsyncOperation<TController>;
+			ThrowIfDisposed();
+
+			return _stateManager.PresentAsync<TController>(this, options, args);
 		}
 
 		/// <inheritdoc/>
 		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : AppViewController
 		{
-			return PresentAsync(typeof(TController), args) as IAsyncOperation<TController>;
+			ThrowIfDisposed();
+
+			return _stateManager.PresentAsync<TController>(this, PresentOptions.None, args);
 		}
 
 		#endregion

@@ -21,7 +21,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A generic composite view.
 	/// </summary>
-	public abstract class AppView : LinkedListNode<AppView>, IComponentContainer, IDisposable
+	public abstract class AppView : TreeListNode<AppView>, IComponentContainer, IDisposable
 	{
 		#region data
 

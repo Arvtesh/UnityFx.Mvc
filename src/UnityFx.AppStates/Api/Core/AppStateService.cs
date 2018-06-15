@@ -28,7 +28,7 @@ namespace UnityFx.AppStates
 
 		private readonly AppStateServiceSettings _settings;
 		private readonly AppStateCollection _states;
-		private readonly AsyncResultQueue<AppOperation> _stackOperations;
+		private readonly AsyncResultQueue<AsyncResult> _stackOperations;
 
 		private bool _disposed;
 
@@ -87,7 +87,7 @@ namespace UnityFx.AppStates
 			_serviceProvider = services;
 			_settings = new AppStateServiceSettings();
 			_states = new AppStateCollection();
-			_stackOperations = new AsyncResultQueue<AppOperation>(syncContext);
+			_stackOperations = new AsyncResultQueue<AsyncResult>(syncContext);
 		}
 
 		/// <summary>
@@ -113,7 +113,7 @@ namespace UnityFx.AppStates
 			_serviceProvider = services;
 			_settings = new AppStateServiceSettings();
 			_states = new AppStateCollection();
-			_stackOperations = new AsyncResultQueue<AppOperation>(syncContext);
+			_stackOperations = new AsyncResultQueue<AsyncResult>(syncContext);
 		}
 
 		/// <summary>
@@ -169,7 +169,7 @@ namespace UnityFx.AppStates
 		internal IAppViewControllerFactory ControllerFactory => _controllerFactory;
 		internal IAppViewService ViewManager => _viewManager;
 
-		internal void DismissAllStates(AppOperation op)
+		internal void DismissAllStates(ITraceable op)
 		{
 			while (_states.TryPeek(out var state))
 			{
@@ -178,7 +178,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		internal void DismissStateChildren(AppOperation op, AppState state)
+		internal void DismissStateChildren(ITraceable op, AppState state)
 		{
 			foreach (var s in state.Children.Reverse())
 			{
@@ -187,7 +187,7 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		internal bool TryActivateTopState(AppOperation op)
+		internal bool TryActivateTopState(ITraceable op)
 		{
 			Debug.Assert(!_disposed);
 			Debug.Assert(op != null);
@@ -200,7 +200,7 @@ namespace UnityFx.AppStates
 			return false;
 		}
 
-		internal bool TryDeactivateTopState(AppOperation op)
+		internal bool TryDeactivateTopState(ITraceable op)
 		{
 			Debug.Assert(!_disposed);
 			Debug.Assert(op != null);
@@ -227,7 +227,7 @@ namespace UnityFx.AppStates
 		{
 			ThrowIfDisposed();
 
-			var result = new PresentOperation(this, parentController, controllerType, options, args);
+			var result = new PresentOperation<AppViewController>(this, parentController, controllerType, options, args);
 			QueueOperation(result);
 			return result;
 		}
@@ -237,7 +237,26 @@ namespace UnityFx.AppStates
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
-			var result = new PresentOperation(this, state, controllerType, options, args);
+			var result = new PresentOperation<AppViewController>(this, state, controllerType, options, args);
+			QueueOperation(result);
+			return result;
+		}
+
+		internal IAsyncOperation<T> PresentAsync<T>(AppViewController parentController, PresentOptions options, PresentArgs args) where T : AppViewController
+		{
+			ThrowIfDisposed();
+
+			var result = new PresentOperation<T>(this, parentController, typeof(T), options, args);
+			QueueOperation(result);
+			return result;
+		}
+
+		internal IAsyncOperation<T> PresentAsync<T>(AppState state, PresentOptions options, PresentArgs args) where T : AppViewController
+		{
+			ThrowIfDisposed();
+			ThrowIfInvalidControllerType(typeof(T));
+
+			var result = new PresentOperation<T>(this, state, typeof(T), options, args);
 			QueueOperation(result);
 			return result;
 		}
@@ -308,13 +327,13 @@ namespace UnityFx.AppStates
 		/// <inheritdoc/>
 		public IAsyncOperation<TController> PresentAsync<TController>(PresentOptions options, PresentArgs args) where TController : AppViewController
 		{
-			return PresentAsync(typeof(TController), options, args) as IAsyncOperation<TController>;
+			return PresentAsync<TController>(default(AppState), options, args);
 		}
 
 		/// <inheritdoc/>
 		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : AppViewController
 		{
-			return PresentAsync(typeof(TController), args) as IAsyncOperation<TController>;
+			return PresentAsync<TController>(default(AppState), PresentOptions.None, args);
 		}
 
 		#endregion
@@ -332,7 +351,7 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private void QueueOperation(AppOperation op)
+		private void QueueOperation(AsyncResult op)
 		{
 			_stackOperations.Add(op);
 		}

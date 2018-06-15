@@ -12,7 +12,7 @@ namespace UnityFx.AppStates
 	/// A generic node of linked list.
 	/// </summary>
 	/// <typeparam name="T">Type of the node.</typeparam>
-	public class LinkedListNode<T> where T : LinkedListNode<T>
+	public class TreeListNode<T> where T : TreeListNode<T>
 	{
 		#region data
 
@@ -110,16 +110,16 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="LinkedListNode{T}"/> class.
+		/// Initializes a new instance of the <see cref="TreeListNode{T}"/> class.
 		/// </summary>
-		protected LinkedListNode()
+		protected TreeListNode()
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="LinkedListNode{T}"/> class.
+		/// Initializes a new instance of the <see cref="TreeListNode{T}"/> class.
 		/// </summary>
-		protected LinkedListNode(T parentNode)
+		protected TreeListNode(T parentNode)
 		{
 			_parentNode = parentNode;
 		}

@@ -5,7 +5,7 @@ using System;
 
 namespace UnityFx.AppStates
 {
-	internal class AppStateCollection : LinkedListCollection<AppState>
+	internal class AppStateCollection : TreeListCollection<AppState>
 	{
 	}
 }

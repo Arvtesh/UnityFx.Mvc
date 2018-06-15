@@ -7,7 +7,7 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class PresentOperation : AppOperation, IAsyncContinuation
+	internal class PresentOperation<T> : AppOperation<T>, IAsyncContinuation where T : AppViewController
 	{
 		#region data
 
@@ -26,6 +26,14 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region interface
+
+		public PresentOperation(AppStateService stateManager, Type controllerType, PresentOptions options, PresentArgs args)
+			: base(stateManager, _opName, GetStateDesc(controllerType, args))
+		{
+			_controllerType = controllerType;
+			_options = options;
+			_args = args;
+		}
 
 		public PresentOperation(AppStateService stateManager, AppState parentState, Type controllerType, PresentOptions options, PresentArgs args)
 			: base(stateManager, _opName, GetStateDesc(controllerType, args))
@@ -67,7 +75,7 @@ namespace UnityFx.AppStates
 					{
 						DismissAllStates();
 					}
-					else if ((_options & PresentOptions.DismissCurrentState) != 0)
+					else if ((_options & PresentOptions.DismissCurrentState) != 0 && _parentState != null)
 					{
 						DismissStateChildren(_parentState);
 					}
@@ -146,7 +154,7 @@ namespace UnityFx.AppStates
 						}
 						else
 						{
-							_transitionOp = ViewManager.PlayPresentTransition(_parentState.View, _controller.View, (_options & PresentOptions.DismissCurrentState) != 0);
+							_transitionOp = ViewManager.PlayPresentTransition(_parentState?.View, _controller.View, (_options & PresentOptions.DismissCurrentState) != 0);
 						}
 
 						_transitionOp.AddCompletionCallback(this);
@@ -159,7 +167,7 @@ namespace UnityFx.AppStates
 						}
 
 						_controller.InvokeOnPresent();
-						TrySetResult(_controller, false);
+						TrySetResult(_controller as T);
 					}
 				}
 			}

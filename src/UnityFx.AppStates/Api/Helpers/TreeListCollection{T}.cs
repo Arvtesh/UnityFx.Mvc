@@ -12,7 +12,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A collection of states.
 	/// </summary>
-	public class LinkedListCollection<T> : ICollection<T>, IReadOnlyCollection<T> where T : LinkedListNode<T>
+	public class TreeListCollection<T> : ICollection<T>, IReadOnlyCollection<T> where T : TreeListNode<T>
 	{
 		#region data
 
@@ -430,6 +430,7 @@ namespace UnityFx.AppStates
 					if (_current == null)
 					{
 						_current = _first;
+						return true;
 					}
 					else
 					{
@@ -438,6 +439,10 @@ namespace UnityFx.AppStates
 						if (_current == null)
 						{
 							_first = null;
+						}
+						else
+						{
+							return true;
 						}
 					}
 				}
