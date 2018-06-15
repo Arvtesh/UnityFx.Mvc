@@ -237,7 +237,10 @@ namespace UnityFx.AppStates
 		/// <inheritdoc/>
 		public void Add(T node)
 		{
-			Debug.Assert(node != null);
+			if (node == null)
+			{
+				throw new ArgumentNullException(nameof(node));
+			}
 
 			if (_first != null)
 			{
@@ -246,6 +249,7 @@ namespace UnityFx.AppStates
 
 				_last.Next = node;
 				node.Prev = _last;
+				_last = node;
 				++_count;
 			}
 			else
@@ -290,6 +294,21 @@ namespace UnityFx.AppStates
 					}
 
 					--_count;
+
+					return true;
+				}
+				else if (_first == node)
+				{
+					Debug.Assert(_last == node);
+					Debug.Assert(_count == 1);
+
+					node.Prev = null;
+					node.Next = null;
+
+					_first = null;
+					_last = null;
+					_count = 0;
+
 					return true;
 				}
 			}
