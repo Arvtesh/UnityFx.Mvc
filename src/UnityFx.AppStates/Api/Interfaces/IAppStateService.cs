@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
@@ -36,7 +34,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the service settings.
 		/// </summary>
-		AppStateServiceSettings Settings { get; }
+		IAppStateServiceSettings Settings { get; }
 
 		/// <summary>
 		/// Gets the child states.

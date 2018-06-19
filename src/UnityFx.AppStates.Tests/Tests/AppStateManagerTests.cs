@@ -27,8 +27,6 @@ namespace UnityFx.AppStates
 			var serviceProvider = Substitute.For<IServiceProvider>();
 
 			_stateManager = new AppStateService(viewFactory, serviceProvider);
-			_stateManager.Settings.DeeplinkScheme = "myapp";
-			_stateManager.Settings.DeeplinkDomain = "game";
 		}
 
 		public void Dispose()
@@ -38,7 +36,7 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region tests
+		#region smoke tests
 
 		private class PresentController1 : AppViewController
 		{
@@ -46,7 +44,7 @@ namespace UnityFx.AppStates
 		}
 
 		[Fact]
-		public async Task Present_tt()
+		public async Task SmokeTest()
 		{
 			// Arrange
 			var op = _stateManager.PresentAsync<PresentController1>(PresentArgs.Default);
@@ -56,8 +54,12 @@ namespace UnityFx.AppStates
 
 			// Assert
 			Assert.True(op.IsCompletedSuccessfully);
-			Assert.NotEmpty(_stateManager.States);
+			Assert.Single(_stateManager.States);
 		}
+
+		#endregion
+
+		#region tests
 
 		[Fact]
 		public void Dispose_CanBeCalledMultipleTimes()

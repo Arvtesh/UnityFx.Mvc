@@ -23,7 +23,7 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region general
+		#region tests
 
 		[Fact]
 		public void EmptyCollectionHasValidState()

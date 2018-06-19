@@ -296,7 +296,7 @@ namespace UnityFx.AppStates
 		public event EventHandler<DismissCompletedEventArgs> DismissCompleted;
 
 		/// <inheritdoc/>
-		public AppStateServiceSettings Settings => _settings;
+		public IAppStateServiceSettings Settings => _settings;
 
 		/// <inheritdoc/>
 		public bool IsBusy => !_stackOperations.IsEmpty;
