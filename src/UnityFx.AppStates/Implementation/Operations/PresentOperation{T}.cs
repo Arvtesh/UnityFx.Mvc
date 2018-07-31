@@ -7,7 +7,7 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class PresentOperation<T> : AppOperation<T>, IAsyncContinuation where T : AppViewController
+	internal class PresentOperation<T> : AppOperation<T> where T : AppViewController
 	{
 		#region data
 
@@ -137,7 +137,7 @@ namespace UnityFx.AppStates
 
 		#region IAsyncContinuation
 
-		public void Invoke(IAsyncOperation op)
+		public override void Invoke(IAsyncOperation op)
 		{
 			try
 			{

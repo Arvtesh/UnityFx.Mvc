@@ -12,11 +12,6 @@ namespace UnityFx.AppStates
 	internal interface ITraceable
 	{
 		/// <summary>
-		/// Gets unique entity identifier.
-		/// </summary>
-		int Id { get; }
-
-		/// <summary>
 		/// Traces an error message related to the entity.
 		/// </summary>
 		void TraceError(string s);

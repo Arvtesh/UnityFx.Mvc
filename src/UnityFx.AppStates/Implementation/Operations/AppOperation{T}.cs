@@ -19,13 +19,10 @@ namespace UnityFx.AppStates
 
 		private const int _typeMask = 0x7;
 
-		private readonly int _id;
 		private readonly string _name;
 		private readonly string _comment;
 		private readonly AppStateService _stateManager;
 		private readonly TraceSource _traceSource;
-
-		private static int _lastId;
 
 		#endregion
 
@@ -37,7 +34,6 @@ namespace UnityFx.AppStates
 
 		protected AppOperation(AppStateService stateManager, string name, string comment)
 		{
-			_id = ++_lastId;
 			_name = name;
 			_stateManager = stateManager;
 			_traceSource = _stateManager.TraceSource;
@@ -122,26 +118,24 @@ namespace UnityFx.AppStates
 
 		#region ITraceable
 
-		public int Id => _id;
-
 		public void TraceError(string s)
 		{
-			_traceSource.TraceEvent(TraceEventType.Error, _id, _name + ": " + s);
+			_traceSource.TraceEvent(TraceEventType.Error, Id, _name + ": " + s);
 		}
 
 		public void TraceException(Exception e)
 		{
-			_traceSource.TraceData(TraceEventType.Error, _id, e);
+			_traceSource.TraceData(TraceEventType.Error, Id, e);
 		}
 
 		public void TraceEvent(TraceEventType eventType, string s)
 		{
-			_traceSource.TraceEvent(eventType, _id, s);
+			_traceSource.TraceEvent(eventType, Id, s);
 		}
 
 		public void TraceData(TraceEventType eventType, object data)
 		{
-			_traceSource.TraceData(eventType, _id, data);
+			_traceSource.TraceData(eventType, Id, data);
 		}
 
 		#endregion
@@ -157,22 +151,22 @@ namespace UnityFx.AppStates
 				s += ": " + _comment;
 			}
 
-			_traceSource.TraceEvent(TraceEventType.Start, _id, s);
+			_traceSource.TraceEvent(TraceEventType.Start, Id, s);
 		}
 
 		private void TraceStop(AsyncOperationStatus status)
 		{
 			if (status == AsyncOperationStatus.RanToCompletion)
 			{
-				_traceSource.TraceEvent(TraceEventType.Stop, _id, _name + " completed");
+				_traceSource.TraceEvent(TraceEventType.Stop, Id, _name + " completed");
 			}
 			else if (status == AsyncOperationStatus.Faulted)
 			{
-				_traceSource.TraceEvent(TraceEventType.Stop, _id, _name + " faulted");
+				_traceSource.TraceEvent(TraceEventType.Stop, Id, _name + " faulted");
 			}
 			else if (status == AsyncOperationStatus.Canceled)
 			{
-				_traceSource.TraceEvent(TraceEventType.Stop, _id, _name + " canceled");
+				_traceSource.TraceEvent(TraceEventType.Stop, Id, _name + " canceled");
 			}
 		}
 
