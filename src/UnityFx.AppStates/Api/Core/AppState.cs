@@ -42,7 +42,7 @@ namespace UnityFx.AppStates
 	/// </remarks>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
-	public class AppState : TreeListNode<AppState>, IAppViewControllerContext, IPresenter, IPresentable, IDismissable
+	public class AppState : TreeListNode<AppState>, IPresentableContext, IPresenter, IPresentable, IDismissable
 	{
 		#region data
 
@@ -62,7 +62,7 @@ namespace UnityFx.AppStates
 		#region interface
 
 		internal IAppViewService ViewManager => _stateManager.ViewManager;
-		internal IAppViewControllerFactory ControllerFactory => _stateManager.ControllerFactory;
+		internal IPresentableFactory ControllerFactory => _stateManager.ControllerFactory;
 
 		internal AppState(AppStateService stateManager, AppState parentState, Type controllerType, PresentOptions options, PresentArgs args)
 			: base(parentState)
@@ -184,19 +184,19 @@ namespace UnityFx.AppStates
 		#region IAppViewControllerContext
 
 		/// <inheritdoc/>
-		PresentOptions IAppViewControllerContext.PresentOptions => _tmpControllerOptions;
+		PresentOptions IPresentableContext.PresentOptions => _tmpControllerOptions;
 
 		/// <inheritdoc/>
-		PresentArgs IAppViewControllerContext.PresentArgs => _tmpControllerArgs;
+		PresentArgs IPresentableContext.PresentArgs => _tmpControllerArgs;
 
 		/// <inheritdoc/>
-		AppViewController IAppViewControllerContext.ParentController => _tmpController;
+		AppViewController IPresentableContext.ParentController => _tmpController;
 
 		/// <inheritdoc/>
-		AppState IAppViewControllerContext.ParentState => this;
+		AppState IPresentableContext.ParentState => this;
 
 		/// <inheritdoc/>
-		AppView IAppViewControllerContext.CreateView(AppViewController c)
+		AppView IPresentableContext.CreateView(AppViewController c)
 		{
 			ThrowIfDisposed();
 
@@ -215,7 +215,7 @@ namespace UnityFx.AppStates
 		}
 
 		/// <inheritdoc/>
-		IAsyncOperation<AppViewController> IAppViewControllerContext.PresentAsync(AppViewController parentController, Type controllerType, PresentOptions options, PresentArgs args)
+		IAsyncOperation<AppViewController> IPresentableContext.PresentAsync(AppViewController parentController, Type controllerType, PresentOptions options, PresentArgs args)
 		{
 			ThrowIfDisposed();
 
@@ -223,7 +223,7 @@ namespace UnityFx.AppStates
 		}
 
 		/// <inheritdoc/>
-		IAsyncOperation IAppViewControllerContext.DismissAsync(AppViewController controller)
+		IAsyncOperation IPresentableContext.DismissAsync(AppViewController controller)
 		{
 			ThrowIfDisposed();
 

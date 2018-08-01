@@ -40,7 +40,7 @@ namespace UnityFx.AppStates
 
 		private class PresentController1 : AppViewController
 		{
-			public PresentController1(IAppViewControllerContext c) : base(c) { }
+			public PresentController1(IPresentableContext c) : base(c) { }
 		}
 
 		[Fact]

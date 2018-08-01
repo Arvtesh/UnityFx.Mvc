@@ -22,7 +22,7 @@ namespace UnityFx.AppStates
 		#region data
 
 		private readonly SynchronizationContext _synchronizationContext;
-		private readonly IAppViewControllerFactory _controllerFactory;
+		private readonly IPresentableFactory _controllerFactory;
 		private readonly IAppViewService _viewManager;
 		private readonly IServiceProvider _serviceProvider;
 
@@ -98,7 +98,7 @@ namespace UnityFx.AppStates
 		/// <param name="services"></param>
 		/// <param name="controllerFactory"></param>
 		public AppStateService(
-			IAppViewControllerFactory controllerFactory,
+			IPresentableFactory controllerFactory,
 			IAppViewService viewManager,
 			IServiceProvider services,
 			SynchronizationContext syncContext)
@@ -166,7 +166,7 @@ namespace UnityFx.AppStates
 
 		#region internals
 
-		internal IAppViewControllerFactory ControllerFactory => _controllerFactory;
+		internal IPresentableFactory ControllerFactory => _controllerFactory;
 		internal IAppViewService ViewManager => _viewManager;
 
 		internal void DismissAllStates(ITraceable op)

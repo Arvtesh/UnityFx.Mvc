@@ -40,7 +40,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the child states.
 		/// </summary>
-		IReadOnlyCollection<AppState> States { get; }
+		IReadOnlyCollection<IAppState> States { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether thare are any pending operations.

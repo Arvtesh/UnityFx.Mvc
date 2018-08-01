@@ -7,18 +7,18 @@ using UnityFx.Async;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// A presentable object.
+	/// A generic application state.
 	/// </summary>
-	public interface IPresentable : IDismissable
+	public interface IAppState : ITreeListNode<IAppState>, IPresenter, IPresentable
 	{
 		/// <summary>
-		/// Gets a value indicating whether the state is active (i.e. can process user input).
+		/// Gets the state identifier.
 		/// </summary>
-		bool IsActive { get; }
+		string Id { get; }
 
 		/// <summary>
-		/// Gets the atached view instance.
+		/// Gets the view root view controller attached to the state.
 		/// </summary>
-		IAppView View { get; }
+		IPresentable Controller { get; }
 	}
 }

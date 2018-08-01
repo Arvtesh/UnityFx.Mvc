@@ -8,9 +8,9 @@ using System.Reflection;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Default implementation of <see cref="IAppViewControllerFactory"/>.
+	/// Default implementation of <see cref="IPresentableFactory"/>.
 	/// </summary>
-	internal sealed class AppViewControllerFactory : IAppViewControllerFactory
+	internal sealed class AppViewControllerFactory : IPresentableFactory
 	{
 		#region data
 
@@ -33,7 +33,7 @@ namespace UnityFx.AppStates
 
 		#region IAppStateControllerFactory
 
-		public AppViewController CreateController(Type controllerType, IAppViewControllerContext context)
+		public AppViewController CreateController(Type controllerType, IPresentableContext context)
 		{
 			Debug.Assert(controllerType != null);
 			Debug.Assert(controllerType.IsSubclassOf(typeof(AppViewController)));
@@ -71,9 +71,9 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private object GetServiceInstance(Type serviceType, IAppViewControllerContext context)
+		private object GetServiceInstance(Type serviceType, IPresentableContext context)
 		{
-			if (serviceType == typeof(IAppViewControllerContext))
+			if (serviceType == typeof(IPresentableContext))
 			{
 				return context;
 			}

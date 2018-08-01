@@ -9,7 +9,7 @@ namespace UnityFx.AppStates
 	/// A factory for state controllers instances.
 	/// </summary>
 	/// <seealso cref="AppState"/>
-	public interface IAppViewControllerFactory
+	public interface IPresentableFactory
 	{
 		/// <summary>
 		/// Creates a new instance of state controller and injects its dependencies (if needed).
@@ -17,6 +17,6 @@ namespace UnityFx.AppStates
 		/// <param name="controllerType">Type of the controller to be created.</param>
 		/// <param name="context">State.</param>
 		/// <returns></returns>
-		AppViewController CreateController(Type controllerType, IAppViewControllerContext context);
+		IPresentable CreateController(Type controllerType, IPresentableContext context);
 	}
 }

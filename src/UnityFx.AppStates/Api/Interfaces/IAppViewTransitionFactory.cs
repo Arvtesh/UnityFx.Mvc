@@ -16,12 +16,12 @@ namespace UnityFx.AppStates
 		/// Initiates an animated transition from <paramref name="fromView"/> to <paramref name="toView"/>.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="toView"/> is <see langword="null"/>.</exception>
-		IAsyncOperation PlayPresentTransition(AppView fromView, AppView toView, bool replace);
+		IAsyncOperation PlayPresentTransition(IAppView fromView, IAppView toView, bool replace);
 
 		/// <summary>
 		/// Initiates a dismiss animation for the <paramref name="view"/> specified.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
-		IAsyncOperation PlayDismissTransition(AppView view, AppView toView);
+		IAsyncOperation PlayDismissTransition(IAppView view, IAppView toView);
 	}
 }

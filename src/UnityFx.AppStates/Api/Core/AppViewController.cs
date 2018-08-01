@@ -12,11 +12,11 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Defines the shared behaviour that is common to all view controllers.
 	/// </summary>
-	public class AppViewController : IPresenter, IPresentable, IDismissable
+	public class AppViewController : IPresenter, IPresentable, IPresentableEvents
 	{
 		#region data
 
-		private readonly IAppViewControllerContext _context;
+		private readonly IPresentableContext _context;
 		private readonly AppState _state;
 		private readonly AppViewController _parentController;
 
@@ -74,7 +74,7 @@ namespace UnityFx.AppStates
 		/// Initializes a new instance of the <see cref="AppViewController"/> class.
 		/// </summary>
 		/// <param name="context">Context data for the controller instance.</param>
-		protected AppViewController(IAppViewControllerContext context)
+		protected AppViewController(IPresentableContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
 			_typeId = GetId(GetType());
@@ -84,6 +84,16 @@ namespace UnityFx.AppStates
 			_presentOptions = context.PresentOptions;
 			_presentArgs = context.PresentArgs;
 			_view = context.CreateView(this);
+		}
+
+		/// <summary>
+		/// Releases resources used by the controller.
+		/// </summary>
+		/// <param name="disposing">Should be <see langword="true"/> if the method is called from <see cref="Dispose()"/>; <see langword="false"/> otherwise.</param>
+		/// <seealso cref="Dispose()"/>
+		/// <seealso cref="ThrowIfDisposed"/>
+		protected virtual void Dispose(bool disposing)
+		{
 		}
 
 		/// <summary>
@@ -237,50 +247,53 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region virtuals
+		#region IPresentable
+
+		/// <inheritdoc/>
+		public string TypeId => _typeId;
+
+		/// <inheritdoc/>
+		public AppView View => _view;
+
+		/// <inheritdoc/>
+		public bool IsActive => _active;
+
+		#endregion
+
+		#region IPresentableEvents
 
 		/// <summary>
 		/// Called when the controller view is loaded (before transition animation). Default implementation does nothing.
 		/// </summary>
-		protected virtual void OnViewLoaded()
+		public virtual void OnViewLoaded()
 		{
 		}
 
 		/// <summary>
 		/// Called right after the controller transition animation finishes. Default implementation does nothing.
 		/// </summary>
-		protected virtual void OnPresent()
+		public virtual void OnPresent()
 		{
 		}
 
 		/// <summary>
 		/// Called right before the controller becomes active. Default implementation does nothing.
 		/// </summary>
-		protected virtual void OnActivate()
+		public virtual void OnActivate()
 		{
 		}
 
 		/// <summary>
 		/// Called when the controller is about to become inactive. Default implementation does nothing.
 		/// </summary>
-		protected virtual void OnDeactivate()
+		public virtual void OnDeactivate()
 		{
 		}
 
 		/// <summary>
 		/// Called when the controller is about to be dismissed (before transition animation). Default implementation does nothing.
 		/// </summary>
-		protected virtual void OnDismiss()
-		{
-		}
-
-		/// <summary>
-		/// Releases resources used by the controller.
-		/// </summary>
-		/// <param name="disposing">Should be <see langword="true"/> if the method is called from <see cref="Dispose()"/>; <see langword="false"/> otherwise.</param>
-		/// <seealso cref="Dispose()"/>
-		/// <seealso cref="ThrowIfDisposed"/>
-		protected virtual void Dispose(bool disposing)
+		public virtual void OnDismiss()
 		{
 		}
 
@@ -289,7 +302,7 @@ namespace UnityFx.AppStates
 		#region IPresenter
 
 		/// <inheritdoc/>
-		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args)
+		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args)
 		{
 			ThrowIfDisposed();
 
@@ -309,7 +322,7 @@ namespace UnityFx.AppStates
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentArgs args)
+		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
 
@@ -317,29 +330,16 @@ namespace UnityFx.AppStates
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentOptions options, PresentArgs args) where TController : AppViewController
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentOptions options, PresentArgs args) where TController : IPresentable
 		{
 			return PresentAsync(typeof(TController), options, args) as IAsyncOperation<TController>;
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : AppViewController
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : IPresentable
 		{
 			return PresentAsync(typeof(TController), args) as IAsyncOperation<TController>;
 		}
-
-		#endregion
-
-		#region IPresentable
-
-		/// <inheritdoc/>
-		public string TypeId => _typeId;
-
-		/// <inheritdoc/>
-		public AppView View => _view;
-
-		/// <inheritdoc/>
-		public bool IsActive => _active;
 
 		#endregion
 

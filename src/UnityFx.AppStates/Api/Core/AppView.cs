@@ -31,15 +31,13 @@ namespace UnityFx.AppStates
 			Visible = 1,
 			Enabled = 2,
 			Exclusive = 4,
-			Loading = 8,
-			Loaded = 16,
-			Disposed = 32,
+			Disposed = 8,
 		}
 
 		private readonly string _name;
 		private readonly AppViewOptions _options;
 
-		private IAsyncOperation _loadOp;
+		private AsyncLazy _loadOp;
 		private Flags _flags;
 
 		#endregion
@@ -59,12 +57,12 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets a value indicating whether the view is loaded or not.
 		/// </summary>
-		public bool IsLoaded => (_flags & Flags.Loaded) != 0;
+		public bool IsLoaded => _loadOp.IsCompletedSuccessfully;
 
 		/// <summary>
 		/// Gets a value indicating whether the view is loaded or not.
 		/// </summary>
-		public bool IsLoading => (_flags & Flags.Loading) != 0;
+		public bool IsLoading => _loadOp.IsStarted && !_loadOp.IsCompleted;
 
 		/// <summary>
 		/// Gets or sets a value indicating whether the view is visible.
@@ -121,6 +119,7 @@ namespace UnityFx.AppStates
 		{
 			_name = name;
 			_options = options;
+			_loadOp.OperationFactory = LoadContent;
 		}
 
 		/// <summary>
@@ -134,6 +133,7 @@ namespace UnityFx.AppStates
 		{
 			_name = name;
 			_options = options;
+			_loadOp.OperationFactory = LoadContent;
 		}
 
 		/// <summary>
@@ -142,25 +142,7 @@ namespace UnityFx.AppStates
 		public IAsyncOperation Load()
 		{
 			ThrowIfDisposed();
-
-			if ((_flags & Flags.Loaded) == 0)
-			{
-				if (_loadOp == null)
-				{
-					_flags |= Flags.Loading;
-					_loadOp = LoadContent(_name);
-					_loadOp.AddCompletionCallback(op =>
-					{
-						_loadOp = null;
-						_flags &= ~Flags.Loading;
-						_flags &= Flags.Loaded;
-					});
-				}
-
-				return _loadOp;
-			}
-
-			return AsyncResult.CompletedOperation;
+			return _loadOp.StartOrUpdate();
 		}
 
 		/// <summary>
@@ -229,6 +211,15 @@ namespace UnityFx.AppStates
 		{
 			Dispose(true);
 			GC.SuppressFinalize(this);
+		}
+
+		#endregion
+
+		#region implementation
+
+		private IAsyncOperation LoadContent()
+		{
+			return LoadContent(_name);
 		}
 
 		#endregion

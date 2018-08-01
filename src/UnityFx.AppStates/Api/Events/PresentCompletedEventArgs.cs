@@ -14,7 +14,7 @@ namespace UnityFx.AppStates
 		#region data
 
 		private readonly int _id;
-		private readonly AppViewController _controller;
+		private readonly IPresentable _controller;
 
 		#endregion
 
@@ -28,12 +28,12 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the controller presented.
 		/// </summary>
-		public AppViewController Controller => _controller;
+		public IPresentable Controller => _controller;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentCompletedEventArgs"/> class.
 		/// </summary>
-		public PresentCompletedEventArgs(AppViewController controller, int opId, object userState)
+		public PresentCompletedEventArgs(IPresentable controller, int opId, object userState)
 			: base(null, false, userState)
 		{
 			_id = opId;
@@ -43,7 +43,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentCompletedEventArgs"/> class.
 		/// </summary>
-		public PresentCompletedEventArgs(AppViewController controller, int opId, object userState, Exception e, bool canceled)
+		public PresentCompletedEventArgs(IPresentable controller, int opId, object userState, Exception e, bool canceled)
 			: base(e, canceled, userState)
 		{
 			_id = opId;

@@ -12,7 +12,7 @@ namespace UnityFx.AppStates
 	/// It is here for the sake of testability/explicit dependencies for <see cref="AppViewController"/>.
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
-	public interface IAppViewControllerContext
+	public interface IPresentableContext
 	{
 		/// <summary>
 		/// Gets the controller creation options.
@@ -27,32 +27,32 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets prent controller (if any).
 		/// </summary>
-		AppViewController ParentController { get; }
+		IPresentable ParentController { get; }
 
 		/// <summary>
 		/// Gets parent state.
 		/// </summary>
-		AppState ParentState { get; }
+		IAppState ParentState { get; }
 
 		/// <summary>
 		/// Creates a view for the specified controller.
 		/// </summary>
-		AppView CreateView(AppViewController c);
+		IAppView CreateView(IPresentable c);
 
 		/// <summary>
 		/// Presents a child controller of the specified type.
 		/// </summary>
-		IAsyncOperation<AppViewController> PresentAsync(AppViewController parentController, Type controllerType, PresentOptions options, PresentArgs args);
+		IAsyncOperation<IPresentable> PresentAsync(IPresentable parentController, Type controllerType, PresentOptions options, PresentArgs args);
 
 		/// <summary>
 		/// Presents a new state with a controller of the specified type.
 		/// </summary>
-		IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args);
+		IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args);
 
 		/// <summary>
 		/// Dismisses the specified child controller.
 		/// </summary>
-		IAsyncOperation DismissAsync(AppViewController c);
+		IAsyncOperation DismissAsync(IPresentable c);
 
 		/// <summary>
 		/// Dismisses the state with its controllers.
