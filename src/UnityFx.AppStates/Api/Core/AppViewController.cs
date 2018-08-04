@@ -10,23 +10,23 @@ using UnityFx.Async;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Defines the shared behaviour that is common to all view controllers.
+	/// A generic view controller. It is recommended to use this class as base for all other controllers.
+	/// Note that minimal controller implementation should inherit <see cref="IPresentable"/>.
 	/// </summary>
 	public class AppViewController : IPresenter, IPresentable, IPresentableEvents
 	{
 		#region data
 
+		private static int _idCounter;
+
 		private readonly IPresentableContext _context;
-		private readonly AppState _state;
-		private readonly AppViewController _parentController;
+		private readonly IAppState _state;
+		private readonly IAppView _view;
 
+		private readonly string _id;
 		private readonly string _typeId;
-		private readonly AppViewControllerOptions _createOptions;
-		private readonly PresentOptions _presentOptions;
 		private readonly PresentArgs _presentArgs;
-		private readonly AppView _view;
 
-		private List<AppViewController> _childControllers;
 		private IAsyncOperation _dismissOp;
 		private bool _active;
 		private bool _disposed;
@@ -38,22 +38,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the parent state.
 		/// </summary>
-		public AppState State => _state;
-
-		/// <summary>
-		/// Gets creation options for the controller.
-		/// </summary>
-		public AppViewControllerOptions CreationOptions => _createOptions;
-
-		/// <summary>
-		/// Gets prent controller (if any).
-		/// </summary>
-		public AppViewController Parent => _parentController;
-
-		/// <summary>
-		/// Gets the controller creation options.
-		/// </summary>
-		protected PresentOptions PresentOptions => _presentOptions;
+		protected IAppState ParentState => _state;
 
 		/// <summary>
 		/// Gets the controller creation arguments.
@@ -66,11 +51,6 @@ namespace UnityFx.AppStates
 		protected bool IsDisposed => _disposed;
 
 		/// <summary>
-		/// Gets child view controllers.
-		/// </summary>
-		protected IEnumerable<AppViewController> Children => _childControllers ?? Enumerable.Empty<AppViewController>();
-
-		/// <summary>
 		/// Initializes a new instance of the <see cref="AppViewController"/> class.
 		/// </summary>
 		/// <param name="context">Context data for the controller instance.</param>
@@ -78,10 +58,7 @@ namespace UnityFx.AppStates
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
 			_typeId = GetId(GetType());
-			_createOptions = GetOptions(GetType());
 			_state = context.ParentState;
-			_parentController = context.ParentController;
-			_presentOptions = context.PresentOptions;
 			_presentArgs = context.PresentArgs;
 			_view = context.CreateView(this);
 		}
@@ -94,6 +71,12 @@ namespace UnityFx.AppStates
 		/// <seealso cref="ThrowIfDisposed"/>
 		protected virtual void Dispose(bool disposing)
 		{
+			_disposed = true;
+
+			if (disposing)
+			{
+				_view.Dispose();
+			}
 		}
 
 		/// <summary>
@@ -250,10 +233,10 @@ namespace UnityFx.AppStates
 		#region IPresentable
 
 		/// <inheritdoc/>
-		public string TypeId => _typeId;
+		public string Id => _id;
 
 		/// <inheritdoc/>
-		public AppView View => _view;
+		public IAppView View => _view;
 
 		/// <inheritdoc/>
 		public bool IsActive => _active;
@@ -302,43 +285,31 @@ namespace UnityFx.AppStates
 		#region IPresenter
 
 		/// <inheritdoc/>
-		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args)
-		{
-			ThrowIfDisposed();
-
-			if ((options & PresentOptions.Child) != 0)
-			{
-				if (_childControllers == null)
-				{
-					_childControllers = new List<AppViewController>();
-				}
-
-				return _context.PresentAsync(this, controllerType, options, args);
-			}
-			else
-			{
-				return _context.PresentAsync(controllerType, options, args);
-			}
-		}
-
-		/// <inheritdoc/>
 		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
 
-			return _context.PresentAsync(controllerType, PresentOptions.None, args);
+			return _context.PresentAsync(controllerType, args);
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentOptions options, PresentArgs args) where TController : IPresentable
+		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType)
 		{
-			return PresentAsync(typeof(TController), options, args) as IAsyncOperation<TController>;
+			ThrowIfDisposed();
+
+			return _context.PresentAsync(controllerType, PresentArgs.Default);
 		}
 
 		/// <inheritdoc/>
 		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : IPresentable
 		{
 			return PresentAsync(typeof(TController), args) as IAsyncOperation<TController>;
+		}
+
+		/// <inheritdoc/>
+		public IAsyncOperation<TController> PresentAsync<TController>() where TController : IPresentable
+		{
+			return PresentAsync(typeof(TController)) as IAsyncOperation<TController>;
 		}
 
 		#endregion
@@ -353,10 +324,6 @@ namespace UnityFx.AppStates
 				if (_disposed)
 				{
 					_dismissOp = AsyncResult.CompletedOperation;
-				}
-				else if (_parentController != null)
-				{
-					_dismissOp = _context.DismissAsync(this);
 				}
 				else
 				{
@@ -380,46 +347,13 @@ namespace UnityFx.AppStates
 		/// <seealso cref="Dispose(bool)"/>
 		public void Dispose()
 		{
-			if (!_disposed)
-			{
-				_disposed = true;
-				Dispose(true);
-				DisposeInternal();
-				GC.SuppressFinalize(this);
-			}
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 
 		#endregion
 
 		#region implementation
-
-		private void DisposeInternal()
-		{
-			_parentController?.RemoveChildController(this);
-			_view.Dispose();
-
-			if (_childControllers != null)
-			{
-				foreach (var controller in _childControllers)
-				{
-					controller.Dispose();
-				}
-
-				_childControllers.Clear();
-				_childControllers = null;
-			}
-		}
-
-		private bool RemoveChildController(AppViewController controller)
-		{
-			if (controller != null && _childControllers != null)
-			{
-				return _childControllers.Remove(controller);
-			}
-
-			return false;
-		}
-
 		#endregion
 	}
 }

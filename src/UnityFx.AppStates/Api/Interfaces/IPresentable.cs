@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
@@ -12,9 +11,9 @@ namespace UnityFx.AppStates
 	public interface IPresentable : IDismissable
 	{
 		/// <summary>
-		/// Gets a value indicating whether the state is active (i.e. can process user input).
+		/// Gets the state identifier.
 		/// </summary>
-		bool IsActive { get; }
+		string Id { get; }
 
 		/// <summary>
 		/// Gets the atached view instance.

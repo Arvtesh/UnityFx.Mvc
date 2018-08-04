@@ -8,6 +8,8 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Enumerates state controller push options.
 	/// </summary>
+	/// <seealso cref="IPresenter"/>
+	/// <seealso cref="IPresentable"/>
 	[Flags]
 	public enum PresentOptions
 	{
@@ -20,6 +22,11 @@ namespace UnityFx.AppStates
 		/// tt
 		/// </summary>
 		Child = 1,
+
+		/// <summary>
+		/// If set the controller tries to reuse view of its parent controller/state.
+		/// </summary>
+		ReuseParentView = 2,
 
 		/// <summary>
 		/// Presents a new state and dismisses the previous one.

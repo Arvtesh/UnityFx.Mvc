@@ -17,9 +17,10 @@ namespace UnityFx.AppStates
 		private static Dictionary<string, string> _emptyQuery = new Dictionary<string, string>();
 		private static PresentArgs _defaultArgs;
 
-		private readonly object _data;
+		private readonly PresentOptions _options;
 		private readonly Dictionary<string, string> _query;
 		private readonly string _fragment;
+		private readonly object _data;
 
 		#endregion
 
@@ -90,7 +91,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets user data attached to this object.
 		/// </summary>
-		public object Data => _data;
+		public PresentOptions Options => _options;
 
 		/// <summary>
 		/// Gets query parameters (if any).
@@ -105,6 +106,11 @@ namespace UnityFx.AppStates
 		/// Gets fragment parameters (if any).
 		/// </summary>
 		public string Fragment => _fragment;
+
+		/// <summary>
+		/// Gets user data attached to this object.
+		/// </summary>
+		public object Data => _data;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentArgs"/> class.

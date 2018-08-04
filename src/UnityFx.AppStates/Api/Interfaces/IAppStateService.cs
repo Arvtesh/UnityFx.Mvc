@@ -9,7 +9,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A generic application state service.
 	/// </summary>
-	/// <seealso cref="AppState"/>
+	/// <seealso cref="IAppState"/>
 	public interface IAppStateService : IPresenter, IDisposable
 	{
 		/// <summary>

@@ -7,9 +7,15 @@ using UnityEngine;
 namespace UnityFx.AppStates.Samples
 {
 	/// <summary>
-	/// Application entry point.
+	/// About dialog view.
 	/// </summary>
-	public class AppRoot : MonoBehaviour
+	/// <seealso cref="AboutController"/>
+	public class AboutView : MonoBehaviour
 	{
+		#region data
+		#endregion
+
+		#region MonoBehaviour
+		#endregion
 	}
 }

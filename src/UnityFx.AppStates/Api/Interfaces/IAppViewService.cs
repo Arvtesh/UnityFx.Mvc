@@ -7,10 +7,10 @@ using System.Collections.Generic;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// A factory for <see cref="AppView"/> instances.
+	/// A factory for <see cref="IAppView"/> instances.
 	/// </summary>
-	/// <seealso cref="AppView"/>
-	public interface IAppViewService : IAppViewTransitionFactory, IDisposable
+	/// <seealso cref="IAppView"/>
+	public interface IAppViewService : IDisposable
 	{
 		/// <summary>
 		/// Gets child views.
@@ -24,13 +24,5 @@ namespace UnityFx.AppStates
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="id"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the service is disposed.</exception>
 		IAppView CreateView(string id, IAppView insertAfter, AppViewOptions options);
-
-		/// <summary>
-		/// Creates an empty view with the specified <paramref name="id"/> on top of the <paramref name="parent"/> one.
-		/// If <paramref name="parent"/> is <see langword="null"/> the view is created below all others.
-		/// </summary>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="id"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the service is disposed.</exception>
-		IAppView CreateChildView(string id, IAppView parent, AppViewOptions options);
 	}
 }
