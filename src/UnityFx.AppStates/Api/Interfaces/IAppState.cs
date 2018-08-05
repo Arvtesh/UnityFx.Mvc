@@ -12,7 +12,7 @@ namespace UnityFx.AppStates
 	public interface IAppState : ITreeListNode<IAppState>, IPresenter, IPresentable, IDeeplinkable
 	{
 		/// <summary>
-		/// Gets the view root view controller attached to the state.
+		/// Gets a view controller attached to the state.
 		/// </summary>
 		IPresentable Controller { get; }
 	}

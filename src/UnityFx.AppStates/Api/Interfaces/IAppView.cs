@@ -11,7 +11,7 @@ namespace UnityFx.AppStates
 	/// </summary>
 	/// <seealso cref="IAppState"/>
 	/// <seealso cref="IPresentable"/>
-	public interface IAppView : ITreeListNode<IAppView>, IDisposable
+	public interface IAppView : ITreeListNode<IAppView>, IComponentContainer, IDisposable
 	{
 		/// <summary>
 		/// Gets the view identifier.

@@ -16,6 +16,11 @@ namespace UnityFx.AppStates
 		string Id { get; }
 
 		/// <summary>
+		/// Gets a value indicating whether the instance is active.
+		/// </summary>
+		bool IsActive { get; }
+
+		/// <summary>
 		/// Gets the atached view instance.
 		/// </summary>
 		IAppView View { get; }

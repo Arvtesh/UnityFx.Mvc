@@ -111,15 +111,6 @@ namespace UnityFx.AppStates
 		internal void InvokeOnDismiss()
 		{
 			ThrowIfDisposed();
-
-			if (_childControllers != null)
-			{
-				foreach (var controller in _childControllers)
-				{
-					controller.InvokeOnDismiss();
-				}
-			}
-
 			OnDismiss();
 		}
 
@@ -134,14 +125,6 @@ namespace UnityFx.AppStates
 
 				OnActivate();
 
-				if (_childControllers != null)
-				{
-					foreach (var controller in _childControllers)
-					{
-						controller.TryActivate();
-					}
-				}
-
 				return true;
 			}
 
@@ -154,14 +137,6 @@ namespace UnityFx.AppStates
 
 			if (_active)
 			{
-				if (_childControllers != null)
-				{
-					foreach (var controller in _childControllers)
-					{
-						controller.TryDeactivate();
-					}
-				}
-
 				OnDeactivate();
 
 				_view.Enabled = false;
@@ -171,22 +146,6 @@ namespace UnityFx.AppStates
 			}
 
 			return false;
-		}
-
-		internal void AddChildController(AppViewController controller)
-		{
-			Debug.Assert(controller != null);
-			_childControllers.Add(controller);
-		}
-
-		internal AppView GetTopView()
-		{
-			if (_childControllers != null && _childControllers.Count > 0)
-			{
-				return _childControllers[_childControllers.Count - 1].GetTopView();
-			}
-
-			return _view;
 		}
 
 		internal static string GetId(Type controllerType)
@@ -218,14 +177,14 @@ namespace UnityFx.AppStates
 			return name;
 		}
 
-		internal static AppViewControllerOptions GetOptions(Type controllerType)
+		internal static PresentOptions GetOptions(Type controllerType)
 		{
 			if (Attribute.GetCustomAttribute(controllerType, typeof(AppViewControllerAttribute)) is AppViewControllerAttribute attr)
 			{
 				return attr.Options;
 			}
 
-			return AppViewControllerOptions.None;
+			return PresentOptions.None;
 		}
 
 		#endregion
