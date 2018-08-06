@@ -31,18 +31,7 @@ namespace UnityFx.AppStates
 		Modal,
 	}
 
-	/// <summary>
-	/// A generic application state.
-	/// </summary>
-	/// <remarks>
-	/// By design an application flow is a sequence of state switches. A state may represent a single screen,
-	/// a dialog or a menu. States are supposed to be as independent as possible. Only one state may be active
-	/// (i.e. process user input) at time, but unlimited number of states may exist (be rendered on the screen
-	/// and execute their code) at the same time.
-	/// </remarks>
-	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
-	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
-	public class AppState : TreeListNode<AppState>, IPresentableContext, IPresenter, IPresentable, IDismissable
+	internal class AppState : TreeListNode<IAppState>, IAppState, IPresentableContext
 	{
 		#region data
 
@@ -147,27 +136,6 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		#endregion
-
-		#region IAppState
-
-		/// <summary>
-		/// Gets the state path.
-		/// </summary>
-		public string Path
-		{
-			get
-			{
-				var localPath = '/' + _controller.TypeId;
-				return Parent?.Path + localPath ?? localPath;
-			}
-		}
-
-		/// <summary>
-		/// Gets a controller attached to the state.
-		/// </summary>
-		public AppViewController Controller => _controller;
-
 		/// <summary>
 		/// Throws <see cref="ObjectDisposedException"/> if the instance is disposed.
 		/// </summary>
@@ -175,28 +143,27 @@ namespace UnityFx.AppStates
 		{
 			if (_disposed)
 			{
-				throw new ObjectDisposedException(_controller.TypeId);
+				throw new ObjectDisposedException(_controller.Id);
 			}
 		}
 
 		#endregion
 
-		#region IAppViewControllerContext
+		#region IAppState
 
-		/// <inheritdoc/>
-		PresentOptions IPresentableContext.PresentOptions => _tmpControllerOptions;
+		public IPresentable Controller => _controller;
 
-		/// <inheritdoc/>
+		#endregion
+
+		#region IPresentableContext
+
 		PresentArgs IPresentableContext.PresentArgs => _tmpControllerArgs;
 
-		/// <inheritdoc/>
-		AppViewController IPresentableContext.ParentController => _tmpController;
+		IPresentable IPresentableContext.ParentController => _tmpController;
 
-		/// <inheritdoc/>
-		AppState IPresentableContext.ParentState => this;
+		IAppState IPresentableContext.ParentState => this;
 
-		/// <inheritdoc/>
-		AppView IPresentableContext.CreateView(AppViewController c)
+		IAppView IPresentableContext.CreateView(IPresentable c)
 		{
 			ThrowIfDisposed();
 
@@ -204,25 +171,12 @@ namespace UnityFx.AppStates
 			{
 				return _stateManager.ViewManager.CreateView(c.TypeId, GetPrevView(), AppViewOptions.None);
 			}
-			else if ((c.CreationOptions & AppViewControllerOptions.ReuseParentView) != 0)
-			{
-				return _stateManager.ViewManager.CreateChildView(c.TypeId, _tmpController.View, AppViewOptions.None);
-			}
 			else
 			{
 				return _stateManager.ViewManager.CreateView(c.TypeId, _tmpController.GetTopView(), AppViewOptions.None);
 			}
 		}
 
-		/// <inheritdoc/>
-		IAsyncOperation<AppViewController> IPresentableContext.PresentAsync(AppViewController parentController, Type controllerType, PresentOptions options, PresentArgs args)
-		{
-			ThrowIfDisposed();
-
-			return _stateManager.PresentAsync(parentController, controllerType, options, args);
-		}
-
-		/// <inheritdoc/>
 		IAsyncOperation IPresentableContext.DismissAsync(AppViewController controller)
 		{
 			ThrowIfDisposed();
@@ -234,56 +188,49 @@ namespace UnityFx.AppStates
 
 		#region IPresenter
 
-		/// <inheritdoc/>
-		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args)
+		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
-
-			return _stateManager.PresentAsync(this, controllerType, options, args);
+			return _stateManager.PresentAsync(this, controllerType, args);
 		}
 
-		/// <inheritdoc/>
-		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentArgs args)
+		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType)
 		{
 			ThrowIfDisposed();
-
-			return _stateManager.PresentAsync(this, controllerType, PresentOptions.None, args);
+			return _stateManager.PresentAsync(this, controllerType, PresentArgs.Default);
 		}
 
-		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentOptions options, PresentArgs args) where TController : AppViewController
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : IPresentable
 		{
 			ThrowIfDisposed();
-
-			return _stateManager.PresentAsync<TController>(this, options, args);
+			return _stateManager.PresentAsync<TController>(this, args);
 		}
 
-		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : AppViewController
+		public IAsyncOperation<TController> PresentAsync<TController>() where TController : IPresentable
 		{
 			ThrowIfDisposed();
 
-			return _stateManager.PresentAsync<TController>(this, PresentOptions.None, args);
+			return _stateManager.PresentAsync<TController>(this, PresentArgs.Default);
 		}
 
 		#endregion
 
 		#region IPresentable
 
-		/// <inheritdoc/>
-		public string TypeId => _controller.TypeId;
-
-		/// <inheritdoc/>
-		public AppView View => _controller.View;
-
-		/// <inheritdoc/>
+		public string Id => _controller.Id;
+		public IAppView View => _controller.View;
 		public bool IsActive => _isActive;
+
+		#endregion
+
+		#region IDeeplinkable
+
+		public string DeeplinkId => throw new NotImplementedException();
 
 		#endregion
 
 		#region IDismissable
 
-		/// <inheritdoc/>
 		public IAsyncOperation DismissAsync()
 		{
 			if (_dismissOp == null)

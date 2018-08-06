@@ -5,14 +5,18 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// A collection of states.
+	/// A generic tree list collection.
 	/// </summary>
-	public class TreeListCollection<T> : ICollection<T>, IReadOnlyCollection<T> where T : TreeListNode<T>
+	/// <seealso cref="TreeListNode{T}"/>
+#if NET35
+	public class TreeListCollection<T> : ICollection<T> where T : class, ITreeListNode<T>
+#else
+	public class TreeListCollection<T> : ICollection<T>, IReadOnlyCollection<T> where T : class, ITreeListNode<T>
+#endif
 	{
 		#region data
 
@@ -54,6 +58,192 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
+		/// Adds a new node to the collection.
+		/// </summary>
+		public void Add(T node)
+		{
+			if (node == null)
+			{
+				throw new ArgumentNullException(nameof(node));
+			}
+
+			if (_first != null)
+			{
+				Debug.Assert(_last != null);
+				Debug.Assert(_count > 0);
+
+				SetLink(_last, node);
+
+				_last = node;
+				++_count;
+			}
+			else
+			{
+				_first = node;
+				_last = node;
+				_count = 1;
+			}
+		}
+
+		/// <summary>
+		/// Adds a new node to the collection.
+		/// </summary>
+		public void AddFirst(T node)
+		{
+			if (node == null)
+			{
+				throw new ArgumentNullException(nameof(node));
+			}
+
+			if (_first != null)
+			{
+				Debug.Assert(_last != null);
+				Debug.Assert(_count > 0);
+
+				SetLink(node, _first);
+
+				_first = node;
+				++_count;
+			}
+			else
+			{
+				_first = node;
+				_last = node;
+				_count = 1;
+			}
+		}
+
+		/// <summary>
+		/// Adds a new node to the collection.
+		/// </summary>
+		public void AddLast(T node)
+		{
+			if (node == null)
+			{
+				throw new ArgumentNullException(nameof(node));
+			}
+
+			if (_last != null)
+			{
+				Debug.Assert(_first != null);
+				Debug.Assert(_count > 0);
+
+				SetLink(_last, node);
+
+				_last = node;
+				++_count;
+			}
+			else
+			{
+				_first = node;
+				_last = node;
+				_count = 1;
+			}
+		}
+
+		/// <summary>
+		/// Adds a new node to the collection.
+		/// </summary>
+		public void Add(T node, T insertAfter)
+		{
+			if (node == null)
+			{
+				throw new ArgumentNullException(nameof(node));
+			}
+
+			if (insertAfter != null)
+			{
+				SetLink(insertAfter, node);
+
+				if (insertAfter == _last)
+				{
+					_last = node;
+				}
+
+				++_count;
+			}
+			else
+			{
+				AddFirst(node);
+			}
+		}
+
+		/// <summary>
+		/// Removes a specific node from the collection.
+		/// </summary>
+		public bool Remove(T node)
+		{
+			if (node != null)
+			{
+				var prev = node.Prev;
+				var next = node.Next;
+
+				if (prev != null || next != null)
+				{
+					if (prev != null)
+					{
+						SetNext(prev, next);
+					}
+
+					if (next != null)
+					{
+						SetPrev(next, prev);
+					}
+
+					Reset(node);
+
+					if (_first == node)
+					{
+						_first = next;
+					}
+
+					if (_last == node)
+					{
+						_last = prev;
+					}
+
+					--_count;
+
+					return true;
+				}
+				else if (_first == node)
+				{
+					Debug.Assert(_last == node);
+					Debug.Assert(_count == 1);
+
+					Reset(node);
+
+					_first = null;
+					_last = null;
+					_count = 0;
+
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Removes all nodes from the collection.
+		/// </summary>
+		public void Clear()
+		{
+			var cur = _first;
+
+			while (cur != null)
+			{
+				var next = cur.Next;
+				Reset(cur);
+				cur = next;
+			}
+
+			_first = null;
+			_last = null;
+			_count = 0;
+		}
+
+		/// <summary>
 		/// Copies the collection content to an array.
 		/// </summary>
 		public void CopyTo(T[] states)
@@ -86,6 +276,11 @@ namespace UnityFx.AppStates
 			if (states == null)
 			{
 				throw new ArgumentNullException(nameof(states));
+			}
+
+			if (states.IsReadOnly)
+			{
+				throw new NotSupportedException();
 			}
 
 			var cur = _first;
@@ -126,212 +321,37 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		#endregion
-
-		#region internals
-
-		internal void AddFirst(T node)
-		{
-			Debug.Assert(node != null);
-
-			if (_first != null)
-			{
-				Debug.Assert(_last != null);
-				Debug.Assert(_count > 0);
-
-				_first.Prev = node;
-				node.Next = _first;
-				_first = node;
-				++_count;
-			}
-			else
-			{
-				_first = node;
-				_last = node;
-				_count = 1;
-			}
-		}
-
-		internal void AddLast(T node)
-		{
-			Debug.Assert(node != null);
-
-			if (_last != null)
-			{
-				Debug.Assert(_first != null);
-				Debug.Assert(_count > 0);
-
-				_last.Next = node;
-				node.Prev = _last;
-				_last = node;
-				++_count;
-			}
-			else
-			{
-				_first = node;
-				_last = node;
-				_count = 1;
-			}
-		}
-
-		internal void Add(T node, T insertAfter)
-		{
-			Debug.Assert(node != null);
-
-			if (insertAfter != null)
-			{
-				insertAfter.Next = node;
-				node.Prev = insertAfter;
-
-				if (insertAfter == _last)
-				{
-					_last = node;
-				}
-
-				++_count;
-			}
-			else
-			{
-				AddFirst(node);
-			}
-		}
-
-		internal Enumerable GetEnumerableLifo()
-		{
-			return new Enumerable(_last, false);
-		}
-
-		internal T[] ToArrayLifo()
-		{
-			if (_count > 0)
-			{
-				var result = new T[_count];
-				var cur = _last;
-				var index = 0;
-
-				while (cur != null)
-				{
-					result[index++] = cur;
-					cur = cur.Prev;
-				}
-
-				return result;
-			}
-			else
-			{
-#if NET35
-				return new T[0];
-#else
-				return Array.Empty<T>();
-#endif
-			}
-		}
+		/// <summary>
+		/// Returns an enumerable that iterates through the collection starting from the last element.
+		/// </summary>
+		public Enumerable Reverse() => new Enumerable(_last, false);
 
 		#endregion
 
 		#region ICollection
 
 		/// <inheritdoc/>
-		public bool IsReadOnly => false;
+		public int Count => _count;
 
 		/// <inheritdoc/>
-		public void Add(T node)
+		bool ICollection<T>.IsReadOnly => true;
+
+		/// <inheritdoc/>
+		void ICollection<T>.Add(T node)
 		{
-			if (node == null)
-			{
-				throw new ArgumentNullException(nameof(node));
-			}
-
-			if (_first != null)
-			{
-				Debug.Assert(_last != null);
-				Debug.Assert(_count > 0);
-
-				_last.Next = node;
-				node.Prev = _last;
-				_last = node;
-				++_count;
-			}
-			else
-			{
-				_first = node;
-				_last = node;
-				_count = 1;
-			}
+			throw new NotSupportedException();
 		}
 
 		/// <inheritdoc/>
-		public bool Remove(T node)
+		bool ICollection<T>.Remove(T node)
 		{
-			if (node != null)
-			{
-				var prev = node.Prev;
-				var next = node.Next;
-
-				if (prev != null || next != null)
-				{
-					if (prev != null)
-					{
-						prev.Next = next;
-					}
-
-					if (next != null)
-					{
-						next.Prev = prev;
-					}
-
-					node.Prev = null;
-					node.Next = null;
-
-					if (_first == node)
-					{
-						_first = next;
-					}
-
-					if (_last == node)
-					{
-						_last = prev;
-					}
-
-					--_count;
-
-					return true;
-				}
-				else if (_first == node)
-				{
-					Debug.Assert(_last == node);
-					Debug.Assert(_count == 1);
-
-					node.Prev = null;
-					node.Next = null;
-
-					_first = null;
-					_last = null;
-					_count = 0;
-
-					return true;
-				}
-			}
-
-			return false;
+			throw new NotSupportedException();
 		}
 
 		/// <inheritdoc/>
-		public void Clear()
+		void ICollection<T>.Clear()
 		{
-			var cur = _first;
-
-			while (cur != null)
-			{
-				var next = cur.Next;
-				cur.Next = null;
-				cur.Prev = null;
-				cur = next;
-			}
-
-			_first = null;
-			_last = null;
-			_count = 0;
+			throw new NotSupportedException();
 		}
 
 		/// <inheritdoc/>
@@ -374,13 +394,6 @@ namespace UnityFx.AppStates
 				cur = cur.Next;
 			}
 		}
-
-		#endregion
-
-		#region IReadOnlyColection
-
-		/// <inheritdoc/>
-		public int Count => _count;
 
 		#endregion
 
@@ -483,7 +496,9 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Returns an enumerator that iterates through the collection.
+		/// </summary>
 		public Enumerator GetEnumerator() => new Enumerator(_first, true);
 
 		/// <inheritdoc/>
@@ -500,8 +515,38 @@ namespace UnityFx.AppStates
 		{
 			if (_count == 0)
 			{
-				throw new InvalidOperationException("The stack is empty.");
+				throw new InvalidOperationException("The collection is empty.");
 			}
+		}
+
+		private static void SetNext(T node, T next)
+		{
+			Debug.Assert(node != null);
+			(node as TreeListNode<T>).Next = next;
+		}
+
+		private static void SetPrev(T node, T prev)
+		{
+			Debug.Assert(node != null);
+			(node as TreeListNode<T>).Prev = prev;
+		}
+
+		private static void Reset(T node)
+		{
+			Debug.Assert(node != null);
+
+			var n = node as TreeListNode<T>;
+			n.Next = null;
+			n.Prev = null;
+		}
+
+		private static void SetLink(T prev, T next)
+		{
+			Debug.Assert(next != null);
+			Debug.Assert(prev != null);
+
+			(next as TreeListNode<T>).Prev = prev;
+			(prev as TreeListNode<T>).Next = next;
 		}
 
 		#endregion

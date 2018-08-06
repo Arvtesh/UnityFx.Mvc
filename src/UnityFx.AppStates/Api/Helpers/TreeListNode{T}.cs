@@ -12,67 +12,35 @@ namespace UnityFx.AppStates
 	/// A generic node of linked list.
 	/// </summary>
 	/// <typeparam name="T">Type of the node.</typeparam>
-	public class TreeListNode<T> where T : TreeListNode<T>
+	/// <seealso cref="TreeListCollection{T}"/>
+	public class TreeListNode<T> : ITreeListNode<T> where T : class, ITreeListNode<T>
 	{
 		#region data
-
-		private class ChildEnumerable : IReadOnlyCollection<T>
-		{
-			private T _parent;
-
-			internal ChildEnumerable(T first)
-			{
-				_parent = first;
-			}
-
-			/// <inheritdoc/>
-			public int Count
-			{
-				get
-				{
-					var cur = _parent.Next;
-					var count = 0;
-
-					while (cur != null)
-					{
-						if (cur.Parent == _parent)
-						{
-							++count;
-						}
-
-						cur = cur.Next;
-					}
-
-					return count;
-				}
-			}
-
-			public IEnumerator<T> GetEnumerator()
-			{
-				var cur = _parent.Next;
-
-				while (cur != null)
-				{
-					if (cur.IsChildOf(_parent))
-					{
-						yield return cur;
-					}
-
-					cur = cur.Next;
-				}
-			}
-
-			IEnumerator IEnumerable.GetEnumerator()
-			{
-				return (this as IEnumerable<T>).GetEnumerator();
-			}
-		}
 
 		private readonly T _parentNode;
 
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TreeListNode{T}"/> class.
+		/// </summary>
+		protected TreeListNode()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TreeListNode{T}"/> class.
+		/// </summary>
+		protected TreeListNode(T parentNode)
+		{
+			_parentNode = parentNode;
+		}
+
+		#endregion
+
+		#region ITreeListNode
 
 		/// <summary>
 		/// Gets a parent node for this one (if any).
@@ -109,19 +77,38 @@ namespace UnityFx.AppStates
 			return false;
 		}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="TreeListNode{T}"/> class.
-		/// </summary>
-		protected TreeListNode()
-		{
-		}
+		#endregion
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="TreeListNode{T}"/> class.
-		/// </summary>
-		protected TreeListNode(T parentNode)
+		#region implementation
+
+		private class ChildEnumerable : IEnumerable<T>
 		{
-			_parentNode = parentNode;
+			private T _parent;
+
+			internal ChildEnumerable(T first)
+			{
+				_parent = first;
+			}
+
+			public IEnumerator<T> GetEnumerator()
+			{
+				var cur = _parent.Next;
+
+				while (cur != null)
+				{
+					if (cur.IsChildOf(_parent))
+					{
+						yield return cur;
+					}
+
+					cur = cur.Next;
+				}
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return (this as IEnumerable<T>).GetEnumerator();
+			}
 		}
 
 		#endregion

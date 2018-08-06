@@ -10,7 +10,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Default implementation of <see cref="IPresentableFactory"/>.
 	/// </summary>
-	internal sealed class AppViewControllerFactory : IPresentableFactory
+	internal sealed class DefaultPresentableFactory : IPresentableFactory
 	{
 		#region data
 
@@ -22,7 +22,7 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		public AppViewControllerFactory(IAppStateService stateManager, IAppViewService viewManager, IServiceProvider serviceProvider)
+		public DefaultPresentableFactory(IAppStateService stateManager, IAppViewService viewManager, IServiceProvider serviceProvider)
 		{
 			_stateManager = stateManager;
 			_viewManager = viewManager;
@@ -33,10 +33,10 @@ namespace UnityFx.AppStates
 
 		#region IAppStateControllerFactory
 
-		public AppViewController CreateController(Type controllerType, IPresentableContext context)
+		public IPresentable CreateController(Type controllerType, IPresentableContext context)
 		{
 			Debug.Assert(controllerType != null);
-			Debug.Assert(controllerType.IsSubclassOf(typeof(AppViewController)));
+			Debug.Assert(controllerType.IsSubclassOf(typeof(IPresentable)));
 			Debug.Assert(context != null);
 
 			try
@@ -49,16 +49,16 @@ namespace UnityFx.AppStates
 					var parameters = c.GetParameters();
 					var args = new object[parameters.Length];
 
-					for (int i = 0; i < args.Length; i++)
+					for (var i = 0; i < args.Length; i++)
 					{
 						args[i] = GetServiceInstance(parameters[i].ParameterType, context);
 					}
 
-					return c.Invoke(args) as AppViewController;
+					return c.Invoke(args) as IPresentable;
 				}
 				else
 				{
-					return Activator.CreateInstance(controllerType) as AppViewController;
+					return Activator.CreateInstance(controllerType) as IPresentable;
 				}
 			}
 			catch (TargetInvocationException e)

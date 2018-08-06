@@ -9,6 +9,14 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A generic application state.
 	/// </summary>
+	/// <remarks>
+	/// By design an application flow is a sequence of state switches. A state may represent a single screen,
+	/// a dialog or a menu. States are supposed to be as independent as possible. Only one state may be active
+	/// (i.e. process user input) at time, but unlimited number of states may exist at the same time. Any
+	/// state can be targeted by a deeplink.
+	/// </remarks>
+	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
+	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
 	public interface IAppState : ITreeListNode<IAppState>, IPresenter, IPresentable, IDeeplinkable
 	{
 		/// <summary>

@@ -27,7 +27,7 @@ namespace UnityFx.AppStates
 		private readonly IServiceProvider _serviceProvider;
 
 		private readonly AppStateServiceSettings _settings;
-		private readonly AppStateCollection _states;
+		private readonly TreeListCollection<IAppState> _states;
 		private readonly AsyncResultQueue<AsyncResult> _stackOperations;
 
 		private bool _disposed;
@@ -60,10 +60,10 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppStateService"/> class.
 		/// </summary>
-		/// /// <param name="viewManager"></param>
-		/// <param name="services"></param>
-		public AppStateService(IAppViewService viewManager, IServiceProvider services)
-			: this(viewManager, services, SynchronizationContext.Current)
+		/// <param name="viewManager"></param>
+		/// <param name="serviceProvider"></param>
+		public AppStateService(IAppViewService viewManager, IServiceProvider serviceProvider)
+			: this(viewManager, serviceProvider, null, SynchronizationContext.Current)
 		{
 		}
 
@@ -71,23 +71,14 @@ namespace UnityFx.AppStates
 		/// Initializes a new instance of the <see cref="AppStateService"/> class.
 		/// </summary>
 		/// <param name="syncContext"></param>
-		/// <param name="services"></param>
+		/// <param name="serviceProvider"></param>
 		/// <param name="viewManager"></param>
 		public AppStateService(
 			IAppViewService viewManager,
-			IServiceProvider services,
+			IServiceProvider serviceProvider,
 			SynchronizationContext syncContext)
+			: this(viewManager, serviceProvider, null, syncContext)
 		{
-			Debug.Assert(viewManager != null);
-			Debug.Assert(services != null);
-
-			_synchronizationContext = syncContext;
-			_controllerFactory = new AppViewControllerFactory(this, viewManager, services);
-			_viewManager = viewManager;
-			_serviceProvider = services;
-			_settings = new AppStateServiceSettings();
-			_states = new AppStateCollection();
-			_stackOperations = new AsyncResultQueue<AsyncResult>(syncContext);
 		}
 
 		/// <summary>
@@ -95,24 +86,35 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <param name="syncContext"></param>
 		/// <param name="viewManager"></param>
-		/// <param name="services"></param>
+		/// <param name="serviceProvider"></param>
 		/// <param name="controllerFactory"></param>
 		public AppStateService(
-			IPresentableFactory controllerFactory,
 			IAppViewService viewManager,
-			IServiceProvider services,
+			IServiceProvider serviceProvider,
+			IPresentableFactory controllerFactory,
 			SynchronizationContext syncContext)
 		{
-			Debug.Assert(controllerFactory != null);
-			Debug.Assert(viewManager != null);
-			Debug.Assert(services != null);
+			if (viewManager == null)
+			{
+				throw new ArgumentNullException(nameof(viewManager));
+			}
+
+			if (serviceProvider == null)
+			{
+				throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			if (controllerFactory == null)
+			{
+				_controllerFactory = new DefaultPresentableFactory(this, viewManager, serviceProvider);
+			}
 
 			_synchronizationContext = syncContext;
 			_controllerFactory = controllerFactory;
 			_viewManager = viewManager;
-			_serviceProvider = services;
+			_serviceProvider = serviceProvider;
 			_settings = new AppStateServiceSettings();
-			_states = new AppStateCollection();
+			_states = new TreeListCollection<IAppState>();
 			_stackOperations = new AsyncResultQueue<AsyncResult>(syncContext);
 		}
 
@@ -140,7 +142,7 @@ namespace UnityFx.AppStates
 				}
 
 				// 3) Dispose child states.
-				foreach (var state in _states.GetEnumerableLifo())
+				foreach (var state in _states.Reverse())
 				{
 					state.Dispose();
 				}
@@ -223,49 +225,22 @@ namespace UnityFx.AppStates
 			_states.Remove(state);
 		}
 
-		internal IAsyncOperation<AppViewController> PresentAsync(AppViewController parentController, Type controllerType, PresentOptions options, PresentArgs args)
-		{
-			ThrowIfDisposed();
-
-			var result = new PresentOperation<AppViewController>(this, parentController, controllerType, options, args);
-			QueueOperation(result);
-			return result;
-		}
-
-		internal IAsyncOperation<AppViewController> PresentAsync(AppState state, Type controllerType, PresentOptions options, PresentArgs args)
+		internal IAsyncOperation<IPresentable> PresentAsync(AppState state, Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
-			var result = new PresentOperation<AppViewController>(this, state, controllerType, options, args);
+			var result = new PresentOperation<IPresentable>(this, state, controllerType, args);
 			QueueOperation(result);
 			return result;
 		}
 
-		internal IAsyncOperation<T> PresentAsync<T>(AppViewController parentController, PresentOptions options, PresentArgs args) where T : AppViewController
-		{
-			ThrowIfDisposed();
-
-			var result = new PresentOperation<T>(this, parentController, typeof(T), options, args);
-			QueueOperation(result);
-			return result;
-		}
-
-		internal IAsyncOperation<T> PresentAsync<T>(AppState state, PresentOptions options, PresentArgs args) where T : AppViewController
+		internal IAsyncOperation<T> PresentAsync<T>(AppState state, PresentArgs args) where T : IPresentable
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(typeof(T));
 
-			var result = new PresentOperation<T>(this, state, typeof(T), options, args);
-			QueueOperation(result);
-			return result;
-		}
-
-		internal IAsyncOperation DismissAsync(AppViewController controller)
-		{
-			ThrowIfDisposed();
-
-			var result = new DismissOperation(this, controller);
+			var result = new PresentOperation<T>(this, state, typeof(T), args);
 			QueueOperation(result);
 			return result;
 		}
@@ -302,38 +277,54 @@ namespace UnityFx.AppStates
 		public bool IsBusy => !_stackOperations.IsEmpty;
 
 		/// <inheritdoc/>
-		public IReadOnlyCollection<AppState> States => _states;
+		public IAppState ActiveState
+		{
+			get
+			{
+				var result = _states.Last;
+
+				if (result != null && result.IsActive)
+				{
+					return result;
+				}
+
+				return null;
+			}
+		}
+
+		/// <inheritdoc/>
+#if NET35
+		public ICollection<IAppState> States => _states;
+#else
+		public IReadOnlyCollection<IAppState> States => _states;
+#endif
 
 		#endregion
 
 		#region IPresenter
 
 		/// <inheritdoc/>
-		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args)
+		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentArgs args)
 		{
-			ThrowIfDisposed();
-
-			return PresentAsync(default(AppState), controllerType, options, args);
+			return PresentAsync(null, controllerType, args);
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentArgs args)
+		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType)
 		{
-			ThrowIfDisposed();
-
-			return PresentAsync(default(AppState), controllerType, PresentOptions.None, args);
+			return PresentAsync(null, controllerType, PresentArgs.Default);
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentOptions options, PresentArgs args) where TController : AppViewController
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : IPresentable
 		{
-			return PresentAsync<TController>(default(AppState), options, args);
+			return PresentAsync<TController>(null, args);
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : AppViewController
+		public IAsyncOperation<TController> PresentAsync<TController>() where TController : IPresentable
 		{
-			return PresentAsync<TController>(default(AppState), PresentOptions.None, args);
+			return PresentAsync<TController>(null, PresentArgs.Default);
 		}
 
 		#endregion
@@ -389,9 +380,9 @@ namespace UnityFx.AppStates
 				throw new ArgumentException($"Cannot instantiate abstract type {controllerType.Name}", nameof(controllerType));
 			}
 
-			if (!controllerType.IsSubclassOf(typeof(AppViewController)))
+			if (!typeof(IPresentable).IsAssignableFrom(controllerType))
 			{
-				throw new ArgumentException($"A state controller is expected to inherit " + typeof(AppViewController).Name, nameof(controllerType));
+				throw new ArgumentException($"A state controller is expected to implement " + typeof(IPresentable).Name, nameof(controllerType));
 			}
 		}
 
