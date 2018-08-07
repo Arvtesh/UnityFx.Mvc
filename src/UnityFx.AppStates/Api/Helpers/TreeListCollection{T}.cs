@@ -146,13 +146,13 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public void Add(T node, T insertAfter)
 		{
-			if (node == null)
-			{
-				throw new ArgumentNullException(nameof(node));
-			}
-
 			if (insertAfter != null)
 			{
+				if (node == null)
+				{
+					throw new ArgumentNullException(nameof(node));
+				}
+
 				SetLink(insertAfter, node);
 
 				if (insertAfter == _last)
@@ -190,7 +190,7 @@ namespace UnityFx.AppStates
 						SetPrev(next, prev);
 					}
 
-					Reset(node);
+					Unlink(node);
 
 					if (_first == node)
 					{
@@ -211,7 +211,7 @@ namespace UnityFx.AppStates
 					Debug.Assert(_last == node);
 					Debug.Assert(_count == 1);
 
-					Reset(node);
+					Unlink(node);
 
 					_first = null;
 					_last = null;
@@ -234,7 +234,7 @@ namespace UnityFx.AppStates
 			while (cur != null)
 			{
 				var next = cur.Next;
-				Reset(cur);
+				Unlink(cur);
 				cur = next;
 			}
 
@@ -246,14 +246,14 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Copies the collection content to an array.
 		/// </summary>
-		public void CopyTo(T[] states)
+		public void CopyTo(T[] array)
 		{
-			if (states == null)
+			if (array == null)
 			{
-				throw new ArgumentNullException(nameof(states));
+				throw new ArgumentNullException(nameof(array));
 			}
 
-			if (states.Length != _count)
+			if (array.Length != _count)
 			{
 				throw new InvalidOperationException();
 			}
@@ -263,7 +263,7 @@ namespace UnityFx.AppStates
 
 			while (cur != null)
 			{
-				states[index++] = cur;
+				array[index++] = cur;
 				cur = cur.Next;
 			}
 		}
@@ -271,14 +271,14 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Copies the collection content to another collection.
 		/// </summary>
-		public void CopyTo(ICollection<T> states)
+		public void CopyTo(ICollection<T> other)
 		{
-			if (states == null)
+			if (other == null)
 			{
-				throw new ArgumentNullException(nameof(states));
+				throw new ArgumentNullException(nameof(other));
 			}
 
-			if (states.IsReadOnly)
+			if (other.IsReadOnly)
 			{
 				throw new NotSupportedException();
 			}
@@ -287,7 +287,7 @@ namespace UnityFx.AppStates
 
 			while (cur != null)
 			{
-				states.Add(cur);
+				other.Add(cur);
 				cur = cur.Next;
 			}
 		}
@@ -531,7 +531,7 @@ namespace UnityFx.AppStates
 			(node as TreeListNode<T>).Prev = prev;
 		}
 
-		private static void Reset(T node)
+		private static void Unlink(T node)
 		{
 			Debug.Assert(node != null);
 
