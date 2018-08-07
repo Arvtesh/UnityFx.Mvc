@@ -10,33 +10,16 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	/// <summary>
-	/// Enumerates state presentation modes.
-	/// </summary>
-	public enum AppStatePresentationMode
-	{
-		/// <summary>
-		/// Default (non-modal popup).
-		/// </summary>
-		Default,
-
-		/// <summary>
-		/// Exclusive (covers whole screen).
-		/// </summary>
-		Exclusive,
-
-		/// <summary>
-		/// Modal popup (appears on top of non-modal views).
-		/// </summary>
-		Modal,
-	}
-
 	internal class AppState : TreeListNode<IAppState>, IAppState, IPresentableContext
 	{
 		#region data
 
+		private static int _idCounter;
+
 		private readonly AppStateService _stateManager;
-		private readonly AppViewController _controller;
+		private readonly IPresentable _controller;
+		private readonly string _id;
+		private readonly string _deeplinkId;
 
 		private IAsyncOperation _dismissOp;
 		private bool _isActive;
@@ -62,6 +45,8 @@ namespace UnityFx.AppStates
 			_tmpControllerOptions = options;
 			_tmpControllerArgs = args;
 
+			_id = Utility.GetNextId("_state", ref _idCounter);
+			_deeplinkId = Utility.GetPresentableTypeId(controllerType);
 			_stateManager = stateManager;
 			_controller = stateManager.ControllerFactory.CreateController(controllerType, this);
 			_stateManager.AddState(this);
@@ -143,7 +128,7 @@ namespace UnityFx.AppStates
 		{
 			if (_disposed)
 			{
-				throw new ObjectDisposedException(_controller.Id);
+				throw new ObjectDisposedException(_id);
 			}
 		}
 
@@ -169,15 +154,15 @@ namespace UnityFx.AppStates
 
 			if (_tmpController == null)
 			{
-				return _stateManager.ViewManager.CreateView(c.TypeId, GetPrevView(), AppViewOptions.None);
+				return _stateManager.ViewManager.CreateView(c.Id, GetPrevView(), AppViewOptions.None);
 			}
 			else
 			{
-				return _stateManager.ViewManager.CreateView(c.TypeId, _tmpController.GetTopView(), AppViewOptions.None);
+				return _stateManager.ViewManager.CreateView(c.Id, _tmpController.GetTopView(), AppViewOptions.None);
 			}
 		}
 
-		IAsyncOperation IPresentableContext.DismissAsync(AppViewController controller)
+		IAsyncOperation IPresentableContext.DismissAsync(IPresentable controller)
 		{
 			ThrowIfDisposed();
 
@@ -194,30 +179,17 @@ namespace UnityFx.AppStates
 			return _stateManager.PresentAsync(this, controllerType, args);
 		}
 
-		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType)
-		{
-			ThrowIfDisposed();
-			return _stateManager.PresentAsync(this, controllerType, PresentArgs.Default);
-		}
-
 		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : IPresentable
 		{
 			ThrowIfDisposed();
 			return _stateManager.PresentAsync<TController>(this, args);
 		}
 
-		public IAsyncOperation<TController> PresentAsync<TController>() where TController : IPresentable
-		{
-			ThrowIfDisposed();
-
-			return _stateManager.PresentAsync<TController>(this, PresentArgs.Default);
-		}
-
 		#endregion
 
 		#region IPresentable
 
-		public string Id => _controller.Id;
+		public string Id => _id;
 		public IAppView View => _controller.View;
 		public bool IsActive => _isActive;
 
@@ -225,7 +197,7 @@ namespace UnityFx.AppStates
 
 		#region IDeeplinkable
 
-		public string DeeplinkId => throw new NotImplementedException();
+		public string DeeplinkId => _deeplinkId;
 
 		#endregion
 

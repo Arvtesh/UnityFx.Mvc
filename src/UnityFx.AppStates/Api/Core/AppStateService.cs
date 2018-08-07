@@ -73,10 +73,7 @@ namespace UnityFx.AppStates
 		/// <param name="syncContext"></param>
 		/// <param name="serviceProvider"></param>
 		/// <param name="viewManager"></param>
-		public AppStateService(
-			IAppViewService viewManager,
-			IServiceProvider serviceProvider,
-			SynchronizationContext syncContext)
+		public AppStateService(IAppViewService viewManager, IServiceProvider serviceProvider, SynchronizationContext syncContext)
 			: this(viewManager, serviceProvider, null, syncContext)
 		{
 		}
@@ -88,11 +85,7 @@ namespace UnityFx.AppStates
 		/// <param name="viewManager"></param>
 		/// <param name="serviceProvider"></param>
 		/// <param name="controllerFactory"></param>
-		public AppStateService(
-			IAppViewService viewManager,
-			IServiceProvider serviceProvider,
-			IPresentableFactory controllerFactory,
-			SynchronizationContext syncContext)
+		public AppStateService(IAppViewService viewManager, IServiceProvider serviceProvider, IPresentableFactory controllerFactory, SynchronizationContext syncContext)
 		{
 			if (viewManager == null)
 			{
@@ -126,28 +119,32 @@ namespace UnityFx.AppStates
 		/// <seealso cref="ThrowIfDisposed"/>
 		protected virtual void Dispose(bool disposing)
 		{
-			if (disposing && !_disposed)
+			if (!_disposed)
 			{
-				// 1) Stop operation processing.
 				_disposed = true;
-				_stackOperations.Suspended = true;
 
-				// 2) Cancel pending operations.
-				if (!_stackOperations.IsEmpty)
+				if (disposing)
 				{
-					foreach (var op in _stackOperations.Release())
+					// 1) Stop operation processing.
+					_stackOperations.Suspended = true;
+
+					// 2) Cancel pending operations.
+					if (!_stackOperations.IsEmpty)
 					{
-						op.Cancel();
+						foreach (var op in _stackOperations.Release())
+						{
+							op.Cancel();
+						}
 					}
-				}
 
-				// 3) Dispose child states.
-				foreach (var state in _states.Reverse())
-				{
-					state.Dispose();
-				}
+					// 3) Dispose child states.
+					foreach (var state in _states.Reverse())
+					{
+						state.Dispose();
+					}
 
-				_states.Clear();
+					_states.Clear();
+				}
 			}
 		}
 
@@ -230,9 +227,11 @@ namespace UnityFx.AppStates
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
-			var result = new PresentOperation<IPresentable>(this, state, controllerType, args);
-			QueueOperation(result);
-			return result;
+			////var result = new PresentOperation<IPresentable>(this, state, controllerType, args);
+			////QueueOperation(result);
+			////return result;
+
+			throw new NotImplementedException();
 		}
 
 		internal IAsyncOperation<T> PresentAsync<T>(AppState state, PresentArgs args) where T : IPresentable
@@ -240,9 +239,11 @@ namespace UnityFx.AppStates
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(typeof(T));
 
-			var result = new PresentOperation<T>(this, state, typeof(T), args);
-			QueueOperation(result);
-			return result;
+			////var result = new PresentOperation<T>(this, state, typeof(T), args);
+			////QueueOperation(result);
+			////return result;
+
+			throw new NotImplementedException();
 		}
 
 		internal IAsyncOperation DismissAsync(AppState state)
@@ -310,21 +311,9 @@ namespace UnityFx.AppStates
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType)
-		{
-			return PresentAsync(null, controllerType, PresentArgs.Default);
-		}
-
-		/// <inheritdoc/>
 		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : IPresentable
 		{
 			return PresentAsync<TController>(null, args);
-		}
-
-		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>() where TController : IPresentable
-		{
-			return PresentAsync<TController>(null, PresentArgs.Default);
 		}
 
 		#endregion

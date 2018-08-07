@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using UnityFx.Async;
 
 namespace UnityFx.AppStates
@@ -24,7 +23,6 @@ namespace UnityFx.AppStates
 		private readonly IAppView _view;
 
 		private readonly string _id;
-		private readonly string _typeId;
 		private readonly PresentArgs _presentArgs;
 
 		private IAsyncOperation _dismissOp;
@@ -57,7 +55,7 @@ namespace UnityFx.AppStates
 		protected AppViewController(IPresentableContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
-			_typeId = GetId(GetType());
+			_id = Utility.GetNextId("_controller", ref _idCounter);
 			_state = context.ParentState;
 			_presentArgs = context.PresentArgs;
 			_view = context.CreateView(this);
@@ -88,103 +86,8 @@ namespace UnityFx.AppStates
 		{
 			if (_disposed)
 			{
-				throw new ObjectDisposedException(_typeId);
+				throw new ObjectDisposedException(_id);
 			}
-		}
-
-		#endregion
-
-		#region internals
-
-		internal void InvokeOnViewLoaded()
-		{
-			ThrowIfDisposed();
-			OnViewLoaded();
-		}
-
-		internal void InvokeOnPresent()
-		{
-			ThrowIfDisposed();
-			OnPresent();
-		}
-
-		internal void InvokeOnDismiss()
-		{
-			ThrowIfDisposed();
-			OnDismiss();
-		}
-
-		internal bool TryActivate()
-		{
-			ThrowIfDisposed();
-
-			if (!_active)
-			{
-				_active = true;
-				_view.Enabled = true;
-
-				OnActivate();
-
-				return true;
-			}
-
-			return false;
-		}
-
-		internal bool TryDeactivate()
-		{
-			ThrowIfDisposed();
-
-			if (_active)
-			{
-				OnDeactivate();
-
-				_view.Enabled = false;
-				_active = false;
-
-				return true;
-			}
-
-			return false;
-		}
-
-		internal static string GetId(Type controllerType)
-		{
-			if (Attribute.GetCustomAttribute(controllerType, typeof(AppViewControllerAttribute)) is AppViewControllerAttribute attr)
-			{
-				if (string.IsNullOrEmpty(attr.Id))
-				{
-					return GetIdSimple(controllerType);
-				}
-				else
-				{
-					return attr.Id;
-				}
-			}
-
-			return GetIdSimple(controllerType);
-		}
-
-		internal static string GetIdSimple(Type controllerType)
-		{
-			var name = controllerType.Name;
-
-			if (name.EndsWith("Controller"))
-			{
-				name = name.Substring(0, name.Length - 10).ToLowerInvariant();
-			}
-
-			return name;
-		}
-
-		internal static PresentOptions GetOptions(Type controllerType)
-		{
-			if (Attribute.GetCustomAttribute(controllerType, typeof(AppViewControllerAttribute)) is AppViewControllerAttribute attr)
-			{
-				return attr.Options;
-			}
-
-			return PresentOptions.None;
 		}
 
 		#endregion
@@ -247,28 +150,14 @@ namespace UnityFx.AppStates
 		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
-
 			return _context.PresentAsync(controllerType, args);
-		}
-
-		/// <inheritdoc/>
-		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType)
-		{
-			ThrowIfDisposed();
-
-			return _context.PresentAsync(controllerType, PresentArgs.Default);
 		}
 
 		/// <inheritdoc/>
 		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : IPresentable
 		{
-			return PresentAsync(typeof(TController), args) as IAsyncOperation<TController>;
-		}
-
-		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>() where TController : IPresentable
-		{
-			return PresentAsync(typeof(TController)) as IAsyncOperation<TController>;
+			ThrowIfDisposed();
+			return _context.PresentAsync<TController>(args);
 		}
 
 		#endregion

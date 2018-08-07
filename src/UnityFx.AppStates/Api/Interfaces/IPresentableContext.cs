@@ -39,6 +39,11 @@ namespace UnityFx.AppStates
 		IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentArgs args);
 
 		/// <summary>
+		/// Presents a new state with a controller of the specified type.
+		/// </summary>
+		IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : IPresentable;
+
+		/// <summary>
 		/// Dismisses the state with its controllers.
 		/// </summary>
 		IAsyncOperation DismissAsync();
