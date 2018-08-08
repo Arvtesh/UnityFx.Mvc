@@ -17,8 +17,6 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private const int _typeMask = 0x7;
-
 		private readonly string _name;
 		private readonly string _comment;
 		private readonly AppStateService _stateManager;
@@ -38,6 +36,46 @@ namespace UnityFx.AppStates
 			_stateManager = stateManager;
 			_traceSource = _stateManager.TraceSource;
 			_comment = comment;
+		}
+
+		protected void InvokeOnViewLoaded(IPresentable controller)
+		{
+			if (controller is IPresentableEvents pe)
+			{
+				pe.OnViewLoaded();
+			}
+		}
+
+		protected void InvokeOnPresent(IPresentable controller)
+		{
+			if (controller is IPresentableEvents pe)
+			{
+				pe.OnPresent();
+			}
+		}
+
+		protected void InvokeOnActivate(IPresentable controller)
+		{
+			if (controller is IPresentableEvents pe)
+			{
+				pe.OnActivate();
+			}
+		}
+
+		protected void InvokeOnDeactivate(IPresentable controller)
+		{
+			if (controller is IPresentableEvents pe)
+			{
+				pe.OnDeactivate();
+			}
+		}
+
+		protected void InvokeOnDismiss(IPresentable controller)
+		{
+			if (controller is IPresentableEvents pe)
+			{
+				pe.OnDismiss();
+			}
 		}
 
 		protected void TryDeactivateTopState()
@@ -79,7 +117,7 @@ namespace UnityFx.AppStates
 
 		protected static string GetStateDesc(Type controllerType, PresentArgs args)
 		{
-			return AppViewController.GetTypeId(controllerType) + " (" + args.ToString() + ')';
+			return Utility.GetPresentableTypeId(controllerType) + " (" + args.ToString() + ')';
 		}
 
 		#endregion

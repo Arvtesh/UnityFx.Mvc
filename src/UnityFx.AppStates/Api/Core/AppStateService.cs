@@ -21,6 +21,7 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
+		private readonly TraceSource _traceSource;
 		private readonly SynchronizationContext _synchronizationContext;
 		private readonly IPresentableFactory _controllerFactory;
 		private readonly IAppViewService _viewManager;
@@ -39,13 +40,13 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// The service name.
 		/// </summary>
-		public const string Name = "StateManager";
+		public const string ServiceName = "StateManager";
 
 		/// <summary>
 		/// Gets a <see cref="System.Diagnostics.TraceSource"/> instance used by the service.
 		/// </summary>
 		/// <value>A <see cref="System.Diagnostics.TraceSource"/> instance used for tracing.</value>
-		protected internal TraceSource TraceSource => _settings.TraceSource;
+		protected internal TraceSource TraceSource => _traceSource;
 
 		/// <summary>
 		/// Gets a <see cref="System.Threading.SynchronizationContext"/> instance used by the service.
@@ -102,6 +103,7 @@ namespace UnityFx.AppStates
 				_controllerFactory = new DefaultPresentableFactory(this, viewManager, serviceProvider);
 			}
 
+			_traceSource = new TraceSource(ServiceName);
 			_synchronizationContext = syncContext;
 			_controllerFactory = controllerFactory;
 			_viewManager = viewManager;
@@ -157,7 +159,7 @@ namespace UnityFx.AppStates
 		{
 			if (_disposed)
 			{
-				throw new ObjectDisposedException(Name);
+				throw new ObjectDisposedException(ServiceName);
 			}
 		}
 
@@ -272,7 +274,10 @@ namespace UnityFx.AppStates
 		public event EventHandler<DismissCompletedEventArgs> DismissCompleted;
 
 		/// <inheritdoc/>
-		public IAppStateServiceSettings Settings => _settings;
+		public SourceSwitch TraceSwitch { get => _traceSource.Switch; set => _traceSource.Switch = value; }
+
+		/// <inheritdoc/>
+		public TraceListenerCollection TraceListeners => _traceSource.Listeners;
 
 		/// <inheritdoc/>
 		public bool IsBusy => !_stackOperations.IsEmpty;
@@ -299,6 +304,9 @@ namespace UnityFx.AppStates
 #else
 		public IReadOnlyCollection<IAppState> States => _states;
 #endif
+
+		/// <inheritdoc/>
+		public IAppStateServiceSettings Settings => _settings;
 
 		#endregion
 

@@ -11,7 +11,6 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private AppViewController _controller;
 		private AppState _state;
 		private IAsyncOperation _transitionOp;
 
@@ -25,12 +24,6 @@ namespace UnityFx.AppStates
 			_state = state;
 		}
 
-		public DismissOperation(AppStateService stateManager, AppViewController controller)
-			: base(stateManager, "Dismiss", null)
-		{
-			_controller = controller;
-		}
-
 		#endregion
 
 		#region AsyncResult
@@ -41,15 +34,24 @@ namespace UnityFx.AppStates
 
 			try
 			{
+				var controller = _state.Controller;
+
+				TryDeactivateTopState();
+				Utility.InvokePresentableOnDismiss(controller);
+
 				if (_controller != null)
 				{
-					_controller.InvokeOnDismiss();
+					if (_controller is IPresentableEvents pe)
+					{
+						pe.OnDismiss();
+					}
+
 					_transitionOp = ViewManager.PlayDismissTransition(_controller.View, _controller.Parent.View);
 					_transitionOp.AddCompletionCallback(this);
 				}
 				else
 				{
-					TryDeactivateTopState();
+					
 
 					if (_state != null)
 					{

@@ -9,6 +9,14 @@ namespace UnityFx.AppStates
 {
 	internal static class Utility
 	{
+		internal static void InvokePresentableOnDismiss(IPresentable controller)
+		{
+			if (controller is IPresentableEvents pe)
+			{
+				pe.OnDismiss();
+			}
+		}
+
 		internal static string GetPresentableTypeId(Type controllerType)
 		{
 			string result = null;
