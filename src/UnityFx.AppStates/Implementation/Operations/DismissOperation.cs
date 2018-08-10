@@ -7,19 +7,18 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class DismissOperation : AppOperation<AppViewController>
+	internal class DismissOperation : AppStateOperation<object>
 	{
 		#region data
 
-		private AppState _state;
-		private IAsyncOperation _transitionOp;
+		private IAppState _state;
 
 		#endregion
 
 		#region interface
 
-		public DismissOperation(AppStateService stateManager, AppState state)
-			: base(stateManager, "Dismiss", null)
+		public DismissOperation(AppStateService stateManager, AppState state, object asyncState)
+			: base(stateManager, asyncState, null)
 		{
 			_state = state;
 		}
@@ -30,43 +29,23 @@ namespace UnityFx.AppStates
 
 		protected override void OnStarted()
 		{
-			base.OnStarted();
-
 			try
 			{
-				var controller = _state.Controller;
+				base.OnStarted();
 
-				TryDeactivateTopState();
-				Utility.InvokePresentableOnDismiss(controller);
-
-				if (_controller != null)
+				if (_state != null)
 				{
-					if (_controller is IPresentableEvents pe)
-					{
-						pe.OnDismiss();
-					}
-
-					_transitionOp = ViewManager.PlayDismissTransition(_controller.View, _controller.Parent.View);
-					_transitionOp.AddCompletionCallback(this);
+					// Remove the state with all its children from the stack.
+					DismissStateChildren(_state);
+					InvokeOnDismiss(_state.Controller);
 				}
 				else
 				{
-					
-
-					if (_state != null)
-					{
-						DismissStateChildren(_state);
-						_state.DismissInternal(this);
-
-						_transitionOp = ViewManager.PlayDismissTransition(_state.View, _state.Parent?.View);
-						_transitionOp.AddCompletionCallback(this);
-					}
-					else
-					{
-						DismissAllStates();
-						TrySetCompleted(false);
-					}
+					// Remove all states from the stack.
+					DismissAllStates();
 				}
+
+				TrySetCompleted();
 			}
 			catch (Exception e)
 			{
@@ -78,29 +57,28 @@ namespace UnityFx.AppStates
 		{
 			try
 			{
-				// Make sure the state is popped. This method can be safely called multiple times.
-				if (_controller != null)
+				if (_state != null)
 				{
-					_controller.Dispose();
+					StateManager.OnDismissCompleted(_state.Controller, this);
+
+					_state.Dispose();
+					_state = null;
 				}
 				else
 				{
-					_state?.Dispose();
+					StateManager.OnDismissCompleted(null, this);
 				}
+
+				base.OnCompleted();
 			}
 			finally
 			{
 				_state = null;
-				_controller = null;
-				_transitionOp = null;
-
-				base.OnCompleted();
 			}
 		}
 
 		protected override void OnCancel()
 		{
-			_transitionOp?.Cancel();
 			base.OnCancel();
 		}
 
@@ -129,14 +107,7 @@ namespace UnityFx.AppStates
 
 		public override string ToString()
 		{
-			if (_state != null)
-			{
-				return "DismissState " + _state.TypeId;
-			}
-			else
-			{
-				return "DismissAll";
-			}
+			return "Dismiss";
 		}
 
 		#endregion

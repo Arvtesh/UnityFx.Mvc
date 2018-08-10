@@ -10,7 +10,7 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class AppState : TreeListNode<IAppState>, IAppState, IPresentableContext
+	internal sealed class AppState : TreeListNode<IAppState>, IAppState, IPresentableContext
 	{
 		#region data
 
@@ -22,11 +22,8 @@ namespace UnityFx.AppStates
 		private readonly string _deeplinkId;
 
 		private IAsyncOperation _dismissOp;
-		private bool _isActive;
 		private bool _disposed;
 
-		private AppViewController _tmpController;
-		private PresentOptions _tmpControllerOptions;
 		private PresentArgs _tmpControllerArgs;
 
 		#endregion
@@ -36,13 +33,12 @@ namespace UnityFx.AppStates
 		internal IAppViewService ViewManager => _stateManager.ViewManager;
 		internal IPresentableFactory ControllerFactory => _stateManager.ControllerFactory;
 
-		internal AppState(AppStateService stateManager, AppState parentState, Type controllerType, PresentOptions options, PresentArgs args)
+		internal AppState(AppStateService stateManager, AppState parentState, Type controllerType, PresentArgs args)
 			: base(parentState)
 		{
 			Debug.Assert(stateManager != null);
 			Debug.Assert(controllerType != null);
 
-			_tmpControllerOptions = options;
 			_tmpControllerArgs = args;
 
 			_id = Utility.GetNextId("_state", ref _idCounter);
@@ -50,86 +46,6 @@ namespace UnityFx.AppStates
 			_stateManager = stateManager;
 			_controller = stateManager.ControllerFactory.CreateController(controllerType, this);
 			_stateManager.AddState(this);
-		}
-
-		internal void DismissInternal(ITraceable op)
-		{
-			op.TraceEvent(TraceEventType.Verbose, "DismissState " + _controller.TypeId);
-			_controller.InvokeOnDismiss();
-		}
-
-		internal bool TryActivate(ITraceable op)
-		{
-			if (!_isActive && (Parent == null || Parent.IsActive))
-			{
-				op.TraceEvent(TraceEventType.Verbose, "ActivateState " + _controller.TypeId);
-
-				_isActive = true;
-				_controller.TryActivate();
-
-				return true;
-			}
-
-			return false;
-		}
-
-		internal bool TryDeactivate(ITraceable op)
-		{
-			if (_isActive)
-			{
-				op.TraceEvent(TraceEventType.Verbose, "DeactivateState " + _controller.TypeId);
-
-				try
-				{
-					_controller.TryDeactivate();
-				}
-				finally
-				{
-					_isActive = false;
-				}
-
-				return true;
-			}
-
-			return false;
-		}
-
-		internal AppView GetPrevView()
-		{
-			return Prev?.Controller.GetTopView();
-		}
-
-		internal AppViewController CreateController(AppViewController c, Type controllerType, PresentOptions options, PresentArgs args)
-		{
-			ThrowIfDisposed();
-
-			_tmpControllerArgs = args;
-			_tmpControllerOptions = options;
-			_tmpController = c;
-
-			try
-			{
-				var controller = _stateManager.ControllerFactory.CreateController(controllerType, this);
-				c.AddChildController(controller);
-				return controller;
-			}
-			finally
-			{
-				_tmpControllerArgs = null;
-				_tmpControllerOptions = PresentOptions.None;
-				_tmpController = null;
-			}
-		}
-
-		/// <summary>
-		/// Throws <see cref="ObjectDisposedException"/> if the instance is disposed.
-		/// </summary>
-		protected void ThrowIfDisposed()
-		{
-			if (_disposed)
-			{
-				throw new ObjectDisposedException(_id);
-			}
 		}
 
 		#endregion
@@ -144,30 +60,11 @@ namespace UnityFx.AppStates
 
 		PresentArgs IPresentableContext.PresentArgs => _tmpControllerArgs;
 
-		IPresentable IPresentableContext.ParentController => _tmpController;
-
 		IAppState IPresentableContext.ParentState => this;
 
-		IAppView IPresentableContext.CreateView(IPresentable c)
-		{
-			ThrowIfDisposed();
+		IPresentable IPresentableContext.ParentController => null;
 
-			if (_tmpController == null)
-			{
-				return _stateManager.ViewManager.CreateView(c.Id, GetPrevView(), AppViewOptions.None);
-			}
-			else
-			{
-				return _stateManager.ViewManager.CreateView(c.Id, _tmpController.GetTopView(), AppViewOptions.None);
-			}
-		}
-
-		IAsyncOperation IPresentableContext.DismissAsync(IPresentable controller)
-		{
-			ThrowIfDisposed();
-
-			return _stateManager.DismissAsync(controller);
-		}
+		IAppViewService IPresentableContext.ViewManager => _stateManager.ViewManager;
 
 		#endregion
 
@@ -179,7 +76,7 @@ namespace UnityFx.AppStates
 			return _stateManager.PresentAsync(this, controllerType, args);
 		}
 
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : IPresentable
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IPresentable
 		{
 			ThrowIfDisposed();
 			return _stateManager.PresentAsync<TController>(this, args);
@@ -191,7 +88,7 @@ namespace UnityFx.AppStates
 
 		public string Id => _id;
 		public IAppView View => _controller.View;
-		public bool IsActive => _isActive;
+		public bool IsActive => _controller.IsActive;
 
 		#endregion
 
@@ -238,6 +135,15 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region implementation
+
+		private void ThrowIfDisposed()
+		{
+			if (_disposed)
+			{
+				throw new ObjectDisposedException(_id);
+			}
+		}
+
 		#endregion
 	}
 }

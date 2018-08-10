@@ -14,7 +14,7 @@ namespace UnityFx.AppStates
 
 		private readonly int _id;
 		private readonly object _userState;
-		private readonly PresentOptions _options;
+		private readonly PresentArgs _args;
 
 		#endregion
 
@@ -33,16 +33,16 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets present options.
 		/// </summary>
-		public PresentOptions Options => _options;
+		public PresentArgs Args => _args;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentInitiatedEventArgs"/> class.
 		/// </summary>
-		public PresentInitiatedEventArgs(PresentOptions options, int opId, object userState)
+		public PresentInitiatedEventArgs(PresentArgs args, int opId, object userState)
 		{
 			_id = opId;
 			_userState = userState;
-			_options = options;
+			_args = args;
 		}
 
 		#endregion

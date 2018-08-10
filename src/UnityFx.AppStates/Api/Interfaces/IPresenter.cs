@@ -33,6 +33,6 @@ namespace UnityFx.AppStates
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
-		IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : IPresentable;
+		IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IPresentable;
 	}
 }

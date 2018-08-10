@@ -15,7 +15,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets child views.
 		/// </summary>
-		IReadOnlyCollection<IAppView> Views { get; }
+		IAppViewCollection Views { get; }
 
 		/// <summary>
 		/// Creates an empty view with the specified <paramref name="id"/> on top of the <paramref name="insertAfter"/> one.
@@ -23,6 +23,6 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="id"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the service is disposed.</exception>
-		IAppView CreateView(string id, IAppView insertAfter, AppViewOptions options);
+		IAppView CreateView(string id, IAppView insertAfter, PresentOptions options);
 	}
 }

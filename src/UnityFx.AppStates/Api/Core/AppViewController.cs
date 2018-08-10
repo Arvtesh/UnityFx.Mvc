@@ -58,7 +58,7 @@ namespace UnityFx.AppStates
 			_id = Utility.GetNextId("_controller", ref _idCounter);
 			_state = context.ParentState;
 			_presentArgs = context.PresentArgs;
-			_view = context.CreateView(this);
+			_view = context.ViewManager.CreateView(_id, _state.Prev?.View, _presentArgs.Options);
 		}
 
 		/// <summary>
@@ -126,6 +126,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public virtual void OnActivate()
 		{
+			_active = true;
 		}
 
 		/// <summary>
@@ -133,6 +134,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public virtual void OnDeactivate()
 		{
+			_active = false;
 		}
 
 		/// <summary>
@@ -154,7 +156,7 @@ namespace UnityFx.AppStates
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : IPresentable
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IPresentable
 		{
 			ThrowIfDisposed();
 			return _context.PresentAsync<TController>(args);

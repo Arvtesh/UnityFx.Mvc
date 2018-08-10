@@ -28,7 +28,7 @@ namespace UnityFx.AppStates
 		private readonly IServiceProvider _serviceProvider;
 
 		private readonly AppStateServiceSettings _settings;
-		private readonly TreeListCollection<IAppState> _states;
+		private readonly AppStateCollection _states;
 		private readonly AsyncResultQueue<AsyncResult> _stackOperations;
 
 		private bool _disposed;
@@ -109,8 +109,40 @@ namespace UnityFx.AppStates
 			_viewManager = viewManager;
 			_serviceProvider = serviceProvider;
 			_settings = new AppStateServiceSettings();
-			_states = new TreeListCollection<IAppState>();
+			_states = new AppStateCollection();
 			_stackOperations = new AsyncResultQueue<AsyncResult>(syncContext);
+		}
+
+		/// <summary>
+		/// Called when a new present operation has been initiated.
+		/// </summary>
+		protected internal virtual void OnPresentInitiated(PresentArgs args, IAsyncOperation op)
+		{
+			PresentInitiated?.Invoke(this, new PresentInitiatedEventArgs(args, op.Id, op.AsyncState));
+		}
+
+		/// <summary>
+		/// Called when a present operation has completed.
+		/// </summary>
+		protected internal virtual void OnPresentCompleted(IPresentable result, IAsyncOperation op)
+		{
+			PresentCompleted?.Invoke(this, new PresentCompletedEventArgs(result, op.Id, op.AsyncState, op.Exception, op.IsCanceled));
+		}
+
+		/// <summary>
+		/// Called when a new dismiss operation has been initiated.
+		/// </summary>
+		protected internal virtual void OnDismissInitiated(IDismissable target, IAsyncOperation op)
+		{
+			DismissInitiated?.Invoke(this, new DismissInitiatedEventArgs(target, op.Id, op.AsyncState));
+		}
+
+		/// <summary>
+		/// Called when a dismiss operation has completed.
+		/// </summary>
+		protected internal virtual void OnDismissCompleted(IDismissable target, IAsyncOperation op)
+		{
+			DismissCompleted?.Invoke(this, new DismissCompletedEventArgs(target, op.Id, op.AsyncState, op.Exception, op.IsCanceled));
 		}
 
 		/// <summary>
@@ -170,50 +202,6 @@ namespace UnityFx.AppStates
 		internal IPresentableFactory ControllerFactory => _controllerFactory;
 		internal IAppViewService ViewManager => _viewManager;
 
-		internal void DismissAllStates(ITraceable op)
-		{
-			while (_states.TryPeek(out var state))
-			{
-				state.DismissInternal(op);
-				state.Dispose();
-			}
-		}
-
-		internal void DismissStateChildren(ITraceable op, AppState state)
-		{
-			foreach (var s in state.Children.Reverse())
-			{
-				state.DismissInternal(op);
-				state.Dispose();
-			}
-		}
-
-		internal bool TryActivateTopState(ITraceable op)
-		{
-			Debug.Assert(!_disposed);
-			Debug.Assert(op != null);
-
-			if (_states.TryPeek(out var state) && _stackOperations.Count <= 1)
-			{
-				return state.TryActivate(op);
-			}
-
-			return false;
-		}
-
-		internal bool TryDeactivateTopState(ITraceable op)
-		{
-			Debug.Assert(!_disposed);
-			Debug.Assert(op != null);
-
-			if (_states.TryPeek(out var state))
-			{
-				return state.TryDeactivate(op);
-			}
-
-			return false;
-		}
-
 		internal void AddState(AppState state)
 		{
 			_states.Add(state);
@@ -229,30 +217,29 @@ namespace UnityFx.AppStates
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
-			////var result = new PresentOperation<IPresentable>(this, state, controllerType, args);
-			////QueueOperation(result);
-			////return result;
-
-			throw new NotImplementedException();
+			var result = new PresentOperation<IPresentable>(this, state, controllerType, args);
+			OnPresentInitiated(args, result);
+			QueueOperation(result);
+			return result;
 		}
 
-		internal IAsyncOperation<T> PresentAsync<T>(AppState state, PresentArgs args) where T : IPresentable
+		internal IAsyncOperation<T> PresentAsync<T>(AppState state, PresentArgs args) where T : class, IPresentable
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(typeof(T));
 
-			////var result = new PresentOperation<T>(this, state, typeof(T), args);
-			////QueueOperation(result);
-			////return result;
-
-			throw new NotImplementedException();
+			var result = new PresentOperation<T>(this, state, typeof(T), args);
+			OnPresentInitiated(args, result);
+			QueueOperation(result);
+			return result;
 		}
 
 		internal IAsyncOperation DismissAsync(AppState state)
 		{
 			ThrowIfDisposed();
 
-			var result = new DismissOperation(this, state);
+			var result = new DismissOperation(this, state, null);
+			OnDismissInitiated(state.Controller, result);
 			QueueOperation(result);
 			return result;
 		}
@@ -299,11 +286,7 @@ namespace UnityFx.AppStates
 		}
 
 		/// <inheritdoc/>
-#if NET35
-		public ICollection<IAppState> States => _states;
-#else
-		public IReadOnlyCollection<IAppState> States => _states;
-#endif
+		public IAppStateCollection States => _states;
 
 		/// <inheritdoc/>
 		public IAppStateServiceSettings Settings => _settings;
@@ -319,7 +302,7 @@ namespace UnityFx.AppStates
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : IPresentable
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IPresentable
 		{
 			return PresentAsync<TController>(null, args);
 		}

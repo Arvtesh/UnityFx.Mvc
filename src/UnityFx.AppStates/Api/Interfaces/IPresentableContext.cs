@@ -24,14 +24,14 @@ namespace UnityFx.AppStates
 		IAppState ParentState { get; }
 
 		/// <summary>
-		/// Gets prent controller (if any).
+		/// Gets parent controller (if any).
 		/// </summary>
 		IPresentable ParentController { get; }
 
 		/// <summary>
-		/// Creates a view for the specified controller.
+		/// Gets a view manager.
 		/// </summary>
-		IAppView CreateView(IPresentable c);
+		IAppViewService ViewManager { get; }
 
 		/// <summary>
 		/// Presents a new state with a controller of the specified type.
@@ -41,7 +41,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Presents a new state with a controller of the specified type.
 		/// </summary>
-		IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : IPresentable;
+		IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IPresentable;
 
 		/// <summary>
 		/// Dismisses the state with its controllers.

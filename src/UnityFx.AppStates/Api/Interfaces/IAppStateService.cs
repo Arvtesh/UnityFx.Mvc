@@ -44,23 +44,19 @@ namespace UnityFx.AppStates
 		TraceListenerCollection TraceListeners { get; }
 
 		/// <summary>
+		/// Gets a value indicating whether thare are any pending operations.
+		/// </summary>
+		bool IsBusy { get; }
+
+		/// <summary>
 		/// Gets the child states.
 		/// </summary>
-#if NET35
-		ICollection<IAppState> States { get; }
-#else
-		IReadOnlyCollection<IAppState> States { get; }
-#endif
+		IAppStateCollection States { get; }
 
 		/// <summary>
 		/// Gets active state (or <see langword="null"/>).
 		/// </summary>
 		IAppState ActiveState { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether thare are any pending operations.
-		/// </summary>
-		bool IsBusy { get; }
 
 		/// <summary>
 		/// Gets the service settings.

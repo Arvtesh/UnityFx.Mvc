@@ -22,7 +22,7 @@ namespace UnityFx.AppStates
 		#region IAppViewService
 
 		/// <inheritdoc/>
-		public IReadOnlyCollection<AppView> Views
+		public IAppViewCollection Views
 		{
 			get
 			{
@@ -31,29 +31,7 @@ namespace UnityFx.AppStates
 		}
 
 		/// <inheritdoc/>
-		public AppView CreateChildView(string id, AppView parent, AppViewOptions options)
-		{
-			throw new NotImplementedException();
-		}
-
-		/// <inheritdoc/>
-		public AppView CreateView(string id, AppView insertAfter, AppViewOptions options)
-		{
-			throw new NotImplementedException();
-		}
-
-		#endregion
-
-		#region IAppViewTransitionFactory
-
-		/// <inheritdoc/>
-		public IAsyncOperation PlayPresentTransition(AppView fromView, AppView toView, bool replace)
-		{
-			throw new NotImplementedException();
-		}
-
-		/// <inheritdoc/>
-		public IAsyncOperation PlayDismissTransition(AppView view, AppView toView)
+		public IAppView CreateView(string id, IAppView insertAfter, PresentOptions options)
 		{
 			throw new NotImplementedException();
 		}

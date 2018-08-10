@@ -13,7 +13,7 @@ namespace UnityFx.AppStates
 	/// </summary>
 	/// <typeparam name="T">Type of the node.</typeparam>
 	/// <seealso cref="TreeListCollection{T}"/>
-	public class TreeListNode<T> : ITreeListNode<T> where T : class, ITreeListNode<T>
+	internal class TreeListNode<T> : ITreeListNode<T> where T : class, ITreeListNode<T>
 	{
 		#region data
 
@@ -23,16 +23,10 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="TreeListNode{T}"/> class.
-		/// </summary>
 		protected TreeListNode()
 		{
 		}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="TreeListNode{T}"/> class.
-		/// </summary>
 		protected TreeListNode(T parentNode)
 		{
 			_parentNode = parentNode;
@@ -42,31 +36,11 @@ namespace UnityFx.AppStates
 
 		#region ITreeListNode
 
-		/// <summary>
-		/// Gets a parent node for this one (if any).
-		/// </summary>
 		public T Parent => _parentNode;
-
-		/// <summary>
-		/// Gets previous sibling node (if any).
-		/// </summary>
 		public T Prev { get; internal set; }
-
-		/// <summary>
-		/// Gets next sibling node (if any).
-		/// </summary>
 		public T Next { get; internal set; }
-
-		/// <summary>
-		/// Gets the node children.
-		/// </summary>
 		public IEnumerable<T> Children => new ChildEnumerable(this as T);
 
-		/// <summary>
-		/// Checks whether this node is a child of another.
-		/// </summary>
-		/// <param name="node">The node to check.</param>
-		/// <returns>Returns <see langword="true"/> if this node is a child of the one passed with argument; otherwise, <see langword="false"/>.</returns>
 		public bool IsChildOf(T node)
 		{
 			if (node != null && _parentNode != null && _parentNode != node)

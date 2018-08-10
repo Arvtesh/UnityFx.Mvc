@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using UnityFx.Async;
 
@@ -13,12 +14,10 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A yieldable asynchronous state operation.
 	/// </summary>
-	internal abstract class AppOperation<T> : AsyncResult<T>, ITraceable where T : class
+	internal abstract class AppStateOperation<T> : AsyncResult<T>, ITraceable where T : class
 	{
 		#region data
 
-		private readonly string _name;
-		private readonly string _comment;
 		private readonly AppStateService _stateManager;
 		private readonly TraceSource _traceSource;
 
@@ -28,18 +27,31 @@ namespace UnityFx.AppStates
 
 		protected AppStateService StateManager => _stateManager;
 		protected IAppViewService ViewManager => _stateManager.ViewManager;
-		protected IReadOnlyCollection<AppState> States => _stateManager.States;
+		protected IAppStateCollection States => _stateManager.States;
 
-		protected AppOperation(AppStateService stateManager, string name, string comment)
+		protected AppStateOperation(AppStateService stateManager, object asyncState, string comment)
+			: base(AsyncOperationStatus.Scheduled, asyncState)
 		{
-			_name = name;
+			Debug.Assert(stateManager != null);
+
 			_stateManager = stateManager;
 			_traceSource = _stateManager.TraceSource;
-			_comment = comment;
+
+			if (string.IsNullOrEmpty(comment))
+			{
+				TraceEvent(TraceEventType.Verbose, ToString() + " initiated");
+			}
+			else
+			{
+				TraceEvent(TraceEventType.Verbose, ToString() + " initiated: " + comment);
+			}
 		}
 
 		protected void InvokeOnViewLoaded(IPresentable controller)
 		{
+			Debug.Assert(controller != null);
+			TraceEvent(TraceEventType.Verbose, "View loaded for " + controller.Id);
+
 			if (controller is IPresentableEvents pe)
 			{
 				pe.OnViewLoaded();
@@ -48,6 +60,9 @@ namespace UnityFx.AppStates
 
 		protected void InvokeOnPresent(IPresentable controller)
 		{
+			Debug.Assert(controller != null);
+			TraceEvent(TraceEventType.Verbose, "Present " + controller.Id);
+
 			if (controller is IPresentableEvents pe)
 			{
 				pe.OnPresent();
@@ -56,6 +71,9 @@ namespace UnityFx.AppStates
 
 		protected void InvokeOnActivate(IPresentable controller)
 		{
+			Debug.Assert(!controller.IsActive);
+			TraceEvent(TraceEventType.Verbose, "Activate " + controller.Id);
+
 			if (controller is IPresentableEvents pe)
 			{
 				pe.OnActivate();
@@ -64,6 +82,10 @@ namespace UnityFx.AppStates
 
 		protected void InvokeOnDeactivate(IPresentable controller)
 		{
+			Debug.Assert(controller != null);
+			Debug.Assert(controller.IsActive);
+			TraceEvent(TraceEventType.Verbose, "Deactivate " + controller.Id);
+
 			if (controller is IPresentableEvents pe)
 			{
 				pe.OnDeactivate();
@@ -72,29 +94,63 @@ namespace UnityFx.AppStates
 
 		protected void InvokeOnDismiss(IPresentable controller)
 		{
+			Debug.Assert(controller != null);
+			TraceEvent(TraceEventType.Verbose, "Dismiss " + controller.Id);
+
 			if (controller is IPresentableEvents pe)
 			{
 				pe.OnDismiss();
 			}
 		}
 
+		protected void TryActivateTopState()
+		{
+			// TODO: replace _stateManager.States.Count <= 1 check with something less hacky
+			if (_stateManager.States.TryPeek(out var state) && !state.IsActive && _stateManager.States.Count <= 1)
+			{
+				InvokeOnActivate(state.Controller);
+			}
+		}
+
 		protected void TryDeactivateTopState()
 		{
-			_stateManager.TryDeactivateTopState(this);
+			if (_stateManager.States.TryPeek(out var state) && state.IsActive)
+			{
+				InvokeOnDeactivate(state.Controller);
+			}
 		}
 
 		protected void DismissAllStates()
 		{
-			_stateManager.DismissAllStates(this);
+			while (_stateManager.States.TryPeek(out var state))
+			{
+				InvokeOnDismiss(state.Controller);
+				state.Dispose();
+			}
 		}
 
-		protected void DismissStateChildren(AppState state)
+		protected void DismissStateChildren(IAppState state)
 		{
-			_stateManager.DismissStateChildren(this, state);
+			Debug.Assert(state != null);
+
+			foreach (var s in state.Children.Reverse())
+			{
+				if (s == state)
+				{
+					break;
+				}
+				else if (s.IsChildOf(state))
+				{
+					InvokeOnDismiss(s.Controller);
+					s.Dispose();
+				}
+			}
 		}
 
 		protected bool ProcessNonSuccess(IAsyncOperation op)
 		{
+			Debug.Assert(op != null);
+
 			if (op.IsFaulted)
 			{
 				TrySetException(op.Exception, false);
@@ -124,21 +180,19 @@ namespace UnityFx.AppStates
 
 		#region AsyncResult
 
-		protected override void OnStatusChanged(AsyncOperationStatus status)
+		protected override void OnStarted()
 		{
-			base.OnStatusChanged(status);
+			base.OnStarted();
 
-			if (status == AsyncOperationStatus.Running)
-			{
-				TraceStart();
-			}
+			TraceStart();
+			TryDeactivateTopState();
 		}
 
 		protected override void OnCompleted()
 		{
 			try
 			{
-				_stateManager.TryActivateTopState(this);
+				TryActivateTopState();
 			}
 			finally
 			{
@@ -158,7 +212,7 @@ namespace UnityFx.AppStates
 
 		public void TraceError(string s)
 		{
-			_traceSource.TraceEvent(TraceEventType.Error, Id, _name + ": " + s);
+			_traceSource.TraceEvent(TraceEventType.Error, Id, ToString() + ": " + s);
 		}
 
 		public void TraceException(Exception e)
@@ -182,29 +236,22 @@ namespace UnityFx.AppStates
 
 		private void TraceStart()
 		{
-			var s = _name;
-
-			if (!string.IsNullOrEmpty(_comment))
-			{
-				s += ": " + _comment;
-			}
-
-			_traceSource.TraceEvent(TraceEventType.Start, Id, s);
+			TraceEvent(TraceEventType.Start, ToString() + " started");
 		}
 
 		private void TraceStop(AsyncOperationStatus status)
 		{
 			if (status == AsyncOperationStatus.RanToCompletion)
 			{
-				_traceSource.TraceEvent(TraceEventType.Stop, Id, _name + " completed");
+				TraceEvent(TraceEventType.Stop, ToString() + " completed");
 			}
 			else if (status == AsyncOperationStatus.Faulted)
 			{
-				_traceSource.TraceEvent(TraceEventType.Stop, Id, _name + " faulted");
+				TraceEvent(TraceEventType.Stop, ToString() + " faulted");
 			}
 			else if (status == AsyncOperationStatus.Canceled)
 			{
-				_traceSource.TraceEvent(TraceEventType.Stop, Id, _name + " canceled");
+				TraceEvent(TraceEventType.Stop, ToString() + " canceled");
 			}
 		}
 
