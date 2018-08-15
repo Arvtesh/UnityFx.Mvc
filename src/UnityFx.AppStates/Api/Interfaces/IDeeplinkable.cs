@@ -6,13 +6,13 @@ using System;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Seetings of a <see cref="IAppStateService"/> instance.
+	/// A object that can be target for a deeplink.
 	/// </summary>
-	public interface IAppStateServiceSettings
+	public interface IDeeplinkable
 	{
 		/// <summary>
-		/// Gets or sets maximum allowed number of simultanous stack operations.
+		/// Gets the deeplink identifier assosiated with this type.
 		/// </summary>
-		int MaxNumberOfPendingOperations { get; set; }
+		string DeeplinkId { get; }
 	}
 }

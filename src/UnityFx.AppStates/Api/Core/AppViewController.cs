@@ -4,29 +4,27 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Defines the shared behaviour that is common to all view controllers.
+	/// A generic view controller. It is recommended to use this class as base for all other controllers.
+	/// Note that minimal controller implementation should inherit <see cref="IPresentable"/>.
 	/// </summary>
-	public class AppViewController : IPresenter, IPresentable, IDismissable
+	public class AppViewController : IPresenter, IPresentable, IPresentableEvents
 	{
 		#region data
 
-		private readonly IAppViewControllerContext _context;
-		private readonly AppState _state;
-		private readonly AppViewController _parentController;
+		private static int _idCounter;
 
-		private readonly string _typeId;
-		private readonly AppViewControllerOptions _createOptions;
-		private readonly PresentOptions _presentOptions;
+		private readonly IPresentableContext _context;
+		private readonly IAppState _state;
+		private readonly IAppView _view;
+
+		private readonly string _id;
 		private readonly PresentArgs _presentArgs;
-		private readonly AppView _view;
 
-		private List<AppViewController> _childControllers;
 		private IAsyncOperation _dismissOp;
 		private bool _active;
 		private bool _disposed;
@@ -38,22 +36,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the parent state.
 		/// </summary>
-		public AppState State => _state;
-
-		/// <summary>
-		/// Gets creation options for the controller.
-		/// </summary>
-		public AppViewControllerOptions CreationOptions => _createOptions;
-
-		/// <summary>
-		/// Gets prent controller (if any).
-		/// </summary>
-		public AppViewController Parent => _parentController;
-
-		/// <summary>
-		/// Gets the controller creation options.
-		/// </summary>
-		protected PresentOptions PresentOptions => _presentOptions;
+		protected IAppState ParentState => _state;
 
 		/// <summary>
 		/// Gets the controller creation arguments.
@@ -66,24 +49,32 @@ namespace UnityFx.AppStates
 		protected bool IsDisposed => _disposed;
 
 		/// <summary>
-		/// Gets child view controllers.
-		/// </summary>
-		protected IEnumerable<AppViewController> Children => _childControllers ?? Enumerable.Empty<AppViewController>();
-
-		/// <summary>
 		/// Initializes a new instance of the <see cref="AppViewController"/> class.
 		/// </summary>
 		/// <param name="context">Context data for the controller instance.</param>
-		protected AppViewController(IAppViewControllerContext context)
+		protected AppViewController(IPresentableContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
-			_typeId = GetId(GetType());
-			_createOptions = GetOptions(GetType());
+			_id = Utility.GetNextId("_controller", ref _idCounter);
 			_state = context.ParentState;
-			_parentController = context.ParentController;
-			_presentOptions = context.PresentOptions;
 			_presentArgs = context.PresentArgs;
-			_view = context.CreateView(this);
+			_view = context.ViewManager.CreateView(_id, _state.Prev?.View, _presentArgs.Options);
+		}
+
+		/// <summary>
+		/// Releases resources used by the controller.
+		/// </summary>
+		/// <param name="disposing">Should be <see langword="true"/> if the method is called from <see cref="Dispose()"/>; <see langword="false"/> otherwise.</param>
+		/// <seealso cref="Dispose()"/>
+		/// <seealso cref="ThrowIfDisposed"/>
+		protected virtual void Dispose(bool disposing)
+		{
+			_disposed = true;
+
+			if (disposing)
+			{
+				_view.Dispose();
+			}
 		}
 
 		/// <summary>
@@ -95,192 +86,61 @@ namespace UnityFx.AppStates
 		{
 			if (_disposed)
 			{
-				throw new ObjectDisposedException(_typeId);
+				throw new ObjectDisposedException(_id);
 			}
 		}
 
 		#endregion
 
-		#region internals
+		#region IPresentable
 
-		internal void InvokeOnViewLoaded()
-		{
-			ThrowIfDisposed();
-			OnViewLoaded();
-		}
+		/// <inheritdoc/>
+		public string Id => _id;
 
-		internal void InvokeOnPresent()
-		{
-			ThrowIfDisposed();
-			OnPresent();
-		}
+		/// <inheritdoc/>
+		public IAppView View => _view;
 
-		internal void InvokeOnDismiss()
-		{
-			ThrowIfDisposed();
-
-			if (_childControllers != null)
-			{
-				foreach (var controller in _childControllers)
-				{
-					controller.InvokeOnDismiss();
-				}
-			}
-
-			OnDismiss();
-		}
-
-		internal bool TryActivate()
-		{
-			ThrowIfDisposed();
-
-			if (!_active)
-			{
-				_active = true;
-				_view.Enabled = true;
-
-				OnActivate();
-
-				if (_childControllers != null)
-				{
-					foreach (var controller in _childControllers)
-					{
-						controller.TryActivate();
-					}
-				}
-
-				return true;
-			}
-
-			return false;
-		}
-
-		internal bool TryDeactivate()
-		{
-			ThrowIfDisposed();
-
-			if (_active)
-			{
-				if (_childControllers != null)
-				{
-					foreach (var controller in _childControllers)
-					{
-						controller.TryDeactivate();
-					}
-				}
-
-				OnDeactivate();
-
-				_view.Enabled = false;
-				_active = false;
-
-				return true;
-			}
-
-			return false;
-		}
-
-		internal void AddChildController(AppViewController controller)
-		{
-			Debug.Assert(controller != null);
-			_childControllers.Add(controller);
-		}
-
-		internal AppView GetTopView()
-		{
-			if (_childControllers != null && _childControllers.Count > 0)
-			{
-				return _childControllers[_childControllers.Count - 1].GetTopView();
-			}
-
-			return _view;
-		}
-
-		internal static string GetId(Type controllerType)
-		{
-			if (Attribute.GetCustomAttribute(controllerType, typeof(AppViewControllerAttribute)) is AppViewControllerAttribute attr)
-			{
-				if (string.IsNullOrEmpty(attr.Id))
-				{
-					return GetIdSimple(controllerType);
-				}
-				else
-				{
-					return attr.Id;
-				}
-			}
-
-			return GetIdSimple(controllerType);
-		}
-
-		internal static string GetIdSimple(Type controllerType)
-		{
-			var name = controllerType.Name;
-
-			if (name.EndsWith("Controller"))
-			{
-				name = name.Substring(0, name.Length - 10).ToLowerInvariant();
-			}
-
-			return name;
-		}
-
-		internal static AppViewControllerOptions GetOptions(Type controllerType)
-		{
-			if (Attribute.GetCustomAttribute(controllerType, typeof(AppViewControllerAttribute)) is AppViewControllerAttribute attr)
-			{
-				return attr.Options;
-			}
-
-			return AppViewControllerOptions.None;
-		}
+		/// <inheritdoc/>
+		public bool IsActive => _active;
 
 		#endregion
 
-		#region virtuals
+		#region IPresentableEvents
 
 		/// <summary>
 		/// Called when the controller view is loaded (before transition animation). Default implementation does nothing.
 		/// </summary>
-		protected virtual void OnViewLoaded()
+		public virtual void OnViewLoaded()
 		{
 		}
 
 		/// <summary>
 		/// Called right after the controller transition animation finishes. Default implementation does nothing.
 		/// </summary>
-		protected virtual void OnPresent()
+		public virtual void OnPresent()
 		{
 		}
 
 		/// <summary>
 		/// Called right before the controller becomes active. Default implementation does nothing.
 		/// </summary>
-		protected virtual void OnActivate()
+		public virtual void OnActivate()
 		{
+			_active = true;
 		}
 
 		/// <summary>
 		/// Called when the controller is about to become inactive. Default implementation does nothing.
 		/// </summary>
-		protected virtual void OnDeactivate()
+		public virtual void OnDeactivate()
 		{
+			_active = false;
 		}
 
 		/// <summary>
 		/// Called when the controller is about to be dismissed (before transition animation). Default implementation does nothing.
 		/// </summary>
-		protected virtual void OnDismiss()
-		{
-		}
-
-		/// <summary>
-		/// Releases resources used by the controller.
-		/// </summary>
-		/// <param name="disposing">Should be <see langword="true"/> if the method is called from <see cref="Dispose()"/>; <see langword="false"/> otherwise.</param>
-		/// <seealso cref="Dispose()"/>
-		/// <seealso cref="ThrowIfDisposed"/>
-		protected virtual void Dispose(bool disposing)
+		public virtual void OnDismiss()
 		{
 		}
 
@@ -289,57 +149,18 @@ namespace UnityFx.AppStates
 		#region IPresenter
 
 		/// <inheritdoc/>
-		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args)
+		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
-
-			if ((options & PresentOptions.Child) != 0)
-			{
-				if (_childControllers == null)
-				{
-					_childControllers = new List<AppViewController>();
-				}
-
-				return _context.PresentAsync(this, controllerType, options, args);
-			}
-			else
-			{
-				return _context.PresentAsync(controllerType, options, args);
-			}
+			return _context.PresentAsync(controllerType, args);
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentArgs args)
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IPresentable
 		{
 			ThrowIfDisposed();
-
-			return _context.PresentAsync(controllerType, PresentOptions.None, args);
+			return _context.PresentAsync<TController>(args);
 		}
-
-		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentOptions options, PresentArgs args) where TController : AppViewController
-		{
-			return PresentAsync(typeof(TController), options, args) as IAsyncOperation<TController>;
-		}
-
-		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : AppViewController
-		{
-			return PresentAsync(typeof(TController), args) as IAsyncOperation<TController>;
-		}
-
-		#endregion
-
-		#region IPresentable
-
-		/// <inheritdoc/>
-		public string TypeId => _typeId;
-
-		/// <inheritdoc/>
-		public AppView View => _view;
-
-		/// <inheritdoc/>
-		public bool IsActive => _active;
 
 		#endregion
 
@@ -353,10 +174,6 @@ namespace UnityFx.AppStates
 				if (_disposed)
 				{
 					_dismissOp = AsyncResult.CompletedOperation;
-				}
-				else if (_parentController != null)
-				{
-					_dismissOp = _context.DismissAsync(this);
 				}
 				else
 				{
@@ -380,46 +197,13 @@ namespace UnityFx.AppStates
 		/// <seealso cref="Dispose(bool)"/>
 		public void Dispose()
 		{
-			if (!_disposed)
-			{
-				_disposed = true;
-				Dispose(true);
-				DisposeInternal();
-				GC.SuppressFinalize(this);
-			}
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 
 		#endregion
 
 		#region implementation
-
-		private void DisposeInternal()
-		{
-			_parentController?.RemoveChildController(this);
-			_view.Dispose();
-
-			if (_childControllers != null)
-			{
-				foreach (var controller in _childControllers)
-				{
-					controller.Dispose();
-				}
-
-				_childControllers.Clear();
-				_childControllers = null;
-			}
-		}
-
-		private bool RemoveChildController(AppViewController controller)
-		{
-			if (controller != null && _childControllers != null)
-			{
-				return _childControllers.Remove(controller);
-			}
-
-			return false;
-		}
-
 		#endregion
 	}
 }

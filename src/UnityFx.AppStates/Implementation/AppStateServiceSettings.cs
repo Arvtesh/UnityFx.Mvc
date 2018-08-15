@@ -11,22 +11,12 @@ namespace UnityFx.AppStates
 	internal class AppStateServiceSettings : IAppStateServiceSettings
 	{
 		#region data
-
-		private readonly TraceSource _console = new TraceSource(AppStateService.Name);
-
 		#endregion
 
 		#region interface
-
-		internal TraceSource TraceSource => _console;
-
 		#endregion
 
 		#region IAppStateServiceSettings
-
-		public SourceSwitch TraceSwitch { get => _console.Switch; set => _console.Switch = value; }
-
-		public TraceListenerCollection TraceListeners => _console.Listeners;
 
 		public int MaxNumberOfPendingOperations
 		{

@@ -7,8 +7,9 @@ using UnityFx.Async;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// A dismissable object.
+	/// A dismissable object (i.e. object that supports asynchronous disposal).
 	/// </summary>
+	/// <seealso cref="IPresentable"/>
 	public interface IDismissable : IDisposable
 	{
 		/// <summary>

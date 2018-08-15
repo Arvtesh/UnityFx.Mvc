@@ -12,19 +12,19 @@ namespace UnityFx.AppStates
 	public sealed class AppViewControllerAttribute : Attribute
 	{
 		/// <summary>
-		/// Gets an unique controller (state) identifier that may be used to identify the its type (in deeplinks).
+		/// Gets an unique controller (state) identifier that may be used to identify the its type.
 		/// </summary>
 		public string Id { get; }
 
 		/// <summary>
-		/// Gets the controller creation options.
+		/// Gets the default controller creation options.
 		/// </summary>
-		public AppViewControllerOptions Options { get; }
+		public PresentOptions Options { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppViewControllerAttribute"/> class.
 		/// </summary>
-		public AppViewControllerAttribute(string id, AppViewControllerOptions flags = AppViewControllerOptions.None)
+		public AppViewControllerAttribute(string id, PresentOptions flags = PresentOptions.None)
 		{
 			Id = id;
 			Options = flags;

@@ -21,8 +21,9 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
+		private readonly TraceSource _traceSource;
 		private readonly SynchronizationContext _synchronizationContext;
-		private readonly IAppViewControllerFactory _controllerFactory;
+		private readonly IPresentableFactory _controllerFactory;
 		private readonly IAppViewService _viewManager;
 		private readonly IServiceProvider _serviceProvider;
 
@@ -39,13 +40,13 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// The service name.
 		/// </summary>
-		public const string Name = "StateManager";
+		public const string ServiceName = "StateManager";
 
 		/// <summary>
 		/// Gets a <see cref="System.Diagnostics.TraceSource"/> instance used by the service.
 		/// </summary>
 		/// <value>A <see cref="System.Diagnostics.TraceSource"/> instance used for tracing.</value>
-		protected internal TraceSource TraceSource => _settings.TraceSource;
+		protected internal TraceSource TraceSource => _traceSource;
 
 		/// <summary>
 		/// Gets a <see cref="System.Threading.SynchronizationContext"/> instance used by the service.
@@ -60,10 +61,10 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppStateService"/> class.
 		/// </summary>
-		/// /// <param name="viewManager"></param>
-		/// <param name="services"></param>
-		public AppStateService(IAppViewService viewManager, IServiceProvider services)
-			: this(viewManager, services, SynchronizationContext.Current)
+		/// <param name="viewManager"></param>
+		/// <param name="serviceProvider"></param>
+		public AppStateService(IAppViewService viewManager, IServiceProvider serviceProvider)
+			: this(viewManager, serviceProvider, null, SynchronizationContext.Current)
 		{
 		}
 
@@ -71,23 +72,11 @@ namespace UnityFx.AppStates
 		/// Initializes a new instance of the <see cref="AppStateService"/> class.
 		/// </summary>
 		/// <param name="syncContext"></param>
-		/// <param name="services"></param>
+		/// <param name="serviceProvider"></param>
 		/// <param name="viewManager"></param>
-		public AppStateService(
-			IAppViewService viewManager,
-			IServiceProvider services,
-			SynchronizationContext syncContext)
+		public AppStateService(IAppViewService viewManager, IServiceProvider serviceProvider, SynchronizationContext syncContext)
+			: this(viewManager, serviceProvider, null, syncContext)
 		{
-			Debug.Assert(viewManager != null);
-			Debug.Assert(services != null);
-
-			_synchronizationContext = syncContext;
-			_controllerFactory = new AppViewControllerFactory(this, viewManager, services);
-			_viewManager = viewManager;
-			_serviceProvider = services;
-			_settings = new AppStateServiceSettings();
-			_states = new AppStateCollection();
-			_stackOperations = new AsyncResultQueue<AsyncResult>(syncContext);
 		}
 
 		/// <summary>
@@ -95,25 +84,65 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <param name="syncContext"></param>
 		/// <param name="viewManager"></param>
-		/// <param name="services"></param>
+		/// <param name="serviceProvider"></param>
 		/// <param name="controllerFactory"></param>
-		public AppStateService(
-			IAppViewControllerFactory controllerFactory,
-			IAppViewService viewManager,
-			IServiceProvider services,
-			SynchronizationContext syncContext)
+		public AppStateService(IAppViewService viewManager, IServiceProvider serviceProvider, IPresentableFactory controllerFactory, SynchronizationContext syncContext)
 		{
-			Debug.Assert(controllerFactory != null);
-			Debug.Assert(viewManager != null);
-			Debug.Assert(services != null);
+			if (viewManager == null)
+			{
+				throw new ArgumentNullException(nameof(viewManager));
+			}
 
+			if (serviceProvider == null)
+			{
+				throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			if (controllerFactory == null)
+			{
+				_controllerFactory = new DefaultPresentableFactory(this, viewManager, serviceProvider);
+			}
+
+			_traceSource = new TraceSource(ServiceName);
 			_synchronizationContext = syncContext;
 			_controllerFactory = controllerFactory;
 			_viewManager = viewManager;
-			_serviceProvider = services;
+			_serviceProvider = serviceProvider;
 			_settings = new AppStateServiceSettings();
 			_states = new AppStateCollection();
 			_stackOperations = new AsyncResultQueue<AsyncResult>(syncContext);
+		}
+
+		/// <summary>
+		/// Called when a new present operation has been initiated.
+		/// </summary>
+		protected internal virtual void OnPresentInitiated(PresentArgs args, IAsyncOperation op)
+		{
+			PresentInitiated?.Invoke(this, new PresentInitiatedEventArgs(args, op.Id, op.AsyncState));
+		}
+
+		/// <summary>
+		/// Called when a present operation has completed.
+		/// </summary>
+		protected internal virtual void OnPresentCompleted(IPresentable result, IAsyncOperation op)
+		{
+			PresentCompleted?.Invoke(this, new PresentCompletedEventArgs(result, op.Id, op.AsyncState, op.Exception, op.IsCanceled));
+		}
+
+		/// <summary>
+		/// Called when a new dismiss operation has been initiated.
+		/// </summary>
+		protected internal virtual void OnDismissInitiated(IDismissable target, IAsyncOperation op)
+		{
+			DismissInitiated?.Invoke(this, new DismissInitiatedEventArgs(target, op.Id, op.AsyncState));
+		}
+
+		/// <summary>
+		/// Called when a dismiss operation has completed.
+		/// </summary>
+		protected internal virtual void OnDismissCompleted(IDismissable target, IAsyncOperation op)
+		{
+			DismissCompleted?.Invoke(this, new DismissCompletedEventArgs(target, op.Id, op.AsyncState, op.Exception, op.IsCanceled));
 		}
 
 		/// <summary>
@@ -124,28 +153,32 @@ namespace UnityFx.AppStates
 		/// <seealso cref="ThrowIfDisposed"/>
 		protected virtual void Dispose(bool disposing)
 		{
-			if (disposing && !_disposed)
+			if (!_disposed)
 			{
-				// 1) Stop operation processing.
 				_disposed = true;
-				_stackOperations.Suspended = true;
 
-				// 2) Cancel pending operations.
-				if (!_stackOperations.IsEmpty)
+				if (disposing)
 				{
-					foreach (var op in _stackOperations.Release())
+					// 1) Stop operation processing.
+					_stackOperations.Suspended = true;
+
+					// 2) Cancel pending operations.
+					if (!_stackOperations.IsEmpty)
 					{
-						op.Cancel();
+						foreach (var op in _stackOperations.Release())
+						{
+							op.Cancel();
+						}
 					}
-				}
 
-				// 3) Dispose child states.
-				foreach (var state in _states.GetEnumerableLifo())
-				{
-					state.Dispose();
-				}
+					// 3) Dispose child states.
+					foreach (var state in _states.Reverse())
+					{
+						state.Dispose();
+					}
 
-				_states.Clear();
+					_states.Clear();
+				}
 			}
 		}
 
@@ -158,7 +191,7 @@ namespace UnityFx.AppStates
 		{
 			if (_disposed)
 			{
-				throw new ObjectDisposedException(Name);
+				throw new ObjectDisposedException(ServiceName);
 			}
 		}
 
@@ -166,106 +199,59 @@ namespace UnityFx.AppStates
 
 		#region internals
 
-		internal IAppViewControllerFactory ControllerFactory => _controllerFactory;
+		internal IPresentableFactory ControllerFactory => _controllerFactory;
 		internal IAppViewService ViewManager => _viewManager;
-
-		internal void DismissAllStates(ITraceable op)
-		{
-			while (_states.TryPeek(out var state))
-			{
-				state.DismissInternal(op);
-				state.Dispose();
-			}
-		}
-
-		internal void DismissStateChildren(ITraceable op, AppState state)
-		{
-			foreach (var s in state.Children.Reverse())
-			{
-				state.DismissInternal(op);
-				state.Dispose();
-			}
-		}
-
-		internal bool TryActivateTopState(ITraceable op)
-		{
-			Debug.Assert(!_disposed);
-			Debug.Assert(op != null);
-
-			if (_states.TryPeek(out var state) && _stackOperations.Count <= 1)
-			{
-				return state.TryActivate(op);
-			}
-
-			return false;
-		}
-
-		internal bool TryDeactivateTopState(ITraceable op)
-		{
-			Debug.Assert(!_disposed);
-			Debug.Assert(op != null);
-
-			if (_states.TryPeek(out var state))
-			{
-				return state.TryDeactivate(op);
-			}
-
-			return false;
-		}
 
 		internal void AddState(AppState state)
 		{
-			_states.Add(state);
+			Debug.Assert(state != null);
+
+			var parent = state.Parent;
+
+			if (parent != null)
+			{
+				var prev = parent;
+				var next = parent.Next;
+
+				while (next != null && next.IsChildOf(parent))
+				{
+					prev = next;
+					next = prev.Next;
+				}
+
+				_states.Add(state, prev);
+			}
+			else
+			{
+				_states.Add(state);
+			}
 		}
 
 		internal void RemoveState(AppState state)
 		{
+			Debug.Assert(state != null);
+
 			_states.Remove(state);
 		}
 
-		internal IAsyncOperation<AppViewController> PresentAsync(AppViewController parentController, Type controllerType, PresentOptions options, PresentArgs args)
-		{
-			ThrowIfDisposed();
-
-			var result = new PresentOperation<AppViewController>(this, parentController, controllerType, options, args);
-			QueueOperation(result);
-			return result;
-		}
-
-		internal IAsyncOperation<AppViewController> PresentAsync(AppState state, Type controllerType, PresentOptions options, PresentArgs args)
+		internal IAsyncOperation<IPresentable> PresentAsync(AppState parentState, Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
-			var result = new PresentOperation<AppViewController>(this, state, controllerType, options, args);
+			var result = new PresentOperation<IPresentable>(this, parentState, controllerType, args ?? PresentArgs.Default);
+			OnPresentInitiated(args, result);
 			QueueOperation(result);
 			return result;
 		}
 
-		internal IAsyncOperation<T> PresentAsync<T>(AppViewController parentController, PresentOptions options, PresentArgs args) where T : AppViewController
-		{
-			ThrowIfDisposed();
-
-			var result = new PresentOperation<T>(this, parentController, typeof(T), options, args);
-			QueueOperation(result);
-			return result;
-		}
-
-		internal IAsyncOperation<T> PresentAsync<T>(AppState state, PresentOptions options, PresentArgs args) where T : AppViewController
+		internal IAsyncOperation<T> PresentAsync<T>(AppState parentState, PresentArgs args) where T : class, IPresentable
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(typeof(T));
 
-			var result = new PresentOperation<T>(this, state, typeof(T), options, args);
-			QueueOperation(result);
-			return result;
-		}
-
-		internal IAsyncOperation DismissAsync(AppViewController controller)
-		{
-			ThrowIfDisposed();
-
-			var result = new DismissOperation(this, controller);
+			var result = new PresentOperation<T>(this, parentState, typeof(T), args ?? PresentArgs.Default);
+			OnPresentInitiated(args, result);
 			QueueOperation(result);
 			return result;
 		}
@@ -274,7 +260,8 @@ namespace UnityFx.AppStates
 		{
 			ThrowIfDisposed();
 
-			var result = new DismissOperation(this, state);
+			var result = new DismissOperation(this, state, null);
+			OnDismissInitiated(state.Controller, result);
 			QueueOperation(result);
 			return result;
 		}
@@ -296,44 +283,50 @@ namespace UnityFx.AppStates
 		public event EventHandler<DismissCompletedEventArgs> DismissCompleted;
 
 		/// <inheritdoc/>
-		public IAppStateServiceSettings Settings => _settings;
+		public SourceSwitch TraceSwitch { get => _traceSource.Switch; set => _traceSource.Switch = value; }
+
+		/// <inheritdoc/>
+		public TraceListenerCollection TraceListeners => _traceSource.Listeners;
 
 		/// <inheritdoc/>
 		public bool IsBusy => !_stackOperations.IsEmpty;
 
 		/// <inheritdoc/>
-		public IReadOnlyCollection<AppState> States => _states;
+		public IAppState ActiveState
+		{
+			get
+			{
+				var result = _states.Last;
+
+				if (result != null && result.IsActive)
+				{
+					return result;
+				}
+
+				return null;
+			}
+		}
+
+		/// <inheritdoc/>
+		public IAppStateCollection States => _states;
+
+		/// <inheritdoc/>
+		public IAppStateServiceSettings Settings => _settings;
 
 		#endregion
 
 		#region IPresenter
 
 		/// <inheritdoc/>
-		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentOptions options, PresentArgs args)
+		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentArgs args)
 		{
-			ThrowIfDisposed();
-
-			return PresentAsync(default(AppState), controllerType, options, args);
+			return PresentAsync(null, controllerType, args);
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<AppViewController> PresentAsync(Type controllerType, PresentArgs args)
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IPresentable
 		{
-			ThrowIfDisposed();
-
-			return PresentAsync(default(AppState), controllerType, PresentOptions.None, args);
-		}
-
-		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentOptions options, PresentArgs args) where TController : AppViewController
-		{
-			return PresentAsync<TController>(default(AppState), options, args);
-		}
-
-		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : AppViewController
-		{
-			return PresentAsync<TController>(default(AppState), PresentOptions.None, args);
+			return PresentAsync<TController>(null, args);
 		}
 
 		#endregion
@@ -389,9 +382,9 @@ namespace UnityFx.AppStates
 				throw new ArgumentException($"Cannot instantiate abstract type {controllerType.Name}", nameof(controllerType));
 			}
 
-			if (!controllerType.IsSubclassOf(typeof(AppViewController)))
+			if (!typeof(IPresentable).IsAssignableFrom(controllerType))
 			{
-				throw new ArgumentException($"A state controller is expected to inherit " + typeof(AppViewController).Name, nameof(controllerType));
+				throw new ArgumentException($"A state controller is expected to implement " + typeof(IPresentable).Name, nameof(controllerType));
 			}
 		}
 

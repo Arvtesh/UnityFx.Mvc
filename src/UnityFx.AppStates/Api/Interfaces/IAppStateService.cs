@@ -3,13 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// A generic application state service.
 	/// </summary>
-	/// <seealso cref="AppState"/>
+	/// <seealso cref="IAppState"/>
 	public interface IAppStateService : IPresenter, IDisposable
 	{
 		/// <summary>
@@ -33,18 +34,33 @@ namespace UnityFx.AppStates
 		event EventHandler<DismissCompletedEventArgs> DismissCompleted;
 
 		/// <summary>
-		/// Gets the service settings.
+		/// Gets or sets trace switch used by the <see cref="TraceSource"/> instance.
 		/// </summary>
-		IAppStateServiceSettings Settings { get; }
+		SourceSwitch TraceSwitch { get; set; }
 
 		/// <summary>
-		/// Gets the child states.
+		/// Gets a collection of <see cref="TraceListener"/> instances attached to the <see cref="TraceSource"/> used for logging.
 		/// </summary>
-		IReadOnlyCollection<AppState> States { get; }
+		TraceListenerCollection TraceListeners { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether thare are any pending operations.
 		/// </summary>
 		bool IsBusy { get; }
+
+		/// <summary>
+		/// Gets the child states.
+		/// </summary>
+		IAppStateCollection States { get; }
+
+		/// <summary>
+		/// Gets active state (or <see langword="null"/>).
+		/// </summary>
+		IAppState ActiveState { get; }
+
+		/// <summary>
+		/// Gets the service settings.
+		/// </summary>
+		IAppStateServiceSettings Settings { get; }
 	}
 }

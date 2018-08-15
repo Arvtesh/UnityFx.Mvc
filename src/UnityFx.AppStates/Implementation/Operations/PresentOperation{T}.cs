@@ -7,50 +7,30 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class PresentOperation<T> : AppOperation<T> where T : AppViewController
+	internal class PresentOperation<T> : AppStateOperation<T> where T : class, IPresentable
 	{
 		#region data
 
-		private const string _opName = "Present";
-
 		private readonly Type _controllerType;
-		private readonly PresentOptions _options;
 		private readonly PresentArgs _args;
 		private readonly AppState _parentState;
-		private readonly AppViewController _parentController;
 
-		private AppViewController _controller;
+		private IPresentable _controller;
 		private IAsyncOperation _pushOp;
-		private IAsyncOperation _transitionOp;
 
 		#endregion
 
 		#region interface
 
-		public PresentOperation(AppStateService stateManager, Type controllerType, PresentOptions options, PresentArgs args)
-			: base(stateManager, _opName, GetStateDesc(controllerType, args))
+		public PresentOperation(AppStateService stateManager, AppState parentState, Type controllerType, PresentArgs args)
+			: base(stateManager, args.Data, GetStateDesc(controllerType, args))
 		{
-			_controllerType = controllerType;
-			_options = options;
-			_args = args;
-		}
+			Debug.Assert(controllerType != null);
+			Debug.Assert(args != null);
 
-		public PresentOperation(AppStateService stateManager, AppState parentState, Type controllerType, PresentOptions options, PresentArgs args)
-			: base(stateManager, _opName, GetStateDesc(controllerType, args))
-		{
 			_controllerType = controllerType;
-			_options = options;
 			_args = args;
 			_parentState = parentState;
-		}
-
-		public PresentOperation(AppStateService stateManager, AppViewController parentController, Type controllerType, PresentOptions options, PresentArgs args)
-			: base(stateManager, _opName, GetStateDesc(controllerType, args))
-		{
-			_controllerType = controllerType;
-			_options = options;
-			_args = args;
-			_parentController = parentController;
 		}
 
 		#endregion
@@ -63,26 +43,17 @@ namespace UnityFx.AppStates
 
 			try
 			{
-				if (_parentController != null)
+				if ((_args.Options & PresentOptions.DismissAllStates) != 0)
 				{
-					_controller = _parentController.State.CreateController(_parentController, _controllerType, _options, _args);
+					DismissAllStates();
 				}
-				else
+				else if ((_args.Options & PresentOptions.DismissCurrentState) != 0 && _parentState != null)
 				{
-					TryDeactivateTopState();
-
-					if ((_options & PresentOptions.DismissAllStates) != 0)
-					{
-						DismissAllStates();
-					}
-					else if ((_options & PresentOptions.DismissCurrentState) != 0 && _parentState != null)
-					{
-						DismissStateChildren(_parentState);
-					}
-
-					_controller = new AppState(StateManager, _parentState, _controllerType, _options, _args).Controller;
+					DismissStateChildren(_parentState);
+					InvokeOnDismiss(_parentState.Controller);
 				}
 
+				_controller = new AppState(StateManager, _parentState, _controllerType, _args).Controller;
 				_pushOp = _controller.View.Load();
 				_pushOp.AddCompletionCallback(this);
 			}
@@ -96,31 +67,18 @@ namespace UnityFx.AppStates
 		{
 			try
 			{
-				if (!IsCompletedSuccessfully)
-				{
-					if (_parentController != null)
-					{
-						_controller.Dispose();
-					}
-					else
-					{
-						_controller.State.Dispose();
-					}
-				}
+				StateManager.OnPresentCompleted(_controller, this);
+				base.OnCompleted();
 			}
 			finally
 			{
 				_controller = null;
 				_pushOp = null;
-				_transitionOp = null;
-
-				base.OnCompleted();
 			}
 		}
 
 		protected override void OnCancel()
 		{
-			_transitionOp?.Cancel();
 			base.OnCancel();
 		}
 
@@ -130,7 +88,7 @@ namespace UnityFx.AppStates
 
 		public override string ToString()
 		{
-			return _opName + ' ' + GetStateDesc(_controllerType, _args);
+			return "Present";
 		}
 
 		#endregion
@@ -141,34 +99,21 @@ namespace UnityFx.AppStates
 		{
 			try
 			{
+				Debug.Assert(_pushOp != null);
+				Debug.Assert(_controller != null);
+
 				if (ProcessNonSuccess(op))
 				{
-					if (_pushOp != null)
+					_pushOp = null;
+					InvokeOnViewLoaded(_controller);
+
+					if (_parentState != null && (_args.Options & PresentOptions.DismissCurrentState) != 0)
 					{
-						_pushOp = null;
-						_controller.InvokeOnViewLoaded();
-
-						if (_parentController != null)
-						{
-							_transitionOp = ViewManager.PlayPresentTransition(_parentController.View, _controller.View, false);
-						}
-						else
-						{
-							_transitionOp = ViewManager.PlayPresentTransition(_parentState?.View, _controller.View, (_options & PresentOptions.DismissCurrentState) != 0);
-						}
-
-						_transitionOp.AddCompletionCallback(this);
+						_parentState.Dispose();
 					}
-					else
-					{
-						if (_parentState != null && (_options & PresentOptions.DismissCurrentState) != 0)
-						{
-							_parentState.Dispose();
-						}
 
-						_controller.InvokeOnPresent();
-						TrySetResult(_controller as T);
-					}
+					InvokeOnPresent(_controller);
+					TrySetResult((T)_controller);
 				}
 			}
 			catch (Exception e)
