@@ -204,31 +204,53 @@ namespace UnityFx.AppStates
 
 		internal void AddState(AppState state)
 		{
-			_states.Add(state);
+			Debug.Assert(state != null);
+
+			var parent = state.Parent;
+
+			if (parent != null)
+			{
+				var prev = parent;
+				var next = parent.Next;
+
+				while (next != null && next.IsChildOf(parent))
+				{
+					prev = next;
+					next = prev.Next;
+				}
+
+				_states.Add(state, prev);
+			}
+			else
+			{
+				_states.Add(state);
+			}
 		}
 
 		internal void RemoveState(AppState state)
 		{
+			Debug.Assert(state != null);
+
 			_states.Remove(state);
 		}
 
-		internal IAsyncOperation<IPresentable> PresentAsync(AppState state, Type controllerType, PresentArgs args)
+		internal IAsyncOperation<IPresentable> PresentAsync(AppState parentState, Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
-			var result = new PresentOperation<IPresentable>(this, state, controllerType, args);
+			var result = new PresentOperation<IPresentable>(this, parentState, controllerType, args ?? PresentArgs.Default);
 			OnPresentInitiated(args, result);
 			QueueOperation(result);
 			return result;
 		}
 
-		internal IAsyncOperation<T> PresentAsync<T>(AppState state, PresentArgs args) where T : class, IPresentable
+		internal IAsyncOperation<T> PresentAsync<T>(AppState parentState, PresentArgs args) where T : class, IPresentable
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(typeof(T));
 
-			var result = new PresentOperation<T>(this, state, typeof(T), args);
+			var result = new PresentOperation<T>(this, parentState, typeof(T), args ?? PresentArgs.Default);
 			OnPresentInitiated(args, result);
 			QueueOperation(result);
 			return result;

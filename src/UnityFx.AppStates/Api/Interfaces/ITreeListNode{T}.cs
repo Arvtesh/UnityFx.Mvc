@@ -35,6 +35,11 @@ namespace UnityFx.AppStates
 		IEnumerable<T> Children { get; }
 
 		/// <summary>
+		/// Gets the node children.
+		/// </summary>
+		IEnumerable<T> ChildrenRecursive { get; }
+
+		/// <summary>
 		/// Checks whether this node is a child of another.
 		/// </summary>
 		/// <param name="node">The node to check.</param>

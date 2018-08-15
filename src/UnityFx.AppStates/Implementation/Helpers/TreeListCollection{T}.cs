@@ -153,6 +153,7 @@ namespace UnityFx.AppStates
 					throw new ArgumentNullException(nameof(node));
 				}
 
+				Debug.Assert(Contains(insertAfter));
 				SetLink(insertAfter, node);
 
 				if (insertAfter == _last)
@@ -357,16 +358,19 @@ namespace UnityFx.AppStates
 		/// <inheritdoc/>
 		public bool Contains(T item)
 		{
-			var cur = _first;
-
-			while (cur != null)
+			if (item != null)
 			{
-				if (cur == item)
-				{
-					return true;
-				}
+				var cur = _first;
 
-				cur = cur.Next;
+				while (cur != null)
+				{
+					if (cur == item)
+					{
+						return true;
+					}
+
+					cur = cur.Next;
+				}
 			}
 
 			return false;

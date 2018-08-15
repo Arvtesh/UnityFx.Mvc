@@ -39,7 +39,8 @@ namespace UnityFx.AppStates
 		public T Parent => _parentNode;
 		public T Prev { get; internal set; }
 		public T Next { get; internal set; }
-		public IEnumerable<T> Children => new ChildEnumerable(this as T);
+		public IEnumerable<T> Children => new ChildEnumerable(this as T, false);
+		public IEnumerable<T> ChildrenRecursive => new ChildEnumerable(this as T, true);
 
 		public bool IsChildOf(T node)
 		{
@@ -57,25 +58,42 @@ namespace UnityFx.AppStates
 
 		private class ChildEnumerable : IEnumerable<T>
 		{
-			private T _parent;
+			private readonly T _parent;
+			private readonly bool _recursive;
 
-			internal ChildEnumerable(T first)
+			internal ChildEnumerable(T first, bool recursive)
 			{
 				_parent = first;
+				_recursive = recursive;
 			}
 
 			public IEnumerator<T> GetEnumerator()
 			{
 				var cur = _parent.Next;
 
-				while (cur != null)
+				if (_recursive)
 				{
-					if (cur.IsChildOf(_parent))
+					while (cur != null)
 					{
-						yield return cur;
-					}
+						if (cur.IsChildOf(_parent))
+						{
+							yield return cur;
+						}
 
-					cur = cur.Next;
+						cur = cur.Next;
+					}
+				}
+				else
+				{
+					while (cur != null)
+					{
+						if (cur.Parent == _parent)
+						{
+							yield return cur;
+						}
+
+						cur = cur.Next;
+					}
 				}
 			}
 
