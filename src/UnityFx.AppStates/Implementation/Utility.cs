@@ -23,12 +23,31 @@ namespace UnityFx.AppStates
 
 			if (string.IsNullOrEmpty(result))
 			{
-				result = controllerType.Name.ToLowerInvariant();
+				result = GetDefaultPresentableId(controllerType);
+			}
 
-				if (result.EndsWith("controller"))
+			return result;
+		}
+
+		internal static string GetPresentableResourceId(Type controllerType)
+		{
+			string result = null;
+
+			if (Attribute.GetCustomAttribute(controllerType, typeof(AppViewControllerAttribute)) is AppViewControllerAttribute attr)
+			{
+				if (!string.IsNullOrEmpty(attr.ResourceId))
 				{
-					result = result.Substring(0, result.Length - 10);
+					result = attr.ResourceId;
 				}
+				else if (!string.IsNullOrEmpty(attr.Id))
+				{
+					result = attr.Id;
+				}
+			}
+
+			if (string.IsNullOrEmpty(result))
+			{
+				result = GetDefaultPresentableId(controllerType);
 			}
 
 			return result;
@@ -54,6 +73,18 @@ namespace UnityFx.AppStates
 			}
 
 			return typeId + id.ToString(CultureInfo.InvariantCulture);
+		}
+
+		private static string GetDefaultPresentableId(Type controllerType)
+		{
+			var result = controllerType.Name.ToLowerInvariant();
+
+			if (result.EndsWith("controller"))
+			{
+				result = result.Substring(0, result.Length - 10);
+			}
+
+			return result;
 		}
 	}
 }

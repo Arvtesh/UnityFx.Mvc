@@ -13,7 +13,7 @@ namespace UnityFx.AppStates
 	/// </summary>
 	/// <typeparam name="T">Type of the node.</typeparam>
 	/// <seealso cref="TreeListCollection{T}"/>
-	internal class TreeListNode<T> : ITreeListNode<T> where T : class, ITreeListNode<T>
+	public class TreeListNode<T> : ITreeListNode<T> where T : class, ITreeListNode<T>
 	{
 		#region data
 

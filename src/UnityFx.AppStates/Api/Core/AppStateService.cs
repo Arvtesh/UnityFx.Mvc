@@ -15,7 +15,6 @@ namespace UnityFx.AppStates
 	/// A manager of application states (<see cref="AppState"/>).
 	/// </summary>
 	/// <threadsafety static="true" instance="false"/>
-	/// <seealso cref="AppState"/>
 	/// <seealso cref="AppViewController"/>
 	public class AppStateService : IAppStateService
 	{

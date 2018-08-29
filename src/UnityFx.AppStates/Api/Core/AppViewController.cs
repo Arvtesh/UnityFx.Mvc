@@ -23,6 +23,7 @@ namespace UnityFx.AppStates
 		private readonly IAppView _view;
 
 		private readonly string _id;
+		private readonly string _resourceId;
 		private readonly PresentArgs _presentArgs;
 
 		private IAsyncOperation _dismissOp;
@@ -56,9 +57,10 @@ namespace UnityFx.AppStates
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
 			_id = Utility.GetNextId("_controller", ref _idCounter);
+			_resourceId = Utility.GetPresentableResourceId(GetType());
 			_state = context.ParentState;
 			_presentArgs = context.PresentArgs;
-			_view = context.ViewManager.CreateView(_id, _state.Prev?.View, _presentArgs.Options);
+			_view = context.ViewManager.CreateView(_resourceId, _state.Prev?.View, _presentArgs.Options);
 		}
 
 		/// <summary>

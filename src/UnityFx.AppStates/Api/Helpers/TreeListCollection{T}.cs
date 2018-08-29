@@ -13,9 +13,9 @@ namespace UnityFx.AppStates
 	/// </summary>
 	/// <seealso cref="TreeListNode{T}"/>
 #if NET35
-	internal class TreeListCollection<T> : ICollection<T> where T : class, ITreeListNode<T>
+	public class TreeListCollection<T> : ICollection<T> where T : class, ITreeListNode<T>
 #else
-	internal class TreeListCollection<T> : ICollection<T>, IReadOnlyCollection<T> where T : class, ITreeListNode<T>
+	public class TreeListCollection<T> : ICollection<T>, IReadOnlyCollection<T> where T : class, ITreeListNode<T>
 #endif
 	{
 		#region data
