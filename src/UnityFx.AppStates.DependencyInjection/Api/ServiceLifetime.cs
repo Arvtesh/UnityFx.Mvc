@@ -16,7 +16,7 @@ namespace UnityFx.AppStates.DependencyInjection
 		Singleton,
 
 		/// <summary>
-		/// Specifies that a new instance of the service will be created for each scope.
+		/// Not supported currently. Specifies that a new instance of the service will be created for each scope.
 		/// </summary>
 		Scoped,
 
