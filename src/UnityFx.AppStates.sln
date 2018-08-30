@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.AppStates.Tests", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.AppStates.AssetStore", "UnityFx.AppStates.AssetStore\UnityFx.AppStates.AssetStore.csproj", "{770CF159-0048-4A49-8EF9-A23541991EC1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityFx.AppStates.DependencyInjection", "UnityFx.AppStates.DependencyInjection\UnityFx.AppStates.DependencyInjection.csproj", "{AFC7FF4C-7FE1-454D-B016-C290E4EB4720}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.AppStates.DependencyInjection", "UnityFx.AppStates.DependencyInjection\UnityFx.AppStates.DependencyInjection.csproj", "{AFC7FF4C-7FE1-454D-B016-C290E4EB4720}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityFx.AppStates.DependencyInjection.Tests", "UnityFx.AppStates.DependencyInjection.Tests\UnityFx.AppStates.DependencyInjection.Tests.csproj", "{29168A6D-40C1-4666-8E21-D66C71F374BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{AFC7FF4C-7FE1-454D-B016-C290E4EB4720}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFC7FF4C-7FE1-454D-B016-C290E4EB4720}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFC7FF4C-7FE1-454D-B016-C290E4EB4720}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29168A6D-40C1-4666-8E21-D66C71F374BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29168A6D-40C1-4666-8E21-D66C71F374BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29168A6D-40C1-4666-8E21-D66C71F374BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29168A6D-40C1-4666-8E21-D66C71F374BB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
