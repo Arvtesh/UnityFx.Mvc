@@ -55,7 +55,9 @@ if ($LastExitCode -ne 0) {
 
 # publish build results to .\Build\Bin
 $filesToPublish = (Join-Path $scriptPath (Join-Path "UnityFx.AppStates\bin" (Join-Path $configuration "\*")))
+$filesToPublish2 = (Join-Path $scriptPath (Join-Path "UnityFx.AppStates.DependencyInjection\bin" (Join-Path $configuration "\*")))
 Copy-Item -Path $filesToPublish -Destination $binPath -Force -Recurse
+Copy-Item -Path $filesToPublish2 -Destination $binPath -Force -Recurse
 
 function _PublishAssetStorePackage
 {
@@ -66,8 +68,8 @@ function _PublishAssetStorePackage
 	$filesToPublish = (Join-Path $scriptPath "UnityFx.AppStates.AssetStore\Assets\*")
 	$binToPublish =(Join-Path $binPath (Join-Path $targetFramework "\*")) 
 	$publishPath = (Join-Path $assetStorePath (Join-Path $targetFramework "Assets"))
-	$publishPath2 = (Join-Path $publishPath "UnityFx.AppStates")
-	$publishBinPath = (Join-Path $publishPath "UnityFx.AppStates\Bin")
+	$publishPath2 = (Join-Path $publishPath "Plugins\UnityFx.AppStates")
+	$publishBinPath = (Join-Path $publishPath "Plugins\UnityFx.AppStates\Bin")
 	
 	New-Item $publishBinPath -ItemType Directory
 	Copy-Item -Path $filesToPublish -Destination $publishPath -Force -Recurse
