@@ -14,18 +14,14 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private readonly IAppStateService _stateManager;
-		private readonly IAppViewService _viewManager;
 		private readonly IServiceProvider _serviceProvider;
 
 		#endregion
 
 		#region interface
 
-		public DefaultPresentableFactory(IAppStateService stateManager, IAppViewService viewManager, IServiceProvider serviceProvider)
+		public DefaultPresentableFactory(IServiceProvider serviceProvider)
 		{
-			_stateManager = stateManager;
-			_viewManager = viewManager;
 			_serviceProvider = serviceProvider;
 		}
 
@@ -80,14 +76,6 @@ namespace UnityFx.AppStates
 			else if (serviceType == typeof(IServiceProvider))
 			{
 				return _serviceProvider;
-			}
-			else if (serviceType == typeof(IAppStateService))
-			{
-				return _stateManager;
-			}
-			else if (serviceType == typeof(IAppViewService))
-			{
-				return _viewManager;
 			}
 
 			return _serviceProvider.GetService(serviceType);

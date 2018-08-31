@@ -99,7 +99,7 @@ namespace UnityFx.AppStates
 
 			if (controllerFactory == null)
 			{
-				_controllerFactory = new DefaultPresentableFactory(this, viewManager, serviceProvider);
+				controllerFactory = new DefaultPresentableFactory(serviceProvider);
 			}
 
 			_traceSource = new TraceSource(ServiceName);
