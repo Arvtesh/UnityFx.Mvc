@@ -162,13 +162,7 @@ namespace UnityFx.AppStates
 					_stackOperations.Suspended = true;
 
 					// 2) Cancel pending operations.
-					if (!_stackOperations.IsEmpty)
-					{
-						foreach (var op in _stackOperations.Release())
-						{
-							op.Cancel();
-						}
-					}
+					_stackOperations.Cancel();
 
 					// 3) Dispose child states.
 					foreach (var state in _states.Reverse())
