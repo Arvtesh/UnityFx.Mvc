@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace UnityFx.AppStates
+namespace UnityFx.AppStates.Common
 {
 	/// <summary>
 	/// A generic node of linked list.

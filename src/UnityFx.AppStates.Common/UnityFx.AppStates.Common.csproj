@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net35;net46;netstandard2.0</TargetFrameworks>
-		<Description>Application states for Unity3d.</Description>
+		<Description>Common tools used by application states.</Description>
 		<Company />
 		<Authors>Alexander Bogarsukov</Authors>
 		<PackageProjectUrl>https://github.com/Arvtesh/UnityFx.AppStates</PackageProjectUrl>
@@ -11,11 +11,11 @@
 		<PackageTags>Unity3d;Application;States;FSM;MVC</PackageTags>
 		<PackageLicenseUrl>https://github.com/Arvtesh/UnityFx.AppStates/blob/master/LICENSE.md</PackageLicenseUrl>
 		<PackageIconUrl></PackageIconUrl>
-		<Version>0.3.0</Version>
-		<AssemblyVersion>0.3.0.0</AssemblyVersion>
-		<FileVersion>0.3.0.0</FileVersion>
-		<InformationalVersion>0.3.0.0</InformationalVersion>
-		<RootNamespace>UnityFx.AppStates</RootNamespace>
+		<Version>0.1.0</Version>
+		<AssemblyVersion>0.1.0.0</AssemblyVersion>
+		<FileVersion>0.1.0.0</FileVersion>
+		<InformationalVersion>0.1.0.0</InformationalVersion>
+		<RootNamespace>UnityFx.AppStates.Common</RootNamespace>
 		<CodeAnalysisRuleSet>../CodingConventions/Cs/CsharpRules.ruleset</CodeAnalysisRuleSet>
 	</PropertyGroup>
 
@@ -26,15 +26,10 @@
 
 	<ItemGroup>
 		<PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta008" PrivateAssets="All" />
-		<PackageReference Include="UnityFx.Async" Version="0.9.5" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<AdditionalFiles Include="../CodingConventions/Common/stylecop.json" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\UnityFx.AppStates.Common\UnityFx.AppStates.Common.csproj" />
 	</ItemGroup>
 
 </Project>

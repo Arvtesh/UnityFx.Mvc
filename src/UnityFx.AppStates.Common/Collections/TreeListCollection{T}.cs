@@ -6,17 +6,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace UnityFx.AppStates
+namespace UnityFx.AppStates.Common
 {
 	/// <summary>
 	/// A generic tree list collection.
 	/// </summary>
 	/// <seealso cref="TreeListNode{T}"/>
-#if NET35
-	public class TreeListCollection<T> : ICollection<T> where T : class, ITreeListNode<T>
-#else
-	public class TreeListCollection<T> : ICollection<T>, IReadOnlyCollection<T> where T : class, ITreeListNode<T>
-#endif
+	public class TreeListCollection<T> : ITreeListCollection<T>, ICollection<T> where T : class, ITreeListNode<T>
 	{
 		#region data
 
@@ -37,25 +33,6 @@ namespace UnityFx.AppStates
 		/// Gets the last element.
 		/// </summary>
 		public T Last => _last;
-
-		/// <summary>
-		/// Returns top element of the stack.
-		/// </summary>
-		/// <exception cref="InvalidOperationException">Thrown if the collection is empty.</exception>
-		public T Peek()
-		{
-			ThrowIfEmpty();
-			return _last;
-		}
-
-		/// <summary>
-		/// Attempts to get top element of the stack.
-		/// </summary>
-		public bool TryPeek(out T result)
-		{
-			result = _last;
-			return result != null;
-		}
 
 		/// <summary>
 		/// Adds a new node to the collection.
@@ -326,6 +303,24 @@ namespace UnityFx.AppStates
 		/// Returns an enumerable that iterates through the collection starting from the last element.
 		/// </summary>
 		public Enumerable Reverse() => new Enumerable(_last, false);
+
+		#endregion
+
+		#region ITreeListCollection
+
+		/// <inheritdoc/>
+		public T Peek()
+		{
+			ThrowIfEmpty();
+			return _last;
+		}
+
+		/// <inheritdoc/>
+		public bool TryPeek(out T result)
+		{
+			result = _last;
+			return result != null;
+		}
 
 		#endregion
 

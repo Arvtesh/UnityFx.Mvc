@@ -3,12 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using UnityFx.AppStates.Common;
 using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// 
+	/// A base class for all application views.
 	/// </summary>
 	public abstract class AppView : TreeListNode<IAppView>, IAppView
 	{
