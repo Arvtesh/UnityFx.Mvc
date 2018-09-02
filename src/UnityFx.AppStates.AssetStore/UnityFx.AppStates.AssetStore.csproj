@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net35;net46</TargetFrameworks>
@@ -17,6 +17,7 @@
 		<IsPackable>false</IsPackable>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<CodeAnalysisRuleSet>../CodingConventions/Cs/CsharpRules.ruleset</CodeAnalysisRuleSet>
+		<LangVersion>6</LangVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

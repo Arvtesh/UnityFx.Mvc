@@ -4,6 +4,7 @@ $configuration = $args[0]
 $packagesPath = Join-Path $scriptPath "..\temp\BuildTools"
 $binPath = Join-Path $scriptPath "..\bin"
 $assetStorePath = Join-Path $binPath "AssetStore"
+$unityAppPath = Join-Path $scriptPath "UnityApp"
 $msbuildPath = "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MsBuild.exe"
 $nugetPath = Join-Path $packagesPath "nuget.exe"
 $gitversionPath = Join-Path $packagesPath "gitversion.commandline\tools\gitversion.exe"
@@ -59,6 +60,7 @@ $filesToPublish2 = (Join-Path $scriptPath (Join-Path "UnityFx.AppStates.Dependen
 Copy-Item -Path $filesToPublish -Destination $binPath -Force -Recurse
 Copy-Item -Path $filesToPublish2 -Destination $binPath -Force -Recurse
 
+# publish AssetStore package
 function _PublishAssetStorePackage
 {
 	param([string]$targetFramework)
@@ -66,18 +68,28 @@ function _PublishAssetStorePackage
 	$changelogPath = (Join-Path $scriptPath "..\CHANGELOG.md")
 	$readmePath = (Join-Path $scriptPath "UnityFx.AppStates\README.txt")
 	$filesToPublish = (Join-Path $scriptPath "UnityFx.AppStates.AssetStore\Assets\*")
-	$binToPublish =(Join-Path $binPath (Join-Path $targetFramework "\*")) 
+	$binToPublish =(Join-Path $binPath (Join-Path $targetFramework "\*"))
 	$publishPath = (Join-Path $assetStorePath (Join-Path $targetFramework "Assets"))
 	$publishPath2 = (Join-Path $publishPath "Plugins\UnityFx.AppStates")
 	$publishBinPath = (Join-Path $publishPath "Plugins\UnityFx.AppStates\Bin")
-	
+	$asyncPath = (Join-Path $publishBinPath "UnityFx.Async.dll")
+
 	New-Item $publishBinPath -ItemType Directory
 	Copy-Item -Path $filesToPublish -Destination $publishPath -Force -Recurse
 	Copy-Item -Path $binToPublish -Destination $publishBinPath -Force -Recurse
 	Copy-Item -Path $changelogPath -Destination $publishPath2 -Force
 	Copy-Item -Path $readmePath -Destination $publishPath2 -Force
+
+	if (Test-Path $asyncPath) {
+		Remove-Item -Path $asyncPath -Force
+	}
 }
 
 _PublishAssetStorePackage "net35"
 _PublishAssetStorePackage "net46"
 _PublishAssetStorePackage "netstandard2.0"
+
+# update UnityApp project
+$publishPath = (Join-Path $assetStorePath "net35\Assets\Plugins\*")
+$destPath = (Join-Path $unityAppPath "Assets\Plugins")
+Copy-Item -Path $publishPath -Destination $destPath -Force -Recurse
