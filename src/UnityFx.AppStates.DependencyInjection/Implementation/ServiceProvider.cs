@@ -160,6 +160,8 @@ namespace UnityFx.AppStates.DependencyInjection
 
 		private object CreateInstance(Type serviceType, ICollection<Type> callerTypes)
 		{
+			Debug.Assert(serviceType != null);
+
 			try
 			{
 				var constructors = serviceType.GetConstructors(BindingFlags.Instance | BindingFlags.Public);
@@ -181,14 +183,7 @@ namespace UnityFx.AppStates.DependencyInjection
 
 					if (ctor != null)
 					{
-						var parameters = ctor.GetParameters();
-						var args = new object[parameters.Length];
-
-						for (var i = 0; i < args.Length; ++i)
-						{
-							args[i] = GetService(parameters[i].ParameterType, callerTypes);
-						}
-
+						var args = GetArguments(ctor, callerTypes);
 						return ctor.Invoke(args);
 					}
 					else
@@ -209,6 +204,8 @@ namespace UnityFx.AppStates.DependencyInjection
 
 		private ConstructorInfo GetConstructor(ConstructorInfo[] ctors, ICollection<Type> callerTypes)
 		{
+			Debug.Assert(ctors != null);
+
 			// Select the first ctor having all arguments registered.
 			foreach (var ctor in ctors)
 			{
@@ -233,9 +230,30 @@ namespace UnityFx.AppStates.DependencyInjection
 			return null;
 		}
 
+		private object[] GetArguments(MethodBase method, ICollection<Type> callerTypes)
+		{
+			Debug.Assert(method != null);
+
+			var parameters = method.GetParameters();
+			var args = new object[parameters.Length];
+
+			for (var i = 0; i < args.Length; ++i)
+			{
+				args[i] = GetService(parameters[i].ParameterType, callerTypes);
+			}
+
+			return args;
+		}
+
 		private object GetService(Type serviceType, ICollection<Type> callerTypes)
 		{
-			if (_services.TryGetValue(serviceType, out var descriptor))
+			Debug.Assert(serviceType != null);
+
+			if (serviceType == typeof(IServiceProvider))
+			{
+				return this;
+			}
+			else if (_services.TryGetValue(serviceType, out var descriptor))
 			{
 				switch (descriptor.Lifetime)
 				{
@@ -258,6 +276,8 @@ namespace UnityFx.AppStates.DependencyInjection
 
 		private object GetSingletonService(ServiceDescriptor serviceDescriptor, ICollection<Type> callerTypes)
 		{
+			Debug.Assert(serviceDescriptor != null);
+
 			if (serviceDescriptor.ImplementationInstance != null)
 			{
 				return serviceDescriptor.ImplementationInstance;
@@ -282,6 +302,8 @@ namespace UnityFx.AppStates.DependencyInjection
 
 		private object GetTransientService(ServiceDescriptor serviceDescriptor, ICollection<Type> callerTypes)
 		{
+			Debug.Assert(serviceDescriptor != null);
+
 			if (serviceDescriptor.ImplementationType != null)
 			{
 				return CreateInstance(serviceDescriptor.ImplementationType, callerTypes);
@@ -298,6 +320,8 @@ namespace UnityFx.AppStates.DependencyInjection
 
 		private object GetScopedService(ServiceDescriptor serviceDescriptor, ICollection<Type> callerTypes)
 		{
+			Debug.Assert(serviceDescriptor != null);
+
 			throw new NotSupportedException();
 		}
 
