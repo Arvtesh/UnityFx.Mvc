@@ -13,7 +13,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the <typeparamref name="TView"/> view component.
 		/// </summary>
-		/// <exception cref="InvalidOperationException">Thrown if the view is not loaded.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if the view is not loaded or the <typeparamref name="TView"/> component is not attached to the view.</exception>
 		TView ViewAspect { get; }
 	}
 }

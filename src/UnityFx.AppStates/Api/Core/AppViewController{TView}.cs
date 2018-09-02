@@ -36,9 +36,9 @@ namespace UnityFx.AppStates
 		#region IPresentable
 
 		/// <summary>
-		/// Gets the <typeparamref name="TView"/> view component.
+		/// Gets the <typeparamref name="TView"/> view component. The componet reference is cached on first access. Accessing this property before view is loaded throws <see cref="InvalidOperationException"/>.
 		/// </summary>
-		/// <exception cref="InvalidOperationException">Thrown if the view is not loaded.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if the view is not loaded or the <typeparamref name="TView"/> component is not attached to the view.</exception>
 		public TView ViewAspect
 		{
 			get
@@ -47,14 +47,16 @@ namespace UnityFx.AppStates
 				{
 					return _viewAspect;
 				}
-				else if (View.IsLoaded)
-				{
-					_viewAspect = View.GetComponent<TView>() ?? throw new InvalidOperationException();
-					return _viewAspect;
-				}
 				else
 				{
-					throw new InvalidOperationException();
+					_viewAspect = View.GetComponent<TView>();
+
+					if (_viewAspect == null)
+					{
+						throw new InvalidOperationException();
+					}
+
+					return _viewAspect;
 				}
 			}
 		}
