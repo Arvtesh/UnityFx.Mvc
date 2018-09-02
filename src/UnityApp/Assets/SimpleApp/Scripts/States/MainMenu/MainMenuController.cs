@@ -28,6 +28,55 @@ namespace UnityFx.AppStates.Samples
 		#endregion
 
 		#region AppViewController
+
+		/// <inheritdoc/>
+		public override void OnViewLoaded()
+		{
+			base.OnViewLoaded();
+
+			var view = View.GetComponent<MainMenuView>();
+
+			if (view)
+			{
+				view.GamePressed += OnGamePressed;
+				view.AboutPressed += OnAboutPressed;
+				view.ExitPressed += OnExitPressed;
+			}
+		}
+
+		public override void OnDismiss()
+		{
+			var view = View.GetComponent<MainMenuView>();
+
+			if (view)
+			{
+				view.GamePressed -= OnGamePressed;
+				view.AboutPressed -= OnAboutPressed;
+				view.ExitPressed -= OnExitPressed;
+			}
+
+			base.OnDismiss();
+		}
+
+		#endregion
+
+		#region implementation
+
+		private void OnGamePressed(object sender, EventArgs e)
+		{
+			PresentAsync<GameController>();
+		}
+
+		private void OnAboutPressed(object sender, EventArgs e)
+		{
+			PresentAsync<AboutController>();
+		}
+
+		private void OnExitPressed(object sender, EventArgs e)
+		{
+			Application.Quit();
+		}
+
 		#endregion
 	}
 }
