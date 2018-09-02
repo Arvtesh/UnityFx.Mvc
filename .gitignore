@@ -9,9 +9,10 @@
 [Bb]uild/
 [Bb]uilds/
 
-# UnityApp/Plugins
+# UnityApp
 src/UnityApp/Assets/Plugins/UnityFx.AppStates/
 src/UnityApp/Assets/Plugins/UnityFx.AppStates.meta
+src/UnityApp/*
 
 # Visual Studio cache directory
 .vs/
