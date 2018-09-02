@@ -94,56 +94,6 @@ namespace UnityFx.AppStates.DependencyInjection
 		}
 
 		/// <summary>
-		/// Creates an instance of <see cref="ServiceDescriptor"/> with the specified <paramref name="serviceType"/> and <paramref name="implementationType"/> and the <see cref="ServiceLifetime.Singleton"/> lifetime.
-		/// </summary>
-		/// <param name="serviceType">Type of the service.</param>
-		/// <param name="implementationType">Type of the service implementation.</param>
-		public static ServiceDescriptor Singleton(Type serviceType, Type implementationType)
-		{
-			return new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Singleton);
-		}
-
-		/// <summary>
-		/// Creates an instance of <see cref="ServiceDescriptor"/> with the specified <paramref name="serviceType"/> and <paramref name="implementationFactory"/> and the <see cref="ServiceLifetime.Singleton"/> lifetime.
-		/// </summary>
-		/// <param name="serviceType">Type of the service.</param>
-		/// <param name="implementationFactory">Factory delegate for the service instances.</param>
-		public static ServiceDescriptor Singleton(Type serviceType, Func<IServiceProvider, object> implementationFactory)
-		{
-			return new ServiceDescriptor(serviceType, implementationFactory, ServiceLifetime.Singleton);
-		}
-
-		/// <summary>
-		/// Creates an instance of <see cref="ServiceDescriptor"/> with the specified <typeparamref name="TService"/> and <typeparamref name="TImplementation"/> and the <see cref="ServiceLifetime.Singleton"/> lifetime.
-		/// </summary>
-		/// <typeparam name="TService">Type of the service.</typeparam>
-		/// <typeparam name="TImplementation">Type of the service implementation.</typeparam>
-		public static ServiceDescriptor Singleton<TService, TImplementation>() where TService : class where TImplementation : class, TService
-		{
-			return new ServiceDescriptor(typeof(TService), typeof(TImplementation), ServiceLifetime.Singleton);
-		}
-
-		/// <summary>
-		/// Creates an instance of <see cref="ServiceDescriptor"/> with the specified <typeparamref name="TService"/> and <paramref name="instance"/> and the <see cref="ServiceLifetime.Singleton"/> lifetime.
-		/// </summary>
-		/// <typeparam name="TService">Type of the service.</typeparam>
-		/// <param name="instance">The singleton instance.</param>
-		public static ServiceDescriptor Singleton<TService>(TService instance) where TService : class
-		{
-			return new ServiceDescriptor(typeof(TService), instance);
-		}
-
-		/// <summary>
-		/// Creates an instance of <see cref="ServiceDescriptor"/> with the specified <typeparamref name="TService"/> and <paramref name="implementationFactory"/> and the <see cref="ServiceLifetime.Singleton"/> lifetime.
-		/// </summary>
-		/// <typeparam name="TService">Type of the service.</typeparam>
-		/// <param name="implementationFactory">The singleton factory delegate.</param>
-		public static ServiceDescriptor Singleton<TService>(Func<IServiceProvider, object> implementationFactory) where TService : class
-		{
-			return new ServiceDescriptor(typeof(TService), implementationFactory, ServiceLifetime.Singleton);
-		}
-
-		/// <summary>
 		/// Sets value of the <see cref="ImplementationInstance"/> property. Should only be called be <see cref="ServiceProvider"/>.
 		/// </summary>
 		internal void SetInstance(object instance)
