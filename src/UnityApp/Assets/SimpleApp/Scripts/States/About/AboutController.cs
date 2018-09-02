@@ -10,6 +10,7 @@ namespace UnityFx.AppStates.Samples
 	/// About dialog controller.
 	/// </summary>
 	/// <seealso cref="AboutView"/>
+	[AppViewController("about", "AboutDialog")]
 	public class AboutController : AppViewController
 	{
 		#region data

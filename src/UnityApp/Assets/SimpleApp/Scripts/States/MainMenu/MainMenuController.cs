@@ -10,6 +10,7 @@ namespace UnityFx.AppStates.Samples
 	/// Main Menu controller.
 	/// </summary>
 	/// <seealso cref="MainMenuView"/>
+	[AppViewController("lobby", "MainMenu")]
 	public class MainMenuController : AppViewController
 	{
 		#region data

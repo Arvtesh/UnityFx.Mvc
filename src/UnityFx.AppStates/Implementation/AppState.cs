@@ -45,8 +45,18 @@ namespace UnityFx.AppStates
 			_id = Utility.GetNextId("_state", ref _idCounter);
 			_deeplinkId = Utility.GetPresentableTypeId(controllerType);
 			_stateManager = stateManager;
-			_controller = stateManager.ControllerFactory.CreateController(controllerType, this);
 			_stateManager.AddState(this);
+
+			// Controller should be created after the state has been initialized.
+			try
+			{
+				_controller = stateManager.ControllerFactory.CreateController(controllerType, this);
+			}
+			catch
+			{
+				_stateManager.RemoveState(this);
+				throw;
+			}
 		}
 
 		#endregion
