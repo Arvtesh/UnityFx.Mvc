@@ -10,7 +10,7 @@ namespace UnityFx.AppStates.Samples
 	/// Game controller.
 	/// </summary>
 	/// <seealso cref="GameView"/>
-	public class GameController : AppViewController
+	public class GameController : AppViewController<GameView>
 	{
 		#region data
 		#endregion
@@ -28,6 +28,19 @@ namespace UnityFx.AppStates.Samples
 		#endregion
 
 		#region AppViewController
+
+		/// <inheritdoc/>
+		public override void OnViewLoaded()
+		{
+			base.OnViewLoaded();
+		}
+
+		/// <inheritdoc/>
+		public override void OnDismiss()
+		{
+			base.OnDismiss();
+		}
+
 		#endregion
 	}
 }

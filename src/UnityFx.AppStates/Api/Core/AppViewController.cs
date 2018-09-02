@@ -64,6 +64,19 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
+		/// Throws an <see cref="ObjectDisposedException"/> if the controller is disposed.
+		/// </summary>
+		/// <seealso cref="Dispose()"/>
+		/// <seealso cref="Dispose(bool)"/>
+		protected void ThrowIfDisposed()
+		{
+			if (_disposed)
+			{
+				throw new ObjectDisposedException(_id);
+			}
+		}
+
+		/// <summary>
 		/// Releases resources used by the controller.
 		/// </summary>
 		/// <param name="disposing">Should be <see langword="true"/> if the method is called from <see cref="Dispose()"/>; <see langword="false"/> otherwise.</param>
@@ -76,19 +89,6 @@ namespace UnityFx.AppStates
 			if (disposing)
 			{
 				_view.Dispose();
-			}
-		}
-
-		/// <summary>
-		/// Throws an <see cref="ObjectDisposedException"/> if the controller is disposed.
-		/// </summary>
-		/// <seealso cref="Dispose()"/>
-		/// <seealso cref="Dispose(bool)"/>
-		protected void ThrowIfDisposed()
-		{
-			if (_disposed)
-			{
-				throw new ObjectDisposedException(_id);
 			}
 		}
 

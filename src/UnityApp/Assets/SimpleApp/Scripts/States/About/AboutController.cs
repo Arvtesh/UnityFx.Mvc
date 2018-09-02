@@ -11,7 +11,7 @@ namespace UnityFx.AppStates.Samples
 	/// </summary>
 	/// <seealso cref="AboutView"/>
 	[AppViewController("about", "AboutDialog")]
-	public class AboutController : AppViewController
+	public class AboutController : AppViewController<AboutView>
 	{
 		#region data
 		#endregion
@@ -35,23 +35,13 @@ namespace UnityFx.AppStates.Samples
 		{
 			base.OnViewLoaded();
 
-			var view = View.GetComponent<AboutView>();
-
-			if (view)
-			{
-				view.ClosePressed += OnClosePressed;
-			}
+			ViewAspect.ClosePressed += OnClosePressed;
 		}
 
 		/// <inheritdoc/>
 		public override void OnDismiss()
 		{
-			var view = View.GetComponent<AboutView>();
-
-			if (view)
-			{
-				view.ClosePressed -= OnClosePressed;
-			}
+			ViewAspect.ClosePressed -= OnClosePressed;
 
 			base.OnDismiss();
 		}

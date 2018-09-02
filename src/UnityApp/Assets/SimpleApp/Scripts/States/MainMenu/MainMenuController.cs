@@ -11,7 +11,7 @@ namespace UnityFx.AppStates.Samples
 	/// </summary>
 	/// <seealso cref="MainMenuView"/>
 	[AppViewController("lobby", "MainMenu")]
-	public class MainMenuController : AppViewController
+	public class MainMenuController : AppViewController<MainMenuView>
 	{
 		#region data
 		#endregion
@@ -35,27 +35,17 @@ namespace UnityFx.AppStates.Samples
 		{
 			base.OnViewLoaded();
 
-			var view = View.GetComponent<MainMenuView>();
-
-			if (view)
-			{
-				view.GamePressed += OnGamePressed;
-				view.AboutPressed += OnAboutPressed;
-				view.ExitPressed += OnExitPressed;
-			}
+			ViewAspect.GamePressed += OnGamePressed;
+			ViewAspect.AboutPressed += OnAboutPressed;
+			ViewAspect.ExitPressed += OnExitPressed;
 		}
 
 		/// <inheritdoc/>
 		public override void OnDismiss()
 		{
-			var view = View.GetComponent<MainMenuView>();
-
-			if (view)
-			{
-				view.GamePressed -= OnGamePressed;
-				view.AboutPressed -= OnAboutPressed;
-				view.ExitPressed -= OnExitPressed;
-			}
+			ViewAspect.GamePressed -= OnGamePressed;
+			ViewAspect.AboutPressed -= OnAboutPressed;
+			ViewAspect.ExitPressed -= OnExitPressed;
 
 			base.OnDismiss();
 		}
