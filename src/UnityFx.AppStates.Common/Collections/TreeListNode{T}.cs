@@ -23,10 +23,16 @@ namespace UnityFx.AppStates.Common
 
 		#region interface
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TreeListNode{T}"/> class.
+		/// </summary>
 		protected TreeListNode()
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TreeListNode{T}"/> class.
+		/// </summary>
 		protected TreeListNode(T parentNode)
 		{
 			_parentNode = parentNode;
@@ -36,12 +42,36 @@ namespace UnityFx.AppStates.Common
 
 		#region ITreeListNode
 
+		/// <summary>
+		/// Gets parent node.
+		/// </summary>
 		public T Parent => _parentNode;
+
+		/// <summary>
+		/// Gets previous sibling node.
+		/// </summary>
 		public T Prev { get; internal set; }
+
+		/// <summary>
+		/// Gets next sibling node.
+		/// </summary>
 		public T Next { get; internal set; }
+
+		/// <summary>
+		/// Gets the node children.
+		/// </summary>
 		public IEnumerable<T> Children => new ChildEnumerable(this as T, false);
+
+		/// <summary>
+		/// Gets the node children recursively.
+		/// </summary>
 		public IEnumerable<T> ChildrenRecursive => new ChildEnumerable(this as T, true);
 
+		/// <summary>
+		/// Checks whether the specified node is a child of this one.
+		/// </summary>
+		/// <param name="node">The node in question.</param>
+		/// <returns>Returns <see langword="true"/> if the specified node is child of this one; <see langword="false"/> otherwise.</returns>
 		public bool IsChildOf(T node)
 		{
 			if (node != null && _parentNode != null && _parentNode != node)

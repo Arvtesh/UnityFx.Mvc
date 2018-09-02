@@ -3,6 +3,8 @@
 
 using System;
 using UnityEngine;
+using UnityFx.AppStates;
+using UnityFx.AppStates.DependencyInjection;
 
 namespace UnityFx.AppStates.Samples
 {
@@ -13,8 +15,13 @@ namespace UnityFx.AppStates.Samples
 	{
 		#region data
 
-		private IAppStateService _stateManager;
+		[SerializeField]
+		private Transform _viewRoot;
+
+		private ServiceProvider _serviceProvider;
+		private IPrefabLoader _prefabLoader;
 		private IAppViewService _viewManager;
+		private IAppStateService _stateManager;
 
 		#endregion
 
@@ -22,29 +29,34 @@ namespace UnityFx.AppStates.Samples
 
 		private void Awake()
 		{
-			// TODO
-			_viewManager = null;
-			_stateManager = null;
+			_serviceProvider = new ServiceProvider();
+			_prefabLoader = new ResourcePrefabLoader();
+			_viewManager = new PrefabViewService(_prefabLoader, _viewRoot);
+			_stateManager = new AppStateService(_viewManager, _serviceProvider);
 		}
 
 		private void Start()
 		{
+			ConfigureServices(_serviceProvider);
+
 			_stateManager.PresentAsync<MainMenuController>();
 		}
 
 		private void OnDestroy()
 		{
-			if (_stateManager != null)
-			{
-				_stateManager.Dispose();
-				_stateManager = null;
-			}
+			// Disposes all created services.
+			_serviceProvider.Dispose();
+		}
 
-			if (_viewManager != null)
-			{
-				_viewManager.Dispose();
-				_viewManager = null;
-			}
+		#endregion
+
+		#region implementation
+
+		private void ConfigureServices(IServiceCollection services)
+		{
+			services.AddSingleton(_prefabLoader);
+			services.AddSingleton(_viewManager);
+			services.AddSingleton(_stateManager);
 		}
 
 		#endregion

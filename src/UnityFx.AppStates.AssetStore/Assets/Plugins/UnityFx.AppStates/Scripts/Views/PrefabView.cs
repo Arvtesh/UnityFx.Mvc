@@ -17,6 +17,7 @@ namespace UnityFx.AppStates
 		#region data
 
 		private readonly IPrefabLoader _prefabLoader;
+		private readonly Transform _rootTransform;
 		private GameObject _go;
 
 		#endregion
@@ -24,12 +25,34 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
+		/// Gets the view root <see cref="GameObject"/>.
+		/// </summary>
+		public GameObject Go
+		{
+			get
+			{
+				return _go;
+			}
+		}
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="PrefabView"/> class.
 		/// </summary>
-		public PrefabView(string id, PresentOptions options, IPrefabLoader prefabLoader)
+		public PrefabView(string id, PresentOptions options, IPrefabLoader prefabLoader, Transform rootTransform)
 			: base(id, options)
 		{
+			if (prefabLoader == null)
+			{
+				throw new ArgumentNullException("prefabLoader");
+			}
+
+			if (rootTransform == null)
+			{
+				throw new ArgumentNullException("rootTransform");
+			}
+
 			_prefabLoader = prefabLoader;
+			_rootTransform = rootTransform;
 		}
 
 		#endregion
@@ -60,7 +83,13 @@ namespace UnityFx.AppStates
 		/// <inheritdoc/>
 		protected override IAsyncOperation LoadContent(string resourceId)
 		{
-			return _prefabLoader.LoadPrefab(resourceId).ContinueWith(op => _go = op.Result, AsyncContinuationOptions.OnlyOnRanToCompletion);
+			return _prefabLoader.LoadPrefab(resourceId).ContinueWith(
+				op =>
+				{
+					_go = GameObject.Instantiate<GameObject>(op.Result, _rootTransform);
+					UpdateSiblingIndex();
+				},
+				AsyncContinuationOptions.OnlyOnRanToCompletion);
 		}
 
 		/// <inheritdoc/>
@@ -140,6 +169,20 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region implementation
+
+		private void UpdateSiblingIndex()
+		{
+			if (Prev != null)
+			{
+				var prevGo = ((PrefabView)Prev).Go;
+				_go.transform.SetSiblingIndex(prevGo.transform.GetSiblingIndex() + 1);
+			}
+			else
+			{
+				_go.transform.SetAsFirstSibling();
+			}
+		}
+
 		#endregion
 	}
 }

@@ -11,7 +11,7 @@ using UnityFx.Async;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// 
+	/// A scene based view.
 	/// </summary>
 	public class SceneView : AppView
 	{
