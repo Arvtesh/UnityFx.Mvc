@@ -12,7 +12,7 @@
 # UnityApp
 src/UnityApp/Assets/Plugins/UnityFx.AppStates/
 src/UnityApp/Assets/Plugins/UnityFx.AppStates.meta
-src/UnityApp/*
+src/UnityApp/*.*
 
 # Visual Studio cache directory
 .vs/
