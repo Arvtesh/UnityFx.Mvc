@@ -56,9 +56,7 @@ if ($LastExitCode -ne 0) {
 
 # publish build results to .\Build\Bin
 $filesToPublish = (Join-Path $scriptPath (Join-Path "UnityFx.AppStates\bin" (Join-Path $configuration "\*")))
-$filesToPublish2 = (Join-Path $scriptPath (Join-Path "UnityFx.AppStates.DependencyInjection\bin" (Join-Path $configuration "\*")))
 Copy-Item -Path $filesToPublish -Destination $binPath -Force -Recurse
-Copy-Item -Path $filesToPublish2 -Destination $binPath -Force -Recurse
 
 # publish AssetStore package
 function _PublishAssetStorePackage

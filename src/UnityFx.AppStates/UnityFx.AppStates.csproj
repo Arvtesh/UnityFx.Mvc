@@ -35,6 +35,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\UnityFx.AppStates.Common\UnityFx.AppStates.Common.csproj" />
+	  <ProjectReference Include="..\UnityFx.AppStates.DependencyInjection\UnityFx.AppStates.DependencyInjection.csproj" />
 	</ItemGroup>
 
 </Project>
