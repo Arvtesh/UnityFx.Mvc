@@ -3,6 +3,7 @@
 
 using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace UnityFx.AppStates.Samples
 {
@@ -13,9 +14,43 @@ namespace UnityFx.AppStates.Samples
 	public class AboutView : MonoBehaviour
 	{
 		#region data
+
+		[SerializeField]
+		private Button _closeButton;
+
+		#endregion
+
+		#region interface
+
+		/// <summary>
+		/// Raised when Close button is pressed.
+		/// </summary>
+		public event EventHandler ClosePressed;
+
 		#endregion
 
 		#region MonoBehaviour
+
+		private void Awake()
+		{
+			if (_closeButton)
+			{
+				_closeButton.onClick.AddListener(OnClosePressed);
+			}
+		}
+
+		#endregion
+
+		#region implementation
+
+		private void OnClosePressed()
+		{
+			if (ClosePressed != null)
+			{
+				ClosePressed(this, EventArgs.Empty);
+			}
+		}
+
 		#endregion
 	}
 }

@@ -28,6 +28,42 @@ namespace UnityFx.AppStates.Samples
 		#endregion
 
 		#region AppViewController
+
+		/// <inheritdoc/>
+		public override void OnViewLoaded()
+		{
+			base.OnViewLoaded();
+
+			var view = View.GetComponent<AboutView>();
+
+			if (view)
+			{
+				view.ClosePressed += OnClosePressed;
+			}
+		}
+
+		/// <inheritdoc/>
+		public override void OnDismiss()
+		{
+			var view = View.GetComponent<AboutView>();
+
+			if (view)
+			{
+				view.ClosePressed -= OnClosePressed;
+			}
+
+			base.OnDismiss();
+		}
+
+		#endregion
+
+		#region implementation
+
+		private void OnClosePressed(object sender, EventArgs e)
+		{
+			DismissAsync();
+		}
+
 		#endregion
 	}
 }

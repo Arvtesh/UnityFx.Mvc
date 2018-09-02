@@ -44,6 +44,7 @@ namespace UnityFx.AppStates.Samples
 			}
 		}
 
+		/// <inheritdoc/>
 		public override void OnDismiss()
 		{
 			var view = View.GetComponent<MainMenuView>();
