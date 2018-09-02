@@ -311,9 +311,21 @@ namespace UnityFx.AppStates
 		#region IPresenter
 
 		/// <inheritdoc/>
+		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType)
+		{
+			return PresentAsync(null, controllerType, PresentArgs.Default);
+		}
+
+		/// <inheritdoc/>
 		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentArgs args)
 		{
 			return PresentAsync(null, controllerType, args);
+		}
+
+		/// <inheritdoc/>
+		public IAsyncOperation<TController> PresentAsync<TController>() where TController : class, IPresentable
+		{
+			return PresentAsync<TController>(null, PresentArgs.Default);
 		}
 
 		/// <inheritdoc/>

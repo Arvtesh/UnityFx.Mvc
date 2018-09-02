@@ -18,13 +18,35 @@ namespace UnityFx.AppStates
 		/// Presents a controller of the specified type.
 		/// </summary>
 		/// <param name="controllerType">Type of the view controller to present.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
+		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
+		/// <seealso cref="PresentAsync(Type, PresentArgs)"/>
+		IAsyncOperation<IPresentable> PresentAsync(Type controllerType);
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <param name="controllerType">Type of the view controller to present.</param>
 		/// <param name="args">Controller arguments.</param>
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
+		/// <seealso cref="PresentAsync(Type)"/>
 		IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentArgs args);
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
+		/// <seealso cref="PresentAsync{TController}(PresentArgs)"/>
+		IAsyncOperation<TController> PresentAsync<TController>() where TController : class, IPresentable;
 
 		/// <summary>
 		/// Presents a controller of the specified type.
@@ -33,6 +55,7 @@ namespace UnityFx.AppStates
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
+		/// <seealso cref="PresentAsync{TController}()"/>
 		IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IPresentable;
 	}
 }

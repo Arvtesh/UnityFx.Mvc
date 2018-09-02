@@ -151,10 +151,24 @@ namespace UnityFx.AppStates
 		#region IPresenter
 
 		/// <inheritdoc/>
+		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType)
+		{
+			ThrowIfDisposed();
+			return _context.PresentAsync(controllerType, PresentArgs.Default);
+		}
+
+		/// <inheritdoc/>
 		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			return _context.PresentAsync(controllerType, args);
+		}
+
+		/// <inheritdoc/>
+		public IAsyncOperation<TController> PresentAsync<TController>() where TController : class, IPresentable
+		{
+			ThrowIfDisposed();
+			return _context.PresentAsync<TController>(PresentArgs.Default);
 		}
 
 		/// <inheritdoc/>
