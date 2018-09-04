@@ -13,11 +13,13 @@ namespace UnityFx.AppStates.Common
 	/// </summary>
 	/// <typeparam name="T">Type of the node.</typeparam>
 	/// <seealso cref="TreeListCollection{T}"/>
-	public class TreeListNode<T> : ITreeListNode<T> where T : class, ITreeListNode<T>
+	public class TreeListNode<T> : ITreeListNode<T>, ITreeListNodeAccess<T> where T : class, ITreeListNode<T>
 	{
 		#region data
 
 		private readonly T _parentNode;
+		private T _next;
+		private T _prev;
 
 		#endregion
 
@@ -50,12 +52,12 @@ namespace UnityFx.AppStates.Common
 		/// <summary>
 		/// Gets previous sibling node.
 		/// </summary>
-		public T Prev { get; internal set; }
+		public T Prev => _prev;
 
 		/// <summary>
 		/// Gets next sibling node.
 		/// </summary>
-		public T Next { get; internal set; }
+		public T Next => _next;
 
 		/// <summary>
 		/// Gets the node children.
@@ -80,6 +82,22 @@ namespace UnityFx.AppStates.Common
 			}
 
 			return false;
+		}
+
+		#endregion
+
+		#region ITreeListNodeAccess
+
+		/// <inheritdoc/>
+		void ITreeListNodeAccess<T>.SetNext(T next)
+		{
+			_next = next;
+		}
+
+		/// <inheritdoc/>
+		void ITreeListNodeAccess<T>.SetPrev(T prev)
+		{
+			_prev = prev;
 		}
 
 		#endregion

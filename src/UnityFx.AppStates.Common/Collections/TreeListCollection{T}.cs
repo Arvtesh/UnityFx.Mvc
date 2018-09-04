@@ -521,22 +521,22 @@ namespace UnityFx.AppStates.Common
 		private static void SetNext(T node, T next)
 		{
 			Debug.Assert(node != null);
-			(node as TreeListNode<T>).Next = next;
+			(node as ITreeListNodeAccess<T>).SetNext(next);
 		}
 
 		private static void SetPrev(T node, T prev)
 		{
 			Debug.Assert(node != null);
-			(node as TreeListNode<T>).Prev = prev;
+			(node as ITreeListNodeAccess<T>).SetPrev(prev);
 		}
 
 		private static void Unlink(T node)
 		{
 			Debug.Assert(node != null);
 
-			var n = node as TreeListNode<T>;
-			n.Next = null;
-			n.Prev = null;
+			var n = node as ITreeListNodeAccess<T>;
+			n.SetNext(null);
+			n.SetPrev(null);
 		}
 
 		private static void SetLink(T prev, T next)
@@ -544,8 +544,8 @@ namespace UnityFx.AppStates.Common
 			Debug.Assert(next != null);
 			Debug.Assert(prev != null);
 
-			(next as TreeListNode<T>).Prev = prev;
-			(prev as TreeListNode<T>).Next = next;
+			(next as ITreeListNodeAccess<T>).SetPrev(prev);
+			(prev as ITreeListNodeAccess<T>).SetNext(next);
 		}
 
 		#endregion
