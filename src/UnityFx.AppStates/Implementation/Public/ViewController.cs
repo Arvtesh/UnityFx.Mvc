@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using UnityFx.AppStates.Common;
 using UnityFx.Async;
 
 namespace UnityFx.AppStates
@@ -12,16 +13,12 @@ namespace UnityFx.AppStates
 	/// A generic view controller. It is recommended to use this class as base for all other controllers.
 	/// Note that minimal controller implementation should inherit <see cref="IViewController"/>.
 	/// </summary>
-	public abstract class ViewController : IViewController, IViewControllerEvents, IPresenter, IDismissable, IDisposable
+	public abstract class ViewController : ObjectId<ViewController>, IViewController, IViewControllerEvents, IPresenter, IDismissable, IDisposable
 	{
 		#region data
 
-		private static int _idCounter;
-
 		private readonly PresentContext _context;
 		private readonly IAppState _state;
-
-		private readonly string _id;
 		private readonly PresentArgs _presentArgs;
 
 		private IAsyncOperation _dismissOp;
@@ -63,7 +60,6 @@ namespace UnityFx.AppStates
 		protected ViewController(PresentContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
-			_id = Utility.GetNextId("_controller", ref _idCounter);
 			_state = context.ParentState;
 			_presentArgs = context.PresentArgs;
 		}
@@ -77,7 +73,7 @@ namespace UnityFx.AppStates
 		{
 			if (_disposed)
 			{
-				throw new ObjectDisposedException(_id);
+				throw new ObjectDisposedException(Id);
 			}
 		}
 
@@ -95,10 +91,6 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region IViewController
-
-		/// <inheritdoc/>
-		public string Id => _id;
-
 		#endregion
 
 		#region IViewControllerEvents

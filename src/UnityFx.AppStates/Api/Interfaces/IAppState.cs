@@ -17,7 +17,7 @@ namespace UnityFx.AppStates
 	/// </remarks>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
-	public interface IAppState : ITreeListNode<IAppState>, IPresenter, IDeeplinkable, IDismissable, IDisposable
+	public interface IAppState : IObjectId, ITreeListNode<IAppState>, IPresenter, IDeeplinkable, IDismissable, IDisposable
 	{
 		/// <summary>
 		/// Gets a value indicating whether the instance is active.

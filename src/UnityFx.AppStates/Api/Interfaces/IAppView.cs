@@ -12,13 +12,8 @@ namespace UnityFx.AppStates
 	/// </summary>
 	/// <seealso cref="IAppState"/>
 	/// <seealso cref="IViewController"/>
-	public interface IAppView : ITreeListNode<IAppView>, IComponentContainer, IDisposable
+	public interface IAppView : IObjectId, ITreeListNode<IAppView>, IComponentContainer, IDisposable
 	{
-		/// <summary>
-		/// Gets the view identifier.
-		/// </summary>
-		string Id { get; }
-
 		/// <summary>
 		/// Gets a value indicating whether the view is loaded or not.
 		/// </summary>

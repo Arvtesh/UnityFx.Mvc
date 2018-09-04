@@ -6,9 +6,13 @@ using System;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// A generic view controller.
+	/// An object with instance identifier.
 	/// </summary>
-	public interface IViewController : IObjectId
+	public interface IObjectId
 	{
+		/// <summary>
+		/// Gets unique instance identifier.
+		/// </summary>
+		string Id { get; }
 	}
 }
