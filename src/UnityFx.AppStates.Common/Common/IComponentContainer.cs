@@ -3,7 +3,7 @@
 
 using System;
 
-namespace UnityFx.AppStates.Common
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// A generic container of components.

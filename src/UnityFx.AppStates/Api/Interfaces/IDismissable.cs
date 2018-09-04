@@ -11,7 +11,7 @@ namespace UnityFx.AppStates
 	/// </summary>
 	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IAppState"/>
-	public interface IDismissable : IDisposable
+	public interface IDismissable
 	{
 		/// <summary>
 		/// Dismisses this instance. When dismiss is complete <see cref="IDisposable.Dispose"/> is invoked.

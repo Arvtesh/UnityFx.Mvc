@@ -45,7 +45,7 @@ namespace UnityFx.AppStates
 			_stateManager = stateManager;
 			_stateManager.AddState(this);
 
-			// Controller should be created after the state has been initialized.
+			// Controller & view should be created after the state has been initialized.
 			try
 			{
 				_view = stateManager.ViewManager.CreateView(Utility.GetViewResourceId(controllerType), Prev?.View, args.Options);
