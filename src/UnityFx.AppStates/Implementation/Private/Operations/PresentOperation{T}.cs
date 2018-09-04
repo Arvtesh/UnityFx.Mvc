@@ -7,7 +7,7 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class PresentOperation<T> : AppStateOperation<T> where T : class, IPresentable
+	internal class PresentOperation<T> : AppStateOperation<T> where T : class, IViewController
 	{
 		#region data
 
@@ -15,7 +15,7 @@ namespace UnityFx.AppStates
 		private readonly PresentArgs _args;
 		private readonly AppState _parentState;
 
-		private IPresentable _controller;
+		private IViewController _controller;
 		private IAsyncOperation _pushOp;
 
 		#endregion
@@ -53,8 +53,10 @@ namespace UnityFx.AppStates
 					InvokeOnDismiss(_parentState.Controller);
 				}
 
-				_controller = new AppState(StateManager, _parentState, _controllerType, _args).Controller;
-				_pushOp = _controller.View.Load();
+				var state = new AppState(StateManager, _parentState, _controllerType, _args);
+
+				_controller = state.Controller;
+				_pushOp = state.View.Load();
 				_pushOp.AddCompletionCallback(this);
 			}
 			catch (Exception e)

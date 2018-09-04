@@ -11,7 +11,7 @@ namespace UnityFx.AppStates
 	/// A generic view.
 	/// </summary>
 	/// <seealso cref="IAppState"/>
-	/// <seealso cref="IPresentable"/>
+	/// <seealso cref="IViewController"/>
 	public interface IAppView : ITreeListNode<IAppView>, IComponentContainer, IDisposable
 	{
 		/// <summary>

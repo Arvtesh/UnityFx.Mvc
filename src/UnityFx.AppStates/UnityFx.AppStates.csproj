@@ -27,6 +27,7 @@
 	<ItemGroup>
 		<PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta008" PrivateAssets="All" />
 		<PackageReference Include="UnityFx.Async" Version="0.9.6" />
+		<PackageReference Include="UnityFx.DependencyInjection" Version="0.1.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -35,7 +36,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\UnityFx.AppStates.Common\UnityFx.AppStates.Common.csproj" />
-	  <ProjectReference Include="..\UnityFx.AppStates.DependencyInjection\UnityFx.AppStates.DependencyInjection.csproj" />
 	</ItemGroup>
 
 </Project>

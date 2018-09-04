@@ -9,7 +9,8 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A dismissable object (i.e. object that supports asynchronous disposal).
 	/// </summary>
-	/// <seealso cref="IPresentable"/>
+	/// <seealso cref="IViewController"/>
+	/// <seealso cref="IAppState"/>
 	public interface IDismissable : IDisposable
 	{
 		/// <summary>

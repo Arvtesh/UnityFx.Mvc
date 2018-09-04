@@ -3,7 +3,6 @@
 
 using System;
 using UnityFx.AppStates.Common;
-using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
@@ -18,11 +17,21 @@ namespace UnityFx.AppStates
 	/// </remarks>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
-	public interface IAppState : ITreeListNode<IAppState>, IPresenter, IPresentable, IDeeplinkable
+	public interface IAppState : ITreeListNode<IAppState>, IPresenter, IDeeplinkable, IDismissable, IDisposable
 	{
+		/// <summary>
+		/// Gets a value indicating whether the instance is active.
+		/// </summary>
+		bool IsActive { get; }
+
 		/// <summary>
 		/// Gets a view controller attached to the state.
 		/// </summary>
-		IPresentable Controller { get; }
+		IViewController Controller { get; }
+
+		/// <summary>
+		/// Gets the atached view instance.
+		/// </summary>
+		IAppView View { get; }
 	}
 }

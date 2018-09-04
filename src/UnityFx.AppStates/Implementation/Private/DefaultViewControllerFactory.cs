@@ -8,9 +8,9 @@ using System.Reflection;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Default implementation of <see cref="IPresentableFactory"/>.
+	/// Default implementation of <see cref="IViewControllerFactory"/>.
 	/// </summary>
-	internal sealed class DefaultPresentableFactory : IPresentableFactory
+	internal sealed class DefaultViewControllerFactory : IViewControllerFactory
 	{
 		#region data
 
@@ -20,19 +20,19 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		public DefaultPresentableFactory(IServiceProvider serviceProvider)
+		public DefaultViewControllerFactory(IServiceProvider serviceProvider)
 		{
 			_serviceProvider = serviceProvider;
 		}
 
 		#endregion
 
-		#region IAppStateControllerFactory
+		#region IViewControllerFactory
 
-		public IPresentable CreateController(Type controllerType, IPresentableContext context)
+		public IViewController CreateController(Type controllerType, PresentContext context)
 		{
 			Debug.Assert(controllerType != null);
-			Debug.Assert(controllerType.IsSubclassOf(typeof(IPresentable)));
+			Debug.Assert(typeof(IViewController).IsAssignableFrom(controllerType));
 			Debug.Assert(context != null);
 
 			try
@@ -50,11 +50,11 @@ namespace UnityFx.AppStates
 						args[i] = GetServiceInstance(parameters[i].ParameterType, context);
 					}
 
-					return c.Invoke(args) as IPresentable;
+					return c.Invoke(args) as IViewController;
 				}
 				else
 				{
-					return Activator.CreateInstance(controllerType) as IPresentable;
+					return Activator.CreateInstance(controllerType) as IViewController;
 				}
 			}
 			catch (TargetInvocationException e)
@@ -67,9 +67,9 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private object GetServiceInstance(Type serviceType, IPresentableContext context)
+		private object GetServiceInstance(Type serviceType, PresentContext context)
 		{
-			if (serviceType == typeof(IPresentableContext))
+			if (serviceType == typeof(PresentContext))
 			{
 				return context;
 			}

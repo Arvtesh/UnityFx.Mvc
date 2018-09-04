@@ -16,7 +16,7 @@ namespace UnityFx.AppStates.Samples
 		#region data
 
 		[SerializeField]
-		private Transform _viewRoot;
+		private Transform _viewRoot = null;
 
 		private ServiceProvider _serviceProvider;
 		private IPrefabLoader _prefabLoader;
@@ -44,8 +44,12 @@ namespace UnityFx.AppStates.Samples
 
 		private void OnDestroy()
 		{
-			// Disposes all created services.
-			_serviceProvider.Dispose();
+			// Disposing _serviceProvider disposes all services registered.
+			if (_serviceProvider != null)
+			{
+				_serviceProvider.Dispose();
+				_serviceProvider = null;
+			}
 		}
 
 		#endregion

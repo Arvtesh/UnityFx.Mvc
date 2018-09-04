@@ -15,14 +15,15 @@ namespace UnityFx.AppStates
 	/// A manager of application states (<see cref="AppState"/>).
 	/// </summary>
 	/// <threadsafety static="true" instance="false"/>
-	/// <seealso cref="AppViewController"/>
+	/// <seealso cref="IAppState"/>
+	/// <seealso cref="IViewController"/>
 	public class AppStateService : IAppStateService
 	{
 		#region data
 
 		private readonly TraceSource _traceSource;
 		private readonly SynchronizationContext _synchronizationContext;
-		private readonly IPresentableFactory _controllerFactory;
+		private readonly IViewControllerFactory _controllerFactory;
 		private readonly IAppViewService _viewManager;
 		private readonly IServiceProvider _serviceProvider;
 
@@ -85,7 +86,7 @@ namespace UnityFx.AppStates
 		/// <param name="viewManager"></param>
 		/// <param name="serviceProvider"></param>
 		/// <param name="controllerFactory"></param>
-		public AppStateService(IAppViewService viewManager, IServiceProvider serviceProvider, IPresentableFactory controllerFactory, SynchronizationContext syncContext)
+		public AppStateService(IAppViewService viewManager, IServiceProvider serviceProvider, IViewControllerFactory controllerFactory, SynchronizationContext syncContext)
 		{
 			if (viewManager == null)
 			{
@@ -99,7 +100,7 @@ namespace UnityFx.AppStates
 
 			if (controllerFactory == null)
 			{
-				controllerFactory = new DefaultPresentableFactory(serviceProvider);
+				controllerFactory = new DefaultViewControllerFactory(serviceProvider);
 			}
 
 			_traceSource = new TraceSource(ServiceName);
@@ -123,7 +124,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Called when a present operation has completed.
 		/// </summary>
-		protected internal virtual void OnPresentCompleted(IPresentable result, IAsyncOperation op)
+		protected internal virtual void OnPresentCompleted(IViewController result, IAsyncOperation op)
 		{
 			PresentCompleted?.Invoke(this, new PresentCompletedEventArgs(result, op.Id, op.AsyncState, op.Exception, op.IsCanceled));
 		}
@@ -192,7 +193,7 @@ namespace UnityFx.AppStates
 
 		#region internals
 
-		internal IPresentableFactory ControllerFactory => _controllerFactory;
+		internal IViewControllerFactory ControllerFactory => _controllerFactory;
 		internal IAppViewService ViewManager => _viewManager;
 
 		internal void AddState(AppState state)
@@ -227,18 +228,18 @@ namespace UnityFx.AppStates
 			_states.Remove(state);
 		}
 
-		internal IAsyncOperation<IPresentable> PresentAsync(AppState parentState, Type controllerType, PresentArgs args)
+		internal IAsyncOperation<IViewController> PresentAsync(AppState parentState, Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
-			var result = new PresentOperation<IPresentable>(this, parentState, controllerType, args ?? PresentArgs.Default);
+			var result = new PresentOperation<IViewController>(this, parentState, controllerType, args ?? PresentArgs.Default);
 			OnPresentInitiated(args, result);
 			QueueOperation(result);
 			return result;
 		}
 
-		internal IAsyncOperation<T> PresentAsync<T>(AppState parentState, PresentArgs args) where T : class, IPresentable
+		internal IAsyncOperation<T> PresentAsync<T>(AppState parentState, PresentArgs args) where T : class, IViewController
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(typeof(T));
@@ -254,7 +255,7 @@ namespace UnityFx.AppStates
 			ThrowIfDisposed();
 
 			var result = new DismissOperation(this, state, null);
-			OnDismissInitiated(state.Controller, result);
+			OnDismissInitiated(state, result);
 			QueueOperation(result);
 			return result;
 		}
@@ -311,25 +312,25 @@ namespace UnityFx.AppStates
 		#region IPresenter
 
 		/// <inheritdoc/>
-		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType)
+		public IAsyncOperation<IViewController> PresentAsync(Type controllerType)
 		{
 			return PresentAsync(null, controllerType, PresentArgs.Default);
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentArgs args)
+		public IAsyncOperation<IViewController> PresentAsync(Type controllerType, PresentArgs args)
 		{
 			return PresentAsync(null, controllerType, args);
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>() where TController : class, IPresentable
+		public IAsyncOperation<TController> PresentAsync<TController>() where TController : class, IViewController
 		{
 			return PresentAsync<TController>(null, PresentArgs.Default);
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IPresentable
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IViewController
 		{
 			return PresentAsync<TController>(null, args);
 		}
@@ -387,9 +388,9 @@ namespace UnityFx.AppStates
 				throw new ArgumentException($"Cannot instantiate abstract type {controllerType.Name}", nameof(controllerType));
 			}
 
-			if (!typeof(IPresentable).IsAssignableFrom(controllerType))
+			if (!typeof(IViewController).IsAssignableFrom(controllerType))
 			{
-				throw new ArgumentException($"A state controller is expected to implement " + typeof(IPresentable).Name, nameof(controllerType));
+				throw new ArgumentException($"A state controller is expected to implement " + typeof(IViewController).Name, nameof(controllerType));
 			}
 		}
 

@@ -9,7 +9,7 @@ namespace UnityFx.AppStates
 	/// Enumerates state controller push options.
 	/// </summary>
 	/// <seealso cref="IPresenter"/>
-	/// <seealso cref="IPresentable"/>
+	/// <seealso cref="IViewController"/>
 	[Flags]
 	public enum PresentOptions
 	{

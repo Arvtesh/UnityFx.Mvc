@@ -10,8 +10,8 @@ namespace UnityFx.AppStates.Samples
 	/// About dialog controller.
 	/// </summary>
 	/// <seealso cref="AboutView"/>
-	[AppViewController("about", "AboutDialog")]
-	public class AboutController : AppViewController<AboutView>
+	[ViewResource("AboutDialog")]
+	public class AboutController : ViewController<AboutView>
 	{
 		#region data
 		#endregion
@@ -21,7 +21,7 @@ namespace UnityFx.AppStates.Samples
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AboutController"/> class.
 		/// </summary>
-		public AboutController(IPresentableContext context)
+		public AboutController(PresentContext context)
 			: base(context)
 		{
 		}

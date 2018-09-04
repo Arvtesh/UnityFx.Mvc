@@ -10,24 +10,21 @@ namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// A generic view controller. It is recommended to use this class as base for all other controllers.
-	/// Note that minimal controller implementation should inherit <see cref="IPresentable"/>.
+	/// Note that minimal controller implementation should inherit <see cref="IViewController"/>.
 	/// </summary>
-	public class AppViewController : IPresenter, IPresentable, IPresentableEvents
+	public abstract class ViewController : IViewController, IViewControllerEvents, IPresenter, IDismissable, IDisposable
 	{
 		#region data
 
 		private static int _idCounter;
 
-		private readonly IPresentableContext _context;
+		private readonly PresentContext _context;
 		private readonly IAppState _state;
-		private readonly IAppView _view;
 
 		private readonly string _id;
-		private readonly string _resourceId;
 		private readonly PresentArgs _presentArgs;
 
 		private IAsyncOperation _dismissOp;
-		private bool _active;
 		private bool _disposed;
 
 		#endregion
@@ -35,9 +32,19 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
+		/// Gets a value indicating whether the controller is active (i.e. can accept input).
+		/// </summary>
+		protected bool IsActive => _state.IsActive;
+
+		/// <summary>
 		/// Gets the parent state.
 		/// </summary>
 		protected IAppState ParentState => _state;
+
+		/// <summary>
+		/// Gets the attached view instance.
+		/// </summary>
+		protected IAppView View => _state.View;
 
 		/// <summary>
 		/// Gets the controller creation arguments.
@@ -50,17 +57,15 @@ namespace UnityFx.AppStates
 		protected bool IsDisposed => _disposed;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="AppViewController"/> class.
+		/// Initializes a new instance of the <see cref="ViewController"/> class.
 		/// </summary>
 		/// <param name="context">Context data for the controller instance.</param>
-		protected AppViewController(IPresentableContext context)
+		protected ViewController(PresentContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
 			_id = Utility.GetNextId("_controller", ref _idCounter);
-			_resourceId = Utility.GetPresentableResourceId(GetType());
 			_state = context.ParentState;
 			_presentArgs = context.PresentArgs;
-			_view = context.ViewManager.CreateView(_resourceId, _state.Prev?.View, _presentArgs.Options);
 		}
 
 		/// <summary>
@@ -85,29 +90,18 @@ namespace UnityFx.AppStates
 		protected virtual void Dispose(bool disposing)
 		{
 			_disposed = true;
-
-			if (disposing)
-			{
-				_view.Dispose();
-			}
 		}
 
 		#endregion
 
-		#region IPresentable
+		#region IViewController
 
 		/// <inheritdoc/>
 		public string Id => _id;
 
-		/// <inheritdoc/>
-		public IAppView View => _view;
-
-		/// <inheritdoc/>
-		public bool IsActive => _active;
-
 		#endregion
 
-		#region IPresentableEvents
+		#region IViewControllerEvents
 
 		/// <summary>
 		/// Called when the controller view is loaded (before transition animation). Default implementation does nothing.
@@ -128,7 +122,6 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public virtual void OnActivate()
 		{
-			_active = true;
 		}
 
 		/// <summary>
@@ -136,7 +129,6 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public virtual void OnDeactivate()
 		{
-			_active = false;
 		}
 
 		/// <summary>
@@ -151,28 +143,28 @@ namespace UnityFx.AppStates
 		#region IPresenter
 
 		/// <inheritdoc/>
-		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType)
+		public IAsyncOperation<IViewController> PresentAsync(Type controllerType)
 		{
 			ThrowIfDisposed();
 			return _context.PresentAsync(controllerType, PresentArgs.Default);
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentArgs args)
+		public IAsyncOperation<IViewController> PresentAsync(Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			return _context.PresentAsync(controllerType, args);
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>() where TController : class, IPresentable
+		public IAsyncOperation<TController> PresentAsync<TController>() where TController : class, IViewController
 		{
 			ThrowIfDisposed();
 			return _context.PresentAsync<TController>(PresentArgs.Default);
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IPresentable
+		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IViewController
 		{
 			ThrowIfDisposed();
 			return _context.PresentAsync<TController>(args);

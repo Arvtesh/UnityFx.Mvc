@@ -47,57 +47,56 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		protected void InvokeOnViewLoaded(IPresentable controller)
+		protected void InvokeOnViewLoaded(IViewController controller)
 		{
 			Debug.Assert(controller != null);
 			TraceEvent(TraceEventType.Verbose, "View loaded for " + controller.Id);
 
-			if (controller is IPresentableEvents pe)
+			if (controller is IViewControllerEvents pe)
 			{
 				pe.OnViewLoaded();
 			}
 		}
 
-		protected void InvokeOnPresent(IPresentable controller)
+		protected void InvokeOnPresent(IViewController controller)
 		{
 			Debug.Assert(controller != null);
 			TraceEvent(TraceEventType.Verbose, "Present " + controller.Id);
 
-			if (controller is IPresentableEvents pe)
+			if (controller is IViewControllerEvents pe)
 			{
 				pe.OnPresent();
 			}
 		}
 
-		protected void InvokeOnActivate(IPresentable controller)
+		protected void InvokeOnActivate(IViewController controller)
 		{
-			Debug.Assert(!controller.IsActive);
+			Debug.Assert(controller != null);
 			TraceEvent(TraceEventType.Verbose, "Activate " + controller.Id);
 
-			if (controller is IPresentableEvents pe)
+			if (controller is IViewControllerEvents pe)
 			{
 				pe.OnActivate();
 			}
 		}
 
-		protected void InvokeOnDeactivate(IPresentable controller)
+		protected void InvokeOnDeactivate(IViewController controller)
 		{
 			Debug.Assert(controller != null);
-			Debug.Assert(controller.IsActive);
 			TraceEvent(TraceEventType.Verbose, "Deactivate " + controller.Id);
 
-			if (controller is IPresentableEvents pe)
+			if (controller is IViewControllerEvents pe)
 			{
 				pe.OnDeactivate();
 			}
 		}
 
-		protected void InvokeOnDismiss(IPresentable controller)
+		protected void InvokeOnDismiss(IViewController controller)
 		{
 			Debug.Assert(controller != null);
 			TraceEvent(TraceEventType.Verbose, "Dismiss " + controller.Id);
 
-			if (controller is IPresentableEvents pe)
+			if (controller is IViewControllerEvents pe)
 			{
 				pe.OnDismiss();
 			}
@@ -108,6 +107,7 @@ namespace UnityFx.AppStates
 			// TODO: replace _stateManager.States.Count <= 1 check with something less hacky
 			if (_stateManager.States.TryPeek(out var state) && !state.IsActive && _stateManager.States.Count <= 1)
 			{
+				(state as AppState).SetActive(true);
 				InvokeOnActivate(state.Controller);
 			}
 		}
@@ -116,6 +116,7 @@ namespace UnityFx.AppStates
 		{
 			if (_stateManager.States.TryPeek(out var state) && state.IsActive)
 			{
+				(state as AppState).SetActive(false);
 				InvokeOnDeactivate(state.Controller);
 			}
 		}
@@ -173,7 +174,7 @@ namespace UnityFx.AppStates
 
 		protected static string GetStateDesc(Type controllerType, PresentArgs args)
 		{
-			return Utility.GetPresentableTypeId(controllerType) + " (" + args.ToString() + ')';
+			return Utility.GetControllerTypeId(controllerType) + " (" + args.ToString() + ')';
 		}
 
 		#endregion

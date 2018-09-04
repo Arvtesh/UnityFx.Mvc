@@ -9,7 +9,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// An object capable of presenting view controllers.
 	/// </summary>
-	/// <seealso cref="IPresentable"/>
+	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IAppState"/>
 	/// <seealso cref="IAppStateService"/>
 	public interface IPresenter
@@ -24,7 +24,7 @@ namespace UnityFx.AppStates
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
 		/// <seealso cref="PresentAsync(Type, PresentArgs)"/>
-		IAsyncOperation<IPresentable> PresentAsync(Type controllerType);
+		IAsyncOperation<IViewController> PresentAsync(Type controllerType);
 
 		/// <summary>
 		/// Presents a controller of the specified type.
@@ -37,7 +37,7 @@ namespace UnityFx.AppStates
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
 		/// <seealso cref="PresentAsync(Type)"/>
-		IAsyncOperation<IPresentable> PresentAsync(Type controllerType, PresentArgs args);
+		IAsyncOperation<IViewController> PresentAsync(Type controllerType, PresentArgs args);
 
 		/// <summary>
 		/// Presents a controller of the specified type.
@@ -46,7 +46,7 @@ namespace UnityFx.AppStates
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
 		/// <seealso cref="PresentAsync{TController}(PresentArgs)"/>
-		IAsyncOperation<TController> PresentAsync<TController>() where TController : class, IPresentable;
+		IAsyncOperation<TController> PresentAsync<TController>() where TController : class, IViewController;
 
 		/// <summary>
 		/// Presents a controller of the specified type.
@@ -56,6 +56,6 @@ namespace UnityFx.AppStates
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if either the controller or its parent state is disposed.</exception>
 		/// <seealso cref="PresentAsync{TController}()"/>
-		IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IPresentable;
+		IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IViewController;
 	}
 }

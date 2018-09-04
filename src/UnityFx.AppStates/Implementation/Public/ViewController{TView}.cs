@@ -10,9 +10,9 @@ namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// A generic view controller bound to a specific view component. It is recommended to use this class as base for all other controllers.
-	/// Note that minimal controller implementation should inherit <see cref="IPresentable"/>.
+	/// Note that minimal controller implementation should inherit <see cref="IViewController"/>.
 	/// </summary>
-	public class AppViewController<TView> : AppViewController, IPresentable<TView> where TView : class
+	public abstract class ViewController<TView> : ViewController where TView : class
 	{
 		#region data
 
@@ -23,23 +23,10 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="AppViewController{TView}"/> class.
-		/// </summary>
-		/// <param name="context">Context data for the controller instance.</param>
-		protected AppViewController(IPresentableContext context)
-			: base(context)
-		{
-		}
-
-		#endregion
-
-		#region IPresentable
-
-		/// <summary>
 		/// Gets the <typeparamref name="TView"/> view component. The componet reference is cached on first access. Accessing this property before view is loaded throws <see cref="InvalidOperationException"/>.
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Thrown if the view is not loaded or the <typeparamref name="TView"/> component is not attached to the view.</exception>
-		public TView ViewAspect
+		protected TView ViewAspect
 		{
 			get
 			{
@@ -59,6 +46,15 @@ namespace UnityFx.AppStates
 					return _viewAspect;
 				}
 			}
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ViewController{TView}"/> class.
+		/// </summary>
+		/// <param name="context">Context data for the controller instance.</param>
+		protected ViewController(PresentContext context)
+			: base(context)
+		{
 		}
 
 		#endregion

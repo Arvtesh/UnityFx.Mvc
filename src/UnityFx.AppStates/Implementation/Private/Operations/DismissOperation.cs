@@ -59,7 +59,7 @@ namespace UnityFx.AppStates
 			{
 				if (_state != null)
 				{
-					StateManager.OnDismissCompleted(_state.Controller, this);
+					StateManager.OnDismissCompleted(_state, this);
 
 					_state.Dispose();
 					_state = null;

@@ -10,8 +10,7 @@ namespace UnityFx.AppStates.Samples
 	/// Main Menu controller.
 	/// </summary>
 	/// <seealso cref="MainMenuView"/>
-	[AppViewController("lobby", "MainMenu")]
-	public class MainMenuController : AppViewController<MainMenuView>
+	public class MainMenuController : ViewController<MainMenuView>
 	{
 		#region data
 		#endregion
@@ -21,7 +20,7 @@ namespace UnityFx.AppStates.Samples
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MainMenuController"/> class.
 		/// </summary>
-		public MainMenuController(IPresentableContext context)
+		public MainMenuController(PresentContext context)
 			: base(context)
 		{
 		}

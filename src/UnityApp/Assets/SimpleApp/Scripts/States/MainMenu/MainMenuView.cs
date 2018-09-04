@@ -16,11 +16,11 @@ namespace UnityFx.AppStates.Samples
 		#region data
 
 		[SerializeField]
-		private Button _gameButton;
+		private Button _gameButton = null;
 		[SerializeField]
-		private Button _aboutButton;
+		private Button _aboutButton = null;
 		[SerializeField]
-		private Button _exitButton;
+		private Button _exitButton = null;
 
 		#endregion
 

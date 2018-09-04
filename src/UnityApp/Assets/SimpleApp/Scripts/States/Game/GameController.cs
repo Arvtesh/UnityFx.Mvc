@@ -10,7 +10,7 @@ namespace UnityFx.AppStates.Samples
 	/// Game controller.
 	/// </summary>
 	/// <seealso cref="GameView"/>
-	public class GameController : AppViewController<GameView>
+	public class GameController : ViewController<GameView>
 	{
 		#region data
 		#endregion
@@ -20,7 +20,7 @@ namespace UnityFx.AppStates.Samples
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GameController"/> class.
 		/// </summary>
-		public GameController(IPresentableContext context)
+		public GameController(PresentContext context)
 			: base(context)
 		{
 		}

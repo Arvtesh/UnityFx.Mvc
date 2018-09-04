@@ -8,8 +8,8 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A presentable event handlers.
 	/// </summary>
-	/// <seealso cref="IPresentable"/>
-	public interface IPresentableEvents
+	/// <seealso cref="IViewController"/>
+	public interface IViewControllerEvents
 	{
 		/// <summary>
 		/// Called when the controller view is loaded (before transition animation).

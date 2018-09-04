@@ -16,7 +16,7 @@ namespace UnityFx.AppStates.Samples
 		#region data
 
 		[SerializeField]
-		private Button _closeButton;
+		private Button _closeButton = null;
 
 		#endregion
 
