@@ -11,6 +11,8 @@ namespace UnityFx.AppStates.Common
 	/// A write-acess to <see cref="ITreeListNode{T}"/>.
 	/// </summary>
 	/// <typeparam name="T">Type of the node.</typeparam>
+	/// <seealso cref="ITreeListCollection{T}"/>
+	/// <seealso cref="ITreeListNode{T}"/>
 	public interface ITreeListNodeAccess<T> where T : ITreeListNode<T>
 	{
 		/// <summary>

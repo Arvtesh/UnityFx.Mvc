@@ -34,7 +34,7 @@ namespace UnityFx.AppStates.Common
 				id = 1;
 			}
 
-			_id = typeof(T).Name + id.ToString(CultureInfo.InvariantCulture);
+			_id = ObjectId.GetId(typeof(T), id);
 		}
 
 		#endregion

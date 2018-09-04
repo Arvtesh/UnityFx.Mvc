@@ -134,7 +134,7 @@ namespace UnityFx.AppStates
 		{
 			Debug.Assert(state != null);
 
-			foreach (var s in state.Children.Reverse())
+			foreach (var s in state.GetChildren().Reverse())
 			{
 				if (s == state)
 				{

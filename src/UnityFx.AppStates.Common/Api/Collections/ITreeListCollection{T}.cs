@@ -11,6 +11,8 @@ namespace UnityFx.AppStates.Common
 	/// A generic linked list read-only collection.
 	/// </summary>
 	/// <typeparam name="T">Type of the collectino items.</typeparam>
+	/// <seealso cref="ITreeListNode{T}"/>
+	/// <seealso cref="ITreeListNodeAccess{T}"/>
 #if NET35
 	public interface ITreeListCollection<T> : ICollection<T> where T : ITreeListNode<T>
 #else

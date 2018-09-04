@@ -11,6 +11,8 @@ namespace UnityFx.AppStates.Common
 	/// A generic node of linked list.
 	/// </summary>
 	/// <typeparam name="T">Type of the node.</typeparam>
+	/// <seealso cref="ITreeListCollection{T}"/>
+	/// <seealso cref="ITreeListNodeAccess{T}"/>
 	public interface ITreeListNode<T> where T : ITreeListNode<T>
 	{
 		/// <summary>
@@ -27,22 +29,5 @@ namespace UnityFx.AppStates.Common
 		/// Gets next sibling node (if any).
 		/// </summary>
 		T Next { get; }
-
-		/// <summary>
-		/// Gets the node children.
-		/// </summary>
-		IEnumerable<T> Children { get; }
-
-		/// <summary>
-		/// Gets the node children.
-		/// </summary>
-		IEnumerable<T> ChildrenRecursive { get; }
-
-		/// <summary>
-		/// Checks whether this node is a child of another.
-		/// </summary>
-		/// <param name="node">The node to check.</param>
-		/// <returns>Returns <see langword="true"/> if this node is a child of the one passed with argument; otherwise, <see langword="false"/>.</returns>
-		bool IsChildOf(T node);
 	}
 }
