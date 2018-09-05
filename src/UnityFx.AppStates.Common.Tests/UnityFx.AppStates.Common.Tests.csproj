@@ -2,6 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net46</TargetFrameworks>
+		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup>
