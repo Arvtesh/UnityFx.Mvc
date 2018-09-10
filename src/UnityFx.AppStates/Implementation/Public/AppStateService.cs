@@ -23,7 +23,6 @@ namespace UnityFx.AppStates
 
 		private readonly TraceSource _traceSource;
 		private readonly SynchronizationContext _synchronizationContext;
-		private readonly IViewControllerFactory _controllerFactory;
 		private readonly IAppViewService _viewManager;
 		private readonly IServiceProvider _serviceProvider;
 
@@ -64,7 +63,7 @@ namespace UnityFx.AppStates
 		/// <param name="viewManager"></param>
 		/// <param name="serviceProvider"></param>
 		public AppStateService(IAppViewService viewManager, IServiceProvider serviceProvider)
-			: this(viewManager, serviceProvider, null, SynchronizationContext.Current)
+			: this(viewManager, serviceProvider, SynchronizationContext.Current)
 		{
 		}
 
@@ -75,18 +74,6 @@ namespace UnityFx.AppStates
 		/// <param name="serviceProvider"></param>
 		/// <param name="viewManager"></param>
 		public AppStateService(IAppViewService viewManager, IServiceProvider serviceProvider, SynchronizationContext syncContext)
-			: this(viewManager, serviceProvider, null, syncContext)
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AppStateService"/> class.
-		/// </summary>
-		/// <param name="syncContext"></param>
-		/// <param name="viewManager"></param>
-		/// <param name="serviceProvider"></param>
-		/// <param name="controllerFactory"></param>
-		public AppStateService(IAppViewService viewManager, IServiceProvider serviceProvider, IViewControllerFactory controllerFactory, SynchronizationContext syncContext)
 		{
 			if (viewManager == null)
 			{
@@ -98,14 +85,8 @@ namespace UnityFx.AppStates
 				throw new ArgumentNullException(nameof(serviceProvider));
 			}
 
-			if (controllerFactory == null)
-			{
-				controllerFactory = new DefaultViewControllerFactory(serviceProvider);
-			}
-
 			_traceSource = new TraceSource(ServiceName);
 			_synchronizationContext = syncContext;
-			_controllerFactory = controllerFactory;
 			_viewManager = viewManager;
 			_serviceProvider = serviceProvider;
 			_settings = new AppStateServiceSettings();
@@ -193,7 +174,6 @@ namespace UnityFx.AppStates
 
 		#region internals
 
-		internal IViewControllerFactory ControllerFactory => _controllerFactory;
 		internal IAppViewService ViewManager => _viewManager;
 
 		internal void AddState(AppState state)

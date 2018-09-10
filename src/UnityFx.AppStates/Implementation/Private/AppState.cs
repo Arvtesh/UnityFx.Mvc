@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Threading;
 using UnityFx.AppStates.Common;
 using UnityFx.Async;
+using UnityFx.DependencyInjection;
 
 namespace UnityFx.AppStates
 {
@@ -18,8 +19,8 @@ namespace UnityFx.AppStates
 		private static int _idCounter;
 
 		private readonly AppStateService _stateManager;
+		private readonly PresentContext _controllerContext;
 		private readonly IViewController _controller;
-		private readonly IAppView _view;
 		private readonly string _id;
 		private readonly string _deeplinkId;
 
@@ -32,7 +33,6 @@ namespace UnityFx.AppStates
 		#region interface
 
 		internal IAppViewService ViewManager => _stateManager.ViewManager;
-		internal IViewControllerFactory ControllerFactory => _stateManager.ControllerFactory;
 
 		internal AppState(AppStateService stateManager, AppState parentState, Type controllerType, PresentArgs args)
 			: base(parentState)
@@ -48,13 +48,25 @@ namespace UnityFx.AppStates
 			// Controller & view should be created after the state has been initialized.
 			try
 			{
-				_view = stateManager.ViewManager.CreateView(Utility.GetViewResourceId(controllerType), Prev?.View, args.Options);
-				_controller = stateManager.ControllerFactory.CreateController(controllerType, new PresentContext(this, null, args));
+				var view = stateManager.ViewManager.CreateView(Utility.GetViewResourceId(controllerType), Prev?.View, args.Options);
+				var scope = stateManager.ServiceProvider.CreateScope();
+				var controllerFactory = scope.ServiceProvider.GetService<IViewControllerFactory>();
+
+				_controllerContext = new PresentContext(scope, this, null, view, args);
+
+				if (controllerFactory != null)
+				{
+					_controller = controllerFactory.CreateController(controllerType, _controllerContext);
+				}
+				else
+				{
+					_controller = (IViewController)scope.ServiceProvider.CreateInstance(controllerType, _controllerContext);
+				}
 			}
 			catch
 			{
+				_controllerContext?.Dispose();
 				_stateManager.RemoveState(this);
-				_view?.Dispose();
 				throw;
 			}
 		}
@@ -71,7 +83,7 @@ namespace UnityFx.AppStates
 		public string Id => _id;
 		public bool IsActive => _active;
 		public IViewController Controller => _controller;
-		public IAppView View => _view;
+		public IAppView View => _controllerContext.View;
 
 		#endregion
 
@@ -145,12 +157,11 @@ namespace UnityFx.AppStates
 						d.Dispose();
 					}
 
-					_view.Dispose();
+					_controllerContext.Dispose();
 				}
 				finally
 				{
 					_stateManager.RemoveState(this);
-					GC.SuppressFinalize(this);
 				}
 			}
 		}
