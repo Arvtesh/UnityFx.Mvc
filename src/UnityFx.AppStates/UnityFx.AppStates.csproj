@@ -25,9 +25,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta008" PrivateAssets="All" />
+		<PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta009" PrivateAssets="All" />
 		<PackageReference Include="UnityFx.Async" Version="0.9.6" />
-		<PackageReference Include="UnityFx.DependencyInjection" Version="0.1.0" />
+		<PackageReference Include="UnityFx.DependencyInjection" Version="0.2.0" />
 	</ItemGroup>
 
 	<ItemGroup>
