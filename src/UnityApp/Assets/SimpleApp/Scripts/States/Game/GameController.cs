@@ -20,7 +20,7 @@ namespace UnityFx.AppStates.Samples
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GameController"/> class.
 		/// </summary>
-		public GameController(PresentContext context)
+		public GameController(IPresentContext context)
 			: base(context)
 		{
 		}

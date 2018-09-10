@@ -20,7 +20,7 @@ namespace UnityFx.AppStates.Samples
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MainMenuController"/> class.
 		/// </summary>
-		public MainMenuController(PresentContext context)
+		public MainMenuController(IPresentContext context)
 			: base(context)
 		{
 		}

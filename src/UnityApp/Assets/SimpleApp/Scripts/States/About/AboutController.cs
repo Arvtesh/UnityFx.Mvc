@@ -21,7 +21,7 @@ namespace UnityFx.AppStates.Samples
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AboutController"/> class.
 		/// </summary>
-		public AboutController(PresentContext context)
+		public AboutController(IPresentContext context)
 			: base(context)
 		{
 		}

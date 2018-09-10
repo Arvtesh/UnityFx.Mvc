@@ -4,7 +4,7 @@
 using System;
 using UnityEngine;
 using UnityFx.AppStates;
-using UnityFx.AppStates.DependencyInjection;
+using UnityFx.DependencyInjection;
 
 namespace UnityFx.AppStates.Samples
 {
@@ -19,9 +19,6 @@ namespace UnityFx.AppStates.Samples
 		private Transform _viewRoot = null;
 
 		private ServiceProvider _serviceProvider;
-		private IPrefabLoader _prefabLoader;
-		private IAppViewService _viewManager;
-		private IAppStateService _stateManager;
 
 		#endregion
 
@@ -29,17 +26,14 @@ namespace UnityFx.AppStates.Samples
 
 		private void Awake()
 		{
-			_serviceProvider = new ServiceProvider();
-			_prefabLoader = new ResourcePrefabLoader();
-			_viewManager = new PrefabViewService(_prefabLoader, _viewRoot);
-			_stateManager = new AppStateService(_viewManager, _serviceProvider);
+			var serviceCollection = new ServiceCollection();
+			ConfigureServices(serviceCollection);
+			_serviceProvider = serviceCollection.BuildServiceProvider();
 		}
 
 		private void Start()
 		{
-			ConfigureServices(_serviceProvider);
-
-			_stateManager.PresentAsync<MainMenuController>();
+			_serviceProvider.GetService<IAppStateService>().PresentAsync<MainMenuController>();
 		}
 
 		private void OnDestroy()
@@ -58,9 +52,12 @@ namespace UnityFx.AppStates.Samples
 
 		private void ConfigureServices(IServiceCollection services)
 		{
-			services.AddSingleton(_prefabLoader);
-			services.AddSingleton(_viewManager);
-			services.AddSingleton(_stateManager);
+			var prefabLoader = new ResourcePrefabLoader();
+			var viewManager = new PrefabViewService(prefabLoader, _viewRoot);
+
+			services.AddSingleton<IPrefabLoader>(prefabLoader);
+			services.AddSingleton<IAppViewService>(viewManager);
+			services.AddSingleton<IAppStateService, AppStateService>();
 		}
 
 		#endregion
