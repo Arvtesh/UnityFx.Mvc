@@ -22,6 +22,8 @@ namespace UnityFx.AppStates
 
 		#region interface
 
+		public IPresentMiddleware Middleware { get; set; }
+
 		public PresentContext(IServiceScope serviceScope, IAppState state, IViewController parentController, IAppView view, PresentArgs args)
 		{
 			_view = view;

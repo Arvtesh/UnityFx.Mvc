@@ -54,10 +54,21 @@ namespace UnityFx.AppStates
 				}
 
 				var state = new AppState(StateManager, _parentState, _controllerType, _args);
+				var context = state.PresentContext;
 
 				_controller = state.Controller;
 				_pushOp = state.View.Load();
 				_pushOp.AddCompletionCallback(this);
+
+				if (context.Middleware != null)
+				{
+					_pushOp = context.Middleware.PresentAsync(_controller, context);
+					_pushOp.AddCompletionCallback(this);
+				}
+				else
+				{
+					Invoke(_pushOp);
+				}
 			}
 			catch (Exception e)
 			{
