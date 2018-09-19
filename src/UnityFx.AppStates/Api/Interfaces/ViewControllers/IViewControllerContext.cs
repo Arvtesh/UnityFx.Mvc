@@ -11,7 +11,7 @@ namespace UnityFx.AppStates
 	/// It is here for the sake of testability/explicit dependencies for <see cref="IViewController"/> implementations.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
-	public interface IPresentContext
+	public interface IViewControllerContext
 	{
 		/// <summary>
 		/// Gets the controller creation arguments.
@@ -24,7 +24,7 @@ namespace UnityFx.AppStates
 		IAppState ParentState { get; }
 
 		/// <summary>
-		/// Gets parent controller (if any).
+		/// Gets parent controller (or <see langword="null"/>).
 		/// </summary>
 		IViewController ParentController { get; }
 

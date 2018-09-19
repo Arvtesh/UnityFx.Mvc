@@ -7,7 +7,7 @@ using UnityFx.DependencyInjection;
 
 namespace UnityFx.AppStates
 {
-	internal class PresentContext : IPresentContext, IDisposable
+	internal class PresentContext : IViewControllerContext, IPresentContext, IDisposable
 	{
 		#region data
 
@@ -35,7 +35,7 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region IPresentContext
+		#region IViewControllerContext
 
 		public PresentArgs PresentArgs => _args;
 
@@ -61,6 +61,12 @@ namespace UnityFx.AppStates
 		{
 			return _parentState.DismissAsync();
 		}
+
+		#endregion
+
+		#region IPresentContext
+
+		public IAppState PresenterState => null;
 
 		#endregion
 

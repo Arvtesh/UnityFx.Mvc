@@ -7,18 +7,18 @@ using UnityFx.Async;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Defines middleware that can be added to the application's controller pipeline.
+	/// Defines middleware that can be added to the application's present pipeline.
 	/// </summary>
-	/// <seealso cref="IViewController"/>
+	/// <seealso cref="IPresentMiddlewareBuilder"/>
 	public interface IPresentMiddleware
 	{
 		/// <summary>
-		/// Dismisses this instance.
+		/// Defines a handler that is called when presenting a <paramref name="controller"/> instance.
 		/// </summary>
 		IAsyncOperation PresentAsync(IViewController controller, IPresentContext context);
 
 		/// <summary>
-		/// Dismisses this instance.
+		/// Defines a handler that is called when dismissing a <paramref name="controller"/> instance.
 		/// </summary>
 		IAsyncOperation DismissAsync(IViewController controller);
 	}
