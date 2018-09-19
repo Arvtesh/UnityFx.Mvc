@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using UnityFx.Async;
 using UnityFx.DependencyInjection;
 
@@ -16,6 +17,8 @@ namespace UnityFx.AppStates
 		private readonly IAppState _parentState;
 		private readonly IViewController _parentController;
 		private readonly PresentArgs _args;
+
+		private Dictionary<string, object> _props;
 		private bool _disposed;
 
 		#endregion
@@ -67,6 +70,19 @@ namespace UnityFx.AppStates
 		#region IPresentContext
 
 		public IAppState PresenterState => null;
+
+		public IDictionary<string, object> Properties
+		{
+			get
+			{
+				if (_props == null)
+				{
+					_props = new Dictionary<string, object>();
+				}
+
+				return _props;
+			}
+		}
 
 		#endregion
 

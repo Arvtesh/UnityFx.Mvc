@@ -9,17 +9,12 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Defines middleware that can be added to the application's present pipeline.
 	/// </summary>
-	/// <seealso cref="IPresentMiddlewareBuilder"/>
+	/// <seealso cref="IPresentPipelineBuilder"/>
 	public interface IPresentMiddleware
 	{
 		/// <summary>
 		/// Defines a handler that is called when presenting a <paramref name="controller"/> instance.
 		/// </summary>
-		IAsyncOperation PresentAsync(IViewController controller, IPresentContext context);
-
-		/// <summary>
-		/// Defines a handler that is called when dismissing a <paramref name="controller"/> instance.
-		/// </summary>
-		IAsyncOperation DismissAsync(IViewController controller);
+		IAsyncOperation InvokeAsync(IViewController controller, IPresentContext context);
 	}
 }

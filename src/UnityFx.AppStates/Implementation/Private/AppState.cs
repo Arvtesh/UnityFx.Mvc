@@ -55,7 +55,7 @@ namespace UnityFx.AppStates
 
 				// Both of the below resolved services are optional, that's why they are not passed as arguments
 				// of AppStateService and resolved here.
-				var middlewareBuilder = serviceProvider.GetService<IPresentMiddlewareBuilder>();
+				var middlewareBuilder = serviceProvider.GetService<IPresentPipelineBuilder>();
 				var controllerFactory = scope.ServiceProvider.GetService<IViewControllerFactory>();
 
 				_controllerContext = new PresentContext(scope, this, null, view, args);

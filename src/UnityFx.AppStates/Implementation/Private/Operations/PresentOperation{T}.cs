@@ -62,7 +62,7 @@ namespace UnityFx.AppStates
 
 				if (context.Middleware != null)
 				{
-					_pushOp = context.Middleware.PresentAsync(_controller, context);
+					_pushOp = context.Middleware.InvokeAsync(_controller, context);
 					_pushOp.AddCompletionCallback(this);
 				}
 				else

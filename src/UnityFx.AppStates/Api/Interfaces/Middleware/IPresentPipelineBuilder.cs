@@ -10,8 +10,13 @@ namespace UnityFx.AppStates
 	/// Defines a class that provides the mechanisms to configure an application's present pipeline.
 	/// </summary>
 	/// <seealso cref="IPresentMiddleware"/>
-	public interface IPresentMiddlewareBuilder
+	public interface IPresentPipelineBuilder
 	{
+		/// <summary>
+		/// Gets application service provider.
+		/// </summary>
+		IServiceProvider ServiceProvider { get; }
+
 		/// <summary>
 		/// Gets a key/value collection that can be used to share data between middleware.
 		/// </summary>
