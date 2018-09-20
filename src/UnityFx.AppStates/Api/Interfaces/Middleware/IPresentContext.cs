@@ -24,19 +24,24 @@ namespace UnityFx.AppStates
 		IDictionary<string, object> Properties { get; }
 
 		/// <summary>
-		/// Gets a state that presented this one (or <see langword="null"/>).
+		/// Gets a state that presented <see cref="NextState"/> or a state being dismissed (for dismiss transitions).
 		/// </summary>
-		IAppState PresenterState { get; }
-
-		/// <summary>
-		/// Gets parent state.
-		/// </summary>
-		IAppState ParentState { get; }
+		IAppState PrevState { get; }
 
 		/// <summary>
 		/// Gets parent controller (or <see langword="null"/>).
 		/// </summary>
-		IViewController ParentController { get; }
+		IViewController PrevController { get; }
+
+		/// <summary>
+		/// Gets the new (target) state. For dismiss transitions it is always <see langword="null"/>.
+		/// </summary>
+		IAppState NextState { get; }
+
+		/// <summary>
+		/// Gets parent controller (or <see langword="null"/>).
+		/// </summary>
+		IViewController NextController { get; }
 
 		/// <summary>
 		/// Gets a <see cref="IServiceProvider"/> that can be used to resolve controller dependencies.

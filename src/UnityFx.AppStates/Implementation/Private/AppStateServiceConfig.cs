@@ -8,15 +8,28 @@ using System.Diagnostics;
 
 namespace UnityFx.AppStates
 {
-	internal class AppStateServiceSettings : IAppStateServiceSettings
+	internal class AppStateServiceConfig : IAppStateServiceConfig
 	{
 		#region data
+
+		private readonly TraceSource _traceSource;
+
 		#endregion
 
 		#region interface
+
+		public AppStateServiceConfig(TraceSource traceSource)
+		{
+			_traceSource = traceSource;
+		}
+
 		#endregion
 
 		#region IAppStateServiceSettings
+
+		public SourceSwitch TraceSwitch { get => _traceSource.Switch; set => _traceSource.Switch = value; }
+
+		public TraceListenerCollection TraceListeners => _traceSource.Listeners;
 
 		public int MaxNumberOfPendingOperations
 		{
@@ -28,6 +41,11 @@ namespace UnityFx.AppStates
 			{
 				throw new NotImplementedException();
 			}
+		}
+
+		public IPresentPipelineBuilder AddBuilder(Predicate<IPresentContext> predicate)
+		{
+			throw new NotImplementedException();
 		}
 
 		#endregion

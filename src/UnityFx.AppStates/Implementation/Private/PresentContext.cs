@@ -69,7 +69,13 @@ namespace UnityFx.AppStates
 
 		#region IPresentContext
 
-		public IAppState PresenterState => null;
+		public IAppState PrevState => null;
+
+		public IViewController PrevController => null;
+
+		public IAppState NextState => null;
+
+		public IViewController NextController => null;
 
 		public IDictionary<string, object> Properties
 		{

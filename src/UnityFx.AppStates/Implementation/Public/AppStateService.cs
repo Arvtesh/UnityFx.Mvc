@@ -26,7 +26,7 @@ namespace UnityFx.AppStates
 		private readonly IAppViewService _viewManager;
 		private readonly IServiceProvider _serviceProvider;
 
-		private readonly AppStateServiceSettings _settings;
+		private readonly AppStateServiceConfig _config;
 		private readonly AppStateCollection _states;
 		private readonly AsyncResultQueue<AsyncResult> _stackOperations;
 
@@ -89,7 +89,7 @@ namespace UnityFx.AppStates
 			_synchronizationContext = syncContext;
 			_viewManager = viewManager;
 			_serviceProvider = serviceProvider;
-			_settings = new AppStateServiceSettings();
+			_config = new AppStateServiceConfig(_traceSource);
 			_states = new AppStateCollection();
 			_stackOperations = new AsyncResultQueue<AsyncResult>(syncContext);
 		}
@@ -257,12 +257,6 @@ namespace UnityFx.AppStates
 		public event EventHandler<DismissCompletedEventArgs> DismissCompleted;
 
 		/// <inheritdoc/>
-		public SourceSwitch TraceSwitch { get => _traceSource.Switch; set => _traceSource.Switch = value; }
-
-		/// <inheritdoc/>
-		public TraceListenerCollection TraceListeners => _traceSource.Listeners;
-
-		/// <inheritdoc/>
 		public bool IsBusy => !_stackOperations.IsEmpty;
 
 		/// <inheritdoc/>
@@ -285,7 +279,7 @@ namespace UnityFx.AppStates
 		public IAppStateCollection States => _states;
 
 		/// <inheritdoc/>
-		public IAppStateServiceSettings Settings => _settings;
+		public IAppStateServiceConfig Config => _config;
 
 		#endregion
 

@@ -13,8 +13,8 @@ namespace UnityFx.AppStates
 	public interface IPresentMiddleware
 	{
 		/// <summary>
-		/// Defines a handler that is called when presenting a <paramref name="controller"/> instance.
+		/// Defines a method that is called when presenting a controller instance.
 		/// </summary>
-		IAsyncOperation InvokeAsync(IViewController controller, IPresentContext context);
+		IAsyncOperation InvokeAsync(IPresentContext context);
 	}
 }
