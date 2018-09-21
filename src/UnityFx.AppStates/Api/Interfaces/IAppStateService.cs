@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace UnityFx.AppStates
 {
@@ -34,19 +33,9 @@ namespace UnityFx.AppStates
 		event EventHandler<DismissCompletedEventArgs> DismissCompleted;
 
 		/// <summary>
-		/// Gets or sets trace switch used by the <see cref="TraceSource"/> instance.
+		/// Gets the service settings.
 		/// </summary>
-		SourceSwitch TraceSwitch { get; set; }
-
-		/// <summary>
-		/// Gets a collection of <see cref="TraceListener"/> instances attached to the <see cref="TraceSource"/> used for logging.
-		/// </summary>
-		TraceListenerCollection TraceListeners { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether thare are any pending operations.
-		/// </summary>
-		bool IsBusy { get; }
+		IAppStateServiceSettings Settings { get; }
 
 		/// <summary>
 		/// Gets the child states.
@@ -59,8 +48,8 @@ namespace UnityFx.AppStates
 		IAppState ActiveState { get; }
 
 		/// <summary>
-		/// Gets the service settings.
+		/// Gets a value indicating whether thare are any pending operations.
 		/// </summary>
-		IAppStateServiceSettings Settings { get; }
+		bool IsBusy { get; }
 	}
 }

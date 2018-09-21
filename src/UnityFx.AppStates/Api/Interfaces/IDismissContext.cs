@@ -6,16 +6,16 @@ using System;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Defines context data for a present operation.
+	/// Defines context data for a dismiss operation.
 	/// </summary>
 	/// <seealso cref="IPresentable"/>
 	/// <seealso cref="IViewController"/>
-	/// <seealso cref="IDismissContext"/>
-	public interface IPresentContext
+	/// <seealso cref="IPresentContext"/>
+	public interface IDismissContext
 	{
 		/// <summary>
-		/// Gets a state that was active before the present operation.
+		/// Gets the next state (a state that will be activated after the dismiss operation).
 		/// </summary>
-		IAppState PrevState { get; }
+		IAppState NextState { get; }
 	}
 }

@@ -52,7 +52,7 @@ namespace UnityFx.AppStates
 		/// Initializes a new instance of the <see cref="ViewController{TView}"/> class.
 		/// </summary>
 		/// <param name="context">Context data for the controller instance.</param>
-		protected ViewController(IPresentContext context)
+		protected ViewController(IViewControllerContext context)
 			: base(context)
 		{
 		}

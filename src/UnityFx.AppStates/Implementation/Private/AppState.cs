@@ -32,6 +32,7 @@ namespace UnityFx.AppStates
 
 		#region interface
 
+		internal PresentContext PresentContext => _controllerContext;
 		internal IAppViewService ViewManager => _stateManager.ViewManager;
 
 		internal AppState(AppStateService stateManager, AppState parentState, Type controllerType, PresentArgs args)
@@ -49,7 +50,11 @@ namespace UnityFx.AppStates
 			try
 			{
 				var view = stateManager.ViewManager.CreateView(Utility.GetViewResourceId(controllerType), Prev?.View, args.Options);
-				var scope = stateManager.ServiceProvider.CreateScope();
+				var serviceProvider = stateManager.ServiceProvider;
+				var scope = serviceProvider.CreateScope();
+
+				// Both of the below resolved services are optional, that's why they are not passed as arguments
+				// of AppStateService and resolved here.
 				var controllerFactory = scope.ServiceProvider.GetService<IViewControllerFactory>();
 
 				_controllerContext = new PresentContext(scope, this, null, view, args);

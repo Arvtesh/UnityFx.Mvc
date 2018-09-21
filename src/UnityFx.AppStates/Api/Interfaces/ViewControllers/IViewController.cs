@@ -5,11 +5,10 @@ using System;
 
 namespace UnityFx.AppStates
 {
-	internal class TestController_Minimal : ViewController
+	/// <summary>
+	/// A generic view controller.
+	/// </summary>
+	public interface IViewController : IObjectId, IDismissable
 	{
-		public TestController_Minimal(IViewControllerContext state)
-			: base(state)
-		{
-		}
 	}
 }

@@ -47,23 +47,12 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		protected void InvokeOnViewLoaded(IViewController controller)
-		{
-			Debug.Assert(controller != null);
-			TraceEvent(TraceEventType.Verbose, "View loaded for " + controller.Id);
-
-			if (controller is IViewControllerEvents pe)
-			{
-				pe.OnViewLoaded();
-			}
-		}
-
 		protected void InvokeOnPresent(IViewController controller)
 		{
 			Debug.Assert(controller != null);
 			TraceEvent(TraceEventType.Verbose, "Present " + controller.Id);
 
-			if (controller is IViewControllerEvents pe)
+			if (controller is IPresentableEvents pe)
 			{
 				pe.OnPresent();
 			}
@@ -74,7 +63,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(controller != null);
 			TraceEvent(TraceEventType.Verbose, "Activate " + controller.Id);
 
-			if (controller is IViewControllerEvents pe)
+			if (controller is IPresentableEvents pe)
 			{
 				pe.OnActivate();
 			}
@@ -85,7 +74,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(controller != null);
 			TraceEvent(TraceEventType.Verbose, "Deactivate " + controller.Id);
 
-			if (controller is IViewControllerEvents pe)
+			if (controller is IPresentableEvents pe)
 			{
 				pe.OnDeactivate();
 			}
@@ -96,7 +85,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(controller != null);
 			TraceEvent(TraceEventType.Verbose, "Dismiss " + controller.Id);
 
-			if (controller is IViewControllerEvents pe)
+			if (controller is IPresentableEvents pe)
 			{
 				pe.OnDismiss();
 			}

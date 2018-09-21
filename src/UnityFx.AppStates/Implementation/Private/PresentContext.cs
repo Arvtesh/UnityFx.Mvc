@@ -2,12 +2,13 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using UnityFx.Async;
 using UnityFx.DependencyInjection;
 
 namespace UnityFx.AppStates
 {
-	internal class PresentContext : IPresentContext, IDisposable
+	internal class PresentContext : IViewControllerContext, IPresentContext, IDismissContext, IDisposable
 	{
 		#region data
 
@@ -16,6 +17,7 @@ namespace UnityFx.AppStates
 		private readonly IAppState _parentState;
 		private readonly IViewController _parentController;
 		private readonly PresentArgs _args;
+
 		private bool _disposed;
 
 		#endregion
@@ -33,7 +35,7 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region IPresentContext
+		#region IViewControllerContext
 
 		public PresentArgs PresentArgs => _args;
 
@@ -55,10 +57,22 @@ namespace UnityFx.AppStates
 			return _parentState.PresentAsync<TController>(args);
 		}
 
-		public IAsyncOperation DismissAsync(IViewController controller)
+		public IAsyncOperation DismissAsync()
 		{
 			return _parentState.DismissAsync();
 		}
+
+		#endregion
+
+		#region IPresentContext
+
+		public IAppState PrevState => null;
+
+		#endregion
+
+		#region IDismissContext
+
+		public IAppState NextState => null;
 
 		#endregion
 
