@@ -54,20 +54,17 @@ namespace UnityFx.AppStates
 				}
 
 				var state = new AppState(StateManager, _parentState, _controllerType, _args);
-				var context = state.PresentContext;
 
 				_controller = state.Controller;
-				_pushOp = state.View.Load();
-				_pushOp.AddCompletionCallback(this);
 
-				if (context.Middleware != null)
+				if (_controller is IPresentable presentable)
 				{
-					_pushOp = context.Middleware.InvokeAsync(context);
+					_pushOp = presentable.PresentAsync(state.PresentContext);
 					_pushOp.AddCompletionCallback(this);
 				}
 				else
 				{
-					Invoke(_pushOp);
+					SetCompleted();
 				}
 			}
 			catch (Exception e)
@@ -118,15 +115,7 @@ namespace UnityFx.AppStates
 				if (ProcessNonSuccess(op))
 				{
 					_pushOp = null;
-					InvokeOnViewLoaded(_controller);
-
-					if (_parentState != null && (_args.Options & PresentOptions.DismissCurrentState) != 0)
-					{
-						_parentState.Dispose();
-					}
-
-					InvokeOnPresent(_controller);
-					TrySetResult((T)_controller);
+					SetCompleted();
 				}
 			}
 			catch (Exception e)
@@ -138,6 +127,18 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region implementation
+
+		private void SetCompleted()
+		{
+			if (_parentState != null && (_args.Options & PresentOptions.DismissCurrentState) != 0)
+			{
+				_parentState.Dispose();
+			}
+
+			InvokeOnPresent(_controller);
+			TrySetResult((T)_controller);
+		}
+
 		#endregion
 	}
 }

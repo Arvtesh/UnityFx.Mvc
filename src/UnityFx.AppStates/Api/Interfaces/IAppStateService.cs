@@ -35,12 +35,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the service settings.
 		/// </summary>
-		IAppStateServiceConfig Config { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether thare are any pending operations.
-		/// </summary>
-		bool IsBusy { get; }
+		IAppStateServiceSettings Settings { get; }
 
 		/// <summary>
 		/// Gets the child states.
@@ -51,5 +46,10 @@ namespace UnityFx.AppStates
 		/// Gets active state (or <see langword="null"/>).
 		/// </summary>
 		IAppState ActiveState { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether thare are any pending operations.
+		/// </summary>
+		bool IsBusy { get; }
 	}
 }

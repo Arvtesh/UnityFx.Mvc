@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace UnityFx.AppStates
 {
-	internal class AppStateServiceConfig : IAppStateServiceConfig
+	internal class AppStateServiceSettings : IAppStateServiceSettings
 	{
 		#region data
 
@@ -18,7 +18,7 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		public AppStateServiceConfig(TraceSource traceSource)
+		public AppStateServiceSettings(TraceSource traceSource)
 		{
 			_traceSource = traceSource;
 		}
@@ -41,11 +41,6 @@ namespace UnityFx.AppStates
 			{
 				throw new NotImplementedException();
 			}
-		}
-
-		public IPresentPipelineBuilder AddBuilder(Predicate<IPresentContext> predicate)
-		{
-			throw new NotImplementedException();
 		}
 
 		#endregion

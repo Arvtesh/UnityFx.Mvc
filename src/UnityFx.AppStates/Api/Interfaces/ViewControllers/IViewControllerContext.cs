@@ -39,18 +39,18 @@ namespace UnityFx.AppStates
 		IServiceProvider ServiceProvider { get; }
 
 		/// <summary>
-		/// Presents a controller of the specified type.
+		/// Presents a new controller of the specified type.
 		/// </summary>
 		IAsyncOperation<IViewController> PresentAsync(Type controllerType, PresentArgs args);
 
 		/// <summary>
-		/// Presents a controller of the specified type.
+		/// Presents a new controller of the specified type.
 		/// </summary>
 		IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IViewController;
 
 		/// <summary>
-		/// Dismisses the specified controller.
+		/// Dismisses this controller.
 		/// </summary>
-		IAsyncOperation DismissAsync(IViewController controller);
+		IAsyncOperation DismissAsync();
 	}
 }

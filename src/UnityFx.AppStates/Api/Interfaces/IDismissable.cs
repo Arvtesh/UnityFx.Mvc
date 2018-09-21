@@ -14,12 +14,14 @@ namespace UnityFx.AppStates
 	public interface IDismissable
 	{
 		/// <summary>
-		/// Dismisses this instance. When dismiss is complete <see cref="IDisposable.Dispose"/> is invoked.
+		/// Dismisses the object. Act like asynchronous <c>Dispose()</c>.
 		/// </summary>
 		/// <remarks>
-		/// Just like <see cref="IDisposable.Dispose"/> this method can be safely called multiple times even
-		/// if the object has been disposed.
+		/// The method can be called more than once during the object lifetime. Implementations are
+		/// expected to handle such cases. There is no requirement to return the same operation instance
+		/// on each call.
 		/// </remarks>
+		/// <returns>Returns an object that can be used to track the operation state.</returns>
 		IAsyncOperation DismissAsync();
 	}
 }

@@ -26,7 +26,7 @@ namespace UnityFx.AppStates
 		private readonly IAppViewService _viewManager;
 		private readonly IServiceProvider _serviceProvider;
 
-		private readonly AppStateServiceConfig _config;
+		private readonly AppStateServiceSettings _config;
 		private readonly AppStateCollection _states;
 		private readonly AsyncResultQueue<AsyncResult> _stackOperations;
 
@@ -89,7 +89,7 @@ namespace UnityFx.AppStates
 			_synchronizationContext = syncContext;
 			_viewManager = viewManager;
 			_serviceProvider = serviceProvider;
-			_config = new AppStateServiceConfig(_traceSource);
+			_config = new AppStateServiceSettings(_traceSource);
 			_states = new AppStateCollection();
 			_stackOperations = new AsyncResultQueue<AsyncResult>(syncContext);
 		}
@@ -279,7 +279,7 @@ namespace UnityFx.AppStates
 		public IAppStateCollection States => _states;
 
 		/// <inheritdoc/>
-		public IAppStateServiceConfig Config => _config;
+		public IAppStateServiceSettings Settings => _config;
 
 		#endregion
 

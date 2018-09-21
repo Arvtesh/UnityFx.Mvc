@@ -13,7 +13,7 @@ namespace UnityFx.AppStates
 	/// A generic view controller. It is recommended to use this class as base for all other controllers.
 	/// Note that minimal controller implementation should inherit <see cref="IViewController"/>.
 	/// </summary>
-	public abstract class ViewController : ObjectId<ViewController>, IViewController, IViewControllerEvents, IPresenter, IDismissable, IDisposable
+	public abstract class ViewController : ObjectId<ViewController>, IViewController, IPresentable, IPresentableEvents, IPresenter, IDismissable, IDisposable
 	{
 		#region data
 
@@ -93,14 +93,27 @@ namespace UnityFx.AppStates
 		#region IViewController
 		#endregion
 
-		#region IViewControllerEvents
+		#region IPresentable
 
 		/// <summary>
-		/// Called when the controller view is loaded (before transition animation). Default implementation does nothing.
+		/// Performs any asynchronous actions needed to present this object. The method is invoked by the system.
 		/// </summary>
-		public virtual void OnViewLoaded()
+		public virtual IAsyncOperation PresentAsync(IPresentContext presentContext)
 		{
+			return AsyncResult.CompletedOperation;
 		}
+
+		/// <summary>
+		/// Performs any asynchronous actions needed to dismiss this object. The method is invoked by the system.
+		/// </summary>
+		public virtual IAsyncOperation DismissAsync(IDismissContext dismissContext)
+		{
+			return AsyncResult.CompletedOperation;
+		}
+
+		#endregion
+
+		#region IPresentableEvents
 
 		/// <summary>
 		/// Called right after the controller transition animation finishes. Default implementation does nothing.
@@ -177,7 +190,7 @@ namespace UnityFx.AppStates
 				}
 				else
 				{
-					_dismissOp = _context.DismissAsync(this);
+					_dismissOp = _context.DismissAsync();
 				}
 			}
 

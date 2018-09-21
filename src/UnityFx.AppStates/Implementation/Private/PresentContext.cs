@@ -8,7 +8,7 @@ using UnityFx.DependencyInjection;
 
 namespace UnityFx.AppStates
 {
-	internal class PresentContext : IViewControllerContext, IPresentContext, IDisposable
+	internal class PresentContext : IViewControllerContext, IPresentContext, IDismissContext, IDisposable
 	{
 		#region data
 
@@ -18,14 +18,11 @@ namespace UnityFx.AppStates
 		private readonly IViewController _parentController;
 		private readonly PresentArgs _args;
 
-		private Dictionary<string, object> _props;
 		private bool _disposed;
 
 		#endregion
 
 		#region interface
-
-		public IPresentMiddleware Middleware { get; set; }
 
 		public PresentContext(IServiceScope serviceScope, IAppState state, IViewController parentController, IAppView view, PresentArgs args)
 		{
@@ -60,7 +57,7 @@ namespace UnityFx.AppStates
 			return _parentState.PresentAsync<TController>(args);
 		}
 
-		public IAsyncOperation DismissAsync(IViewController controller)
+		public IAsyncOperation DismissAsync()
 		{
 			return _parentState.DismissAsync();
 		}
@@ -71,24 +68,11 @@ namespace UnityFx.AppStates
 
 		public IAppState PrevState => null;
 
-		public IViewController PrevController => null;
+		#endregion
+
+		#region IDismissContext
 
 		public IAppState NextState => null;
-
-		public IViewController NextController => null;
-
-		public IDictionary<string, object> Properties
-		{
-			get
-			{
-				if (_props == null)
-				{
-					_props = new Dictionary<string, object>();
-				}
-
-				return _props;
-			}
-		}
 
 		#endregion
 
