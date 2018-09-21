@@ -41,8 +41,6 @@ namespace UnityFx.AppStates
 
 		public IViewController ParentController => _parentController;
 
-		public IServiceProvider ServiceProvider => _scope.ServiceProvider;
-
 		public IAsyncOperation<IViewController> PresentAsync(Type controllerType, PresentArgs args)
 		{
 			return _parentState.PresentAsync(controllerType, args);

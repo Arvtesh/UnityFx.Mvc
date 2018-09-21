@@ -6,7 +6,7 @@ using System;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// A factory for state controllers instances.
+	/// A factory for view controllers instances.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
 	public interface IViewControllerFactory
@@ -15,8 +15,8 @@ namespace UnityFx.AppStates
 		/// Creates a new instance of state controller and injects its dependencies.
 		/// </summary>
 		/// <param name="controllerType">Type of the controller to be created.</param>
-		/// <param name="context">State.</param>
-		/// <returns>The controller.</returns>
+		/// <param name="context">The controller context.</param>
+		/// <returns>The created controller.</returns>
 		IViewController CreateController(Type controllerType, IViewControllerContext context);
 	}
 }

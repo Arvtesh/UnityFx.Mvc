@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using UnityFx.Async;
 
 namespace UnityFx.AppStates
@@ -18,9 +16,20 @@ namespace UnityFx.AppStates
 
 		private TView _view;
 
+#if DEBUG
+
+		private bool _presentCalled;
+
+#endif
+
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// Gets a value indicating whether view is loaded.
+		/// </summary>
+		protected bool IsViewLoaded => _view != null;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ViewController{TView}"/> class.
@@ -37,7 +46,7 @@ namespace UnityFx.AppStates
 		protected abstract IAsyncOperation<TView> LoadView();
 
 		/// <summary>
-		/// Called when the view is loaded.
+		/// Called when the view is loaded. Default implementation does nothing.
 		/// </summary>
 		protected virtual void OnViewLoaded()
 		{
@@ -52,7 +61,34 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public override IAsyncOperation PresentAsync(IPresentContext presentContext)
 		{
+#if DEBUG
+
+			if (_presentCalled)
+			{
+				throw new InvalidOperationException();
+			}
+
+			_presentCalled = true;
+
+#endif
+
+			if (_view != null)
+			{
+				throw new InvalidOperationException();
+			}
+
 			return LoadView().ContinueWith(OnViewLoadedInternal, this);
+		}
+
+		/// <summary>
+		/// Releases resources used by the controller.
+		/// </summary>
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				_view?.Dispose();
+			}
 		}
 
 		#endregion

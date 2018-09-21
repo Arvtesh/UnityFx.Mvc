@@ -19,11 +19,6 @@ namespace UnityFx.AppStates
 		PresentArgs PresentArgs { get; }
 
 		/// <summary>
-		/// Gets a <see cref="IServiceProvider"/> that can be used to resolve controller dependencies.
-		/// </summary>
-		IServiceProvider ServiceProvider { get; }
-
-		/// <summary>
 		/// Gets parent state.
 		/// </summary>
 		IAppState ParentState { get; }
