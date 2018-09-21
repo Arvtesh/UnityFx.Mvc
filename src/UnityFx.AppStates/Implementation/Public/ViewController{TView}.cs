@@ -10,17 +10,12 @@ namespace UnityFx.AppStates
 	/// A generic view controller bound to a view. It is recommended to use this class as base for all other controllers.
 	/// Note that minimal controller implementation should implement <see cref="IViewController"/>.
 	/// </summary>
+	/// <seealso cref="ViewController"/>
 	public abstract class ViewController<TView> : ViewController, IViewController<TView> where TView : class, IView
 	{
 		#region data
 
 		private TView _view;
-
-#if DEBUG
-
-		private bool _presentCalled;
-
-#endif
 
 		#endregion
 
@@ -59,19 +54,10 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Performs any asynchronous actions needed to present this object. The method is invoked by the system.
 		/// </summary>
-		public override IAsyncOperation PresentAsync(IPresentContext presentContext)
+		/// <param name="presentContext">Context data provided by the system.</param>
+		/// <returns>Returns an object that can be used to track the operation state.</returns>
+		protected override IAsyncOperation PresentAsync(IPresentContext presentContext)
 		{
-#if DEBUG
-
-			if (_presentCalled)
-			{
-				throw new InvalidOperationException();
-			}
-
-			_presentCalled = true;
-
-#endif
-
 			if (_view != null)
 			{
 				throw new InvalidOperationException();

@@ -9,6 +9,7 @@ namespace UnityFx.AppStates
 	/// A generic view controller.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
+	/// <seealso cref="IView"/>
 	public interface IViewController<TView> : IViewController
 	{
 		/// <summary>

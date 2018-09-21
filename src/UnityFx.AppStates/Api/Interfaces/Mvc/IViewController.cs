@@ -8,6 +8,8 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A generic view controller.
 	/// </summary>
+	/// <seealso cref="IViewController{TView}"/>
+	/// <seealso cref="IView"/>
 	public interface IViewController : IObjectId, IDismissable
 	{
 	}

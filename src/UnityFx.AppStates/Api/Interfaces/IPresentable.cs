@@ -18,6 +18,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <param name="presentContext">Context data provided by the system.</param>
 		/// <returns>Returns an object that can be used to track the operation state.</returns>
+		/// <seealso cref="DismissAsync(IDismissContext)"/>
 		IAsyncOperation PresentAsync(IPresentContext presentContext);
 
 		/// <summary>
@@ -25,6 +26,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <param name="dismissContext">Context data provided by the system.</param>
 		/// <returns>Returns an object that can be used to track the operation state.</returns>
+		/// <seealso cref="PresentAsync(IPresentContext)"/>
 		IAsyncOperation DismissAsync(IDismissContext dismissContext);
 	}
 }

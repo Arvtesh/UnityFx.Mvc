@@ -13,6 +13,7 @@ namespace UnityFx.AppStates
 	/// A generic view controller. It is recommended to use this class as base for all other controllers.
 	/// Note that minimal controller implementation should implement <see cref="IViewController"/>.
 	/// </summary>
+	/// <seealso cref="ViewController{TView}"/>
 	public abstract class ViewController : ObjectId<ViewController>, IViewController, IPresentable, IPresentableEvents, IPresenter, IDismissable, IDisposable
 	{
 		#region data
@@ -73,6 +74,60 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
+		/// Performs any asynchronous actions needed to present this object. Default implementation does nothing.
+		/// </summary>
+		/// <param name="presentContext">Context data provided by the system.</param>
+		/// <returns>Returns an object that can be used to track the operation state.</returns>
+		/// <seealso cref="DismissAsync(IDismissContext)"/>
+		protected virtual IAsyncOperation PresentAsync(IPresentContext presentContext)
+		{
+			return AsyncResult.CompletedOperation;
+		}
+
+		/// <summary>
+		/// Performs any asynchronous actions needed to dismiss this object. The method is invoked by the system.
+		/// </summary>
+		/// <param name="dismissContext">Context data provided by the system.</param>
+		/// <returns>Returns an object that can be used to track the operation state.</returns>
+		/// <seealso cref="PresentAsync(IPresentContext)"/>
+		protected virtual IAsyncOperation DismissAsync(IDismissContext dismissContext)
+		{
+			return AsyncResult.CompletedOperation;
+		}
+
+		/// <summary>
+		/// Called right after the controller transition animation finishes. Default implementation does nothing.
+		/// </summary>
+		/// <seealso cref="OnDismiss"/>
+		protected virtual void OnPresent()
+		{
+		}
+
+		/// <summary>
+		/// Called right before the controller becomes active. Default implementation does nothing.
+		/// </summary>
+		/// <seealso cref="OnDeactivate"/>
+		protected virtual void OnActivate()
+		{
+		}
+
+		/// <summary>
+		/// Called when the controller is about to become inactive. Default implementation does nothing.
+		/// </summary>
+		/// <seealso cref="OnActivate"/>
+		protected virtual void OnDeactivate()
+		{
+		}
+
+		/// <summary>
+		/// Called when the controller is about to be dismissed (before transition animation). Default implementation does nothing.
+		/// </summary>
+		/// <seealso cref="OnPresent"/>
+		protected virtual void OnDismiss()
+		{
+		}
+
+		/// <summary>
 		/// Releases resources used by the controller.
 		/// </summary>
 		/// <param name="disposing">Should be <see langword="true"/> if the method is called from <see cref="Dispose()"/>; <see langword="false"/> otherwise.</param>
@@ -90,52 +145,52 @@ namespace UnityFx.AppStates
 
 		#region IPresentable
 
-		/// <summary>
-		/// Performs any asynchronous actions needed to present this object. The method is invoked by the system.
-		/// </summary>
-		public virtual IAsyncOperation PresentAsync(IPresentContext presentContext)
+		/// <inheritdoc/>
+		IAsyncOperation IPresentable.PresentAsync(IPresentContext presentContext)
 		{
-			return AsyncResult.CompletedOperation;
+			Debug.Assert(presentContext != null);
+			Debug.Assert(!_disposed);
+			return PresentAsync(presentContext);
 		}
 
-		/// <summary>
-		/// Performs any asynchronous actions needed to dismiss this object. The method is invoked by the system.
-		/// </summary>
-		public virtual IAsyncOperation DismissAsync(IDismissContext dismissContext)
+		/// <inheritdoc/>
+		IAsyncOperation IPresentable.DismissAsync(IDismissContext dismissContext)
 		{
-			return AsyncResult.CompletedOperation;
+			Debug.Assert(dismissContext != null);
+			Debug.Assert(!_disposed);
+			return DismissAsync(dismissContext);
 		}
 
 		#endregion
 
 		#region IPresentableEvents
 
-		/// <summary>
-		/// Called right after the controller transition animation finishes. Default implementation does nothing.
-		/// </summary>
-		public virtual void OnPresent()
+		/// <inheritdoc/>
+		void IPresentableEvents.OnPresent()
 		{
+			Debug.Assert(!_disposed);
+			OnPresent();
 		}
 
-		/// <summary>
-		/// Called right before the controller becomes active. Default implementation does nothing.
-		/// </summary>
-		public virtual void OnActivate()
+		/// <inheritdoc/>
+		void IPresentableEvents.OnActivate()
 		{
+			Debug.Assert(!_disposed);
+			OnActivate();
 		}
 
-		/// <summary>
-		/// Called when the controller is about to become inactive. Default implementation does nothing.
-		/// </summary>
-		public virtual void OnDeactivate()
+		/// <inheritdoc/>
+		void IPresentableEvents.OnDeactivate()
 		{
+			Debug.Assert(!_disposed);
+			OnDeactivate();
 		}
 
-		/// <summary>
-		/// Called when the controller is about to be dismissed (before transition animation). Default implementation does nothing.
-		/// </summary>
-		public virtual void OnDismiss()
+		/// <inheritdoc/>
+		void IPresentableEvents.OnDismiss()
 		{
+			Debug.Assert(!_disposed);
+			OnDismiss();
 		}
 
 		#endregion
