@@ -28,10 +28,5 @@ namespace UnityFx.AppStates
 		/// Gets a view controller attached to the state.
 		/// </summary>
 		IViewController Controller { get; }
-
-		/// <summary>
-		/// Gets the atached view instance.
-		/// </summary>
-		IAppView View { get; }
 	}
 }

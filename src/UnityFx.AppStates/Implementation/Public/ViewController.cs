@@ -11,7 +11,7 @@ namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// A generic view controller. It is recommended to use this class as base for all other controllers.
-	/// Note that minimal controller implementation should inherit <see cref="IViewController"/>.
+	/// Note that minimal controller implementation should implement <see cref="IViewController"/>.
 	/// </summary>
 	public abstract class ViewController : ObjectId<ViewController>, IViewController, IPresentable, IPresentableEvents, IPresenter, IDismissable, IDisposable
 	{
@@ -37,11 +37,6 @@ namespace UnityFx.AppStates
 		/// Gets the parent state.
 		/// </summary>
 		protected IAppState ParentState => _state;
-
-		/// <summary>
-		/// Gets the attached view instance.
-		/// </summary>
-		protected IAppView View => _state.View;
 
 		/// <summary>
 		/// Gets the controller creation arguments.

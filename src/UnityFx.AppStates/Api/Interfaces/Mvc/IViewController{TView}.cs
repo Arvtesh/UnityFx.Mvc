@@ -14,6 +14,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets a view managed by the controller.
 		/// </summary>
+		/// <exception cref="InvalidOperationException">Thrown if the view has not been initialized yet.</exception>
 		TView View { get; }
 	}
 }

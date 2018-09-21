@@ -23,7 +23,6 @@ namespace UnityFx.AppStates
 
 		private readonly TraceSource _traceSource;
 		private readonly SynchronizationContext _synchronizationContext;
-		private readonly IAppViewService _viewManager;
 		private readonly IServiceProvider _serviceProvider;
 
 		private readonly AppStateServiceSettings _config;
@@ -60,10 +59,9 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppStateService"/> class.
 		/// </summary>
-		/// <param name="viewManager"></param>
 		/// <param name="serviceProvider"></param>
-		public AppStateService(IAppViewService viewManager, IServiceProvider serviceProvider)
-			: this(viewManager, serviceProvider, SynchronizationContext.Current)
+		public AppStateService(IServiceProvider serviceProvider)
+			: this(serviceProvider, SynchronizationContext.Current)
 		{
 		}
 
@@ -72,23 +70,11 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <param name="syncContext"></param>
 		/// <param name="serviceProvider"></param>
-		/// <param name="viewManager"></param>
-		public AppStateService(IAppViewService viewManager, IServiceProvider serviceProvider, SynchronizationContext syncContext)
+		public AppStateService(IServiceProvider serviceProvider, SynchronizationContext syncContext)
 		{
-			if (viewManager == null)
-			{
-				throw new ArgumentNullException(nameof(viewManager));
-			}
-
-			if (serviceProvider == null)
-			{
-				throw new ArgumentNullException(nameof(serviceProvider));
-			}
-
+			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			_traceSource = new TraceSource(ServiceName);
 			_synchronizationContext = syncContext;
-			_viewManager = viewManager;
-			_serviceProvider = serviceProvider;
 			_config = new AppStateServiceSettings(_traceSource);
 			_states = new AppStateCollection();
 			_stackOperations = new AsyncResultQueue<AsyncResult>(syncContext);
@@ -173,8 +159,6 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region internals
-
-		internal IAppViewService ViewManager => _viewManager;
 
 		internal void AddState(AppState state)
 		{

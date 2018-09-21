@@ -13,7 +13,6 @@ namespace UnityFx.AppStates
 		#region data
 
 		private readonly IServiceScope _scope;
-		private readonly IAppView _view;
 		private readonly IAppState _parentState;
 		private readonly IViewController _parentController;
 		private readonly PresentArgs _args;
@@ -24,9 +23,8 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		public PresentContext(IServiceScope serviceScope, IAppState state, IViewController parentController, IAppView view, PresentArgs args)
+		public PresentContext(IServiceScope serviceScope, IAppState state, IViewController parentController, PresentArgs args)
 		{
-			_view = view;
 			_parentState = state;
 			_parentController = parentController;
 			_args = args;
@@ -42,8 +40,6 @@ namespace UnityFx.AppStates
 		public IAppState ParentState => _parentState;
 
 		public IViewController ParentController => _parentController;
-
-		public IAppView View => _view;
 
 		public IServiceProvider ServiceProvider => _scope.ServiceProvider;
 
@@ -83,7 +79,6 @@ namespace UnityFx.AppStates
 			if (!_disposed)
 			{
 				_disposed = true;
-				_view.Dispose();
 				_scope.Dispose();
 			}
 		}

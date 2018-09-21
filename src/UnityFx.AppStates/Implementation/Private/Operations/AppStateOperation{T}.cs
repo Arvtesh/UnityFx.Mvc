@@ -26,7 +26,6 @@ namespace UnityFx.AppStates
 		#region interface
 
 		protected AppStateService StateManager => _stateManager;
-		protected IAppViewService ViewManager => _stateManager.ViewManager;
 		protected IAppStateCollection States => _stateManager.States;
 
 		protected AppStateOperation(AppStateService stateManager, object asyncState, string comment)

@@ -9,44 +9,18 @@ using UnityFx.Async;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// A generic view controller bound to a specific view component. It is recommended to use this class as base for all other controllers.
-	/// Note that minimal controller implementation should inherit <see cref="IViewController"/>.
+	/// A generic view controller bound to a view. It is recommended to use this class as base for all other controllers.
+	/// Note that minimal controller implementation should implement <see cref="IViewController"/>.
 	/// </summary>
-	public abstract class ViewController<TView> : ViewController where TView : class
+	public abstract class ViewController<TView> : ViewController, IViewController<TView> where TView : class, IView
 	{
 		#region data
 
-		private TView _viewAspect;
+		private TView _view;
 
 		#endregion
 
 		#region interface
-
-		/// <summary>
-		/// Gets the <typeparamref name="TView"/> view component. The componet reference is cached on first access. Accessing this property before view is loaded throws <see cref="InvalidOperationException"/>.
-		/// </summary>
-		/// <exception cref="InvalidOperationException">Thrown if the view is not loaded or the <typeparamref name="TView"/> component is not attached to the view.</exception>
-		protected TView ViewAspect
-		{
-			get
-			{
-				if (_viewAspect != null)
-				{
-					return _viewAspect;
-				}
-				else
-				{
-					_viewAspect = View.GetComponent<TView>();
-
-					if (_viewAspect == null)
-					{
-						throw new InvalidOperationException();
-					}
-
-					return _viewAspect;
-				}
-			}
-		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ViewController{TView}"/> class.
@@ -55,6 +29,65 @@ namespace UnityFx.AppStates
 		protected ViewController(IViewControllerContext context)
 			: base(context)
 		{
+		}
+
+		/// <summary>
+		/// Loads the controller view.
+		/// </summary>
+		protected abstract IAsyncOperation<TView> LoadView();
+
+		/// <summary>
+		/// Called when the view is loaded.
+		/// </summary>
+		protected virtual void OnViewLoaded()
+		{
+		}
+
+		#endregion
+
+		#region ViewController
+
+		/// <summary>
+		/// Performs any asynchronous actions needed to present this object. The method is invoked by the system.
+		/// </summary>
+		public override IAsyncOperation PresentAsync(IPresentContext presentContext)
+		{
+			return LoadView().ContinueWith(OnViewLoadedInternal, this);
+		}
+
+		#endregion
+
+		#region IViewController
+
+		/// <summary>
+		/// Gets a view managed by the controller.
+		/// </summary>
+		public TView View
+		{
+			get
+			{
+				if (_view == null)
+				{
+					throw new InvalidOperationException();
+				}
+
+				return _view;
+			}
+		}
+
+		#endregion
+
+		#region implementation
+
+		private static void OnViewLoadedInternal(IAsyncOperation<TView> op, object userState)
+		{
+			var controller = (ViewController<TView>)userState;
+
+			if (op.IsCompletedSuccessfully)
+			{
+				controller._view = op.Result;
+				controller.OnViewLoaded();
+			}
 		}
 
 		#endregion

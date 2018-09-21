@@ -11,7 +11,8 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private IAppState _state;
+		private AppState _state;
+		private IAsyncOperation _dismissOp;
 
 		#endregion
 
@@ -37,15 +38,23 @@ namespace UnityFx.AppStates
 				{
 					// Remove the state with all its children from the stack.
 					DismissStateChildren(_state);
-					InvokeOnDismiss(_state.Controller);
+
+					if (_state.Controller is IPresentable presentable)
+					{
+						_dismissOp = presentable.DismissAsync(_state.PresentContext);
+						_dismissOp.AddCompletionCallback(this);
+					}
+					else
+					{
+						SetCompleted();
+					}
 				}
 				else
 				{
 					// Remove all states from the stack.
 					DismissAllStates();
+					TrySetCompleted();
 				}
-
-				TrySetCompleted();
 			}
 			catch (Exception e)
 			{
@@ -88,11 +97,14 @@ namespace UnityFx.AppStates
 
 		public override void Invoke(IAsyncOperation op)
 		{
+			Debug.Assert(_dismissOp != null);
+
 			try
 			{
 				if (ProcessNonSuccess(op))
 				{
-					TrySetCompleted();
+					_dismissOp = null;
+					SetCompleted();
 				}
 			}
 			catch (Exception e)
@@ -103,16 +115,18 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region Object
+		#region implementation
 
-		public override string ToString()
+		private void SetCompleted()
 		{
-			return "Dismiss";
+			if (_state != null)
+			{
+				InvokeOnDismiss(_state.Controller);
+			}
+
+			TrySetCompleted();
 		}
 
-		#endregion
-
-		#region implementation
 		#endregion
 	}
 }

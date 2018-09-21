@@ -19,6 +19,11 @@ namespace UnityFx.AppStates
 		PresentArgs PresentArgs { get; }
 
 		/// <summary>
+		/// Gets a <see cref="IServiceProvider"/> that can be used to resolve controller dependencies.
+		/// </summary>
+		IServiceProvider ServiceProvider { get; }
+
+		/// <summary>
 		/// Gets parent state.
 		/// </summary>
 		IAppState ParentState { get; }
@@ -27,16 +32,6 @@ namespace UnityFx.AppStates
 		/// Gets parent controller (or <see langword="null"/>).
 		/// </summary>
 		IViewController ParentController { get; }
-
-		/// <summary>
-		/// Gets the view.
-		/// </summary>
-		IAppView View { get; }
-
-		/// <summary>
-		/// Gets a <see cref="IServiceProvider"/> that can be used to resolve controller dependencies.
-		/// </summary>
-		IServiceProvider ServiceProvider { get; }
 
 		/// <summary>
 		/// Presents a new controller of the specified type.

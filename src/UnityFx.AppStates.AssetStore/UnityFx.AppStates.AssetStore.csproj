@@ -40,4 +40,8 @@
 		<AdditionalFiles Include="../CodingConventions/Common/stylecop.json" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Assets\Plugins\UnityFx.AppStates\Scripts\" />
+	</ItemGroup>
+
 </Project>
