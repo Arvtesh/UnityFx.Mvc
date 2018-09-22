@@ -39,15 +39,8 @@ namespace UnityFx.AppStates
 					// Remove the state with all its children from the stack.
 					DismissStateChildren(_state);
 
-					if (_state.Controller is IPresentable presentable)
-					{
-						_dismissOp = presentable.DismissAsync(_state.PresentContext);
-						_dismissOp.AddCompletionCallback(this);
-					}
-					else
-					{
-						SetCompleted();
-					}
+					_dismissOp = _state.DismissAsync(_state.PresentContext);
+					_dismissOp.AddCompletionCallback(this);
 				}
 				else
 				{

@@ -12,7 +12,7 @@ using UnityFx.DependencyInjection;
 
 namespace UnityFx.AppStates
 {
-	internal sealed class AppState : TreeListNode<IAppState>, IAppState
+	internal sealed class AppState : TreeListNode<IAppState>, IAppState, IPresentable
 	{
 		#region data
 
@@ -110,6 +110,36 @@ namespace UnityFx.AppStates
 		{
 			ThrowIfDisposed();
 			return _stateManager.PresentAsync<TController>(this, args);
+		}
+
+		#endregion
+
+		#region IPresentable
+
+		public IAsyncOperation PresentAsync(IPresentContext presentContext)
+		{
+			Debug.Assert(presentContext != null);
+			Debug.Assert(!_disposed);
+
+			if (_controller is IPresentable presentable)
+			{
+				return presentable.PresentAsync(presentContext);
+			}
+
+			return AsyncResult.CompletedOperation;
+		}
+
+		public IAsyncOperation DismissAsync(IDismissContext dismissContext)
+		{
+			Debug.Assert(dismissContext != null);
+			Debug.Assert(!_disposed);
+
+			if (_controller is IPresentable presentable)
+			{
+				return presentable.DismissAsync(dismissContext);
+			}
+
+			return AsyncResult.CompletedOperation;
 		}
 
 		#endregion

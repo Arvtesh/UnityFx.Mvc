@@ -55,17 +55,8 @@ namespace UnityFx.AppStates
 
 				var state = new AppState(StateManager, _parentState, _controllerType, _args);
 
-				_controller = state.Controller;
-
-				if (_controller is IPresentable presentable)
-				{
-					_pushOp = presentable.PresentAsync(state.PresentContext);
-					_pushOp.AddCompletionCallback(this);
-				}
-				else
-				{
-					SetCompleted();
-				}
+				_pushOp = state.PresentAsync(state.PresentContext);
+				_pushOp.AddCompletionCallback(this);
 			}
 			catch (Exception e)
 			{

@@ -67,6 +67,26 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
+		/// Called right before the controller becomes active.
+		/// </summary>
+		protected override void OnActivate()
+		{
+			base.OnActivate();
+
+			_view.Enabled = true;
+		}
+
+		/// <summary>
+		/// Called when the controller is about to become inactive.
+		/// </summary>
+		protected override void OnDeactivate()
+		{
+			_view.Enabled = false;
+
+			base.OnDeactivate();
+		}
+
+		/// <summary>
 		/// Releases resources used by the controller.
 		/// </summary>
 		protected override void Dispose(bool disposing)
@@ -107,7 +127,7 @@ namespace UnityFx.AppStates
 
 			if (op.IsCompletedSuccessfully)
 			{
-				controller._view = op.Result;
+				controller._view = op.Result ?? throw new InvalidOperationException();
 				controller.OnViewLoaded();
 			}
 		}
