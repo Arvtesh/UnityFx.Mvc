@@ -118,24 +118,6 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		protected void DismissStateChildren(IAppState state)
-		{
-			Debug.Assert(state != null);
-
-			foreach (var s in state.GetChildren().Reverse())
-			{
-				if (s == state)
-				{
-					break;
-				}
-				else if (s.IsChildOf(state))
-				{
-					InvokeOnDismiss(s.Controller);
-					s.Dispose();
-				}
-			}
-		}
-
 		protected bool ProcessNonSuccess(IAsyncOperation op)
 		{
 			Debug.Assert(op != null);

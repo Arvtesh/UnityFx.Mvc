@@ -36,10 +36,7 @@ namespace UnityFx.AppStates
 
 				if (_state != null)
 				{
-					// Remove the state with all its children from the stack.
-					DismissStateChildren(_state);
-
-					_dismissOp = _state.DismissAsync(_state.PresentContext);
+					_dismissOp = _state.DismissAsync(null);
 					_dismissOp.AddCompletionCallback(this);
 				}
 				else

@@ -49,13 +49,13 @@ namespace UnityFx.AppStates
 				}
 				else if ((_args.Options & PresentOptions.DismissCurrentState) != 0 && _parentState != null)
 				{
-					DismissStateChildren(_parentState);
+					_parentState.DismissChildStates();
 					InvokeOnDismiss(_parentState.Controller);
 				}
 
 				var state = new AppState(StateManager, _parentState, _controllerType, _args);
 
-				_pushOp = state.PresentAsync(state.PresentContext);
+				_pushOp = state.PresentAsync(default(IPresentContext));
 				_pushOp.AddCompletionCallback(this);
 			}
 			catch (Exception e)

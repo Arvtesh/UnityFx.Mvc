@@ -12,7 +12,7 @@ using UnityFx.DependencyInjection;
 
 namespace UnityFx.AppStates
 {
-	internal sealed class AppState : TreeListNode<IAppState>, IAppState, IPresentable
+	internal sealed class AppState : TreeListNode<IAppState>, IAppState, IPresentable, IPresentableEvents
 	{
 		#region data
 
@@ -71,6 +71,20 @@ namespace UnityFx.AppStates
 			}
 		}
 
+		internal void DismissChildStates()
+		{
+			var childStates = GetChildStates();
+
+			if (childStates != null)
+			{
+				foreach (var state in childStates)
+				{
+					state.OnDismiss();
+					state.Dispose();
+				}
+			}
+		}
+
 		internal void SetActive(bool newActive)
 		{
 			_active = newActive;
@@ -118,12 +132,12 @@ namespace UnityFx.AppStates
 
 		public IAsyncOperation PresentAsync(IPresentContext presentContext)
 		{
-			Debug.Assert(presentContext != null);
+			Debug.Assert(presentContext == null);
 			Debug.Assert(!_disposed);
 
 			if (_controller is IPresentable presentable)
 			{
-				return presentable.PresentAsync(presentContext);
+				return presentable.PresentAsync(_controllerContext);
 			}
 
 			return AsyncResult.CompletedOperation;
@@ -131,15 +145,61 @@ namespace UnityFx.AppStates
 
 		public IAsyncOperation DismissAsync(IDismissContext dismissContext)
 		{
-			Debug.Assert(dismissContext != null);
+			Debug.Assert(dismissContext == null);
 			Debug.Assert(!_disposed);
+
+			DismissChildStates();
 
 			if (_controller is IPresentable presentable)
 			{
-				return presentable.DismissAsync(dismissContext);
+				return presentable.DismissAsync(_controllerContext);
 			}
 
 			return AsyncResult.CompletedOperation;
+		}
+
+		#endregion
+
+		#region IPresentableEvents
+
+		public void OnPresent()
+		{
+			Debug.Assert(!_disposed);
+
+			if (_controller is IPresentableEvents controllerEvents)
+			{
+				controllerEvents.OnPresent();
+			}
+		}
+
+		public void OnActivate()
+		{
+			Debug.Assert(!_disposed);
+
+			if (_controller is IPresentableEvents controllerEvents)
+			{
+				controllerEvents.OnActivate();
+			}
+		}
+
+		public void OnDeactivate()
+		{
+			Debug.Assert(!_disposed);
+
+			if (_controller is IPresentableEvents controllerEvents)
+			{
+				controllerEvents.OnDeactivate();
+			}
+		}
+
+		public void OnDismiss()
+		{
+			Debug.Assert(!_disposed);
+
+			if (_controller is IPresentableEvents controllerEvents)
+			{
+				controllerEvents.OnDismiss();
+			}
 		}
 
 		#endregion
@@ -198,6 +258,29 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region implementation
+
+		private Stack<AppState> GetChildStates()
+		{
+			var result = default(Stack<AppState>);
+			var nextState = Next;
+
+			while (nextState != null)
+			{
+				if (nextState.Parent == this)
+				{
+					if (result == null)
+					{
+						result = new Stack<AppState>();
+					}
+
+					result.Push((AppState)nextState);
+				}
+
+				nextState = nextState.Next;
+			}
+
+			return result;
+		}
 
 		private void ThrowIfDisposed()
 		{
