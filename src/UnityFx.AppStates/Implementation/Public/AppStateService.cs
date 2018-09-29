@@ -160,9 +160,45 @@ namespace UnityFx.AppStates
 
 		#region internals
 
+		internal void TraceError(string s)
+		{
+			Debug.Assert(s != null);
+			Debug.Assert(!_disposed);
+
+			var opId = _stackOperations.Current?.Id ?? 0;
+			_traceSource.TraceEvent(TraceEventType.Error, opId, s);
+		}
+
+		internal void TraceException(Exception e)
+		{
+			Debug.Assert(e != null);
+			Debug.Assert(!_disposed);
+
+			var opId = _stackOperations.Current?.Id ?? 0;
+			_traceSource.TraceEvent(TraceEventType.Error, opId, e.ToString());
+		}
+
+		internal void TraceEvent(TraceEventType eventType, string s)
+		{
+			Debug.Assert(s != null);
+			Debug.Assert(!_disposed);
+
+			var opId = _stackOperations.Current?.Id ?? 0;
+			_traceSource.TraceEvent(eventType, opId, s);
+		}
+
+		internal void TraceData(TraceEventType eventType, object data)
+		{
+			Debug.Assert(!_disposed);
+
+			var opId = _stackOperations.Current?.Id ?? 0;
+			_traceSource.TraceData(eventType, opId, data);
+		}
+
 		internal void AddState(AppState state)
 		{
 			Debug.Assert(state != null);
+			Debug.Assert(!_disposed);
 
 			var parent = state.Parent;
 
@@ -188,6 +224,7 @@ namespace UnityFx.AppStates
 		internal void RemoveState(AppState state)
 		{
 			Debug.Assert(state != null);
+			Debug.Assert(!_disposed);
 
 			_states.Remove(state);
 		}

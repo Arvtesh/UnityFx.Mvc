@@ -8,6 +8,15 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
+	/// <summary>
+	/// Defines a wrapper data/services for a <see cref="IViewController"/>.
+	/// </summary>
+	/// <remarks>
+	/// We want <see cref="IViewController"/> interface to be as minimalistic as possible. That's why we need to store
+	/// controller context outside of actual controller. This class manages the controller created, provides its context
+	/// for it (via implementation of <see cref="IViewControllerContext"/> and injecting it into the controller) and serves
+	/// as a proxy between a parent state/controller and the owned one.
+	/// </remarks>
 	internal class ViewControllerProxy : IViewControllerContext, IPresentContext, IDismissContext, IPresentable, IPresentableEvents, IDisposable
 	{
 		#region data

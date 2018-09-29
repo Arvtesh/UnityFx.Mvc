@@ -19,8 +19,6 @@ namespace UnityFx.AppStates
 		#region data
 
 		private readonly IViewControllerContext _context;
-		private readonly IAppState _state;
-		private readonly PresentArgs _presentArgs;
 
 		private IAsyncOperation _dismissOp;
 		private bool _disposed;
@@ -32,17 +30,17 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets a value indicating whether the controller is active (i.e. can accept input).
 		/// </summary>
-		protected bool IsActive => _state.IsActive;
+		protected bool IsActive => _context.ParentState.IsActive;
 
 		/// <summary>
 		/// Gets the parent state.
 		/// </summary>
-		protected IAppState ParentState => _state;
+		protected IAppState ParentState => _context.ParentState;
 
 		/// <summary>
 		/// Gets the controller creation arguments.
 		/// </summary>
-		protected PresentArgs Args => _presentArgs;
+		protected PresentArgs Args => _context.PresentArgs;
 
 		/// <summary>
 		/// Gets a value indicating whether the controller is disposed.
@@ -56,8 +54,6 @@ namespace UnityFx.AppStates
 		protected ViewController(IViewControllerContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
-			_state = context.ParentState;
-			_presentArgs = context.PresentArgs;
 		}
 
 		/// <summary>

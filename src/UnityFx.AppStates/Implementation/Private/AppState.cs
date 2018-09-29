@@ -11,6 +11,9 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
+	/// <summary>
+	/// Implementation of <see cref="IAppState"/>.
+	/// </summary>
 	internal sealed class AppState : TreeListNode<IAppState>, IAppState, IPresentable, IPresentableEvents
 	{
 		#region data
@@ -29,8 +32,6 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region interface
-
-		internal ViewControllerProxy PresentContext => _controllerProxy;
 
 		internal AppState(AppStateService stateManager, AppState parentState, Type controllerType, PresentArgs args)
 			: base(parentState)
@@ -118,6 +119,7 @@ namespace UnityFx.AppStates
 		{
 			Debug.Assert(presentContext == null);
 			Debug.Assert(!_disposed);
+			Debug.Assert(!_active);
 
 			return _controllerProxy.PresentAsync(presentContext);
 		}
@@ -126,8 +128,10 @@ namespace UnityFx.AppStates
 		{
 			Debug.Assert(dismissContext == null);
 			Debug.Assert(!_disposed);
+			Debug.Assert(!_active);
 
 			DismissChildStates();
+			OnDismiss();
 
 			return _controllerProxy.DismissAsync(dismissContext);
 		}
@@ -139,28 +143,36 @@ namespace UnityFx.AppStates
 		public void OnPresent()
 		{
 			Debug.Assert(!_disposed);
+			Debug.Assert(!_active);
 
+			_stateManager.TraceEvent(TraceEventType.Verbose, "Present " + Id);
 			_controllerProxy.OnPresent();
 		}
 
 		public void OnActivate()
 		{
 			Debug.Assert(!_disposed);
+			Debug.Assert(!_active);
 
+			_stateManager.TraceEvent(TraceEventType.Verbose, "Activate " + Id);
 			_controllerProxy.OnActivate();
 		}
 
 		public void OnDeactivate()
 		{
 			Debug.Assert(!_disposed);
+			Debug.Assert(_active);
 
+			_stateManager.TraceEvent(TraceEventType.Verbose, "Deactivate " + Id);
 			_controllerProxy.OnDeactivate();
 		}
 
 		public void OnDismiss()
 		{
 			Debug.Assert(!_disposed);
+			Debug.Assert(!_active);
 
+			_stateManager.TraceEvent(TraceEventType.Verbose, "Dismiss " + Id);
 			_controllerProxy.OnDismiss();
 		}
 

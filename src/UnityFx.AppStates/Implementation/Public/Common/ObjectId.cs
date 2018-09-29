@@ -4,7 +4,7 @@
 using System;
 using System.Globalization;
 
-namespace UnityFx.AppStates.Common
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// Implementation of <see cref="IObjectId"/>.
