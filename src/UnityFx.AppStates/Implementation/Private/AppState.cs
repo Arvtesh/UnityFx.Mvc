@@ -18,8 +18,7 @@ namespace UnityFx.AppStates
 		private static int _idCounter;
 
 		private readonly AppStateService _stateManager;
-		private readonly PresentContext _controllerContext;
-		private readonly IViewController _controller;
+		private readonly ViewControllerProxy _controllerProxy;
 		private readonly string _id;
 		private readonly string _deeplinkId;
 
@@ -31,7 +30,7 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		internal PresentContext PresentContext => _controllerContext;
+		internal ViewControllerProxy PresentContext => _controllerProxy;
 
 		internal AppState(AppStateService stateManager, AppState parentState, Type controllerType, PresentArgs args)
 			: base(parentState)
@@ -47,25 +46,10 @@ namespace UnityFx.AppStates
 			// Controller should be created after the state has been initialized.
 			try
 			{
-				var serviceProvider = stateManager.ServiceProvider;
-				var controllerFactory = serviceProvider.GetService(typeof(IViewControllerFactory)) as IViewControllerFactory;
-
-				_controllerContext = new PresentContext(this, null, args);
-
-				if (controllerFactory != null)
-				{
-					var scope = controllerFactory.CreateControllerScope(ref serviceProvider);
-					_controllerContext.SetServiceProvider(serviceProvider, scope);
-					_controller = controllerFactory.CreateController(controllerType, _controllerContext);
-				}
-				else
-				{
-					_controller = (IViewController)Utility.CreateInstance(serviceProvider, controllerType, _controllerContext);
-				}
+				_controllerProxy = new ViewControllerProxy(stateManager.ServiceProvider, this, null, controllerType, args);
 			}
 			catch
 			{
-				_controllerContext?.Dispose();
 				_stateManager.RemoveState(this);
 				throw;
 			}
@@ -96,7 +80,7 @@ namespace UnityFx.AppStates
 
 		public string Id => _id;
 		public bool IsActive => _active;
-		public IViewController Controller => _controller;
+		public IViewController Controller => _controllerProxy.Controller;
 
 		#endregion
 
@@ -135,12 +119,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(presentContext == null);
 			Debug.Assert(!_disposed);
 
-			if (_controller is IPresentable presentable)
-			{
-				return presentable.PresentAsync(_controllerContext);
-			}
-
-			return AsyncResult.CompletedOperation;
+			return _controllerProxy.PresentAsync(presentContext);
 		}
 
 		public IAsyncOperation DismissAsync(IDismissContext dismissContext)
@@ -150,12 +129,7 @@ namespace UnityFx.AppStates
 
 			DismissChildStates();
 
-			if (_controller is IPresentable presentable)
-			{
-				return presentable.DismissAsync(_controllerContext);
-			}
-
-			return AsyncResult.CompletedOperation;
+			return _controllerProxy.DismissAsync(dismissContext);
 		}
 
 		#endregion
@@ -166,40 +140,28 @@ namespace UnityFx.AppStates
 		{
 			Debug.Assert(!_disposed);
 
-			if (_controller is IPresentableEvents controllerEvents)
-			{
-				controllerEvents.OnPresent();
-			}
+			_controllerProxy.OnPresent();
 		}
 
 		public void OnActivate()
 		{
 			Debug.Assert(!_disposed);
 
-			if (_controller is IPresentableEvents controllerEvents)
-			{
-				controllerEvents.OnActivate();
-			}
+			_controllerProxy.OnActivate();
 		}
 
 		public void OnDeactivate()
 		{
 			Debug.Assert(!_disposed);
 
-			if (_controller is IPresentableEvents controllerEvents)
-			{
-				controllerEvents.OnDeactivate();
-			}
+			_controllerProxy.OnDeactivate();
 		}
 
 		public void OnDismiss()
 		{
 			Debug.Assert(!_disposed);
 
-			if (_controller is IPresentableEvents controllerEvents)
-			{
-				controllerEvents.OnDismiss();
-			}
+			_controllerProxy.OnDismiss();
 		}
 
 		#endregion
@@ -241,12 +203,7 @@ namespace UnityFx.AppStates
 
 				try
 				{
-					if (_controller is IDisposable d)
-					{
-						d.Dispose();
-					}
-
-					_controllerContext.Dispose();
+					_controllerProxy.Dispose();
 				}
 				finally
 				{
