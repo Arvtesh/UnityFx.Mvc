@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Threading;
 using UnityFx.AppStates.Common;
 using UnityFx.Async;
-using UnityFx.DependencyInjection;
 
 namespace UnityFx.AppStates
 {
@@ -45,22 +44,23 @@ namespace UnityFx.AppStates
 			_stateManager = stateManager;
 			_stateManager.AddState(this);
 
-			// Controller & view should be created after the state has been initialized.
+			// Controller should be created after the state has been initialized.
 			try
 			{
 				var serviceProvider = stateManager.ServiceProvider;
-				var scope = serviceProvider.CreateScope();
-				var controllerFactory = scope.ServiceProvider.GetService<IViewControllerFactory>();
+				var controllerFactory = serviceProvider.GetService(typeof(IViewControllerFactory)) as IViewControllerFactory;
 
-				_controllerContext = new PresentContext(scope, this, null, args);
+				_controllerContext = new PresentContext(this, null, args);
 
 				if (controllerFactory != null)
 				{
+					var scope = controllerFactory.CreateControllerScope(ref serviceProvider);
+					_controllerContext.SetServiceProvider(serviceProvider, scope);
 					_controller = controllerFactory.CreateController(controllerType, _controllerContext);
 				}
 				else
 				{
-					_controller = (IViewController)scope.ServiceProvider.CreateInstance(controllerType, _controllerContext);
+					_controller = (IViewController)Utility.CreateInstance(serviceProvider, controllerType, _controllerContext);
 				}
 			}
 			catch

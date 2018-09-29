@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using UnityFx.Async;
-using UnityFx.DependencyInjection;
 
 namespace UnityFx.AppStates
 {
@@ -12,10 +11,12 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private readonly IServiceScope _scope;
 		private readonly IAppState _parentState;
 		private readonly IViewController _parentController;
 		private readonly PresentArgs _args;
+
+		private IServiceProvider _serviceProvider;
+		private IDisposable _scope;
 
 		private bool _disposed;
 
@@ -23,12 +24,17 @@ namespace UnityFx.AppStates
 
 		#region interface
 
-		public PresentContext(IServiceScope serviceScope, IAppState state, IViewController parentController, PresentArgs args)
+		public PresentContext(IAppState state, IViewController parentController, PresentArgs args)
 		{
 			_parentState = state;
 			_parentController = parentController;
 			_args = args;
-			_scope = serviceScope;
+		}
+
+		public void SetServiceProvider(IServiceProvider serviceProvider, IDisposable scope)
+		{
+			_serviceProvider = serviceProvider;
+			_scope = scope;
 		}
 
 		#endregion
@@ -36,6 +42,8 @@ namespace UnityFx.AppStates
 		#region IViewControllerContext
 
 		public PresentArgs PresentArgs => _args;
+
+		public IServiceProvider ServiceProvider => _serviceProvider;
 
 		public IAppState ParentState => _parentState;
 
@@ -77,7 +85,7 @@ namespace UnityFx.AppStates
 			if (!_disposed)
 			{
 				_disposed = true;
-				_scope.Dispose();
+				_scope?.Dispose();
 			}
 		}
 
