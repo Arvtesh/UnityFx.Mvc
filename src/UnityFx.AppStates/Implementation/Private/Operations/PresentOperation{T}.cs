@@ -15,6 +15,7 @@ namespace UnityFx.AppStates
 		private readonly PresentArgs _args;
 		private readonly AppState _parentState;
 
+		private AppState _state;
 		private IViewController _controller;
 		private IAsyncOperation _pushOp;
 
@@ -39,10 +40,10 @@ namespace UnityFx.AppStates
 
 		protected sealed override void OnStarted()
 		{
-			base.OnStarted();
-
 			try
 			{
+				base.OnStarted();
+
 				if ((_args.Options & PresentOptions.DismissAllStates) != 0)
 				{
 					DismissAllStates();
@@ -50,17 +51,16 @@ namespace UnityFx.AppStates
 				else if ((_args.Options & PresentOptions.DismissCurrentState) != 0 && _parentState != null)
 				{
 					_parentState.DismissChildStates();
-					InvokeOnDismiss(_parentState.Controller);
+					_parentState.OnDismiss();
 				}
 
-				var state = new AppState(StateManager, _parentState, _controllerType, _args);
-
-				_pushOp = state.PresentAsync(default(IPresentContext));
+				_state = new AppState(StateManager, _parentState, _controllerType, _args);
+				_pushOp = _state.PresentAsync(default(IPresentContext));
 				_pushOp.AddCompletionCallback(this);
 			}
 			catch (Exception e)
 			{
-				Fail(e);
+				TrySetException(e);
 			}
 		}
 
@@ -68,8 +68,9 @@ namespace UnityFx.AppStates
 		{
 			try
 			{
-				StateManager.OnPresentCompleted(_controller, this);
 				base.OnCompleted();
+
+				StateManager.OnPresentCompleted(_controller, this);
 			}
 			finally
 			{
@@ -85,6 +86,41 @@ namespace UnityFx.AppStates
 
 		#endregion
 
+		#region IAsyncContinuation
+
+		public override void Invoke(IAsyncOperation op)
+		{
+			Debug.Assert(_pushOp != null);
+			Debug.Assert(_controller != null);
+
+			try
+			{
+				_pushOp = null;
+
+				if (op.IsCompletedSuccessfully)
+				{
+					if (_parentState != null && (_args.Options & PresentOptions.DismissCurrentState) != 0)
+					{
+						_parentState.Dispose();
+					}
+
+					_state.OnPresent();
+
+					TrySetResult((T)_controller);
+				}
+				else
+				{
+					TrySetException(op.Exception);
+				}
+			}
+			catch (Exception e)
+			{
+				TrySetException(e);
+			}
+		}
+
+		#endregion
+
 		#region Object
 
 		public override string ToString()
@@ -94,42 +130,7 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region IAsyncContinuation
-
-		public override void Invoke(IAsyncOperation op)
-		{
-			try
-			{
-				Debug.Assert(_pushOp != null);
-				Debug.Assert(_controller != null);
-
-				if (ProcessNonSuccess(op))
-				{
-					_pushOp = null;
-					SetCompleted();
-				}
-			}
-			catch (Exception e)
-			{
-				Fail(e);
-			}
-		}
-
-		#endregion
-
 		#region implementation
-
-		private void SetCompleted()
-		{
-			if (_parentState != null && (_args.Options & PresentOptions.DismissCurrentState) != 0)
-			{
-				_parentState.Dispose();
-			}
-
-			InvokeOnPresent(_controller);
-			TrySetResult((T)_controller);
-		}
-
 		#endregion
 	}
 }

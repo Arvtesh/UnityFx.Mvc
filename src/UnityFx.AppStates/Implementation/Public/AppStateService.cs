@@ -160,15 +160,6 @@ namespace UnityFx.AppStates
 
 		#region internals
 
-		internal void TraceError(string s)
-		{
-			Debug.Assert(s != null);
-			Debug.Assert(!_disposed);
-
-			var opId = _stackOperations.Current?.Id ?? 0;
-			_traceSource.TraceEvent(TraceEventType.Error, opId, s);
-		}
-
 		internal void TraceException(Exception e)
 		{
 			Debug.Assert(e != null);

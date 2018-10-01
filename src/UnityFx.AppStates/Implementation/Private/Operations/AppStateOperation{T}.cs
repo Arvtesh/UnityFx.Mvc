@@ -14,7 +14,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A yieldable asynchronous state operation.
 	/// </summary>
-	internal abstract class AppStateOperation<T> : AsyncResult<T>, ITraceable where T : class
+	internal abstract class AppStateOperation<T> : AsyncResult<T> where T : class
 	{
 		#region data
 
@@ -38,55 +38,11 @@ namespace UnityFx.AppStates
 
 			if (string.IsNullOrEmpty(comment))
 			{
-				TraceEvent(TraceEventType.Verbose, ToString() + " initiated");
+				_stateManager.TraceEvent(TraceEventType.Verbose, ToString() + " initiated");
 			}
 			else
 			{
-				TraceEvent(TraceEventType.Verbose, ToString() + " initiated: " + comment);
-			}
-		}
-
-		protected void InvokeOnPresent(IViewController controller)
-		{
-			Debug.Assert(controller != null);
-			TraceEvent(TraceEventType.Verbose, "Present " + controller.Id);
-
-			if (controller is IPresentableEvents pe)
-			{
-				pe.OnPresent();
-			}
-		}
-
-		protected void InvokeOnActivate(IViewController controller)
-		{
-			Debug.Assert(controller != null);
-			TraceEvent(TraceEventType.Verbose, "Activate " + controller.Id);
-
-			if (controller is IPresentableEvents pe)
-			{
-				pe.OnActivate();
-			}
-		}
-
-		protected void InvokeOnDeactivate(IViewController controller)
-		{
-			Debug.Assert(controller != null);
-			TraceEvent(TraceEventType.Verbose, "Deactivate " + controller.Id);
-
-			if (controller is IPresentableEvents pe)
-			{
-				pe.OnDeactivate();
-			}
-		}
-
-		protected void InvokeOnDismiss(IViewController controller)
-		{
-			Debug.Assert(controller != null);
-			TraceEvent(TraceEventType.Verbose, "Dismiss " + controller.Id);
-
-			if (controller is IPresentableEvents pe)
-			{
-				pe.OnDismiss();
+				_stateManager.TraceEvent(TraceEventType.Verbose, ToString() + " initiated: " + comment);
 			}
 		}
 
@@ -95,8 +51,7 @@ namespace UnityFx.AppStates
 			// TODO: replace _stateManager.States.Count <= 1 check with something less hacky
 			if (_stateManager.States.TryPeek(out var state) && !state.IsActive && _stateManager.States.Count <= 1)
 			{
-				(state as AppState).SetActive(true);
-				InvokeOnActivate(state.Controller);
+				(state as IPresentableEvents).OnActivate();
 			}
 		}
 
@@ -104,8 +59,7 @@ namespace UnityFx.AppStates
 		{
 			if (_stateManager.States.TryPeek(out var state) && state.IsActive)
 			{
-				(state as AppState).SetActive(false);
-				InvokeOnDeactivate(state.Controller);
+				(state as IPresentableEvents).OnDeactivate();
 			}
 		}
 
@@ -113,33 +67,9 @@ namespace UnityFx.AppStates
 		{
 			while (_stateManager.States.TryPeek(out var state))
 			{
-				InvokeOnDismiss(state.Controller);
+				(state as IPresentableEvents).OnDismiss();
 				state.Dispose();
 			}
-		}
-
-		protected bool ProcessNonSuccess(IAsyncOperation op)
-		{
-			Debug.Assert(op != null);
-
-			if (op.IsFaulted)
-			{
-				TrySetException(op.Exception, false);
-				return false;
-			}
-			else if (op.IsCanceled)
-			{
-				TrySetCanceled(false);
-				return false;
-			}
-
-			return true;
-		}
-
-		protected void Fail(Exception e)
-		{
-			TraceException(e);
-			TrySetException(e, false);
 		}
 
 		protected static string GetStateDesc(Type controllerType, PresentArgs args)
@@ -153,8 +83,6 @@ namespace UnityFx.AppStates
 
 		protected override void OnStarted()
 		{
-			base.OnStarted();
-
 			TraceStart();
 			TryDeactivateTopState();
 		}
@@ -168,7 +96,6 @@ namespace UnityFx.AppStates
 			finally
 			{
 				TraceStop(Status);
-				base.OnCompleted();
 			}
 		}
 
@@ -179,50 +106,27 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region ITraceable
-
-		public void TraceError(string s)
-		{
-			_traceSource.TraceEvent(TraceEventType.Error, Id, ToString() + ": " + s);
-		}
-
-		public void TraceException(Exception e)
-		{
-			_traceSource.TraceData(TraceEventType.Error, Id, e);
-		}
-
-		public void TraceEvent(TraceEventType eventType, string s)
-		{
-			_traceSource.TraceEvent(eventType, Id, s);
-		}
-
-		public void TraceData(TraceEventType eventType, object data)
-		{
-			_traceSource.TraceData(eventType, Id, data);
-		}
-
-		#endregion
-
 		#region implementation
 
 		private void TraceStart()
 		{
-			TraceEvent(TraceEventType.Start, ToString() + " started");
+			_stateManager.TraceEvent(TraceEventType.Start, ToString() + " started");
 		}
 
 		private void TraceStop(AsyncOperationStatus status)
 		{
 			if (status == AsyncOperationStatus.RanToCompletion)
 			{
-				TraceEvent(TraceEventType.Stop, ToString() + " completed");
+				_stateManager.TraceEvent(TraceEventType.Stop, ToString() + " completed");
 			}
 			else if (status == AsyncOperationStatus.Faulted)
 			{
-				TraceEvent(TraceEventType.Stop, ToString() + " faulted");
+				_stateManager.TraceException(Exception);
+				_stateManager.TraceEvent(TraceEventType.Stop, ToString() + " faulted");
 			}
 			else if (status == AsyncOperationStatus.Canceled)
 			{
-				TraceEvent(TraceEventType.Stop, ToString() + " canceled");
+				_stateManager.TraceEvent(TraceEventType.Stop, ToString() + " canceled");
 			}
 		}
 

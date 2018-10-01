@@ -48,7 +48,7 @@ namespace UnityFx.AppStates
 			}
 			catch (Exception e)
 			{
-				Fail(e);
+				TrySetException(e);
 			}
 		}
 
@@ -56,22 +56,13 @@ namespace UnityFx.AppStates
 		{
 			try
 			{
-				if (_state != null)
-				{
-					StateManager.OnDismissCompleted(_state, this);
-
-					_state.Dispose();
-					_state = null;
-				}
-				else
-				{
-					StateManager.OnDismissCompleted(null, this);
-				}
-
 				base.OnCompleted();
+
+				StateManager.OnDismissCompleted(_state, this);
 			}
 			finally
 			{
+				_state?.Dispose();
 				_state = null;
 			}
 		}
@@ -87,36 +78,40 @@ namespace UnityFx.AppStates
 
 		public override void Invoke(IAsyncOperation op)
 		{
+			Debug.Assert(op != null);
 			Debug.Assert(_dismissOp != null);
 
 			try
 			{
-				if (ProcessNonSuccess(op))
+				_dismissOp = null;
+
+				if (op.IsCompletedSuccessfully)
 				{
-					_dismissOp = null;
-					SetCompleted();
+					TrySetCompleted();
+				}
+				else
+				{
+					TrySetException(op.Exception);
 				}
 			}
 			catch (Exception e)
 			{
-				Fail(e);
+				TrySetException(e);
 			}
 		}
 
 		#endregion
 
-		#region implementation
+		#region Object
 
-		private void SetCompleted()
+		public override string ToString()
 		{
-			if (_state != null)
-			{
-				InvokeOnDismiss(_state.Controller);
-			}
-
-			TrySetCompleted();
+			return "Dismiss";
 		}
 
+		#endregion
+
+		#region implementation
 		#endregion
 	}
 }
