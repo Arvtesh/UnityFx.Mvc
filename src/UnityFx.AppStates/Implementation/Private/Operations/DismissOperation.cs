@@ -32,7 +32,8 @@ namespace UnityFx.AppStates
 		{
 			try
 			{
-				base.OnStarted();
+				TraceStart();
+				TryDeactivateTopState();
 
 				if (_state != null)
 				{
@@ -56,20 +57,16 @@ namespace UnityFx.AppStates
 		{
 			try
 			{
-				base.OnCompleted();
-
-				StateManager.OnDismissCompleted(_state, this);
+				StateManager.OnDismissCompleted(_state, _state.Controller, this);
+				TryActivateTopState();
 			}
 			finally
 			{
 				_state?.Dispose();
 				_state = null;
-			}
-		}
 
-		protected override void OnCancel()
-		{
-			base.OnCancel();
+				TraceStop(Status);
+			}
 		}
 
 		#endregion

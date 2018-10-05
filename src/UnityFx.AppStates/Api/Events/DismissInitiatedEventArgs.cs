@@ -14,7 +14,8 @@ namespace UnityFx.AppStates
 
 		private readonly int _id;
 		private readonly object _userState;
-		private readonly IDismissable _obj;
+		private readonly IAppState _state;
+		private readonly IViewController _controller;
 
 		#endregion
 
@@ -31,18 +32,24 @@ namespace UnityFx.AppStates
 		public object UserState => _userState;
 
 		/// <summary>
-		/// Gets an object being dismissed.
+		/// Gets a state being dismissed.
 		/// </summary>
-		public IDismissable Target => _obj;
+		public IAppState State => _state;
+
+		/// <summary>
+		/// Gets a controller being dismissed.
+		/// </summary>
+		public IViewController Controller => _controller;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DismissInitiatedEventArgs"/> class.
 		/// </summary>
-		public DismissInitiatedEventArgs(IDismissable obj, int opId, object userState)
+		public DismissInitiatedEventArgs(IAppState state, IViewController controller, int opId, object userState)
 		{
 			_id = opId;
 			_userState = userState;
-			_obj = obj;
+			_state = state;
+			_controller = controller;
 		}
 
 		#endregion

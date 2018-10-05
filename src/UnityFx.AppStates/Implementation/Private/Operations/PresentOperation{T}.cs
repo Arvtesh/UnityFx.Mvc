@@ -16,7 +16,6 @@ namespace UnityFx.AppStates
 		private readonly AppState _parentState;
 
 		private AppState _state;
-		private IViewController _controller;
 		private IAsyncOperation _pushOp;
 
 		#endregion
@@ -38,11 +37,12 @@ namespace UnityFx.AppStates
 
 		#region AsyncResult
 
-		protected sealed override void OnStarted()
+		protected override void OnStarted()
 		{
 			try
 			{
-				base.OnStarted();
+				TraceStart();
+				TryDeactivateTopState();
 
 				if ((_args.Options & PresentOptions.DismissAllStates) != 0)
 				{
@@ -66,16 +66,19 @@ namespace UnityFx.AppStates
 
 		protected override void OnCompleted()
 		{
+			Debug.Assert(_state != null);
+
 			try
 			{
-				base.OnCompleted();
-
-				StateManager.OnPresentCompleted(_controller, this);
+				StateManager.OnPresentCompleted(_state, _state.Controller, this);
+				TryActivateTopState();
 			}
 			finally
 			{
-				_controller = null;
+				_state = null;
 				_pushOp = null;
+
+				TraceStop(Status);
 			}
 		}
 
@@ -91,7 +94,7 @@ namespace UnityFx.AppStates
 		public override void Invoke(IAsyncOperation op)
 		{
 			Debug.Assert(_pushOp != null);
-			Debug.Assert(_controller != null);
+			Debug.Assert(_state != null);
 
 			try
 			{
@@ -99,14 +102,16 @@ namespace UnityFx.AppStates
 
 				if (op.IsCompletedSuccessfully)
 				{
+					// Make sure parent state is disposed.
 					if (_parentState != null && (_args.Options & PresentOptions.DismissCurrentState) != 0)
 					{
 						_parentState.Dispose();
 					}
 
+					// Present the new state. If this thows the operation should fail as well.
 					_state.OnPresent();
 
-					TrySetResult((T)_controller);
+					TrySetResult((T)_state.Controller);
 				}
 				else
 				{

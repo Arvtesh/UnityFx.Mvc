@@ -72,48 +72,12 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		protected static string GetStateDesc(Type controllerType, PresentArgs args)
-		{
-			return Utility.GetControllerTypeId(controllerType) + " (" + args.ToString() + ')';
-		}
-
-		#endregion
-
-		#region AsyncResult
-
-		protected override void OnStarted()
-		{
-			TraceStart();
-			TryDeactivateTopState();
-		}
-
-		protected override void OnCompleted()
-		{
-			try
-			{
-				TryActivateTopState();
-			}
-			finally
-			{
-				TraceStop(Status);
-			}
-		}
-
-		protected override void OnCancel()
-		{
-			TrySetCanceled(false);
-		}
-
-		#endregion
-
-		#region implementation
-
-		private void TraceStart()
+		protected void TraceStart()
 		{
 			_stateManager.TraceEvent(TraceEventType.Start, ToString() + " started");
 		}
 
-		private void TraceStop(AsyncOperationStatus status)
+		protected void TraceStop(AsyncOperationStatus status)
 		{
 			if (status == AsyncOperationStatus.RanToCompletion)
 			{
@@ -129,6 +93,24 @@ namespace UnityFx.AppStates
 				_stateManager.TraceEvent(TraceEventType.Stop, ToString() + " canceled");
 			}
 		}
+
+		protected static string GetStateDesc(Type controllerType, PresentArgs args)
+		{
+			return Utility.GetControllerTypeId(controllerType) + " (" + args.ToString() + ')';
+		}
+
+		#endregion
+
+		#region AsyncResult
+
+		protected override void OnCancel()
+		{
+			TrySetCanceled(false);
+		}
+
+		#endregion
+
+		#region implementation
 
 		#endregion
 	}

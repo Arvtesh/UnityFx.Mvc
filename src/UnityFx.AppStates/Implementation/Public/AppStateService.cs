@@ -91,25 +91,25 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Called when a present operation has completed.
 		/// </summary>
-		protected internal virtual void OnPresentCompleted(IViewController result, IAsyncOperation op)
+		protected internal virtual void OnPresentCompleted(IAppState state, IViewController controller, IAsyncOperation op)
 		{
-			PresentCompleted?.Invoke(this, new PresentCompletedEventArgs(result, op.Id, op.AsyncState, op.Exception, op.IsCanceled));
+			PresentCompleted?.Invoke(this, new PresentCompletedEventArgs(state, controller, op.Id, op.AsyncState, op.Exception, op.IsCanceled));
 		}
 
 		/// <summary>
 		/// Called when a new dismiss operation has been initiated.
 		/// </summary>
-		protected internal virtual void OnDismissInitiated(IDismissable target, IAsyncOperation op)
+		protected internal virtual void OnDismissInitiated(IAppState state, IViewController controller, IAsyncOperation op)
 		{
-			DismissInitiated?.Invoke(this, new DismissInitiatedEventArgs(target, op.Id, op.AsyncState));
+			DismissInitiated?.Invoke(this, new DismissInitiatedEventArgs(state, controller, op.Id, op.AsyncState));
 		}
 
 		/// <summary>
 		/// Called when a dismiss operation has completed.
 		/// </summary>
-		protected internal virtual void OnDismissCompleted(IDismissable target, IAsyncOperation op)
+		protected internal virtual void OnDismissCompleted(IAppState state, IViewController controller, IAsyncOperation op)
 		{
-			DismissCompleted?.Invoke(this, new DismissCompletedEventArgs(target, op.Id, op.AsyncState, op.Exception, op.IsCanceled));
+			DismissCompleted?.Invoke(this, new DismissCompletedEventArgs(state, controller, op.Id, op.AsyncState, op.Exception, op.IsCanceled));
 		}
 
 		/// <summary>
@@ -247,7 +247,7 @@ namespace UnityFx.AppStates
 			ThrowIfDisposed();
 
 			var result = new DismissOperation(this, state, null);
-			OnDismissInitiated(state, result);
+			OnDismissInitiated(state, state.Controller, result);
 			QueueOperation(result);
 			return result;
 		}
