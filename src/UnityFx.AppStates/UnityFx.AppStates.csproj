@@ -33,8 +33,4 @@
 		<AdditionalFiles Include="../CodingConventions/Common/stylecop.json" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\UnityFx.AppStates.Common\UnityFx.AppStates.Common.csproj" />
-	</ItemGroup>
-
 </Project>

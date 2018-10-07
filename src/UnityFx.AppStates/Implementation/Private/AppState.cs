@@ -6,7 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using UnityFx.AppStates.Common;
 using UnityFx.Async;
 
 namespace UnityFx.AppStates

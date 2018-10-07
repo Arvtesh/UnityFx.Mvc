@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace UnityFx.AppStates.Common
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// A generic linked list read-only collection.

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Xunit;
 using NSubstitute;
 
-namespace UnityFx.AppStates.Common
+namespace UnityFx.AppStates
 {
 	public class TreeListCollectionTests
 	{

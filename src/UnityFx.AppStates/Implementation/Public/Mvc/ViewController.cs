@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using UnityFx.AppStates.Common;
 using UnityFx.Async;
 
 namespace UnityFx.AppStates

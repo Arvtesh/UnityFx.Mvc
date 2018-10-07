@@ -27,7 +27,6 @@
 		<Reference Include="UnityEngine.UI">
 		  <HintPath>..\Dependencies\UnityEngine.UI.dll</HintPath>
 		</Reference>
-		<ProjectReference Include="..\UnityFx.AppStates.Common\UnityFx.AppStates.Common.csproj" />
 		<ProjectReference Include="..\UnityFx.AppStates\UnityFx.AppStates.csproj" />
 	</ItemGroup>
 

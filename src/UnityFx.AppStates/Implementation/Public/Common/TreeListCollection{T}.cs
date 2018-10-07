@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace UnityFx.AppStates.Common
+namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// A generic tree list collection.
@@ -403,8 +403,8 @@ namespace UnityFx.AppStates.Common
 		/// </summary>
 		public struct Enumerable : IEnumerable<T>
 		{
-			private T _first;
-			private bool _fwd;
+			private readonly T _first;
+			private readonly bool _fwd;
 
 			internal Enumerable(T first, bool forward)
 			{
@@ -436,9 +436,10 @@ namespace UnityFx.AppStates.Common
 		/// </summary>
 		public struct Enumerator : IEnumerator<T>
 		{
+			private readonly bool _fwd;
+
 			private T _first;
 			private T _current;
-			private bool _fwd;
 
 			/// <inheritdoc/>
 			public T Current => _current;

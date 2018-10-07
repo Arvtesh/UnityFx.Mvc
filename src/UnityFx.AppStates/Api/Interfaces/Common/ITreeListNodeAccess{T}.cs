@@ -5,29 +5,24 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace UnityFx.AppStates.Common
+namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// A generic node of linked list.
+	/// A write-acess to <see cref="ITreeListNode{T}"/>.
 	/// </summary>
 	/// <typeparam name="T">Type of the node.</typeparam>
 	/// <seealso cref="ITreeListCollection{T}"/>
-	/// <seealso cref="ITreeListNodeAccess{T}"/>
-	public interface ITreeListNode<T> where T : ITreeListNode<T>
+	/// <seealso cref="ITreeListNode{T}"/>
+	public interface ITreeListNodeAccess<T> where T : ITreeListNode<T>
 	{
-		/// <summary>
-		/// Gets a parent node for this one (if any).
-		/// </summary>
-		T Parent { get; }
-
 		/// <summary>
 		/// Gets previous sibling node (if any).
 		/// </summary>
-		T Prev { get; }
+		void SetPrev(T prev);
 
 		/// <summary>
 		/// Gets next sibling node (if any).
 		/// </summary>
-		T Next { get; }
+		void SetNext(T next);
 	}
 }
