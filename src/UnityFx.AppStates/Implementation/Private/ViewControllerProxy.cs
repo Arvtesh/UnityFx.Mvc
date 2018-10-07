@@ -116,7 +116,9 @@ namespace UnityFx.AppStates
 
 			if (_controller is IPresentable presentable)
 			{
-				return presentable.PresentAsync(this);
+				// Make sure the method never returns null.
+				var op = presentable.PresentAsync(this);
+				return op ?? AsyncResult.CompletedOperation;
 			}
 
 			return AsyncResult.CompletedOperation;
@@ -129,7 +131,9 @@ namespace UnityFx.AppStates
 
 			if (_controller is IPresentable presentable)
 			{
-				return presentable.DismissAsync(this);
+				// Make sure the method never returns null.
+				var op = presentable.DismissAsync(this);
+				return op ?? AsyncResult.CompletedOperation;
 			}
 
 			return AsyncResult.CompletedOperation;

@@ -95,6 +95,12 @@ namespace UnityFx.AppStates
 		public IAsyncOperation<IViewController> PresentAsync(Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
+
+			if (args == null)
+			{
+				throw new ArgumentNullException(nameof(args));
+			}
+
 			return _stateManager.PresentAsync(this, controllerType, args);
 		}
 
@@ -107,6 +113,12 @@ namespace UnityFx.AppStates
 		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IViewController
 		{
 			ThrowIfDisposed();
+
+			if (args == null)
+			{
+				throw new ArgumentNullException(nameof(args));
+			}
+
 			return _stateManager.PresentAsync<TController>(this, args);
 		}
 
