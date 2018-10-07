@@ -9,10 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.AppStates.Tests", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.AppStates.AssetStore", "UnityFx.AppStates.AssetStore\UnityFx.AppStates.AssetStore.csproj", "{770CF159-0048-4A49-8EF9-A23541991EC1}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Layer1", "Layer1", "{4B6D3AE5-14EC-44EA-A165-05E9673112BE}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Layer2", "Layer2", "{9DFC496F-E265-400D-A611-A6D8367C2504}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,11 +30,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{C7D875E0-B7DE-4F90-9931-2D879B1CE32E} = {4B6D3AE5-14EC-44EA-A165-05E9673112BE}
-		{CB7C17FF-4B84-4457-A9FE-53CD7B23F751} = {4B6D3AE5-14EC-44EA-A165-05E9673112BE}
-		{770CF159-0048-4A49-8EF9-A23541991EC1} = {9DFC496F-E265-400D-A611-A6D8367C2504}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CE40B209-2035-48AF-B5F1-FA064CECE92A}
