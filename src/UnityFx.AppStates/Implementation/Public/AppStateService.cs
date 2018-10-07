@@ -3,6 +3,9 @@
 
 using System;
 using System.Collections;
+#if !NET35
+using System.Collections.Concurrent;
+#endif
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -12,7 +15,7 @@ using UnityFx.Async;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// A manager of application states (<see cref="AppState"/>).
+	/// A manager of application states (<see cref="IAppState"/>).
 	/// </summary>
 	/// <threadsafety static="true" instance="false"/>
 	/// <seealso cref="IAppState"/>
@@ -21,14 +24,20 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private readonly TraceSource _traceSource;
-		private readonly SynchronizationContext _synchronizationContext;
 		private readonly IServiceProvider _serviceProvider;
-
+		private readonly SynchronizationContext _synchronizationContext;
 		private readonly AppStateServiceSettings _config;
-		private readonly AppStateCollection _states;
-		private readonly AsyncResultQueue<AsyncResult> _stackOperations;
+		private readonly TraceSource _traceSource = new TraceSource(ServiceName);
+		private readonly AppStateCollection _states = new AppStateCollection();
+#if NET35
+		private readonly List<AsyncResult> _ops = new List<AsyncResult>();
+#else
+		private readonly ConcurrentQueue<AsyncResult> _ops = new ConcurrentQueue<AsyncResult>();
+#endif
 
+		private AsyncResult _currentOp;
+		private SendOrPostCallback _startCallback;
+		private Action<IAsyncOperation> _completionCallback;
 		private bool _disposed;
 
 		#endregion
@@ -61,8 +70,10 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <param name="serviceProvider"></param>
 		public AppStateService(IServiceProvider serviceProvider)
-			: this(serviceProvider, SynchronizationContext.Current)
 		{
+			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			_synchronizationContext = SynchronizationContext.Current;
+			_config = new AppStateServiceSettings(_traceSource);
 		}
 
 		/// <summary>
@@ -73,11 +84,8 @@ namespace UnityFx.AppStates
 		public AppStateService(IServiceProvider serviceProvider, SynchronizationContext syncContext)
 		{
 			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-			_traceSource = new TraceSource(ServiceName);
-			_synchronizationContext = syncContext;
+			_synchronizationContext = syncContext ?? throw new ArgumentNullException(nameof(syncContext));
 			_config = new AppStateServiceSettings(_traceSource);
-			_states = new AppStateCollection();
-			_stackOperations = new AsyncResultQueue<AsyncResult>(syncContext);
 		}
 
 		/// <summary>
@@ -127,12 +135,28 @@ namespace UnityFx.AppStates
 				if (disposing)
 				{
 					// 1) Stop operation processing.
-					_stackOperations.Suspended = true;
+#if NET35
+					lock (_ops)
+					{
+						foreach (var op in _ops)
+						{
+							op.RemoveCompletionCallback(_completionCallback);
+							op.Cancel();
+						}
 
-					// 2) Cancel pending operations.
-					_stackOperations.Cancel();
+						_ops.Clear();
+					}
+#else
+					while (_ops.TryDequeue(out var op))
+					{
+						op.RemoveCompletionCallback(_completionCallback);
+						op.Cancel();
+					}
+#endif
 
-					// 3) Dispose child states.
+					_currentOp = null;
+
+					// 2) Dispose child states.
 					foreach (var state in _states.Reverse())
 					{
 						state.Dispose();
@@ -165,7 +189,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(e != null);
 			Debug.Assert(!_disposed);
 
-			var opId = _stackOperations.Current?.Id ?? 0;
+			var opId = _currentOp?.Id ?? 0;
 			_traceSource.TraceEvent(TraceEventType.Error, opId, e.ToString());
 		}
 
@@ -174,7 +198,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(s != null);
 			Debug.Assert(!_disposed);
 
-			var opId = _stackOperations.Current?.Id ?? 0;
+			var opId = _currentOp?.Id ?? 0;
 			_traceSource.TraceEvent(eventType, opId, s);
 		}
 
@@ -182,7 +206,7 @@ namespace UnityFx.AppStates
 		{
 			Debug.Assert(!_disposed);
 
-			var opId = _stackOperations.Current?.Id ?? 0;
+			var opId = _currentOp?.Id ?? 0;
 			_traceSource.TraceData(eventType, opId, data);
 		}
 
@@ -222,10 +246,11 @@ namespace UnityFx.AppStates
 
 		internal IAsyncOperation<IViewController> PresentAsync(AppState parentState, Type controllerType, PresentArgs args)
 		{
+			Debug.Assert(args != null);
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
-			var result = new PresentOperation<IViewController>(this, parentState, controllerType, args ?? PresentArgs.Default);
+			var result = new PresentOperation<IViewController>(this, parentState, controllerType, args);
 			OnPresentInitiated(args, result);
 			QueueOperation(result);
 			return result;
@@ -233,10 +258,11 @@ namespace UnityFx.AppStates
 
 		internal IAsyncOperation<T> PresentAsync<T>(AppState parentState, PresentArgs args) where T : class, IViewController
 		{
+			Debug.Assert(args != null);
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(typeof(T));
 
-			var result = new PresentOperation<T>(this, parentState, typeof(T), args ?? PresentArgs.Default);
+			var result = new PresentOperation<T>(this, parentState, typeof(T), args);
 			OnPresentInitiated(args, result);
 			QueueOperation(result);
 			return result;
@@ -269,7 +295,17 @@ namespace UnityFx.AppStates
 		public event EventHandler<DismissCompletedEventArgs> DismissCompleted;
 
 		/// <inheritdoc/>
-		public bool IsBusy => !_stackOperations.IsEmpty;
+		public bool IsBusy
+		{
+			get
+			{
+#if NET35
+				return _ops.Count != 0;
+#else
+				return !_ops.IsEmpty;
+#endif
+			}
+		}
 
 		/// <inheritdoc/>
 		public IAppState ActiveState
@@ -306,6 +342,11 @@ namespace UnityFx.AppStates
 		/// <inheritdoc/>
 		public IAsyncOperation<IViewController> PresentAsync(Type controllerType, PresentArgs args)
 		{
+			if (args == null)
+			{
+				throw new ArgumentNullException(nameof(args));
+			}
+
 			return PresentAsync(null, controllerType, args);
 		}
 
@@ -318,6 +359,11 @@ namespace UnityFx.AppStates
 		/// <inheritdoc/>
 		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IViewController
 		{
+			if (args == null)
+			{
+				throw new ArgumentNullException(nameof(args));
+			}
+
 			return PresentAsync<TController>(null, args);
 		}
 
@@ -338,7 +384,111 @@ namespace UnityFx.AppStates
 
 		private void QueueOperation(AsyncResult op)
 		{
-			_stackOperations.Add(op);
+			Debug.Assert(op != null);
+			Debug.Assert(!op.IsStarted);
+
+#if NET35
+			lock (_ops)
+			{
+				_ops.Add(op);
+				TryStart();
+			}
+#else
+			_ops.Enqueue(op);
+			TryStart();
+#endif
+		}
+
+		private void TryStart()
+		{
+			if (!_disposed)
+			{
+				if (_synchronizationContext == null || _synchronizationContext == SynchronizationContext.Current)
+				{
+					TryStartUnsafe();
+				}
+				else
+				{
+					if (_startCallback == null)
+					{
+						_startCallback = OnStartCallback;
+					}
+
+					_synchronizationContext.Post(_startCallback, null);
+				}
+			}
+		}
+
+		private void TryStartUnsafe()
+		{
+			// This is supposed to be UI thread.
+			if (!_disposed)
+			{
+				if (_completionCallback == null)
+				{
+					_completionCallback = OnCompletedCallback;
+				}
+
+#if NET35
+				while (_ops.Count > 0)
+				{
+					var firstOp = _ops[0];
+
+					if (firstOp.IsCompleted)
+					{
+						_ops.RemoveAt(0);
+						_currentOp = null;
+					}
+					else
+					{
+						firstOp.AddCompletionCallback(_completionCallback);
+						firstOp.TryStart();
+						_currentOp = firstOp;
+						break;
+					}
+				}
+#else
+				while (_ops.TryPeek(out var firstOp))
+				{
+					if (firstOp.IsCompleted)
+					{
+						_ops.TryDequeue(out firstOp);
+						_currentOp = null;
+					}
+					else
+					{
+						firstOp.AddCompletionCallback(_completionCallback);
+						firstOp.TryStart();
+						_currentOp = firstOp;
+						break;
+					}
+				}
+#endif
+			}
+		}
+
+		private void OnStartCallback(object args)
+		{
+#if NET35
+			lock (_ops)
+			{
+				TryStartUnsafe();
+			}
+#else
+			TryStartUnsafe();
+#endif
+		}
+
+		private void OnCompletedCallback(IAsyncOperation op)
+		{
+#if NET35
+			lock (_ops)
+			{
+				TryStartUnsafe();
+			}
+#else
+			TryStartUnsafe();
+#endif
 		}
 
 		private void ThrowIfInvalidArgs(PresentArgs args)
