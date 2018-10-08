@@ -17,7 +17,11 @@ namespace UnityFx.AppStates.Fsm
 	{
 		#region data
 
+		private readonly IServiceProvider _serviceProvider;
+		private readonly Dictionary<Type, FsmState<TCommand>> _states = new Dictionary<Type, FsmState<TCommand>>();
+
 		private FsmState<TCommand> _activeState;
+		private bool _stateChanging;
 		private bool _disposed;
 
 		#endregion
@@ -30,20 +34,91 @@ namespace UnityFx.AppStates.Fsm
 		public FsmState<TCommand> ActiveState => _activeState;
 
 		/// <summary>
-		/// TODO.
+		/// Initializes a new instance of the <see cref="FsmService{TCommand}"/> class.
 		/// </summary>
-		/// <param name="stateType"></param>
-		public void SetState(Type stateType)
+		/// <param name="serviceProvider">Service provider for states initialization.</param>
+		public FsmService(IServiceProvider serviceProvider)
 		{
-			ThrowIfDisposed();
+			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 		}
 
 		/// <summary>
-		/// TODO.
+		/// Changes FSM active state.
 		/// </summary>
-		public void SetState<TState>() where TState : FsmState<TCommand>
+		/// <param name="stateType">Type of the next state to activate.</param>
+		/// <param name="args">User-supplied state arguments.</param>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="stateType"/> is not a valid state type.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if another state change is in progress.</exception>
+		/// <returns>Returns <see langword="true"/> if the state was changed; <see langword="false"/> otherwise.</returns>
+		/// <seealso cref="ProcessCommand(TCommand)"/>
+		public bool SetState(Type stateType, object args)
 		{
 			ThrowIfDisposed();
+
+			if (_stateChanging)
+			{
+				throw new InvalidOperationException("Cannot change state while another state change in progress.");
+			}
+
+			if (stateType == null)
+			{
+				if (_activeState != null)
+				{
+					try
+					{
+						_stateChanging = true;
+						_activeState.OnExit(null);
+						_activeState = null;
+					}
+					finally
+					{
+						_stateChanging = false;
+					}
+				}
+			}
+			else
+			{
+				if (!stateType.IsSubclassOf(typeof(FsmState<TCommand>)))
+				{
+					throw new ArgumentException("The state should inherit FsmState<TCommand>.", nameof(stateType));
+				}
+
+				var newState = GetState(stateType);
+				var prevState = _activeState;
+
+				if (newState != _activeState)
+				{
+					try
+					{
+						_stateChanging = true;
+
+						prevState?.OnExit(newState);
+						newState.OnEnter(prevState, args);
+
+						_activeState = newState;
+					}
+					finally
+					{
+						_stateChanging = false;
+					}
+
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Processes a command.
+		/// </summary>
+		/// <param name="cmd">The command to process.</param>
+		/// <returns>Returns <see langword="true"/> if the command was processed; <see langword="false"/> otherwise.</returns>
+		/// <seealso cref="SetState(Type, object)"/>
+		public bool ProcessCommand(TCommand cmd)
+		{
+			ThrowIfDisposed();
+			return _activeState?.OnCommand(cmd) ?? false;
 		}
 
 		/// <summary>
@@ -60,7 +135,15 @@ namespace UnityFx.AppStates.Fsm
 
 				if (disposing)
 				{
-					// TODO
+					foreach (var state in _states.Values)
+					{
+						if (state is IDisposable d)
+						{
+							d.Dispose();
+						}
+					}
+
+					_states.Clear();
 				}
 			}
 		}
@@ -87,6 +170,21 @@ namespace UnityFx.AppStates.Fsm
 		{
 			Dispose(true);
 			GC.SuppressFinalize(this);
+		}
+
+		#endregion
+
+		#region implementation
+
+		private FsmState<TCommand> GetState(Type stateType)
+		{
+			if (!_states.TryGetValue(stateType, out var result))
+			{
+				result = (FsmState<TCommand>)Utility.CreateInstance(_serviceProvider, stateType, this);
+				_states.Add(stateType, result);
+			}
+
+			return result;
 		}
 
 		#endregion
