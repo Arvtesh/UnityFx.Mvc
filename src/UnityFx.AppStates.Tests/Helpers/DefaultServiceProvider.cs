@@ -9,6 +9,11 @@ namespace UnityFx.AppStates
 	{
 		public object GetService(Type serviceType)
 		{
+			if (serviceType == typeof(IServiceProvider))
+			{
+				return this;
+			}
+
 			return null;
 		}
 	}

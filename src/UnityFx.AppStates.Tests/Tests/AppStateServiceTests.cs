@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using NSubstitute;
+using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
@@ -23,7 +24,7 @@ namespace UnityFx.AppStates
 		}
 
 		[Fact]
-		public void Present_CompletesSynchronouslyForMinimalViewController()
+		public void Present_CompletesForMinimalViewController()
 		{
 			// Arrange/Act
 			var op = _stateManager.PresentAsync(typeof(ViewController_Minimal));
@@ -35,18 +36,35 @@ namespace UnityFx.AppStates
 		}
 
 		[Fact]
+		public async Task Present_CompletesForMinimalViewControllerAsync()
+		{
+			// Arrange/Act
+			var op = _stateManager.PresentAsync(typeof(ViewController_MinimalAsync));
+			await op;
+
+			// Assert
+			Assert.True(op.IsCompletedSuccessfully);
+			Assert.False(op.CompletedSynchronously);
+			Assert.IsType<ViewController_MinimalAsync>(op.Result);
+		}
+
+		[Fact]
 		public void Present_ThrowsForInvalidViewController()
 		{
 			// Arrange/Act/Assert
 			Assert.Throws<ArgumentException>(() => _stateManager.PresentAsync(typeof(ViewController_Invalid)));
 		}
 
-		[Fact]
-		public void Present_RaisesControllerEventsInCorrectOrder()
+		[Theory]
+		[InlineData(typeof(ViewController_Events))]
+		[InlineData(typeof(ViewController_EventsAsync))]
+		public async Task Present_RaisesControllerEventsInCorrectOrder(Type controllerType)
 		{
 			// Arrange/Act
-			var op = _stateManager.PresentAsync<ViewController_Events>();
-			var controller = op.Result;
+			var op = _stateManager.PresentAsync(controllerType);
+			await op;
+
+			var controller = (ViewController_Events)op.Result;
 
 			// Assert
 			Assert.Equal(1, controller.PresentIndex);
@@ -58,13 +76,58 @@ namespace UnityFx.AppStates
 			Assert.Equal(0, controller.DisposeIndex);
 		}
 
+		[Theory]
+		[InlineData(typeof(ViewController_Minimal))]
+		[InlineData(typeof(ViewController_MinimalAsync))]
+		public async Task Present_RaisesServiceEventsInCorrectOrder(Type controllerType)
+		{
+			// Arrange
+			var index = 0;
+			var presentInitiatedIndex = 0;
+			var presentCompletedIndex = 0;
+
+			_stateManager.PresentInitiated += (s, e) =>
+			{
+				presentInitiatedIndex = ++index;
+			};
+
+			_stateManager.PresentCompleted += (s, e) =>
+			{
+				presentCompletedIndex = ++index;
+			};
+
+			// Act
+			var op = _stateManager.PresentAsync(controllerType);
+			await op;
+
+			// Assert
+			Assert.Equal(1, presentInitiatedIndex);
+			Assert.Equal(2, presentCompletedIndex);
+		}
+
 		[Fact]
-		public void Dismiss_RaisesControllerEventsInCorrectOrder()
+		public async Task Present_PushesNewState()
 		{
 			// Arrange/Act
-			var op = _stateManager.PresentAsync<ViewController_Events>();
-			var controller = op.Result;
-			controller.DismissAsync();
+			await _stateManager.PresentAsync<ViewController_MinimalAsync>();
+
+			// Assert
+			Assert.NotEmpty(_stateManager.States);
+			Assert.NotNull(_stateManager.ActiveState);
+			Assert.True(_stateManager.ActiveState.IsActive);
+		}
+
+		[Theory]
+		[InlineData(typeof(ViewController_Events))]
+		[InlineData(typeof(ViewController_EventsAsync))]
+		public async Task Dismiss_RaisesControllerEventsInCorrectOrder(Type controllerType)
+		{
+			// Arrange/Act
+			var op = _stateManager.PresentAsync(controllerType);
+			await op;
+			await op.Result.DismissAsync();
+
+			var controller = (ViewController_Events)op.Result;
 
 			// Assert
 			Assert.Equal(1, controller.PresentIndex);
@@ -74,6 +137,36 @@ namespace UnityFx.AppStates
 			Assert.Equal(5, controller.OnDismissIndex);
 			Assert.Equal(6, controller.DismissIndex);
 			Assert.Equal(7, controller.DisposeIndex);
+		}
+
+		[Theory]
+		[InlineData(typeof(ViewController_Minimal))]
+		[InlineData(typeof(ViewController_MinimalAsync))]
+		public async Task Dismiss_RaisesServiceEventsInCorrectOrder(Type controllerType)
+		{
+			// Arrange
+			var index = 0;
+			var dismissInitiatedIndex = 0;
+			var dismissCompletedIndex = 0;
+
+			_stateManager.DismissInitiated += (s, e) =>
+			{
+				dismissInitiatedIndex = ++index;
+			};
+
+			_stateManager.DismissCompleted += (s, e) =>
+			{
+				dismissCompletedIndex = ++index;
+			};
+
+			// Act
+			var op = _stateManager.PresentAsync(controllerType);
+			await op;
+			await op.Result.DismissAsync();
+
+			// Assert
+			Assert.Equal(1, dismissInitiatedIndex);
+			Assert.Equal(2, dismissCompletedIndex);
 		}
 	}
 }

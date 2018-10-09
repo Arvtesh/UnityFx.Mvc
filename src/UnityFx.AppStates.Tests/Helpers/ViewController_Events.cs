@@ -31,7 +31,6 @@ namespace UnityFx.AppStates
 			return _ctx.DismissAsync();
 		}
 
-
 		public void Dispose()
 		{
 			DisposeIndex = ++_index;
@@ -40,13 +39,13 @@ namespace UnityFx.AppStates
 		public IAsyncOperation PresentAsync(IPresentContext presentContext)
 		{
 			PresentIndex = ++_index;
-			return null;
+			return GetAsync();
 		}
 
 		public IAsyncOperation DismissAsync(IDismissContext dismissContext)
 		{
 			DismissIndex = ++_index;
-			return null;
+			return GetAsync();
 		}
 
 		public void OnPresent()
@@ -67,6 +66,11 @@ namespace UnityFx.AppStates
 		public void OnDismiss()
 		{
 			OnDismissIndex = ++_index;
+		}
+
+		protected virtual IAsyncOperation GetAsync()
+		{
+			return null;
 		}
 	}
 }
