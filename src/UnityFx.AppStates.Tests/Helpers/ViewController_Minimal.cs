@@ -6,7 +6,7 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class ViewController_Minimal : IViewController
+	public class ViewController_Minimal : IViewController
 	{
 		private readonly IViewControllerContext _ctx;
 		public string Id => "MinimalViewController";

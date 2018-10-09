@@ -5,7 +5,7 @@ using System;
 
 namespace UnityFx.AppStates
 {
-	internal class ViewController_Invalid
+	public class ViewController_Invalid
 	{
 	}
 }

@@ -48,13 +48,6 @@ namespace UnityFx.AppStates
 			Assert.IsType<ViewController_MinimalAsync>(op.Result);
 		}
 
-		[Fact]
-		public void Present_ThrowsForInvalidViewController()
-		{
-			// Arrange/Act/Assert
-			Assert.Throws<ArgumentException>(() => _stateManager.PresentAsync(typeof(ViewController_Invalid)));
-		}
-
 		[Theory]
 		[InlineData(typeof(ViewController_Events))]
 		[InlineData(typeof(ViewController_EventsAsync))]
@@ -117,6 +110,73 @@ namespace UnityFx.AppStates
 			Assert.True(_stateManager.ActiveState.IsActive);
 		}
 
+		[Fact]
+		public void Present_ThrowsForInvalidViewController()
+		{
+			// Arrange/Act/Assert
+			Assert.Throws<ArgumentException>(() => _stateManager.PresentAsync(typeof(ViewController_Invalid)));
+		}
+
+		[Theory]
+		[InlineData(typeof(ViewController_Errors), ViewController_Errors.ThrowSource.Ctor)]
+		[InlineData(typeof(ViewController_ErrorsAsync), ViewController_Errors.ThrowSource.Ctor)]
+		[InlineData(typeof(ViewController_Errors), ViewController_Errors.ThrowSource.OnPresent)]
+		[InlineData(typeof(ViewController_ErrorsAsync), ViewController_Errors.ThrowSource.OnPresent)]
+		[InlineData(typeof(ViewController_Errors), ViewController_Errors.ThrowSource.Present)]
+		[InlineData(typeof(ViewController_ErrorsAsync), ViewController_Errors.ThrowSource.Present)]
+		public async Task Present_FailsOperationOnException(Type controllerType, ViewController_Errors.ThrowSource throwSource)
+		{
+			// Arrange
+			var op = _stateManager.PresentAsync(controllerType, new ViewController_Errors.MyPresentArgs(throwSource));
+			var exceptionThrown = false;
+
+			// Act
+			try
+			{
+				await op;
+			}
+			catch
+			{
+				exceptionThrown = true;
+			}
+
+			// Assert
+			Assert.True(exceptionThrown);
+			Assert.True(op.IsFaulted);
+			Assert.Empty(_stateManager.States);
+			Assert.Null(_stateManager.ActiveState);
+		}
+
+		[Theory]
+		[InlineData(typeof(ViewController_Errors), ViewController_Errors.ThrowSource.OnActivate)]
+		[InlineData(typeof(ViewController_ErrorsAsync), ViewController_Errors.ThrowSource.OnActivate)]
+		public async Task Present_IgnoresExceptionInOnActivate(Type controllerType, ViewController_Errors.ThrowSource throwSource)
+		{
+			// Arrange/Act
+			var op = _stateManager.PresentAsync(controllerType, new ViewController_Errors.MyPresentArgs(throwSource));
+			await op;
+
+			// Assert
+			Assert.True(op.IsCompletedSuccessfully);
+			Assert.NotEmpty(_stateManager.States);
+			Assert.NotNull(_stateManager.ActiveState);
+		}
+
+		[Theory]
+		[InlineData(typeof(ViewController_Minimal))]
+		[InlineData(typeof(ViewController_MinimalAsync))]
+		public async Task Present_IgnoresCompletionEventExceptions(Type controllerType)
+		{
+			// Arrange
+			_stateManager.PresentCompleted += (s, e) =>
+			{
+				throw new Exception();
+			};
+
+			// Act/Assert
+			await _stateManager.PresentAsync(controllerType);
+		}
+
 		[Theory]
 		[InlineData(typeof(ViewController_Events))]
 		[InlineData(typeof(ViewController_EventsAsync))]
@@ -167,6 +227,53 @@ namespace UnityFx.AppStates
 			// Assert
 			Assert.Equal(1, dismissInitiatedIndex);
 			Assert.Equal(2, dismissCompletedIndex);
+		}
+
+		[Theory]
+		[InlineData(typeof(ViewController_Minimal))]
+		[InlineData(typeof(ViewController_MinimalAsync))]
+		public async Task Dismiss_IgnoresCompletionEventExceptions(Type controllerType)
+		{
+			// Arrange
+			_stateManager.DismissCompleted += (s, e) =>
+			{
+				throw new Exception();
+			};
+
+			// Act/Assert
+			var op = _stateManager.PresentAsync(controllerType);
+			await op;
+			await op.Result.DismissAsync();
+		}
+
+		[Theory]
+		[InlineData(typeof(ViewController_Errors), ViewController_Errors.ThrowSource.OnDeactivate)]
+		[InlineData(typeof(ViewController_ErrorsAsync), ViewController_Errors.ThrowSource.OnDeactivate)]
+		[InlineData(typeof(ViewController_Errors), ViewController_Errors.ThrowSource.OnDismiss)]
+		[InlineData(typeof(ViewController_ErrorsAsync), ViewController_Errors.ThrowSource.OnDismiss)]
+		[InlineData(typeof(ViewController_Errors), ViewController_Errors.ThrowSource.Dismiss)]
+		[InlineData(typeof(ViewController_ErrorsAsync), ViewController_Errors.ThrowSource.Dismiss)]
+		public async Task Dismiss_FailsOperationOnException(Type controllerType, ViewController_Errors.ThrowSource throwSource)
+		{
+			// Arrange
+			var op = _stateManager.PresentAsync(controllerType, new ViewController_Errors.MyPresentArgs(throwSource));
+			var exceptionThrown = false;
+
+			// Act
+			try
+			{
+				await op;
+				await op.Result.DismissAsync();
+			}
+			catch
+			{
+				exceptionThrown = true;
+			}
+
+			// Assert
+			Assert.True(exceptionThrown);
+			Assert.Empty(_stateManager.States);
+			Assert.Null(_stateManager.ActiveState);
 		}
 	}
 }

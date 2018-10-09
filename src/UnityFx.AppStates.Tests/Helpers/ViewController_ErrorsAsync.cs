@@ -6,9 +6,9 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	public class ViewController_EventsAsync : ViewController_Events
+	public class ViewController_ErrorsAsync : ViewController_Errors
 	{
-		public ViewController_EventsAsync(IViewControllerContext ctx)
+		public ViewController_ErrorsAsync(IViewControllerContext ctx)
 			: base(ctx)
 		{
 		}

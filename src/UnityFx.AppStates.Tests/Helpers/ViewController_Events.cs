@@ -6,7 +6,7 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class ViewController_Events : IViewController, IPresentable, IPresentableEvents, IDisposable
+	public class ViewController_Events : IViewController, IPresentable, IPresentableEvents, IDisposable
 	{
 		private readonly IViewControllerContext _ctx;
 		private int _index;

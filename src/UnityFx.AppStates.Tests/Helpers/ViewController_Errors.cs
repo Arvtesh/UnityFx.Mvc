@@ -6,23 +6,54 @@ using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
-	internal class ViewController_Errors : IViewController, IPresentable, IPresentableEvents, IDisposable
+	public class ViewController_Errors : IViewController, IPresentable, IPresentableEvents, IDisposable
 	{
 		private readonly IViewControllerContext _ctx;
+		private readonly MyPresentArgs _args;
+
+		public enum ThrowSource
+		{
+			None,
+			Ctor,
+			OnPresent,
+			OnDismiss,
+			OnActivate,
+			OnDeactivate,
+			Present,
+			Dismiss,
+			Dispose
+		}
+
+		public class MyPresentArgs : PresentArgs
+		{
+			private readonly ThrowSource _source;
+
+			public MyPresentArgs(ThrowSource source)
+			{
+				_source = source;
+			}
+
+			public bool CtorThrows => _source == ThrowSource.Ctor;
+			public bool OnPresentThrows => _source == ThrowSource.OnPresent;
+			public bool OnDismissThrows => _source == ThrowSource.OnDismiss;
+			public bool OnActivateThrows => _source == ThrowSource.OnActivate;
+			public bool OnDeactivateThrows => _source == ThrowSource.OnDeactivate;
+			public bool PresentThrows => _source == ThrowSource.Present;
+			public bool DismissThrows => _source == ThrowSource.Dismiss;
+			public bool DisposeThrows => _source == ThrowSource.Dispose;
+		}
 
 		public string Id => "ErrorsViewController";
-
-		public bool OnPresentThrows { get; set; }
-		public bool OnDismissThrows { get; set; }
-		public bool OnActivateThrows { get; set; }
-		public bool OnDeactivateThrows { get; set; }
-		public bool PresentThrows { get; set; }
-		public bool DismissThrows { get; set; }
-		public bool DisposeThrows { get; set; }
 
 		public ViewController_Errors(IViewControllerContext ctx)
 		{
 			_ctx = ctx;
+			_args = (MyPresentArgs)ctx.PresentArgs;
+
+			if (_args.CtorThrows)
+			{
+				throw new Exception("Ctor");
+			}
 		}
 
 		public IAsyncOperation DismissAsync()
@@ -32,7 +63,7 @@ namespace UnityFx.AppStates
 
 		public void Dispose()
 		{
-			if (DisposeThrows)
+			if (_args.DisposeThrows)
 			{
 				throw new Exception("Dispose");
 			}
@@ -40,7 +71,7 @@ namespace UnityFx.AppStates
 
 		public IAsyncOperation PresentAsync(IPresentContext presentContext)
 		{
-			if (PresentThrows)
+			if (_args.PresentThrows)
 			{
 				throw new Exception("PresentAsync");
 			}
@@ -50,7 +81,7 @@ namespace UnityFx.AppStates
 
 		public IAsyncOperation DismissAsync(IDismissContext dismissContext)
 		{
-			if (DismissThrows)
+			if (_args.DismissThrows)
 			{
 				throw new Exception("DismissAsync");
 			}
@@ -60,7 +91,7 @@ namespace UnityFx.AppStates
 
 		public void OnPresent()
 		{
-			if (OnPresentThrows)
+			if (_args.OnPresentThrows)
 			{
 				throw new Exception("OnPresent");
 			}
@@ -68,7 +99,7 @@ namespace UnityFx.AppStates
 
 		public void OnActivate()
 		{
-			if (OnActivateThrows)
+			if (_args.OnActivateThrows)
 			{
 				throw new Exception("OnActivate");
 			}
@@ -76,7 +107,7 @@ namespace UnityFx.AppStates
 
 		public void OnDeactivate()
 		{
-			if (OnDeactivateThrows)
+			if (_args.OnDeactivateThrows)
 			{
 				throw new Exception("OnDeactivate");
 			}
@@ -84,7 +115,7 @@ namespace UnityFx.AppStates
 
 		public void OnDismiss()
 		{
-			if (OnDismissThrows)
+			if (_args.OnDismissThrows)
 			{
 				throw new Exception("OnDismiss");
 			}

@@ -256,17 +256,24 @@ namespace UnityFx.AppStates
 			Debug.Assert(op != null);
 			Debug.Assert(op.IsCompleted);
 
+			// Do not rethrow the exceptions because the operation has already completed and we have no way to pass it to user code at this point.
 			try
 			{
 				OnPresentCompleted(state, controller, op);
 			}
 			catch (Exception e)
 			{
-				// Do not rethrow the exception because the operation has already completed and we have no way to pass it to user code at this point.
 				TraceException(e);
 			}
 
-			TryActivateTopState();
+			try
+			{
+				TryActivateTopState();
+			}
+			catch (Exception e)
+			{
+				TraceException(e);
+			}
 		}
 
 		internal void InvokeDismissStarted(IAppState state, IViewController controller, IAsyncOperation op)
@@ -281,18 +288,25 @@ namespace UnityFx.AppStates
 			Debug.Assert(op != null);
 			Debug.Assert(op.IsCompleted);
 
+			// Do not rethrow the exceptions because the operation has already completed and we have no way to pass it to user code at this point.
 			try
 			{
 				OnDismissCompleted(state, controller, op);
 			}
 			catch (Exception e)
 			{
-				// Do not rethrow the exception because the operation has already completed and we have no way to pass it to user code at this point.
 				TraceException(e);
 			}
 
-			_states.Remove(state);
-			TryActivateTopState();
+			try
+			{
+				_states.Remove(state);
+				TryActivateTopState();
+			}
+			catch (Exception e)
+			{
+				TraceException(e);
+			}
 		}
 
 		internal IAsyncOperation<IViewController> PresentAsync(AppState parentState, Type controllerType, PresentArgs args)

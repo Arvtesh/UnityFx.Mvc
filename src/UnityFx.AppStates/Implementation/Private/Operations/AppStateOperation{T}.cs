@@ -105,15 +105,6 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region AsyncResult
-
-		protected override void OnCancel()
-		{
-			TrySetCanceled(_completedSynchronously);
-		}
-
-		#endregion
-
 		#region IAppStateOperation
 
 		public void SetCompletedAsynchronously()

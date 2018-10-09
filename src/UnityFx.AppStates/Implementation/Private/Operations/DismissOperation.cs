@@ -57,13 +57,15 @@ namespace UnityFx.AppStates
 		{
 			try
 			{
+				// This should not throw.
 				StateManager.InvokeDismissCompleted(_state, _state.Controller, this);
+
+				// The state should be disposed in any case.
+				_state?.Dispose();
+				_state = null;
 			}
 			finally
 			{
-				_state?.Dispose();
-				_state = null;
-
 				TraceStop(Status);
 			}
 		}

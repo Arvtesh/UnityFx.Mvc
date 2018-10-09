@@ -66,24 +66,26 @@ namespace UnityFx.AppStates
 
 		protected override void OnCompleted()
 		{
-			Debug.Assert(_state != null);
-
 			try
 			{
-				StateManager.InvokePresentCompleted(_state, _state.Controller, this);
+				// This should not throw.
+				StateManager.InvokePresentCompleted(_state, _state?.Controller, this);
+
+				// Make sure the state is disposed on operation failure.
+				if (!IsCompletedSuccessfully)
+				{
+					_state?.Dispose();
+				}
 			}
 			finally
 			{
-				_state = null;
-				_pushOp = null;
-
 				TraceStop(Status);
 			}
 		}
 
 		protected override void OnCancel()
 		{
-			base.OnCancel();
+			TrySetCanceled();
 		}
 
 		#endregion
