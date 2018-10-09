@@ -166,6 +166,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(!_active);
 
 			_stateManager.TraceEvent(TraceEventType.Verbose, "Activate " + Id);
+			_active = true;
 			_controllerProxy.OnActivate();
 		}
 
@@ -175,6 +176,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(_active);
 
 			_stateManager.TraceEvent(TraceEventType.Verbose, "Deactivate " + Id);
+			_active = false;
 			_controllerProxy.OnDeactivate();
 		}
 

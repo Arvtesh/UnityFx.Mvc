@@ -47,23 +47,6 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		protected void TryActivateTopState()
-		{
-			// TODO: replace _stateManager.States.Count <= 1 check with something less hacky
-			if (_stateManager.States.TryPeek(out var state) && !state.IsActive && _stateManager.States.Count <= 1)
-			{
-				(state as IPresentableEvents).OnActivate();
-			}
-		}
-
-		protected void TryDeactivateTopState()
-		{
-			if (_stateManager.States.TryPeek(out var state) && state.IsActive)
-			{
-				(state as IPresentableEvents).OnDeactivate();
-			}
-		}
-
 		protected void DismissAllStates()
 		{
 			while (_stateManager.States.TryPeek(out var state))

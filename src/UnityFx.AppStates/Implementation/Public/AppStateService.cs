@@ -244,6 +244,57 @@ namespace UnityFx.AppStates
 			_states.Remove(state);
 		}
 
+		internal void InvokePresentStarted(Type controllerType, PresentArgs args, IAsyncOperation op)
+		{
+			Debug.Assert(op != null);
+
+			TryDeactivateTopState();
+		}
+
+		internal void InvokePresentCompleted(IAppState state, IViewController controller, IAsyncOperation op)
+		{
+			Debug.Assert(op != null);
+			Debug.Assert(op.IsCompleted);
+
+			try
+			{
+				OnPresentCompleted(state, controller, op);
+			}
+			catch (Exception e)
+			{
+				// Do not rethrow the exception because the operation has already completed and we have no way to pass it to user code at this point.
+				TraceException(e);
+			}
+
+			TryActivateTopState();
+		}
+
+		internal void InvokeDismissStarted(IAppState state, IViewController controller, IAsyncOperation op)
+		{
+			Debug.Assert(op != null);
+
+			TryDeactivateTopState();
+		}
+
+		internal void InvokeDismissCompleted(IAppState state, IViewController controller, IAsyncOperation op)
+		{
+			Debug.Assert(op != null);
+			Debug.Assert(op.IsCompleted);
+
+			try
+			{
+				OnDismissCompleted(state, controller, op);
+			}
+			catch (Exception e)
+			{
+				// Do not rethrow the exception because the operation has already completed and we have no way to pass it to user code at this point.
+				TraceException(e);
+			}
+
+			_states.Remove(state);
+			TryActivateTopState();
+		}
+
 		internal IAsyncOperation<IViewController> PresentAsync(AppState parentState, Type controllerType, PresentArgs args)
 		{
 			Debug.Assert(args != null);
@@ -494,6 +545,22 @@ namespace UnityFx.AppStates
 #else
 			TryStartUnsafe();
 #endif
+		}
+
+		private void TryActivateTopState()
+		{
+			if (_states.TryPeek(out var state) && !state.IsActive)
+			{
+				(state as IPresentableEvents).OnActivate();
+			}
+		}
+
+		private void TryDeactivateTopState()
+		{
+			if (_states.TryPeek(out var state) && state.IsActive)
+			{
+				(state as IPresentableEvents).OnDeactivate();
+			}
 		}
 
 		private void ThrowIfInvalidArgs(PresentArgs args)

@@ -33,7 +33,7 @@ namespace UnityFx.AppStates
 			try
 			{
 				TraceStart();
-				TryDeactivateTopState();
+				StateManager.InvokeDismissStarted(_state, _state.Controller, this);
 
 				if (_state != null)
 				{
@@ -57,8 +57,7 @@ namespace UnityFx.AppStates
 		{
 			try
 			{
-				StateManager.OnDismissCompleted(_state, _state.Controller, this);
-				TryActivateTopState();
+				StateManager.InvokeDismissCompleted(_state, _state.Controller, this);
 			}
 			finally
 			{
