@@ -82,6 +82,11 @@ namespace UnityFx.AppStates
 			{
 				_dismissOp = null;
 
+				if (!op.CompletedSynchronously)
+				{
+					SetCompletedAsynchronously();
+				}
+
 				if (op.IsCompletedSuccessfully)
 				{
 					TrySetCompleted();

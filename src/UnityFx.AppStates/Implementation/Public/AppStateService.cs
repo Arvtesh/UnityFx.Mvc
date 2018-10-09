@@ -84,7 +84,7 @@ namespace UnityFx.AppStates
 		public AppStateService(IServiceProvider serviceProvider, SynchronizationContext syncContext)
 		{
 			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-			_synchronizationContext = syncContext ?? throw new ArgumentNullException(nameof(syncContext));
+			_synchronizationContext = syncContext;
 			_config = new AppStateServiceSettings(_traceSource);
 		}
 
@@ -391,15 +391,15 @@ namespace UnityFx.AppStates
 			lock (_ops)
 			{
 				_ops.Add(op);
-				TryStart();
+				TryStart(op);
 			}
 #else
 			_ops.Enqueue(op);
-			TryStart();
+			TryStart(op);
 #endif
 		}
 
-		private void TryStart()
+		private void TryStart(AsyncResult op)
 		{
 			if (!_disposed)
 			{
@@ -412,6 +412,11 @@ namespace UnityFx.AppStates
 					if (_startCallback == null)
 					{
 						_startCallback = OnStartCallback;
+					}
+
+					if (op is IAppStateOperation op2)
+					{
+						op2.SetCompletedAsynchronously();
 					}
 
 					_synchronizationContext.Post(_startCallback, null);

@@ -100,6 +100,11 @@ namespace UnityFx.AppStates
 			{
 				_pushOp = null;
 
+				if (!op.CompletedSynchronously)
+				{
+					SetCompletedAsynchronously();
+				}
+
 				if (op.IsCompletedSuccessfully)
 				{
 					// Make sure parent state is disposed.

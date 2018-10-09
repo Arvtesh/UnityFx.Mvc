@@ -6,13 +6,13 @@ using System;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// An object with instance identifier.
+	/// Helper interface for managing sync/async operatino completion.
 	/// </summary>
-	public interface IObjectId
+	internal interface IAppStateOperation
 	{
 		/// <summary>
-		/// Gets the instance identifier. The identifier returned is supposed to be used for informational/debugging purposes only. Uniqueness is not required.
+		/// Sets asynchronous completion flag.
 		/// </summary>
-		string Id { get; }
+		void SetCompletedAsynchronously();
 	}
 }

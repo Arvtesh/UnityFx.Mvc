@@ -5,7 +5,11 @@ using System;
 
 namespace UnityFx.AppStates
 {
-	internal class TestController_Invalid
+	internal class DefaultServiceProvider : IServiceProvider
 	{
+		public object GetService(Type serviceType)
+		{
+			return null;
+		}
 	}
 }

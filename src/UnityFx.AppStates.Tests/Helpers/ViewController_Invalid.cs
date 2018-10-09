@@ -5,11 +5,7 @@ using System;
 
 namespace UnityFx.AppStates
 {
-	internal class TestController_Minimal : ViewController
+	internal class ViewController_Invalid
 	{
-		public TestController_Minimal(IViewControllerContext state)
-			: base(state)
-		{
-		}
 	}
 }

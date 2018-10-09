@@ -14,12 +14,13 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A yieldable asynchronous state operation.
 	/// </summary>
-	internal abstract class AppStateOperation<T> : AsyncResult<T> where T : class
+	internal abstract class AppStateOperation<T> : AsyncResult<T>, IAppStateOperation where T : class
 	{
 		#region data
 
 		private readonly AppStateService _stateManager;
 		private readonly TraceSource _traceSource;
+		private bool _completedSynchronously = true;
 
 		#endregion
 
@@ -94,6 +95,26 @@ namespace UnityFx.AppStates
 			}
 		}
 
+		protected new bool TrySetCanceled()
+		{
+			return TrySetCanceled(_completedSynchronously);
+		}
+
+		protected new bool TrySetException(Exception e)
+		{
+			return TrySetException(e, _completedSynchronously);
+		}
+
+		protected new bool TrySetCompleted()
+		{
+			return TrySetCompleted(_completedSynchronously);
+		}
+
+		protected new bool TrySetResult(T result)
+		{
+			return TrySetResult(result, _completedSynchronously);
+		}
+
 		protected static string GetStateDesc(Type controllerType, PresentArgs args)
 		{
 			return Utility.GetControllerTypeId(controllerType) + " (" + args.ToString() + ')';
@@ -105,7 +126,16 @@ namespace UnityFx.AppStates
 
 		protected override void OnCancel()
 		{
-			TrySetCanceled(false);
+			TrySetCanceled(_completedSynchronously);
+		}
+
+		#endregion
+
+		#region IAppStateOperation
+
+		public void SetCompletedAsynchronously()
+		{
+			_completedSynchronously = false;
 		}
 
 		#endregion
