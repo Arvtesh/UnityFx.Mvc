@@ -31,16 +31,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta006" PrivateAssets="All" />
+		<PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta009" PrivateAssets="All" />
+		<PackageReference Include="UnityFx.Async" Version="0.9.7" />
 		<PackageReference Include="UnityFx.DependencyInjection" Version="0.2.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<AdditionalFiles Include="../CodingConventions/Common/stylecop.json" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Assets\Plugins\UnityFx.AppStates\Scripts\" />
 	</ItemGroup>
 
 </Project>

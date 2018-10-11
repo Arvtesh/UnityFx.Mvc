@@ -1,5 +1,5 @@
 SUMMARY
-The package provides application state machine implementation for Unity3d.
+The package provides application states for Unity3d.
 
 LICENSE
 https://github.com/Arvtesh/UnityFx.AppStates/blob/master/LICENSE.md
