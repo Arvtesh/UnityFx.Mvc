@@ -218,6 +218,30 @@ namespace UnityFx.AppStates
 
 		#endregion
 
+		#region ISynchronizeInvoke
+
+		public bool InvokeRequired => _stateManager.InvokeRequired;
+
+		public IAsyncResult BeginInvoke(Delegate method, object[] args)
+		{
+			ThrowIfDisposed();
+			return _stateManager.BeginInvoke(method, args);
+		}
+
+		public object EndInvoke(IAsyncResult result)
+		{
+			ThrowIfDisposed();
+			return _stateManager.EndInvoke(result);
+		}
+
+		public object Invoke(Delegate method, object[] args)
+		{
+			ThrowIfDisposed();
+			return _stateManager.Invoke(method, args);
+		}
+
+		#endregion
+
 		#region IDisposable
 
 		public void Dispose()

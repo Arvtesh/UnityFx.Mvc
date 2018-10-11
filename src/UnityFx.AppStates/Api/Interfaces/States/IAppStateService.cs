@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace UnityFx.AppStates
 {
@@ -10,7 +11,7 @@ namespace UnityFx.AppStates
 	/// A generic application state service.
 	/// </summary>
 	/// <seealso cref="IAppState"/>
-	public interface IAppStateService : IPresenter, IDisposable
+	public interface IAppStateService : IPresenter, ISynchronizeInvoke, IDisposable
 	{
 		/// <summary>
 		/// Raised when a new present operation is initiated.

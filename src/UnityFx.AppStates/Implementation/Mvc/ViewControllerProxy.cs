@@ -38,6 +38,11 @@ namespace UnityFx.AppStates
 
 		public ViewControllerProxy(IServiceProvider serviceProvider, IAppState parentState, IViewController parentController, Type controllerType, PresentArgs args)
 		{
+			Debug.Assert(serviceProvider != null);
+			Debug.Assert(parentState != null);
+			Debug.Assert(controllerType != null);
+			Debug.Assert(args != null);
+
 			_serviceProvider = serviceProvider;
 			_parentState = parentState;
 			_parentController = parentController;

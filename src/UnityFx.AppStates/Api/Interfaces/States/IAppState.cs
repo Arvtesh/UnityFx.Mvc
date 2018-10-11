@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 
 namespace UnityFx.AppStates
 {
@@ -16,7 +17,7 @@ namespace UnityFx.AppStates
 	/// </remarks>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
-	public interface IAppState : IObjectId, ITreeListNode<IAppState>, IPresenter, IDeeplinkable, IDismissable, IDisposable
+	public interface IAppState : IObjectId, ITreeListNode<IAppState>, IPresenter, IDeeplinkable, IDismissable, ISynchronizeInvoke, IDisposable
 	{
 		/// <summary>
 		/// Gets a value indicating whether the instance is active.
