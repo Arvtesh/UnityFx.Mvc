@@ -253,7 +253,7 @@ namespace UnityFx.AppStates
 		/// <seealso cref="BeginInvoke(Delegate, object[])"/>
 		/// <seealso cref="EndInvoke(IAsyncResult)"/>
 		/// <seealso cref="Invoke(Delegate, object[])"/>
-		public bool InvokeRequired => _context.ParentState.InvokeRequired;
+		public bool InvokeRequired => _context.InvokeRequired;
 
 		/// <summary>
 		/// Asynchronously executes the delegate on the thread that created the controller.
@@ -269,7 +269,7 @@ namespace UnityFx.AppStates
 		public IAsyncResult BeginInvoke(Delegate method, object[] args)
 		{
 			ThrowIfDisposed();
-			return _context.ParentState.BeginInvoke(method, args);
+			return _context.BeginInvoke(method, args);
 		}
 
 		/// <summary>
@@ -286,7 +286,7 @@ namespace UnityFx.AppStates
 		public object EndInvoke(IAsyncResult result)
 		{
 			ThrowIfDisposed();
-			return _context.ParentState.EndInvoke(result);
+			return _context.EndInvoke(result);
 		}
 
 		/// <summary>
@@ -303,7 +303,7 @@ namespace UnityFx.AppStates
 		public object Invoke(Delegate method, object[] args)
 		{
 			ThrowIfDisposed();
-			return _context.ParentState.Invoke(method, args);
+			return _context.Invoke(method, args);
 		}
 
 		#endregion

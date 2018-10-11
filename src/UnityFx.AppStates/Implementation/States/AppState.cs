@@ -46,7 +46,7 @@ namespace UnityFx.AppStates
 			// Controller should be created after the state has been initialized.
 			try
 			{
-				_controllerProxy = new ViewControllerProxy(stateManager.ServiceProvider, this, null, controllerType, args);
+				_controllerProxy = new ViewControllerProxy(stateManager, stateManager.ServiceProvider, this, null, controllerType, args);
 			}
 			catch
 			{
@@ -214,30 +214,6 @@ namespace UnityFx.AppStates
 			}
 
 			return _dismissOp;
-		}
-
-		#endregion
-
-		#region ISynchronizeInvoke
-
-		public bool InvokeRequired => _stateManager.InvokeRequired;
-
-		public IAsyncResult BeginInvoke(Delegate method, object[] args)
-		{
-			ThrowIfDisposed();
-			return _stateManager.BeginInvoke(method, args);
-		}
-
-		public object EndInvoke(IAsyncResult result)
-		{
-			ThrowIfDisposed();
-			return _stateManager.EndInvoke(result);
-		}
-
-		public object Invoke(Delegate method, object[] args)
-		{
-			ThrowIfDisposed();
-			return _stateManager.Invoke(method, args);
 		}
 
 		#endregion
