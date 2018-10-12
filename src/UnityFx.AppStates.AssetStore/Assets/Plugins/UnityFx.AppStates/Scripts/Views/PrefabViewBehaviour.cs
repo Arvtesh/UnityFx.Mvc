@@ -10,7 +10,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A <see cref="MonoBehaviour"/>-based view.
 	/// </summary>
-	public class ViewBehaviour : ComponentBehaviour, IView
+	public class PrefabViewBehaviour : ComponentBehaviour, IView
 	{
 		#region data
 
