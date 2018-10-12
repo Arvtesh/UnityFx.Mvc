@@ -14,11 +14,12 @@ namespace UnityFx.AppStates
 	/// Note that minimal controller implementation should implement <see cref="IViewController"/>.
 	/// </summary>
 	/// <seealso cref="ViewController{TView}"/>
-	public abstract class ViewController : ObjectId<ViewController>, IViewController, IPresentable, IPresentableEvents, IPresenter, IDismissable, ISynchronizeInvoke, IDisposable
+	public abstract class ViewController : IViewController, IPresentable, IPresentableEvents, IPresenter, ISynchronizeInvoke, IDisposable
 	{
 		#region data
 
 		private readonly IViewControllerContext _context;
+		private readonly string _name;
 
 		private IAsyncOperation _dismissOp;
 		private bool _disposed;
@@ -54,6 +55,7 @@ namespace UnityFx.AppStates
 		protected ViewController(IViewControllerContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
+			_name = Utility.GetControllerTypeId(GetType());
 		}
 
 		/// <summary>
@@ -153,6 +155,12 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region IViewController
+
+		/// <summary>
+		/// Gets the controller name.
+		/// </summary>
+		public string Name => _name;
+
 		#endregion
 
 		#region IPresentable

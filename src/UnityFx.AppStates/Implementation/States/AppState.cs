@@ -17,14 +17,10 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private static int _idCounter;
-
 		private readonly AppStateService _stateManager;
 		private readonly ViewControllerProxy _controllerProxy;
-		private readonly int _id;
 		private readonly string _deeplinkId;
 
-		private string _name;
 		private IAsyncOperation _dismissOp;
 		private bool _active;
 		private bool _disposed;
@@ -39,14 +35,6 @@ namespace UnityFx.AppStates
 			Debug.Assert(stateManager != null);
 			Debug.Assert(controllerType != null);
 
-			_id = ++_idCounter;
-
-			if (_id <= 0)
-			{
-				_id = 1;
-			}
-
-			_name = GetType().Name;
 			_deeplinkId = Utility.GetControllerTypeId(controllerType);
 			_stateManager = stateManager;
 			_stateManager.AddState(this);
@@ -163,7 +151,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(!_disposed);
 			Debug.Assert(!_active);
 
-			_stateManager.TraceEvent(TraceEventType.Verbose, "Present " + Id);
+			_stateManager.TraceEvent(TraceEventType.Verbose, "Present " + _deeplinkId);
 			_controllerProxy.OnPresent();
 		}
 
@@ -172,7 +160,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(!_disposed);
 			Debug.Assert(!_active);
 
-			_stateManager.TraceEvent(TraceEventType.Verbose, "Activate " + Id);
+			_stateManager.TraceEvent(TraceEventType.Verbose, "Activate " + _deeplinkId);
 			_active = true;
 			_controllerProxy.OnActivate();
 		}
@@ -182,7 +170,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(!_disposed);
 			Debug.Assert(_active);
 
-			_stateManager.TraceEvent(TraceEventType.Verbose, "Deactivate " + Id);
+			_stateManager.TraceEvent(TraceEventType.Verbose, "Deactivate " + _deeplinkId);
 			_active = false;
 			_controllerProxy.OnDeactivate();
 		}
@@ -192,7 +180,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(!_disposed);
 			Debug.Assert(!_active);
 
-			_stateManager.TraceEvent(TraceEventType.Verbose, "Dismiss " + Id);
+			_stateManager.TraceEvent(TraceEventType.Verbose, "Dismiss " + _deeplinkId);
 			_controllerProxy.OnDismiss();
 		}
 
@@ -246,13 +234,6 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region IObjectId
-
-		public int Id => _id;
-		public string Name { get => _name; set => _name = value; }
-
-		#endregion
-
 		#region implementation
 
 		private Stack<AppState> GetChildStates()
@@ -282,7 +263,7 @@ namespace UnityFx.AppStates
 		{
 			if (_disposed)
 			{
-				throw new ObjectDisposedException(_name ?? GetType().Name);
+				throw new ObjectDisposedException(_deeplinkId);
 			}
 		}
 

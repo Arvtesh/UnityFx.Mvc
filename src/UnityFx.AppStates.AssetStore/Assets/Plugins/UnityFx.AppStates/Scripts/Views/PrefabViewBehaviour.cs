@@ -10,7 +10,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A <see cref="MonoBehaviour"/>-based view.
 	/// </summary>
-	public class PrefabViewBehaviour : ComponentBehaviour, IView
+	public class PrefabViewBehaviour : DisposableBehaviour, IView
 	{
 		#region data
 
@@ -103,6 +103,26 @@ namespace UnityFx.AppStates
 		public event EventHandler EnabledChanged;
 
 		/// <summary>
+		/// Gets or sets the identifying name of the view.
+		/// </summary>
+		public string Name
+		{
+			get
+			{
+				return name;
+			}
+			set
+			{
+				name = value;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets an arbitrary object value that can be used to store custom information about this object.
+		/// </summary>
+		public object Tag { get; set; }
+
+		/// <summary>
 		/// Gets or sets a value indicating whether the view is visible.
 		/// </summary>
 		/// <seealso cref="Enabled"/>
@@ -149,42 +169,6 @@ namespace UnityFx.AppStates
 					_enabled = value;
 					OnEnabledChanged(value);
 				}
-			}
-		}
-
-		/// <summary>
-		/// Gets or sets an arbitrary object value that can be used to store custom information about this object.
-		/// </summary>
-		public object Tag { get; set; }
-
-		#endregion
-
-		#region IObjectId
-
-		/// <summary>
-		/// Gets the instance identifier.
-		/// </summary>
-		public int Id
-		{
-			get
-			{
-				return GetInstanceID();
-			}
-		}
-
-		/// <summary>
-		/// Gets or sets the identifying name of the object.
-		/// </summary>
-		public string Name
-		{
-			get
-			{
-				return name;
-			}
-			set
-			{
-				ThrowIfDisposed();
-				name = value;
 			}
 		}
 

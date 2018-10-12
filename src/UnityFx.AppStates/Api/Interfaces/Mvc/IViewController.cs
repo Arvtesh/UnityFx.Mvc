@@ -10,7 +10,11 @@ namespace UnityFx.AppStates
 	/// </summary>
 	/// <seealso cref="IViewController{TView}"/>
 	/// <seealso cref="IView"/>
-	public interface IViewController : IObjectId, IDismissable
+	public interface IViewController : IDismissable
 	{
+		/// <summary>
+		/// Gets the controller name.
+		/// </summary>
+		string Name { get; }
 	}
 }

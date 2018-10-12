@@ -10,7 +10,7 @@ namespace UnityFx.AppStates
 	/// A generic view.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
-	public interface IView : IObjectId, IComponent
+	public interface IView : IDisposable
 	{
 		/// <summary>
 		/// Raised when the <see cref="Visible"/> property value changes.
@@ -27,6 +27,16 @@ namespace UnityFx.AppStates
 		event EventHandler EnabledChanged;
 
 		/// <summary>
+		/// Gets or sets the view name.
+		/// </summary>
+		string Name { get; set; }
+
+		/// <summary>
+		/// Gets or sets an arbitrary object value that can be used to store custom information about this object.
+		/// </summary>
+		object Tag { get; set; }
+
+		/// <summary>
 		/// Gets or sets a value indicating whether the view is visible.
 		/// </summary>
 		/// <seealso cref="VisibleChanged"/>
@@ -39,10 +49,5 @@ namespace UnityFx.AppStates
 		/// <seealso cref="EnabledChanged"/>
 		/// <seealso cref="Visible"/>
 		bool Enabled { get; set; }
-
-		/// <summary>
-		/// Gets or sets an arbitrary object value that can be used to store custom information about this object.
-		/// </summary>
-		object Tag { get; set; }
 	}
 }

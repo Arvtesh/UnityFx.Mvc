@@ -12,12 +12,12 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Implementation of a <see cref="Scene"/>-based view.
 	/// </summary>
-	public class SceneView : UnityEngine.Object, IView
+	public class SceneView : IView
 	{
 		#region data
 
 		private Scene _scene;
-		private ISite _site;
+		private string _name;
 		private bool _visible;
 		private bool _enabled;
 		private bool _disposed;
@@ -54,6 +54,7 @@ namespace UnityFx.AppStates
 			SceneManager.sceneUnloaded += OnSceneUnloaded;
 
 			_scene = scene;
+			_name = scene.name;
 		}
 
 		/// <summary>
@@ -117,15 +118,6 @@ namespace UnityFx.AppStates
 		/// <seealso cref="ThrowIfDisposed"/>
 		protected virtual void OnDisposed()
 		{
-			if (_site != null && _site.Container != null)
-			{
-				_site.Container.Remove(this);
-			}
-
-			if (Disposed != null)
-			{
-				Disposed(this, EventArgs.Empty);
-			}
 		}
 
 		/// <summary>
@@ -170,6 +162,26 @@ namespace UnityFx.AppStates
 		/// <seealso cref="OnEnabledChanged(bool)"/>
 		/// <seealso cref="Enabled"/>
 		public event EventHandler EnabledChanged;
+
+		/// <summary>
+		/// Gets or sets the identifying name of the view.
+		/// </summary>
+		public string Name
+		{
+			get
+			{
+				return _name;
+			}
+			set
+			{
+				_name = value;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets an arbitrary object value that can be used to store custom information about this object.
+		/// </summary>
+		public object Tag { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether the view is visible.
@@ -218,66 +230,6 @@ namespace UnityFx.AppStates
 				}
 			}
 		}
-
-		/// <summary>
-		/// Gets or sets an arbitrary object value that can be used to store custom information about this object.
-		/// </summary>
-		public object Tag { get; set; }
-
-		#endregion
-
-		#region IObjectId
-
-		/// <summary>
-		/// Gets the instance identifier.
-		/// </summary>
-		public int Id
-		{
-			get
-			{
-				return GetInstanceID();
-			}
-		}
-
-		/// <summary>
-		/// Gets or sets the identifying name of the object.
-		/// </summary>
-		public string Name
-		{
-			get
-			{
-				return name;
-			}
-			set
-			{
-				ThrowIfDisposed();
-				name = value;
-			}
-		}
-
-		#endregion
-
-		#region IComponent
-
-		/// <summary>
-		/// Gets or sets the <see cref="ISite"/> associated with the <see cref="IComponent"/>.
-		/// </summary>
-		public ISite Site
-		{
-			get
-			{
-				return _site;
-			}
-			set
-			{
-				_site = value;
-			}
-		}
-
-		/// <summary>
-		/// Represents the method that handles the dispose event of a component.
-		/// </summary>
-		public event EventHandler Disposed;
 
 		#endregion
 
