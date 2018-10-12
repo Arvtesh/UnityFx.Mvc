@@ -21,6 +21,7 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
+		private readonly IAppStateService _stateManager;
 		private readonly IServiceProvider _serviceProvider;
 		private readonly IDisposable _scope;
 		private readonly IAppState _parentState;
@@ -36,8 +37,15 @@ namespace UnityFx.AppStates
 
 		public IViewController Controller => _controller;
 
-		public ViewControllerProxy(IServiceProvider serviceProvider, IAppState parentState, IViewController parentController, Type controllerType, PresentArgs args)
+		public ViewControllerProxy(IAppStateService stateManager, IServiceProvider serviceProvider, IAppState parentState, IViewController parentController, Type controllerType, PresentArgs args)
 		{
+			Debug.Assert(stateManager != null);
+			Debug.Assert(serviceProvider != null);
+			Debug.Assert(parentState != null);
+			Debug.Assert(controllerType != null);
+			Debug.Assert(args != null);
+
+			_stateManager = stateManager;
 			_serviceProvider = serviceProvider;
 			_parentState = parentState;
 			_parentController = parentController;
@@ -182,6 +190,18 @@ namespace UnityFx.AppStates
 				controllerEvents.OnDismiss();
 			}
 		}
+
+		#endregion
+
+		#region ISynchronizeInvoke
+
+		public bool InvokeRequired => _stateManager.InvokeRequired;
+
+		public IAsyncResult BeginInvoke(Delegate method, object[] args) => _stateManager.BeginInvoke(method, args);
+
+		public object EndInvoke(IAsyncResult result) => _stateManager.EndInvoke(result);
+
+		public object Invoke(Delegate method, object[] args) => _stateManager.Invoke(method, args);
 
 		#endregion
 

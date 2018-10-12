@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using UnityFx.Async;
 
 namespace UnityFx.AppStates
@@ -11,7 +12,7 @@ namespace UnityFx.AppStates
 	/// It is here for the sake of testability/explicit dependencies for <see cref="IViewController"/> implementations.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
-	public interface IViewControllerContext
+	public interface IViewControllerContext : ISynchronizeInvoke
 	{
 		/// <summary>
 		/// Gets the controller creation arguments.

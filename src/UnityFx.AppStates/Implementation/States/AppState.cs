@@ -46,7 +46,7 @@ namespace UnityFx.AppStates
 			// Controller should be created after the state has been initialized.
 			try
 			{
-				_controllerProxy = new ViewControllerProxy(stateManager.ServiceProvider, this, null, controllerType, args);
+				_controllerProxy = new ViewControllerProxy(stateManager, stateManager.ServiceProvider, this, null, controllerType, args);
 			}
 			catch
 			{
