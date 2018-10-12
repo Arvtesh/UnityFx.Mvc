@@ -124,6 +124,14 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
+		/// Called when the controller is disposed. Default implementation does nothing.
+		/// </summary>
+		/// <seealso cref="OnPresent"/>
+		protected virtual void OnDispose()
+		{
+		}
+
+		/// <summary>
 		/// Releases resources used by the controller.
 		/// </summary>
 		/// <param name="disposing">Should be <see langword="true"/> if the method is called from <see cref="Dispose()"/>; <see langword="false"/> otherwise.</param>
@@ -131,7 +139,15 @@ namespace UnityFx.AppStates
 		/// <seealso cref="ThrowIfDisposed"/>
 		protected virtual void Dispose(bool disposing)
 		{
-			_disposed = true;
+			if (!_disposed)
+			{
+				_disposed = true;
+
+				if (disposing)
+				{
+					OnDispose();
+				}
+			}
 		}
 
 		#endregion

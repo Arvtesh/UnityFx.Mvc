@@ -9,7 +9,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A disposable <see cref="MonoBehaviour"/>.
 	/// </summary>
-	public abstract class DisposableMonoBehaviour : MonoBehaviour, IDisposable
+	public abstract class DisposableBehaviour : MonoBehaviour, IDisposable
 	{
 		#region data
 
@@ -22,11 +22,15 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets a value indicating whether the object is disposed.
 		/// </summary>
+		/// <seealso cref="Dispose()"/>
+		/// <seealso cref="Dispose(bool)"/>
+		/// <seealso cref="OnDisposed"/>
+		/// <seealso cref="ThrowIfDisposed"/>
 		protected bool IsDisposed
 		{
 			get
 			{
-				return _disposed || !this;
+				return _disposed;
 			}
 		}
 
@@ -35,6 +39,8 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <seealso cref="Dispose()"/>
 		/// <seealso cref="Dispose(bool)"/>
+		/// <seealso cref="OnDisposed"/>
+		/// <seealso cref="IsDisposed"/>
 		protected void ThrowIfDisposed()
 		{
 			if (_disposed)
@@ -44,16 +50,51 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
+		/// Called when the object has been disposed. Default implementation does nothing.
+		/// </summary>
+		/// <seealso cref="Dispose()"/>
+		/// <seealso cref="Dispose(bool)"/>
+		/// <seealso cref="IsDisposed"/>
+		/// <seealso cref="ThrowIfDisposed"/>
+		protected virtual void OnDisposed()
+		{
+		}
+
+		/// <summary>
 		/// Releases unmanaged resources used by the object.
 		/// </summary>
 		/// <param name="disposing">Should be <see langword="true"/> if the method is called from <see cref="Dispose()"/>; <see langword="false"/> otherwise.</param>
 		/// <seealso cref="Dispose()"/>
+		/// <seealso cref="OnDisposed"/>
+		/// <seealso cref="IsDisposed"/>
 		/// <seealso cref="ThrowIfDisposed"/>
 		protected virtual void Dispose(bool disposing)
 		{
-			if (disposing)
+			if (!_disposed)
 			{
-				Destroy(gameObject);
+				_disposed = true;
+
+				if (disposing)
+				{
+					Destroy(gameObject);
+					OnDisposed();
+				}
+			}
+		}
+
+		#endregion
+
+		#region MonoBehaviour
+
+		/// <summary>
+		/// A <see cref="MonoBehaviour"/> destroy handler.
+		/// </summary>
+		protected virtual void OnDestroy()
+		{
+			if (!_disposed)
+			{
+				_disposed = true;
+				OnDisposed();
 			}
 		}
 
@@ -65,14 +106,13 @@ namespace UnityFx.AppStates
 		/// Releases unmanaged resources used by the object.
 		/// </summary>
 		/// <seealso cref="Dispose(bool)"/>
+		/// <seealso cref="OnDisposed"/>
+		/// <seealso cref="IsDisposed"/>
+		/// <seealso cref="ThrowIfDisposed"/>
 		public void Dispose()
 		{
-			if (!_disposed)
-			{
-				_disposed = true;
-				Dispose(true);
-				GC.SuppressFinalize(this);
-			}
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 
 		#endregion

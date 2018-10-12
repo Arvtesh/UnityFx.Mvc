@@ -10,10 +10,11 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A <see cref="MonoBehaviour"/>-based view.
 	/// </summary>
-	public class ViewBehaviour : DisposableMonoBehaviour, IView
+	public class ViewBehaviour : ComponentBehaviour, IView
 	{
 		#region data
 
+		private bool _visible;
 		private bool _enabled;
 
 		#endregion
@@ -21,23 +22,63 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
-		/// TODO.
+		/// Called when <see cref="Visible"/> property value changes.
 		/// </summary>
-		/// <param name="visible"></param>
-		protected virtual void OnSetVisible(bool visible)
+		/// <param name="visible">The new value of <see cref="Visible"/> propoerty.</param>
+		/// <seealso cref="OnEnabledChanged(bool)"/>
+		protected virtual void OnVisibleChanged(bool visible)
 		{
-			gameObject.SetActive(visible);
+			if (VisibleChanged != null)
+			{
+				VisibleChanged(this, EventArgs.Empty);
+			}
 		}
 
 		/// <summary>
-		/// TODO.
+		/// Called when <see cref="Enabled"/> property value changes.
 		/// </summary>
-		/// <param name="enabled"></param>
-		protected virtual void OnSetEnabled(bool enabled)
+		/// <param name="enabled">The new value of <see cref="Enabled"/> propoerty.</param>
+		/// <seealso cref="OnVisibleChanged(bool)"/>
+		protected virtual void OnEnabledChanged(bool enabled)
 		{
 			foreach (var c in GetComponentsInChildren<GraphicRaycaster>(true))
 			{
 				c.enabled = enabled;
+			}
+
+			if (EnabledChanged != null)
+			{
+				EnabledChanged(this, EventArgs.Empty);
+			}
+		}
+
+		#endregion
+
+		#region MonoBehaviour
+
+		/// <summary>
+		/// A <see cref="MonoBehaviour"/> enable handler.
+		/// </summary>
+		/// <seealso cref="OnDisable"/>
+		protected virtual void OnEnable()
+		{
+			if (!_visible)
+			{
+				_visible = true;
+				OnVisibleChanged(true);
+			}
+		}
+
+		/// <summary>
+		/// A <see cref="MonoBehaviour"/> enable handler.
+		/// </summary>
+		/// <seealso cref="OnEnable"/>
+		protected virtual void OnDisable()
+		{
+			if (_visible)
+			{
+				_visible = false;
+				OnVisibleChanged(false);
 			}
 		}
 
@@ -46,24 +87,53 @@ namespace UnityFx.AppStates
 		#region IView
 
 		/// <summary>
+		/// Raised when the <see cref="Visible"/> property value changes.
+		/// </summary>
+		/// <seealso cref="EnabledChanged"/>
+		/// <seealso cref="OnVisibleChanged(bool)"/>
+		/// <seealso cref="Visible"/>
+		public event EventHandler VisibleChanged;
+
+		/// <summary>
+		/// Raised when the <see cref="Enabled"/> property value changes.
+		/// </summary>
+		/// <seealso cref="VisibleChanged"/>
+		/// <seealso cref="OnEnabledChanged(bool)"/>
+		/// <seealso cref="Enabled"/>
+		public event EventHandler EnabledChanged;
+
+		/// <summary>
 		/// Gets or sets a value indicating whether the view is visible.
 		/// </summary>
+		/// <seealso cref="Enabled"/>
+		/// <seealso cref="OnVisibleChanged(bool)"/>
+		/// <seealso cref="VisibleChanged"/>
 		public bool Visible
 		{
 			get
 			{
-				return gameObject.activeSelf;
+				return _visible;
 			}
 			set
 			{
 				ThrowIfDisposed();
-				OnSetVisible(value);
+
+				if (_visible != value)
+				{
+					gameObject.SetActive(value);
+					_visible = value;
+
+					OnVisibleChanged(value);
+				}
 			}
 		}
 
 		/// <summary>
-		/// Gets or sets a value indicating whether the view is enabled (i.e. accepts user input).
+		/// Gets or sets a value indicating whether the view can respond to user interaction.
 		/// </summary>
+		/// <seealso cref="Visible"/>
+		/// <seealso cref="OnEnabledChanged(bool)"/>
+		/// <seealso cref="EnabledChanged"/>
 		public bool Enabled
 		{
 			get
@@ -73,10 +143,19 @@ namespace UnityFx.AppStates
 			set
 			{
 				ThrowIfDisposed();
-				OnSetEnabled(value);
-				_enabled = value;
+
+				if (_enabled != value)
+				{
+					_enabled = value;
+					OnEnabledChanged(value);
+				}
 			}
 		}
+
+		/// <summary>
+		/// Gets or sets an arbitrary object value that can be used to store custom information about this object.
+		/// </summary>
+		public object Tag { get; set; }
 
 		#endregion
 
