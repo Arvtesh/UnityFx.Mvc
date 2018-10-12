@@ -84,18 +84,6 @@ namespace UnityFx.AppStates
 			return PresentOptions.None;
 		}
 
-		internal static string GetNextId(string typeId, ref int counter)
-		{
-			var id = ++counter;
-
-			if (id <= 0)
-			{
-				id = 1;
-			}
-
-			return typeId + id.ToString(CultureInfo.InvariantCulture);
-		}
-
 		private static bool TryGetMethodArguments(MethodBase method, IServiceProvider serviceProvider, object[] args, out object[] argValues)
 		{
 			var argInfo = method.GetParameters();

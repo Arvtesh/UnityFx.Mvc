@@ -65,7 +65,7 @@ namespace UnityFx.AppStates
 		{
 			if (_disposed)
 			{
-				throw new ObjectDisposedException(Id);
+				throw new ObjectDisposedException(Name ?? GetType().Name);
 			}
 		}
 

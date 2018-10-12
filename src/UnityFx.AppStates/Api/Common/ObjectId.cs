@@ -13,7 +13,10 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private readonly string _id;
+		private static int _idCounter;
+
+		private readonly int _id;
+		private string _name;
 
 		#endregion
 
@@ -22,15 +25,31 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ObjectId"/> class.
 		/// </summary>
+		protected ObjectId()
+		{
+			_id = ++_idCounter;
+
+			if (_id <= 0)
+			{
+				_id = 1;
+			}
+
+			_name = GetType().Name;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ObjectId"/> class.
+		/// </summary>
 		protected ObjectId(int instanceId)
 		{
-			_id = GetId(GetType(), instanceId);
+			_id = instanceId;
+			_name = GetType().Name;
 		}
 
 		/// <summary>
 		/// Generates the identifier string for the specified type.
 		/// </summary>
-		public static string GetId(Type type, int instanceId)
+		public static string GetName(Type type, int instanceId)
 		{
 			return type.Name + instanceId.ToString(CultureInfo.InvariantCulture);
 		}
@@ -38,7 +57,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Generates the identifier string for the specified type.
 		/// </summary>
-		public static string GetId(string s, int instanceId)
+		public static string GetName(string s, int instanceId)
 		{
 			return s + instanceId.ToString(CultureInfo.InvariantCulture);
 		}
@@ -48,7 +67,10 @@ namespace UnityFx.AppStates
 		#region IObjectId
 
 		/// <inheritdoc/>
-		public string Id => _id;
+		public int Id => _id;
+
+		/// <inheritdoc/>
+		public string Name { get => _name; set => _name = value; }
 
 		#endregion
 	}

@@ -43,7 +43,8 @@ namespace UnityFx.AppStates
 			public bool DisposeThrows => _source == ThrowSource.Dispose;
 		}
 
-		public string Id => "ErrorsViewController";
+		public int Id { get; }
+		public string Name { get; set; }
 
 		public ViewController_Errors(IViewControllerContext ctx)
 		{

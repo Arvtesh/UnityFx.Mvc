@@ -9,7 +9,9 @@ namespace UnityFx.AppStates
 	public class ViewController_MinimalAsync : IViewController, IPresentable
 	{
 		private readonly IViewControllerContext _ctx;
-		public string Id => "MinimalViewControllerAsync";
+
+		public int Id { get; }
+		public string Name { get; set; }
 
 		public ViewController_MinimalAsync(IViewControllerContext ctx)
 		{

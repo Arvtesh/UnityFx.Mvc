@@ -11,8 +11,13 @@ namespace UnityFx.AppStates
 	public interface IObjectId
 	{
 		/// <summary>
-		/// Gets the instance identifier. The identifier returned is supposed to be used for informational/debugging purposes only. Uniqueness is not required.
+		/// Gets an object instance identifier.
 		/// </summary>
-		string Id { get; }
+		int Id { get; }
+
+		/// <summary>
+		/// Gets or sets the identifying name of the object. It is not required to be unique.
+		/// </summary>
+		string Name { get; set; }
 	}
 }

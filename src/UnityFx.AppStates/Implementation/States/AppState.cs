@@ -21,9 +21,10 @@ namespace UnityFx.AppStates
 
 		private readonly AppStateService _stateManager;
 		private readonly ViewControllerProxy _controllerProxy;
-		private readonly string _id;
+		private readonly int _id;
 		private readonly string _deeplinkId;
 
+		private string _name;
 		private IAsyncOperation _dismissOp;
 		private bool _active;
 		private bool _disposed;
@@ -38,7 +39,14 @@ namespace UnityFx.AppStates
 			Debug.Assert(stateManager != null);
 			Debug.Assert(controllerType != null);
 
-			_id = Utility.GetNextId("_state", ref _idCounter);
+			_id = ++_idCounter;
+
+			if (_id <= 0)
+			{
+				_id = 1;
+			}
+
+			_name = GetType().Name;
 			_deeplinkId = Utility.GetControllerTypeId(controllerType);
 			_stateManager = stateManager;
 			_stateManager.AddState(this);
@@ -78,7 +86,6 @@ namespace UnityFx.AppStates
 
 		#region IAppState
 
-		public string Id => _id;
 		public bool IsActive => _active;
 		public IViewController Controller => _controllerProxy.Controller;
 
@@ -239,6 +246,13 @@ namespace UnityFx.AppStates
 
 		#endregion
 
+		#region IObjectId
+
+		public int Id => _id;
+		public string Name { get => _name; set => _name = value; }
+
+		#endregion
+
 		#region implementation
 
 		private Stack<AppState> GetChildStates()
@@ -268,7 +282,7 @@ namespace UnityFx.AppStates
 		{
 			if (_disposed)
 			{
-				throw new ObjectDisposedException(_id);
+				throw new ObjectDisposedException(_name ?? GetType().Name);
 			}
 		}
 

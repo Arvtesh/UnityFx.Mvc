@@ -6,14 +6,13 @@ using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
 	/// <summary>
 	/// Implementation of a <see cref="Scene"/>-based view.
 	/// </summary>
-	public class SceneView : IView
+	public class SceneView : UnityEngine.Object, IView
 	{
 		#region data
 
@@ -38,17 +37,6 @@ namespace UnityFx.AppStates
 			get
 			{
 				return _disposed;
-			}
-		}
-
-		/// <summary>
-		/// Gets the component's container.
-		/// </summary>
-		protected IContainer Container
-		{
-			get
-			{
-				return _site != null ? _site.Container : null;
 			}
 		}
 
@@ -243,11 +231,27 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the instance identifier.
 		/// </summary>
-		public string Id
+		public int Id
 		{
 			get
 			{
-				return GetType().Name;
+				return GetInstanceID();
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the identifying name of the object.
+		/// </summary>
+		public string Name
+		{
+			get
+			{
+				return name;
+			}
+			set
+			{
+				ThrowIfDisposed();
+				name = value;
 			}
 		}
 

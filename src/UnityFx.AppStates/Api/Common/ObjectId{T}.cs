@@ -15,7 +15,8 @@ namespace UnityFx.AppStates
 
 		private static int _idCounter;
 
-		private readonly string _id;
+		private readonly int _id;
+		private string _name;
 
 		#endregion
 
@@ -25,15 +26,23 @@ namespace UnityFx.AppStates
 		/// Initializes a new instance of the <see cref="ObjectId{T}"/> class.
 		/// </summary>
 		protected ObjectId()
+			: this(typeof(T).Name)
 		{
-			var id = ++_idCounter;
+		}
 
-			if (id <= 0)
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ObjectId{T}"/> class.
+		/// </summary>
+		protected ObjectId(string name)
+		{
+			_id = ++_idCounter;
+
+			if (_id <= 0)
 			{
-				id = 1;
+				_id = 1;
 			}
 
-			_id = ObjectId.GetId(typeof(T), id);
+			_name = name;
 		}
 
 		#endregion
@@ -41,7 +50,10 @@ namespace UnityFx.AppStates
 		#region IObjectId
 
 		/// <inheritdoc/>
-		public string Id => _id;
+		public int Id => _id;
+
+		/// <inheritdoc/>
+		public string Name { get => _name; set => _name = value; }
 
 		#endregion
 	}

@@ -9,7 +9,9 @@ namespace UnityFx.AppStates
 	public class ViewController_Minimal : IViewController
 	{
 		private readonly IViewControllerContext _ctx;
-		public string Id => "MinimalViewController";
+
+		public int Id { get; }
+		public string Name { get; set; }
 
 		public ViewController_Minimal(IViewControllerContext ctx)
 		{

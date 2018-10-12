@@ -19,18 +19,6 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region interface
-
-		/// <summary>
-		/// Gets the component's container.
-		/// </summary>
-		protected IContainer Container
-		{
-			get
-			{
-				return _site != null ? _site.Container : null;
-			}
-		}
-
 		#endregion
 
 		#region DisposableBehaviour

@@ -11,7 +11,8 @@ namespace UnityFx.AppStates
 		private readonly IViewControllerContext _ctx;
 		private int _index;
 
-		public string Id => "MinimalEventsViewController";
+		public int Id { get; }
+		public string Name { get; set; }
 
 		public int OnPresentIndex { get; private set; }
 		public int OnDismissIndex { get; private set; }

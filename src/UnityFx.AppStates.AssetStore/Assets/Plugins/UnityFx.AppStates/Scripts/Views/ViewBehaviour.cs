@@ -164,11 +164,27 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the instance identifier.
 		/// </summary>
-		public string Id
+		public int Id
 		{
 			get
 			{
-				return GetType().Name;
+				return GetInstanceID();
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the identifying name of the object.
+		/// </summary>
+		public string Name
+		{
+			get
+			{
+				return name;
+			}
+			set
+			{
+				ThrowIfDisposed();
+				name = value;
 			}
 		}
 
