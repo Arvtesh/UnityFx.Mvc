@@ -26,10 +26,9 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Called when the object has been disposed.
 		/// </summary>
+		/// <seealso cref="Disposed"/>
 		protected override void OnDisposed()
 		{
-			base.OnDisposed();
-
 			if (_site != null && _site.Container != null)
 			{
 				_site.Container.Remove(this);

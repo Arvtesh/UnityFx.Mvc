@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +11,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A <see cref="MonoBehaviour"/>-based view.
 	/// </summary>
-	public class PrefabViewBehaviour : DisposableBehaviour, IView
+	public class ViewBehaviour : ComponentBehaviour, IView
 	{
 		#region data
 
@@ -22,16 +23,26 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
+		/// Raises <see cref="PropertyChanged"/> event for a property with name <paramref name="propertyName"/>.
+		/// </summary>
+		/// <param name="propertyName">Name of the property.</param>
+		/// <seealso cref="PropertyChanged"/>
+		protected void NotifyPropertyChanged(string propertyName)
+		{
+			if (PropertyChanged != null)
+			{
+				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+
+		/// <summary>
 		/// Called when <see cref="Visible"/> property value changes.
 		/// </summary>
 		/// <param name="visible">The new value of <see cref="Visible"/> propoerty.</param>
 		/// <seealso cref="OnEnabledChanged(bool)"/>
 		protected virtual void OnVisibleChanged(bool visible)
 		{
-			if (VisibleChanged != null)
-			{
-				VisibleChanged(this, EventArgs.Empty);
-			}
+			NotifyPropertyChanged(nameof(Visible));
 		}
 
 		/// <summary>
@@ -46,10 +57,7 @@ namespace UnityFx.AppStates
 				c.enabled = enabled;
 			}
 
-			if (EnabledChanged != null)
-			{
-				EnabledChanged(this, EventArgs.Empty);
-			}
+			NotifyPropertyChanged(nameof(Enabled));
 		}
 
 		#endregion
@@ -87,22 +95,6 @@ namespace UnityFx.AppStates
 		#region IView
 
 		/// <summary>
-		/// Raised when the <see cref="Visible"/> property value changes.
-		/// </summary>
-		/// <seealso cref="EnabledChanged"/>
-		/// <seealso cref="OnVisibleChanged(bool)"/>
-		/// <seealso cref="Visible"/>
-		public event EventHandler VisibleChanged;
-
-		/// <summary>
-		/// Raised when the <see cref="Enabled"/> property value changes.
-		/// </summary>
-		/// <seealso cref="VisibleChanged"/>
-		/// <seealso cref="OnEnabledChanged(bool)"/>
-		/// <seealso cref="Enabled"/>
-		public event EventHandler EnabledChanged;
-
-		/// <summary>
 		/// Gets or sets the identifying name of the view.
 		/// </summary>
 		public string Name
@@ -113,6 +105,7 @@ namespace UnityFx.AppStates
 			}
 			set
 			{
+				ThrowIfDisposed();
 				name = value;
 			}
 		}
@@ -127,7 +120,6 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <seealso cref="Enabled"/>
 		/// <seealso cref="OnVisibleChanged(bool)"/>
-		/// <seealso cref="VisibleChanged"/>
 		public bool Visible
 		{
 			get
@@ -140,9 +132,8 @@ namespace UnityFx.AppStates
 
 				if (_visible != value)
 				{
-					gameObject.SetActive(value);
 					_visible = value;
-
+					gameObject.SetActive(value);
 					OnVisibleChanged(value);
 				}
 			}
@@ -153,7 +144,6 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <seealso cref="Visible"/>
 		/// <seealso cref="OnEnabledChanged(bool)"/>
-		/// <seealso cref="EnabledChanged"/>
 		public bool Enabled
 		{
 			get
@@ -171,6 +161,16 @@ namespace UnityFx.AppStates
 				}
 			}
 		}
+
+		#endregion
+
+		#region INotifyPropertyChanged
+
+		/// <summary>
+		/// Raised when a property value changes.
+		/// </summary>
+		/// <seealso cref="NotifyPropertyChanged(string)"/>
+		public event PropertyChangedEventHandler PropertyChanged;
 
 		#endregion
 	}

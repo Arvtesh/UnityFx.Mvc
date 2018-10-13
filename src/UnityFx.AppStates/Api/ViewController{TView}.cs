@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using UnityFx.Async;
 
 namespace UnityFx.AppStates
@@ -47,6 +49,16 @@ namespace UnityFx.AppStates
 		{
 		}
 
+		/// <summary>
+		/// Called when a property value of the view has changed. The view should implement <see cref="INotifyPropertyChanged"/>.
+		/// </summary>
+		/// <param name="sender">A reference to the property owner.</param>
+		/// <param name="e">Event arguments.</param>
+		protected virtual void OnViewPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			// TODO
+		}
+
 		#endregion
 
 		#region ViewController
@@ -89,12 +101,14 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Releases resources used by the controller.
 		/// </summary>
-		protected override void Dispose(bool disposing)
+		protected override void OnDispose()
 		{
-			if (disposing)
+			if (_view is INotifyPropertyChanged notifier)
 			{
-				_view?.Dispose();
+				notifier.PropertyChanged -= OnViewPropertyChanged;
 			}
+
+			_view?.Dispose();
 		}
 
 		#endregion
@@ -121,13 +135,25 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
+		private void SetView(TView view)
+		{
+			Debug.Assert(view != null);
+
+			if (view is INotifyPropertyChanged notifier)
+			{
+				notifier.PropertyChanged += OnViewPropertyChanged;
+			}
+
+			_view = view;
+		}
+
 		private static void OnViewLoadedInternal(IAsyncOperation<TView> op, object userState)
 		{
 			var controller = (ViewController<TView>)userState;
 
 			if (op.IsCompletedSuccessfully)
 			{
-				controller._view = op.Result ?? throw new InvalidOperationException();
+				controller.SetView(op.Result ?? throw new InvalidOperationException());
 				controller.OnViewLoaded();
 			}
 		}
