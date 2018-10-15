@@ -21,6 +21,7 @@ namespace UnityFx.AppStates
 		private readonly IViewControllerContext _context;
 		private readonly string _name;
 
+		private IView _view;
 		private IAsyncOperation _dismissOp;
 		private bool _disposed;
 
@@ -42,6 +43,11 @@ namespace UnityFx.AppStates
 		/// Gets the controller creation arguments.
 		/// </summary>
 		protected PresentArgs Args => _context.PresentArgs;
+
+		/// <summary>
+		/// Gets a value indicating whether view is loaded.
+		/// </summary>
+		protected bool IsViewLoaded => _view != null;
 
 		/// <summary>
 		/// Gets a value indicating whether the controller is disposed.
@@ -67,23 +73,23 @@ namespace UnityFx.AppStates
 		{
 			if (_disposed)
 			{
-				throw new ObjectDisposedException(Name ?? GetType().Name);
+				throw new ObjectDisposedException(_name);
 			}
 		}
 
 		/// <summary>
-		/// Performs any asynchronous actions needed to present this object. Default implementation does nothing.
+		/// Performs any asynchronous actions needed to present this object.
 		/// </summary>
 		/// <param name="presentContext">Context data provided by the system.</param>
 		/// <returns>Returns an object that can be used to track the operation state.</returns>
 		/// <seealso cref="DismissAsync(IDismissContext)"/>
 		protected virtual IAsyncOperation PresentAsync(IPresentContext presentContext)
 		{
-			return AsyncResult.CompletedOperation;
+			return _context.LoadViewAsync().ContinueWith(OnViewLoadedInternal, this, AsyncContinuationOptions.OnlyOnRanToCompletion);
 		}
 
 		/// <summary>
-		/// Performs any asynchronous actions needed to dismiss this object. The method is invoked by the system.
+		/// Performs any asynchronous actions needed to dismiss this object.
 		/// </summary>
 		/// <param name="dismissContext">Context data provided by the system.</param>
 		/// <returns>Returns an object that can be used to track the operation state.</returns>
@@ -91,6 +97,23 @@ namespace UnityFx.AppStates
 		protected virtual IAsyncOperation DismissAsync(IDismissContext dismissContext)
 		{
 			return AsyncResult.CompletedOperation;
+		}
+
+		/// <summary>
+		/// Called when the view is loaded. Default implementation does nothing.
+		/// </summary>
+		protected virtual void OnViewLoaded()
+		{
+		}
+
+		/// <summary>
+		/// Called when a property value of the view has changed. The view should implement <see cref="INotifyPropertyChanged"/>.
+		/// </summary>
+		/// <param name="sender">A reference to the property owner.</param>
+		/// <param name="e">Event arguments.</param>
+		protected virtual void OnViewPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			// TODO
 		}
 
 		/// <summary>
@@ -147,7 +170,23 @@ namespace UnityFx.AppStates
 
 				if (disposing)
 				{
-					OnDispose();
+					try
+					{
+						OnDispose();
+					}
+					finally
+					{
+						if (_view != null)
+						{
+							if (_view is INotifyPropertyChanged notifier)
+							{
+								notifier.PropertyChanged -= OnViewPropertyChanged;
+							}
+
+							_view.Dispose();
+							_view = null;
+						}
+					}
 				}
 			}
 		}
@@ -161,6 +200,23 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public string Name => _name;
 
+		/// <summary>
+		/// Gets a view managed by the controller.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Thrown if the view is not initialized.</exception>
+		public IView View
+		{
+			get
+			{
+				if (_view == null)
+				{
+					throw new InvalidOperationException();
+				}
+
+				return _view;
+			}
+		}
+
 		#endregion
 
 		#region IPresentable
@@ -169,7 +225,9 @@ namespace UnityFx.AppStates
 		IAsyncOperation IPresentable.PresentAsync(IPresentContext presentContext)
 		{
 			Debug.Assert(presentContext != null);
+			Debug.Assert(_view == null);
 			Debug.Assert(!_disposed);
+
 			return PresentAsync(presentContext);
 		}
 
@@ -178,6 +236,7 @@ namespace UnityFx.AppStates
 		{
 			Debug.Assert(dismissContext != null);
 			Debug.Assert(!_disposed);
+
 			return DismissAsync(dismissContext);
 		}
 
@@ -189,13 +248,39 @@ namespace UnityFx.AppStates
 		void IPresentableEvents.OnPresent()
 		{
 			Debug.Assert(!_disposed);
+			Debug.Assert(_view != null);
+
+			if (_view is INotifyPropertyChanged notifier)
+			{
+				notifier.PropertyChanged += OnViewPropertyChanged;
+			}
+
+			_view.Visible = true;
+
 			OnPresent();
+		}
+
+		/// <inheritdoc/>
+		void IPresentableEvents.OnDismiss()
+		{
+			Debug.Assert(!_disposed);
+			Debug.Assert(_view != null);
+
+			if (_view is INotifyPropertyChanged notifier)
+			{
+				notifier.PropertyChanged -= OnViewPropertyChanged;
+			}
+
+			OnDismiss();
 		}
 
 		/// <inheritdoc/>
 		void IPresentableEvents.OnActivate()
 		{
 			Debug.Assert(!_disposed);
+			Debug.Assert(_view != null);
+
+			_view.Enabled = true;
 			OnActivate();
 		}
 
@@ -203,14 +288,10 @@ namespace UnityFx.AppStates
 		void IPresentableEvents.OnDeactivate()
 		{
 			Debug.Assert(!_disposed);
-			OnDeactivate();
-		}
+			Debug.Assert(_view != null);
 
-		/// <inheritdoc/>
-		void IPresentableEvents.OnDismiss()
-		{
-			Debug.Assert(!_disposed);
-			OnDismiss();
+			_view.Enabled = false;
+			OnDeactivate();
 		}
 
 		#endregion
@@ -350,6 +431,21 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region implementation
+
+		private void SetView(IView view)
+		{
+			Debug.Assert(_view == null);
+
+			_view = view ?? throw new ArgumentNullException(nameof(view));
+
+			OnViewLoaded();
+		}
+
+		private static void OnViewLoadedInternal(IAsyncOperation<IView> op, object userState)
+		{
+			((ViewController)userState).SetView(op.Result);
+		}
+
 		#endregion
 	}
 }

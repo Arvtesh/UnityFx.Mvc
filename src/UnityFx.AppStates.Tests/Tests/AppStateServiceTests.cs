@@ -15,12 +15,14 @@ namespace UnityFx.AppStates
 	public class AppStateServiceTests
 	{
 		private readonly IServiceProvider _serviceProvider;
+		private readonly IViewFactory _viewFactory;
 		private readonly IAppStateService _stateManager;
 
 		public AppStateServiceTests()
 		{
-			_serviceProvider = new DefaultServiceProvider();
-			_stateManager = new AppStateService(_serviceProvider, null);
+			_serviceProvider = new FakeServiceProvider();
+			_viewFactory = new FakeViewFactory();
+			_stateManager = new AppStateService(_serviceProvider, _viewFactory, null);
 		}
 
 		[Fact]

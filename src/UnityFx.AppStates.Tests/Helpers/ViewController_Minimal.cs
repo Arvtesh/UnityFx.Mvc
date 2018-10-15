@@ -10,8 +10,8 @@ namespace UnityFx.AppStates
 	{
 		private readonly IViewControllerContext _ctx;
 
-		public int Id { get; }
 		public string Name { get; set; }
+		public IView View { get; }
 
 		public ViewController_Minimal(IViewControllerContext ctx)
 		{

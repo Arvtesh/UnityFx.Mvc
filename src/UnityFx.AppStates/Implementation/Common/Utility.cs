@@ -51,7 +51,12 @@ namespace UnityFx.AppStates
 
 		internal static string GetControllerTypeId(Type controllerType)
 		{
-			return GetDefaultControllerId(controllerType);
+			return GetDefaultControllerId(controllerType, false);
+		}
+
+		internal static string GetControllerDeeplinkId(Type controllerType)
+		{
+			return GetDefaultControllerId(controllerType, true);
 		}
 
 		internal static string GetViewResourceId(Type controllerType)
@@ -68,7 +73,7 @@ namespace UnityFx.AppStates
 
 			if (string.IsNullOrEmpty(result))
 			{
-				result = GetDefaultControllerId(controllerType);
+				result = GetDefaultControllerId(controllerType, false);
 			}
 
 			return result;
@@ -133,13 +138,20 @@ namespace UnityFx.AppStates
 			return false;
 		}
 
-		private static string GetDefaultControllerId(Type controllerType)
+		private static string GetDefaultControllerId(Type controllerType, bool lowerCase)
 		{
 			var result = controllerType.Name.ToLowerInvariant();
 
 			if (result.EndsWith("controller"))
 			{
-				result = result.Substring(0, result.Length - 10);
+				if (lowerCase)
+				{
+					result = result.Substring(0, result.Length - 10);
+				}
+				else
+				{
+					result = controllerType.Name.Substring(0, result.Length - 10);
+				}
 			}
 
 			return result;

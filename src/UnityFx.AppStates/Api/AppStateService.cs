@@ -25,6 +25,7 @@ namespace UnityFx.AppStates
 		#region data
 
 		private readonly IServiceProvider _serviceProvider;
+		private readonly IViewFactory _viewFactory;
 		private readonly SynchronizationContext _synchronizationContext;
 		private readonly AppStateServiceSettings _config;
 		private readonly TraceSource _traceSource = new TraceSource(ServiceName);
@@ -61,6 +62,11 @@ namespace UnityFx.AppStates
 		protected internal SynchronizationContext SynchronizationContext => _synchronizationContext;
 
 		/// <summary>
+		/// Gets a <see cref="IViewFactory"/> instance used by the service.
+		/// </summary>
+		protected internal IViewFactory ViewFactory => _viewFactory;
+
+		/// <summary>
 		/// Gets a <see cref="IServiceProvider"/> instance used by the service.
 		/// </summary>
 		protected internal IServiceProvider ServiceProvider => _serviceProvider;
@@ -69,9 +75,11 @@ namespace UnityFx.AppStates
 		/// Initializes a new instance of the <see cref="AppStateService"/> class.
 		/// </summary>
 		/// <param name="serviceProvider"></param>
-		public AppStateService(IServiceProvider serviceProvider)
+		/// <param name="viewFactory"></param>
+		public AppStateService(IServiceProvider serviceProvider, IViewFactory viewFactory)
 		{
 			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			_viewFactory = viewFactory ?? throw new ArgumentNullException(nameof(viewFactory));
 			_synchronizationContext = SynchronizationContext.Current;
 			_config = new AppStateServiceSettings(_traceSource);
 		}
@@ -79,11 +87,13 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AppStateService"/> class.
 		/// </summary>
-		/// <param name="syncContext"></param>
 		/// <param name="serviceProvider"></param>
-		public AppStateService(IServiceProvider serviceProvider, SynchronizationContext syncContext)
+		/// <param name="viewFactory"></param>
+		/// <param name="syncContext"></param>
+		public AppStateService(IServiceProvider serviceProvider, IViewFactory viewFactory, SynchronizationContext syncContext)
 		{
 			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			_viewFactory = viewFactory ?? throw new ArgumentNullException(nameof(viewFactory));
 			_synchronizationContext = syncContext;
 			_config = new AppStateServiceSettings(_traceSource);
 		}

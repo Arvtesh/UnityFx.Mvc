@@ -35,6 +35,11 @@ namespace UnityFx.AppStates
 		IViewController ParentController { get; }
 
 		/// <summary>
+		/// Asynchronously loads view for the controller.
+		/// </summary>
+		IAsyncOperation<IView> LoadViewAsync();
+
+		/// <summary>
 		/// Presents a new controller of the specified type.
 		/// </summary>
 		IAsyncOperation<IViewController> PresentAsync(Type controllerType, PresentArgs args);

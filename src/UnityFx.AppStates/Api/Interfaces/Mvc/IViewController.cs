@@ -8,7 +8,6 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// A generic view controller.
 	/// </summary>
-	/// <seealso cref="IViewController{TView}"/>
 	/// <seealso cref="IView"/>
 	public interface IViewController : IDismissable
 	{
@@ -16,5 +15,10 @@ namespace UnityFx.AppStates
 		/// Gets the controller name.
 		/// </summary>
 		string Name { get; }
+
+		/// <summary>
+		/// Gets a view managed by the controller.
+		/// </summary>
+		IView View { get; }
 	}
 }

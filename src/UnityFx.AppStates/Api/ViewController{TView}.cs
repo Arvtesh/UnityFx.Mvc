@@ -13,20 +13,23 @@ namespace UnityFx.AppStates
 	/// Note that minimal controller implementation should implement <see cref="IViewController"/>.
 	/// </summary>
 	/// <seealso cref="ViewController"/>
-	public abstract class ViewController<TView> : ViewController, IViewController<TView> where TView : class, IView
+	public abstract class ViewController<TView> : ViewController where TView : class, IView
 	{
 		#region data
-
-		private TView _view;
-
 		#endregion
 
 		#region interface
 
 		/// <summary>
-		/// Gets a value indicating whether view is loaded.
+		/// Gets a view managed by the controller.
 		/// </summary>
-		protected bool IsViewLoaded => _view != null;
+		public new TView View
+		{
+			get
+			{
+				return (TView)base.View;
+			}
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ViewController{TView}"/> class.
@@ -37,127 +40,12 @@ namespace UnityFx.AppStates
 		{
 		}
 
-		/// <summary>
-		/// Loads the controller view.
-		/// </summary>
-		protected abstract IAsyncOperation<TView> LoadView();
-
-		/// <summary>
-		/// Called when the view is loaded. Default implementation does nothing.
-		/// </summary>
-		protected virtual void OnViewLoaded()
-		{
-		}
-
-		/// <summary>
-		/// Called when a property value of the view has changed. The view should implement <see cref="INotifyPropertyChanged"/>.
-		/// </summary>
-		/// <param name="sender">A reference to the property owner.</param>
-		/// <param name="e">Event arguments.</param>
-		protected virtual void OnViewPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			// TODO
-		}
-
 		#endregion
 
 		#region ViewController
-
-		/// <summary>
-		/// Performs any asynchronous actions needed to present this object. The method is invoked by the system.
-		/// </summary>
-		/// <param name="presentContext">Context data provided by the system.</param>
-		/// <returns>Returns an object that can be used to track the operation state.</returns>
-		protected override IAsyncOperation PresentAsync(IPresentContext presentContext)
-		{
-			if (_view != null)
-			{
-				throw new InvalidOperationException();
-			}
-
-			return LoadView().ContinueWith(OnViewLoadedInternal, this);
-		}
-
-		/// <summary>
-		/// Called right before the controller becomes active.
-		/// </summary>
-		protected override void OnActivate()
-		{
-			base.OnActivate();
-
-			_view.Enabled = true;
-		}
-
-		/// <summary>
-		/// Called when the controller is about to become inactive.
-		/// </summary>
-		protected override void OnDeactivate()
-		{
-			_view.Enabled = false;
-
-			base.OnDeactivate();
-		}
-
-		/// <summary>
-		/// Releases resources used by the controller.
-		/// </summary>
-		protected override void OnDispose()
-		{
-			if (_view is INotifyPropertyChanged notifier)
-			{
-				notifier.PropertyChanged -= OnViewPropertyChanged;
-			}
-
-			_view?.Dispose();
-		}
-
-		#endregion
-
-		#region IViewController
-
-		/// <summary>
-		/// Gets a view managed by the controller.
-		/// </summary>
-		public TView View
-		{
-			get
-			{
-				if (_view == null)
-				{
-					throw new InvalidOperationException();
-				}
-
-				return _view;
-			}
-		}
-
 		#endregion
 
 		#region implementation
-
-		private void SetView(TView view)
-		{
-			Debug.Assert(view != null);
-
-			if (view is INotifyPropertyChanged notifier)
-			{
-				notifier.PropertyChanged += OnViewPropertyChanged;
-			}
-
-			_view = view;
-		}
-
-		private static void OnViewLoadedInternal(IAsyncOperation<TView> op, object userState)
-		{
-			var controller = (ViewController<TView>)userState;
-
-			if (op.IsCompletedSuccessfully)
-			{
-				controller.SetView(op.Result ?? throw new InvalidOperationException());
-				controller.OnViewLoaded();
-			}
-		}
-
 		#endregion
 	}
 }

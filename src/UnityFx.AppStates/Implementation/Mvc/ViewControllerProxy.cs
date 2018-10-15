@@ -22,6 +22,7 @@ namespace UnityFx.AppStates
 		#region data
 
 		private readonly IAppStateService _stateManager;
+		private readonly IViewFactory _viewFactory;
 		private readonly IServiceProvider _serviceProvider;
 		private readonly IDisposable _scope;
 		private readonly IAppState _parentState;
@@ -37,16 +38,16 @@ namespace UnityFx.AppStates
 
 		public IViewController Controller => _controller;
 
-		public ViewControllerProxy(IAppStateService stateManager, IServiceProvider serviceProvider, IAppState parentState, IViewController parentController, Type controllerType, PresentArgs args)
+		public ViewControllerProxy(AppStateService stateManager, IAppState parentState, IViewController parentController, Type controllerType, PresentArgs args)
 		{
 			Debug.Assert(stateManager != null);
-			Debug.Assert(serviceProvider != null);
 			Debug.Assert(parentState != null);
 			Debug.Assert(controllerType != null);
 			Debug.Assert(args != null);
 
 			_stateManager = stateManager;
-			_serviceProvider = serviceProvider;
+			_serviceProvider = stateManager.ServiceProvider;
+			_viewFactory = stateManager.ViewFactory;
 			_parentState = parentState;
 			_parentController = parentController;
 			_args = args;
@@ -54,14 +55,14 @@ namespace UnityFx.AppStates
 			// Controller should be created after the proxy has been initialized.
 			try
 			{
-				if (serviceProvider.GetService(typeof(IViewControllerFactory)) is IViewControllerFactory controllerFactory)
+				if (_serviceProvider.GetService(typeof(IViewControllerFactory)) is IViewControllerFactory controllerFactory)
 				{
 					_scope = controllerFactory.CreateControllerScope(ref _serviceProvider);
 					_controller = controllerFactory.CreateController(controllerType, this);
 				}
 				else
 				{
-					_controller = (IViewController)Utility.CreateInstance(serviceProvider, controllerType, this);
+					_controller = (IViewController)Utility.CreateInstance(_serviceProvider, controllerType, this);
 				}
 			}
 			catch
@@ -82,6 +83,16 @@ namespace UnityFx.AppStates
 		public IAppState ParentState => _parentState;
 
 		public IViewController ParentController => _parentController;
+
+		public IAsyncOperation<IView> LoadViewAsync()
+		{
+			Debug.Assert(!_disposed);
+
+			var viewId = Utility.GetViewResourceId(_controller.GetType());
+			var insertAfter = _parentState.Prev?.Controller.View;
+
+			return _viewFactory.LoadViewAsync(viewId, insertAfter);
+		}
 
 		public IAsyncOperation<IViewController> PresentAsync(Type controllerType, PresentArgs args)
 		{

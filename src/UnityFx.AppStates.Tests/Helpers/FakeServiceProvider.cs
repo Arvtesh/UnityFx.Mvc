@@ -5,7 +5,7 @@ using System;
 
 namespace UnityFx.AppStates
 {
-	internal class DefaultServiceProvider : IServiceProvider
+	internal class FakeServiceProvider : IServiceProvider
 	{
 		public object GetService(Type serviceType)
 		{
