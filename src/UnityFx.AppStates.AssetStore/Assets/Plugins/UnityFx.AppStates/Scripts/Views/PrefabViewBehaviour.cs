@@ -3,14 +3,13 @@
 
 using System;
 using UnityEngine;
-using UnityFx.Async;
 
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Prefab view manager.
+	/// Prefab view.
 	/// </summary>
-	public sealed class PrefabViewManagerBehaviour : ViewManagerBehaviour<PrefabViewBehaviour>
+	public class PrefabViewBehaviour : ViewBehaviour
 	{
 	}
 }

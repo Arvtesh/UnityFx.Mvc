@@ -95,25 +95,15 @@ namespace UnityFx.AppStates
 		#region IView
 
 		/// <summary>
-		/// Gets or sets the identifying name of the view.
+		/// Gets the view name.
 		/// </summary>
 		public string Name
 		{
 			get
 			{
-				return name;
-			}
-			set
-			{
-				ThrowIfDisposed();
-				name = value;
+				return GetName();
 			}
 		}
-
-		/// <summary>
-		/// Gets or sets an arbitrary object value that can be used to store custom information about this object.
-		/// </summary>
-		public object Tag { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether the view is visible.

@@ -9,7 +9,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Scene view manager.
 	/// </summary>
-	public class SceneViewManagerBehaviour : DisposableBehaviour
+	public class SceneViewManagerBehaviour : ViewManagerBehaviour<SceneViewBehaviour>
 	{
 	}
 }

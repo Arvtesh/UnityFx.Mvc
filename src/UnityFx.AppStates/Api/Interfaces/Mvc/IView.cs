@@ -13,14 +13,9 @@ namespace UnityFx.AppStates
 	public interface IView : IComponent
 	{
 		/// <summary>
-		/// Gets or sets the view name.
+		/// Gets the view name.
 		/// </summary>
-		string Name { get; set; }
-
-		/// <summary>
-		/// Gets or sets an arbitrary object value that can be used to store custom information about the view.
-		/// </summary>
-		object Tag { get; set; }
+		string Name { get; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether the view is visible.

@@ -19,6 +19,20 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// Gets the component name.
+		/// </summary>
+		protected string GetName()
+		{
+			if (_site != null)
+			{
+				return _site.Name;
+			}
+
+			return name;
+		}
+
 		#endregion
 
 		#region DisposableBehaviour
