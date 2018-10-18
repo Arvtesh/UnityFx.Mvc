@@ -176,16 +176,7 @@ namespace UnityFx.AppStates
 					}
 					finally
 					{
-						if (_view != null)
-						{
-							if (_view is INotifyPropertyChanged notifier)
-							{
-								notifier.PropertyChanged -= OnViewPropertyChanged;
-							}
-
-							_view.Dispose();
-							_view = null;
-						}
+						_view?.Dispose();
 					}
 				}
 			}

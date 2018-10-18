@@ -22,10 +22,10 @@
 
 	<ItemGroup>
 		<Reference Include="UnityEngine">
-			<HintPath>..\Dependencies\UnityEngine.dll</HintPath>
+			<HintPath>..\..\unity\Dependencies\UnityEngine.dll</HintPath>
 		</Reference>
 		<Reference Include="UnityEngine.UI">
-		  <HintPath>..\Dependencies\UnityEngine.UI.dll</HintPath>
+		  <HintPath>..\..\unity\Dependencies\UnityEngine.UI.dll</HintPath>
 		</Reference>
 		<ProjectReference Include="..\UnityFx.AppStates\UnityFx.AppStates.csproj" />
 	</ItemGroup>
