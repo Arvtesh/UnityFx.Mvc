@@ -53,7 +53,7 @@ namespace UnityFx.AppStates
 			{
 				if (_container == null && transform.parent)
 				{
-					_container = transform.parent.GetComponent<IContainer>();
+					_container = transform.parent.GetComponentInParent<IContainer>();
 				}
 
 				return _container;

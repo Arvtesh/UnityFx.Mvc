@@ -10,7 +10,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Prefab view manager.
 	/// </summary>
-	[RequireComponent(typeof(PrefabViewLoaderBehaviour), typeof(Camera), typeof(Canvas))]
+	[RequireComponent(typeof(PrefabViewLoaderBehaviour), typeof(Camera))]
 	public sealed class PrefabViewManagerBehaviour : ViewManagerBehaviour<PrefabViewBehaviour>
 	{
 	}
