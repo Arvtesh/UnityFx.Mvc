@@ -29,14 +29,14 @@ namespace UnityFx.AppStates
 		{
 			if (go)
 			{
-				var view = go.GetComponent<IView>();
+				var resultGo = Instantiate(go, parent, false);
+				var view = resultGo.GetComponent<IView>();
 
 				if (view == null)
 				{
-					view = go.AddComponent<PrefabViewBehaviour>();
+					view = resultGo.AddComponent<PrefabViewBehaviour>();
 				}
 
-				go.transform.SetParent(parent, false);
 				cs.TrySetResult(view);
 			}
 			else
