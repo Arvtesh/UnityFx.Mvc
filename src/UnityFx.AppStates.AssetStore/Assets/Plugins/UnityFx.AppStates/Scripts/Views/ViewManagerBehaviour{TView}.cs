@@ -80,18 +80,16 @@ namespace UnityFx.AppStates
 		{
 			if (viewId == null)
 			{
-				throw new ArgumentNullException(nameof(viewId));
+				throw new ArgumentNullException("viewId");
 			}
 
 			var insertAfterBehaviour = insertAfter as ViewBehaviour;
 
 			if (insertAfterBehaviour)
 			{
-				var insertAfterSite = insertAfterBehaviour.transform.parent;
-
-				if (insertAfterSite && insertAfterSite.parent == transform)
+				if (insertAfterBehaviour.transform.parent == transform)
 				{
-					return LoadViewInternal(viewId, insertAfterSite.GetSiblingIndex() + 1);
+					return LoadViewInternal(viewId, insertAfterBehaviour.transform.GetSiblingIndex() + 1);
 				}
 				else
 				{

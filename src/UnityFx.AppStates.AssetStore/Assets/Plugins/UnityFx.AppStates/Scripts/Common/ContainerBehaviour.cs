@@ -87,6 +87,17 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
+		/// Gets number of components in the container.
+		/// </summary>
+		protected int ComponentCount
+		{
+			get
+			{
+				return _sites.Count;
+			}
+		}
+
+		/// <summary>
 		/// Adds the specified component to the <see cref="IContainer"/> at the specified index, and assigns a name to the component.
 		/// </summary>
 		protected void Add(IComponent component, string name, int index)

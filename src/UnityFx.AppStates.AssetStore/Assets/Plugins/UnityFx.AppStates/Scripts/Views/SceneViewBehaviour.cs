@@ -26,7 +26,7 @@ namespace UnityFx.AppStates
 		{
 			if (!scene.IsValid() || !scene.isLoaded)
 			{
-				throw new ArgumentException("Invalid scene. The scene is expected to be loaded.", nameof(scene));
+				throw new ArgumentException("Invalid scene. The scene is expected to be loaded.", "scene");
 			}
 
 			SceneManager.sceneUnloaded += OnSceneUnloaded;

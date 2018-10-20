@@ -41,7 +41,7 @@ namespace UnityFx.AppStates
 			}
 			else
 			{
-				cs.TrySetException(new ArgumentNullException(nameof(go)));
+				cs.TrySetException(new ArgumentNullException("go"));
 			}
 		}
 

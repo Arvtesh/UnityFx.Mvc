@@ -4,7 +4,6 @@ $configuration = $args[0]
 $packagesPath = Join-Path $scriptPath "..\temp\BuildTools"
 $binPath = Join-Path $scriptPath "..\bin"
 $assetStorePath = Join-Path $binPath "AssetStore"
-$unityAppPath = Join-Path $scriptPath "UnityApp"
 $msbuildPath = "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MsBuild.exe"
 $nugetPath = Join-Path $packagesPath "nuget.exe"
 $gitversionPath = Join-Path $packagesPath "gitversion.commandline\tools\gitversion.exe"
@@ -87,7 +86,3 @@ _PublishAssetStorePackage "net35"
 _PublishAssetStorePackage "net46"
 _PublishAssetStorePackage "netstandard2.0"
 
-# update UnityApp project
-$publishPath = (Join-Path $assetStorePath "net35\Assets\Plugins\*")
-$destPath = (Join-Path $unityAppPath "Assets\Plugins")
-Copy-Item -Path $publishPath -Destination $destPath -Force -Recurse

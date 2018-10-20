@@ -42,7 +42,7 @@ namespace UnityFx.AppStates
 		/// <seealso cref="OnEnabledChanged(bool)"/>
 		protected virtual void OnVisibleChanged(bool visible)
 		{
-			NotifyPropertyChanged(nameof(Visible));
+			NotifyPropertyChanged("Visible");
 		}
 
 		/// <summary>
@@ -57,7 +57,7 @@ namespace UnityFx.AppStates
 				c.enabled = enabled;
 			}
 
-			NotifyPropertyChanged(nameof(Enabled));
+			NotifyPropertyChanged("Enabled");
 		}
 
 		#endregion

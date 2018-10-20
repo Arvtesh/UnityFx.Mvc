@@ -45,12 +45,12 @@ namespace UnityFx.AppStates
 		{
 			if (resourceId == null)
 			{
-				throw new ArgumentNullException(nameof(resourceId));
+				throw new ArgumentNullException("resourceId");
 			}
 
 			if (resourceId == string.Empty)
 			{
-				throw new ArgumentException("Resource identifier cannot be an empty string.", nameof(resourceId));
+				throw new ArgumentException("Resource identifier cannot be an empty string.", "resourceId");
 			}
 
 			var result = new AsyncCompletionSource<IView>(AsyncOperationStatus.Running);
