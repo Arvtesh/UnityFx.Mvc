@@ -4,10 +4,14 @@ branches:
   only:
     - master
     - develop
+    - /release\/.+/
+    - /hotfix\/.+/
+
 
 skip_commits:
   files:
     - '**/*.md'
+    - '**/*.txt'
 
 install:
   - cmd: git submodule -q update --init
@@ -22,6 +26,7 @@ artifacts:
     name: UnityFx.AppStates-net46
   - path: .\bin\netstandard2.0
     name: UnityFx.AppStates-netstandard2.0
+  - path: .\bin\*.nupkg
 
 dotnet_csproj:
   patch: true
@@ -31,3 +36,12 @@ dotnet_csproj:
   assembly_version: '$(GitVersion_AssemblySemVer)'
   file_version: '$(GitVersion_MajorMinorPatch).$(GitVersion_CommitsSinceVersionSource)'
   informational_version: '$(GitVersion_InformationalVersion)'
+
+deploy:
+  - provider: GitHub
+    tag: v$(GitVersion_MajorMinorPatch)
+    auth_token:
+      secure: aTd8m7PLWUlE3iacD7bx9oWPW/CK0+BTE7/nhgB2EXk8iZ3FJ/TJX5kKLIYP76nN
+    force_update: false
+    on:
+      branch: master
