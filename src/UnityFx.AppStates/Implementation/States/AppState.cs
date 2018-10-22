@@ -19,6 +19,7 @@ namespace UnityFx.AppStates
 
 		private readonly AppStateService _stateManager;
 		private readonly ViewControllerProxy _controllerProxy;
+		private readonly Guid _activityId;
 		private readonly string _deeplinkId;
 
 		private IAsyncOperation _dismissOp;
@@ -35,6 +36,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(stateManager != null);
 			Debug.Assert(controllerType != null);
 
+			_activityId = Guid.NewGuid();
 			_deeplinkId = Utility.GetControllerTypeId(controllerType);
 			_stateManager = stateManager;
 			_stateManager.AddState(this);
@@ -126,6 +128,9 @@ namespace UnityFx.AppStates
 			Debug.Assert(presentContext == null);
 			Debug.Assert(!_disposed);
 			Debug.Assert(!_active);
+
+			// Notify the state manager that this state is now the main activity.
+			_stateManager.SetActivity(_activityId);
 
 			return _controllerProxy.PresentAsync(presentContext);
 		}
