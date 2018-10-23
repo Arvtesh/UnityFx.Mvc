@@ -136,7 +136,7 @@ namespace UnityFx.AppStates
 
 		public override string ToString()
 		{
-			return "Present";
+			return "Present_" + Utility.GetControllerTypeId(_controllerType);
 		}
 
 		#endregion

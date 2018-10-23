@@ -38,7 +38,7 @@ namespace UnityFx.AppStates
 
 		public IViewController Controller => _controller;
 
-		public ViewControllerProxy(AppStateService stateManager, IAppState parentState, IViewController parentController, Type controllerType, PresentArgs args)
+		public ViewControllerProxy(AppStateService stateManager, AppState parentState, IViewController parentController, Type controllerType, PresentArgs args)
 		{
 			Debug.Assert(stateManager != null);
 			Debug.Assert(parentState != null);
@@ -46,7 +46,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(args != null);
 
 			_stateManager = stateManager;
-			_serviceProvider = stateManager.ServiceProvider;
+			_serviceProvider = parentState;
 			_viewFactory = stateManager.ViewFactory;
 			_parentState = parentState;
 			_parentController = parentController;

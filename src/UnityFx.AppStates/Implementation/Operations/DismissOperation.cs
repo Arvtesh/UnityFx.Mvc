@@ -109,7 +109,14 @@ namespace UnityFx.AppStates
 
 		public override string ToString()
 		{
-			return "Dismiss";
+			if (_state != null)
+			{
+				return "Dismiss_" + _state.Name;
+			}
+			else
+			{
+				return "DismissAll";
+			}
 		}
 
 		#endregion

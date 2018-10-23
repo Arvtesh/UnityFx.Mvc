@@ -58,6 +58,7 @@ namespace UnityFx.AppStates
 
 		protected void TraceStart()
 		{
+			Trace.CorrelationManager.StartLogicalOperation(this);
 			_stateManager.TraceEvent(TraceEventType.Start, ToString() + " started");
 		}
 
@@ -76,6 +77,8 @@ namespace UnityFx.AppStates
 			{
 				_stateManager.TraceEvent(TraceEventType.Stop, ToString() + " canceled");
 			}
+
+			Trace.CorrelationManager.StopLogicalOperation();
 		}
 
 		protected new bool TrySetCanceled()

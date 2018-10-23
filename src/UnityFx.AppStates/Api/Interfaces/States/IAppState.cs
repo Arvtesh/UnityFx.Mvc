@@ -20,6 +20,16 @@ namespace UnityFx.AppStates
 	public interface IAppState : ITreeListNode<IAppState>, IPresenter, IDeeplinkable, IDismissable, IDisposable
 	{
 		/// <summary>
+		/// Raised when the state has been disposed.
+		/// </summary>
+		event EventHandler Disposed;
+
+		/// <summary>
+		/// Gets the state name.
+		/// </summary>
+		string Name { get; }
+
+		/// <summary>
 		/// Gets a value indicating whether the instance is active.
 		/// </summary>
 		bool IsActive { get; }

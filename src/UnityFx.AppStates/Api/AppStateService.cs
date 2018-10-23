@@ -194,16 +194,6 @@ namespace UnityFx.AppStates
 
 		#region internals
 
-		internal void SetActivity(Guid activityId)
-		{
-			if (_currentOp != null)
-			{
-				_traceSource.TraceTransfer(_currentOp.Id, string.Empty, activityId);
-			}
-
-			Trace.CorrelationManager.ActivityId = activityId;
-		}
-
 		internal void TraceException(Exception e)
 		{
 			Debug.Assert(e != null);
@@ -634,11 +624,6 @@ namespace UnityFx.AppStates
 			// This is supposed to be UI thread.
 			if (!_disposed)
 			{
-				if (_completionCallback == null)
-				{
-					_completionCallback = OnCompletedCallback;
-				}
-
 #if NET35
 				while (_ops.Count > 0)
 				{
@@ -651,10 +636,7 @@ namespace UnityFx.AppStates
 					}
 					else
 					{
-						_currentOp = firstOp;
-
-						firstOp.AddCompletionCallback(_completionCallback);
-						firstOp.TryStart();
+						SetCurrentOperation(firstOp);
 						break;
 					}
 				}
@@ -668,14 +650,25 @@ namespace UnityFx.AppStates
 					}
 					else
 					{
-						firstOp.AddCompletionCallback(_completionCallback);
-						firstOp.TryStart();
-						_currentOp = firstOp;
+						SetCurrentOperation(firstOp);
 						break;
 					}
 				}
 #endif
 			}
+		}
+
+		private void SetCurrentOperation(AsyncResult op)
+		{
+			if (_completionCallback == null)
+			{
+				_completionCallback = OnCompletedCallback;
+			}
+
+			_currentOp = op;
+
+			op.AddCompletionCallback(_completionCallback);
+			op.TryStart();
 		}
 
 		private void OnStartCallback(object args)

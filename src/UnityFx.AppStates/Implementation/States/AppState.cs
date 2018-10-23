@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using UnityFx.Async;
@@ -13,15 +14,16 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Implementation of <see cref="IAppState"/>.
 	/// </summary>
-	internal sealed class AppState : TreeListNode<IAppState>, IAppState, IPresentable, IPresentableEvents
+	internal sealed class AppState : TreeListNode<IAppState>, IAppState, IPresentable, IPresentableEvents, IServiceProvider
 	{
 		#region data
 
 		private readonly AppStateService _stateManager;
 		private readonly ViewControllerProxy _controllerProxy;
-		private readonly Guid _activityId;
+		private readonly IServiceProvider _serviceProvider;
 		private readonly string _deeplinkId;
 
+		private string _name;
 		private IAsyncOperation _dismissOp;
 		private bool _active;
 		private bool _disposed;
@@ -36,8 +38,9 @@ namespace UnityFx.AppStates
 			Debug.Assert(stateManager != null);
 			Debug.Assert(controllerType != null);
 
-			_activityId = Guid.NewGuid();
-			_deeplinkId = Utility.GetControllerTypeId(controllerType);
+			_name = Utility.GetControllerTypeId(controllerType);
+			_deeplinkId = Utility.GetControllerDeeplinkId(controllerType);
+			_serviceProvider = stateManager.ServiceProvider;
 			_stateManager = stateManager;
 			_stateManager.AddState(this);
 
@@ -76,6 +79,9 @@ namespace UnityFx.AppStates
 
 		#region IAppState
 
+		public event EventHandler Disposed;
+
+		public string Name => _name;
 		public bool IsActive => _active;
 		public IViewController Controller => _controllerProxy.Controller;
 
@@ -128,9 +134,6 @@ namespace UnityFx.AppStates
 			Debug.Assert(presentContext == null);
 			Debug.Assert(!_disposed);
 			Debug.Assert(!_active);
-
-			// Notify the state manager that this state is now the main activity.
-			_stateManager.SetActivity(_activityId);
 
 			return _controllerProxy.PresentAsync(presentContext);
 		}
@@ -218,6 +221,20 @@ namespace UnityFx.AppStates
 
 		#endregion
 
+		#region IServiceProvider
+
+		public object GetService(Type serviceType)
+		{
+			if (serviceType == typeof(IAppState) || serviceType == typeof(IServiceProvider))
+			{
+				return this;
+			}
+
+			return _serviceProvider.GetService(serviceType);
+		}
+
+		#endregion
+
 		#region IDisposable
 
 		public void Dispose()
@@ -233,6 +250,7 @@ namespace UnityFx.AppStates
 				finally
 				{
 					_stateManager.RemoveState(this);
+					Disposed?.Invoke(this, EventArgs.Empty);
 				}
 			}
 		}
