@@ -19,9 +19,11 @@ namespace UnityFx.AppStates
 		#region interface
 
 		public DismissOperation(AppStateService stateManager, AppState state, object asyncState)
-			: base(stateManager, asyncState, null)
+			: base(stateManager, asyncState)
 		{
 			_state = state;
+
+			stateManager.TraceEvent(TraceEventType.Verbose, "Dismiss initiated");
 		}
 
 		#endregion
@@ -32,7 +34,7 @@ namespace UnityFx.AppStates
 		{
 			try
 			{
-				TraceStart();
+				StateManager.TraceStart(this);
 				StateManager.InvokeDismissStarted(_state, _state.Controller, this);
 
 				if (_state != null)
@@ -66,7 +68,7 @@ namespace UnityFx.AppStates
 			}
 			finally
 			{
-				TraceStop(Status);
+				StateManager.TraceStop(this);
 			}
 		}
 

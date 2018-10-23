@@ -36,7 +36,7 @@ namespace UnityFx.AppStates
 		private readonly ConcurrentQueue<AsyncResult> _ops = new ConcurrentQueue<AsyncResult>();
 #endif
 
-		private AsyncResult _currentOp;
+		private IAsyncOperation _currentOp;
 		private SendOrPostCallback _startCallback;
 		private Action<IAsyncOperation> _completionCallback;
 		private bool _disposed;
@@ -193,6 +193,45 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region internals
+
+		internal void TraceStart(IAsyncOperation op)
+		{
+			Debug.Assert(op != null);
+			Debug.Assert(!_disposed);
+
+			Trace.CorrelationManager.StartLogicalOperation(op);
+
+			_traceSource.TraceEvent(TraceEventType.Start, op.Id, op.ToString() + " started");
+			_currentOp = op;
+		}
+
+		internal void TraceStop(IAsyncOperation op)
+		{
+			Debug.Assert(op != null);
+			Debug.Assert(op.IsCompleted);
+			Debug.Assert(op == _currentOp);
+			Debug.Assert(!_disposed);
+
+			_currentOp = null;
+
+			switch (op.Status)
+			{
+				case AsyncOperationStatus.RanToCompletion:
+					_traceSource.TraceEvent(TraceEventType.Stop, op.Id, op.ToString() + " completed");
+					break;
+
+				case AsyncOperationStatus.Faulted:
+					_traceSource.TraceData(TraceEventType.Error, op.Id, op.Exception);
+					_traceSource.TraceEvent(TraceEventType.Stop, op.Id, op.ToString() + " faulted");
+					break;
+
+				case AsyncOperationStatus.Canceled:
+					_traceSource.TraceEvent(TraceEventType.Stop, op.Id, op.ToString() + " canceled");
+					break;
+			}
+
+			Trace.CorrelationManager.StopLogicalOperation();
+		}
 
 		internal void TraceException(Exception e)
 		{
@@ -624,6 +663,11 @@ namespace UnityFx.AppStates
 			// This is supposed to be UI thread.
 			if (!_disposed)
 			{
+				if (_completionCallback == null)
+				{
+					_completionCallback = OnCompletedCallback;
+				}
+
 #if NET35
 				while (_ops.Count > 0)
 				{
@@ -632,11 +676,11 @@ namespace UnityFx.AppStates
 					if (firstOp.IsCompleted)
 					{
 						_ops.RemoveAt(0);
-						_currentOp = null;
 					}
 					else
 					{
-						SetCurrentOperation(firstOp);
+						firstOp.AddCompletionCallback(_completionCallback);
+						firstOp.TryStart();
 						break;
 					}
 				}
@@ -646,29 +690,16 @@ namespace UnityFx.AppStates
 					if (firstOp.IsCompleted)
 					{
 						_ops.TryDequeue(out firstOp);
-						_currentOp = null;
 					}
 					else
 					{
-						SetCurrentOperation(firstOp);
+						firstOp.AddCompletionCallback(_completionCallback);
+						firstOp.TryStart();
 						break;
 					}
 				}
 #endif
 			}
-		}
-
-		private void SetCurrentOperation(AsyncResult op)
-		{
-			if (_completionCallback == null)
-			{
-				_completionCallback = OnCompletedCallback;
-			}
-
-			_currentOp = op;
-
-			op.AddCompletionCallback(_completionCallback);
-			op.TryStart();
 		}
 
 		private void OnStartCallback(object args)

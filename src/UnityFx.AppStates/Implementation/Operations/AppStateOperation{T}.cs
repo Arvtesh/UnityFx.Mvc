@@ -19,7 +19,6 @@ namespace UnityFx.AppStates
 		#region data
 
 		private readonly AppStateService _stateManager;
-		private readonly TraceSource _traceSource;
 		private bool _completedSynchronously = true;
 
 		#endregion
@@ -29,22 +28,12 @@ namespace UnityFx.AppStates
 		protected AppStateService StateManager => _stateManager;
 		protected IAppStateCollection States => _stateManager.States;
 
-		protected AppStateOperation(AppStateService stateManager, object asyncState, string comment)
+		protected AppStateOperation(AppStateService stateManager, object asyncState)
 			: base(AsyncOperationStatus.Scheduled, asyncState)
 		{
 			Debug.Assert(stateManager != null);
 
 			_stateManager = stateManager;
-			_traceSource = _stateManager.TraceSource;
-
-			if (string.IsNullOrEmpty(comment))
-			{
-				_stateManager.TraceEvent(TraceEventType.Verbose, ToString() + " initiated");
-			}
-			else
-			{
-				_stateManager.TraceEvent(TraceEventType.Verbose, ToString() + " initiated: " + comment);
-			}
 		}
 
 		protected void DismissAllStates()
@@ -54,31 +43,6 @@ namespace UnityFx.AppStates
 				(state as IPresentableEvents).OnDismiss();
 				state.Dispose();
 			}
-		}
-
-		protected void TraceStart()
-		{
-			Trace.CorrelationManager.StartLogicalOperation(this);
-			_stateManager.TraceEvent(TraceEventType.Start, ToString() + " started");
-		}
-
-		protected void TraceStop(AsyncOperationStatus status)
-		{
-			if (status == AsyncOperationStatus.RanToCompletion)
-			{
-				_stateManager.TraceEvent(TraceEventType.Stop, ToString() + " completed");
-			}
-			else if (status == AsyncOperationStatus.Faulted)
-			{
-				_stateManager.TraceException(Exception);
-				_stateManager.TraceEvent(TraceEventType.Stop, ToString() + " faulted");
-			}
-			else if (status == AsyncOperationStatus.Canceled)
-			{
-				_stateManager.TraceEvent(TraceEventType.Stop, ToString() + " canceled");
-			}
-
-			Trace.CorrelationManager.StopLogicalOperation();
 		}
 
 		protected new bool TrySetCanceled()

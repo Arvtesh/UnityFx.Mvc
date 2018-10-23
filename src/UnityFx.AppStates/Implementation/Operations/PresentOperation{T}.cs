@@ -23,7 +23,7 @@ namespace UnityFx.AppStates
 		#region interface
 
 		public PresentOperation(AppStateService stateManager, AppState parentState, Type controllerType, PresentArgs args)
-			: base(stateManager, args.Data, GetStateDesc(controllerType, args))
+			: base(stateManager, args.Data)
 		{
 			Debug.Assert(controllerType != null);
 			Debug.Assert(args != null);
@@ -31,6 +31,8 @@ namespace UnityFx.AppStates
 			_controllerType = controllerType;
 			_args = args;
 			_parentState = parentState;
+
+			stateManager.TraceEvent(TraceEventType.Verbose, "Present initiated: " + GetStateDesc(controllerType, args));
 		}
 
 		#endregion
@@ -41,7 +43,7 @@ namespace UnityFx.AppStates
 		{
 			try
 			{
-				TraceStart();
+				StateManager.TraceStart(this);
 				StateManager.InvokePresentStarted(_controllerType, _args, this);
 
 				if ((_args.Options & PresentOptions.DismissAllStates) != 0)
@@ -68,18 +70,20 @@ namespace UnityFx.AppStates
 		{
 			try
 			{
-				// This should not throw.
-				StateManager.InvokePresentCompleted(_state, _state?.Controller, this);
-
 				// Make sure the state is disposed on operation failure.
-				if (!IsCompletedSuccessfully)
+				if (IsCompletedSuccessfully)
 				{
+					StateManager.InvokePresentCompleted(_state, _state.Controller, this);
+				}
+				else
+				{
+					StateManager.InvokePresentCompleted(null, null, this);
 					_state?.Dispose();
 				}
 			}
 			finally
 			{
-				TraceStop(Status);
+				StateManager.TraceStop(this);
 			}
 		}
 
