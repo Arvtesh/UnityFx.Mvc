@@ -100,19 +100,21 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Adds the specified component to the <see cref="IContainer"/> at the specified index, and assigns a name to the component.
 		/// </summary>
-		protected void Add(IComponent component, string name, int index)
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="component"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the container is disposed.</exception>
+		protected bool Add(IComponent component, string name, int index)
 		{
 			ThrowIfDisposed();
 
-			if (component != null)
+			if (component == null)
 			{
-				var site = component.Site;
+				throw new ArgumentNullException("view");
+			}
 
-				if (site != null && ReferenceEquals(site.Container, this))
-				{
-					return;
-				}
+			var site = component.Site;
 
+			if (site == null || !ReferenceEquals(site.Container, this))
+			{
 				ValidateName(component, name);
 
 				if (OnAddComponent(component, index))
@@ -127,8 +129,12 @@ namespace UnityFx.AppStates
 
 					_sites.Add(site);
 					_components = null;
+
+					return true;
 				}
 			}
+
+			return false;
 		}
 
 		/// <summary>

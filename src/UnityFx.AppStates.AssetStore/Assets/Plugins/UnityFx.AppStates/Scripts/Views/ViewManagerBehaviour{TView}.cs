@@ -22,6 +22,61 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
+		/// Adds a new view to the container.
+		/// </summary>
+		/// <param name="view">A view to add.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the container is disposed.</exception>
+		public void Add(TView view)
+		{
+			base.Add(view);
+		}
+
+		/// <summary>
+		/// Adds a new view to the container.
+		/// </summary>
+		/// <param name="view">A view to add.</param>
+		/// <param name="index">Insert index.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is invalid.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the container is disposed.</exception>
+		public void Add(TView view, int index)
+		{
+			Add(view, name, index);
+		}
+
+		/// <summary>
+		/// Adds a new view to the container.
+		/// </summary>
+		/// <param name="view">A view to add.</param>
+		/// <param name="name">Name of the view.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the container is disposed.</exception>
+		public void Add(TView view, string name)
+		{
+			base.Add(view, name);
+		}
+
+		/// <summary>
+		/// Adds a new view to the container.
+		/// </summary>
+		/// <param name="view">A view to add.</param>
+		/// <param name="name">Name of the view.</param>
+		/// <param name="index">Insert index.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is invalid.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the container is disposed.</exception>
+		public void Add(TView view, string name, int index)
+		{
+			if (index < 0 || index > ComponentCount)
+			{
+				throw new ArgumentOutOfRangeException("index", index, "Invalid insert index.");
+			}
+
+			base.Add(view, name, index);
+		}
+
+		/// <summary>
 		/// Updates a view at the specific index. This is called each time a view is added or removed. Default implementation
 		/// updates view position.
 		/// </summary>
@@ -76,8 +131,12 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Asynchronously loads the specified view.
 		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="viewId"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the container is disposed.</exception>
 		public IAsyncOperation<IView> LoadViewAsync(string viewId, IView insertAfter)
 		{
+			ThrowIfDisposed();
+
 			if (viewId == null)
 			{
 				throw new ArgumentNullException("viewId");
@@ -93,7 +152,7 @@ namespace UnityFx.AppStates
 				}
 				else
 				{
-					throw new InvalidOperationException();
+					return LoadViewInternal(viewId, 0);
 				}
 			}
 			else
@@ -129,29 +188,19 @@ namespace UnityFx.AppStates
 
 		private IAsyncOperation<IView> LoadViewInternal(string viewId, int index)
 		{
-			var op = _viewLoader.LoadViewAsync(viewId, transform);
-
-			if (op.IsCompleted)
-			{
-				LoadViewCompleted(op, viewId, index);
-			}
-			else
-			{
-				op.Completed += (sender, e) =>
+			return _viewLoader.LoadViewAsync(viewId, transform).ContinueWith(
+				op =>
 				{
-					LoadViewCompleted(op, viewId, index);
-				};
-			}
+					var view = op.Result;
 
-			return op;
-		}
+					if (!Add(view, viewId, index))
+					{
+						throw new InvalidOperationException();
+					}
 
-		private void LoadViewCompleted(IAsyncOperation<IView> op, string viewId, int index)
-		{
-			if (op.IsCompletedSuccessfully)
-			{
-				Add(op.Result, viewId, index);
-			}
+					return view;
+				},
+				AsyncContinuationOptions.OnlyOnRanToCompletion);
 		}
 
 		private void UpdateViews(int startIndex)
