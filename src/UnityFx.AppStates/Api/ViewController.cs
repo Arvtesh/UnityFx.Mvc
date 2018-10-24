@@ -30,6 +30,47 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
+		/// Enumerates basic comaands.
+		/// </summary>
+		public class Commands
+		{
+			/// <summary>
+			/// Name of the CLOSE command.
+			/// </summary>
+			public const string Close = "Close";
+
+			/// <summary>
+			/// Name of the OK command.
+			/// </summary>
+			public const string Ok = "Ok";
+
+			/// <summary>
+			/// Name of the APPLY command.
+			/// </summary>
+			public const string Apply = "Apply";
+
+			/// <summary>
+			/// Name of the CANCEL command.
+			/// </summary>
+			public const string Cancel = "Cancel";
+
+			/// <summary>
+			/// Name of the BACK command.
+			/// </summary>
+			public const string Back = "Back";
+
+			/// <summary>
+			/// Name of the NEXT command.
+			/// </summary>
+			public const string Next = "Next";
+
+			/// <summary>
+			/// Name of the PREV command.
+			/// </summary>
+			public const string Prev = "Prev";
+		}
+
+		/// <summary>
 		/// Gets a value indicating whether the controller is active (i.e. can accept input).
 		/// </summary>
 		protected bool IsActive => _context.ParentState.IsActive;
@@ -113,17 +154,15 @@ namespace UnityFx.AppStates
 		/// <param name="e">Event arguments.</param>
 		protected virtual void OnViewPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			// TODO
 		}
 
 		/// <summary>
-		/// Called when an action is issued on the view.
+		/// Called when a command is issued on the view.
 		/// </summary>
 		/// <param name="sender">A reference to the property owner.</param>
 		/// <param name="e">Event arguments.</param>
 		protected virtual void OnViewCommand(object sender, CommandEventArgs e)
 		{
-			// TODO
 		}
 
 		/// <summary>
