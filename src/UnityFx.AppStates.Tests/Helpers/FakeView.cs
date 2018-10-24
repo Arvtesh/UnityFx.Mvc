@@ -10,6 +10,7 @@ namespace UnityFx.AppStates
 	{
 		private bool _disposed;
 
+		public event EventHandler<CommandEventArgs> Command;
 		public event EventHandler Disposed;
 
 		public string Name { get; set; }

@@ -13,6 +13,11 @@ namespace UnityFx.AppStates
 	public interface IView : IComponent
 	{
 		/// <summary>
+		/// Raised when a user issues a command.
+		/// </summary>
+		event EventHandler<CommandEventArgs> Command;
+
+		/// <summary>
 		/// Gets the view name.
 		/// </summary>
 		string Name { get; }

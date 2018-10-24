@@ -23,6 +23,19 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
+		/// Raises <see cref="Command"/> event.
+		/// </summary>
+		/// <param name="commandId">Name of the property.</param>
+		/// <seealso cref="Command"/>
+		protected void NotifyCommand(string commandId)
+		{
+			if (Command != null)
+			{
+				Command(this, new CommandEventArgs(commandId));
+			}
+		}
+
+		/// <summary>
 		/// Raises <see cref="PropertyChanged"/> event for a property with name <paramref name="propertyName"/>.
 		/// </summary>
 		/// <param name="propertyName">Name of the property.</param>
@@ -93,6 +106,11 @@ namespace UnityFx.AppStates
 		#endregion
 
 		#region IView
+
+		/// <summary>
+		/// Raised when a user issues a command.
+		/// </summary>
+		public event EventHandler<CommandEventArgs> Command;
 
 		/// <summary>
 		/// Gets the view name.

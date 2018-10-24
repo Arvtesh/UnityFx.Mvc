@@ -117,6 +117,16 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
+		/// Called when an action is issued on the view.
+		/// </summary>
+		/// <param name="sender">A reference to the property owner.</param>
+		/// <param name="e">Event arguments.</param>
+		protected virtual void OnViewCommand(object sender, CommandEventArgs e)
+		{
+			// TODO
+		}
+
+		/// <summary>
 		/// Called right after the controller transition animation finishes. Default implementation does nothing.
 		/// </summary>
 		/// <seealso cref="OnDismiss"/>
@@ -246,6 +256,7 @@ namespace UnityFx.AppStates
 				notifier.PropertyChanged += OnViewPropertyChanged;
 			}
 
+			_view.Command += OnViewCommand;
 			_view.Visible = true;
 
 			OnPresent();
@@ -256,6 +267,8 @@ namespace UnityFx.AppStates
 		{
 			Debug.Assert(!_disposed);
 			Debug.Assert(_view != null);
+
+			_view.Command -= OnViewCommand;
 
 			if (_view is INotifyPropertyChanged notifier)
 			{
