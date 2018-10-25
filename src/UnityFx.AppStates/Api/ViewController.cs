@@ -381,10 +381,11 @@ namespace UnityFx.AppStates
 		#region ICommandTarget
 
 		/// <summary>
-		/// Invokes a specific command.
+		/// Invokes a command.
 		/// </summary>
 		/// <param name="commandName">Name of the command to invoke.</param>
 		/// <param name="args">Command-specific arguments.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandName"/> is <see langword="null"/>.</exception>
 		/// <returns>Returns <see langword="true"/> if the command has been handles; <see langword="false"/> otherwise.</returns>
 		public bool InvokeCommand(string commandName, object args)
 		{
@@ -485,6 +486,7 @@ namespace UnityFx.AppStates
 		private void SetView(IView view)
 		{
 			Debug.Assert(_view == null);
+			Debug.Assert(!_disposed);
 
 			_view = view ?? throw new ArgumentNullException(nameof(view));
 
@@ -495,6 +497,7 @@ namespace UnityFx.AppStates
 		{
 			Debug.Assert(e != null);
 			Debug.Assert(!_disposed);
+
 			OnCommand(e);
 		}
 

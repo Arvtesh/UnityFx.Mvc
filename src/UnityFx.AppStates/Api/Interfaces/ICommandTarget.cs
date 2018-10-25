@@ -11,10 +11,11 @@ namespace UnityFx.AppStates
 	public interface ICommandTarget
 	{
 		/// <summary>
-		/// Invokes a specific command.
+		/// Invokes a command. An implementation might choose to ignore the command, in this case the method should return <see langword="false"/>.
 		/// </summary>
 		/// <param name="commandName">Name of the command to invoke.</param>
 		/// <param name="args">Command-specific arguments.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandName"/> is <see langword="null"/>.</exception>
 		/// <returns>Returns <see langword="true"/> if the command has been handles; <see langword="false"/> otherwise.</returns>
 		bool InvokeCommand(string commandName, object args);
 	}
