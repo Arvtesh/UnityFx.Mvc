@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,6 +22,16 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
+		/// Raised when <see cref="Visible"/> value changes.
+		/// </summary>
+		public event EventHandler VisibleChanged;
+
+		/// <summary>
+		/// Raised when <see cref="Enabled"/> value changes.
+		/// </summary>
+		public event EventHandler EnabledChanged;
+
+		/// <summary>
 		/// Raises <see cref="Command"/> event.
 		/// </summary>
 		/// <param name="commandId">Name of the property.</param>
@@ -36,26 +45,16 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// Raises <see cref="PropertyChanged"/> event for a property with name <paramref name="propertyName"/>.
-		/// </summary>
-		/// <param name="propertyName">Name of the property.</param>
-		/// <seealso cref="PropertyChanged"/>
-		protected void NotifyPropertyChanged(string propertyName)
-		{
-			if (PropertyChanged != null)
-			{
-				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-
-		/// <summary>
 		/// Called when <see cref="Visible"/> property value changes.
 		/// </summary>
 		/// <param name="visible">The new value of <see cref="Visible"/> propoerty.</param>
 		/// <seealso cref="OnEnabledChanged(bool)"/>
 		protected virtual void OnVisibleChanged(bool visible)
 		{
-			NotifyPropertyChanged("Visible");
+			if (VisibleChanged != null)
+			{
+				VisibleChanged(this, EventArgs.Empty);
+			}
 		}
 
 		/// <summary>
@@ -70,7 +69,10 @@ namespace UnityFx.AppStates
 				c.enabled = enabled;
 			}
 
-			NotifyPropertyChanged("Enabled");
+			if (EnabledChanged != null)
+			{
+				EnabledChanged(this, EventArgs.Empty);
+			}
 		}
 
 		#endregion
@@ -169,16 +171,6 @@ namespace UnityFx.AppStates
 				}
 			}
 		}
-
-		#endregion
-
-		#region INotifyPropertyChanged
-
-		/// <summary>
-		/// Raised when a property value changes.
-		/// </summary>
-		/// <seealso cref="NotifyPropertyChanged(string)"/>
-		public event PropertyChangedEventHandler PropertyChanged;
 
 		#endregion
 	}

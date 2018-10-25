@@ -148,20 +148,11 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// Called when a property value of the view has changed. The view should implement <see cref="INotifyPropertyChanged"/>.
-		/// </summary>
-		/// <param name="sender">A reference to the property owner.</param>
-		/// <param name="e">Event arguments.</param>
-		protected virtual void OnViewPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-		}
-
-		/// <summary>
 		/// Called when a command is issued on the view.
 		/// </summary>
 		/// <param name="sender">A reference to the property owner.</param>
 		/// <param name="e">Event arguments.</param>
-		protected virtual void OnViewCommand(object sender, CommandEventArgs e)
+		protected virtual void OnCommand(object sender, CommandEventArgs e)
 		{
 		}
 
@@ -290,12 +281,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(!_disposed);
 			Debug.Assert(_view != null);
 
-			if (_view is INotifyPropertyChanged notifier)
-			{
-				notifier.PropertyChanged += OnViewPropertyChanged;
-			}
-
-			_view.Command += OnViewCommand;
+			_view.Command += OnCommand;
 			_view.Visible = true;
 
 			OnPresent();
@@ -307,12 +293,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(!_disposed);
 			Debug.Assert(_view != null);
 
-			_view.Command -= OnViewCommand;
-
-			if (_view is INotifyPropertyChanged notifier)
-			{
-				notifier.PropertyChanged -= OnViewPropertyChanged;
-			}
+			_view.Command -= OnCommand;
 
 			OnDismiss();
 		}
