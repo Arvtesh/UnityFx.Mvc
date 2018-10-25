@@ -201,7 +201,7 @@ namespace UnityFx.AppStates
 
 			Trace.CorrelationManager.StartLogicalOperation(op);
 
-			_traceSource.TraceEvent(TraceEventType.Start, op.Id, op.ToString() + " started");
+			_traceSource.TraceEvent(TraceEventType.Start, op.Id, op.ToString());
 			_currentOp = op;
 		}
 
@@ -217,16 +217,16 @@ namespace UnityFx.AppStates
 			switch (op.Status)
 			{
 				case AsyncOperationStatus.RanToCompletion:
-					_traceSource.TraceEvent(TraceEventType.Stop, op.Id, op.ToString() + " completed");
+					_traceSource.TraceEvent(TraceEventType.Stop, op.Id, op.ToString());
 					break;
 
 				case AsyncOperationStatus.Faulted:
 					_traceSource.TraceData(TraceEventType.Error, op.Id, op.Exception);
-					_traceSource.TraceEvent(TraceEventType.Stop, op.Id, op.ToString() + " faulted");
+					_traceSource.TraceEvent(TraceEventType.Stop, op.Id, op.ToString() + " (faulted)");
 					break;
 
 				case AsyncOperationStatus.Canceled:
-					_traceSource.TraceEvent(TraceEventType.Stop, op.Id, op.ToString() + " canceled");
+					_traceSource.TraceEvent(TraceEventType.Stop, op.Id, op.ToString() + " (canceled)");
 					break;
 			}
 
@@ -239,7 +239,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(!_disposed);
 
 			var opId = _currentOp?.Id ?? 0;
-			_traceSource.TraceEvent(TraceEventType.Error, opId, e.ToString());
+			_traceSource.TraceData(TraceEventType.Error, opId, e.ToString());
 		}
 
 		internal void TraceEvent(TraceEventType eventType, string s)

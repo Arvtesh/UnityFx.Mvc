@@ -64,7 +64,7 @@ namespace UnityFx.AppStates
 		/// <seealso cref="OnVisibleChanged(bool)"/>
 		protected virtual void OnEnabledChanged(bool enabled)
 		{
-			foreach (var c in GetComponentsInChildren<GraphicRaycaster>(true))
+			foreach (var c in GetComponentsInChildren<Selectable>())
 			{
 				c.enabled = enabled;
 			}

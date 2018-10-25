@@ -159,7 +159,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(!_disposed);
 			Debug.Assert(!_active);
 
-			_stateManager.TraceEvent(TraceEventType.Verbose, "Present " + _deeplinkId);
+			_stateManager.TraceEvent(TraceEventType.Verbose, "Present " + _name);
 			_controllerProxy.OnPresent();
 		}
 
@@ -168,7 +168,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(!_disposed);
 			Debug.Assert(!_active);
 
-			_stateManager.TraceEvent(TraceEventType.Verbose, "Activate " + _deeplinkId);
+			_stateManager.TraceEvent(TraceEventType.Verbose, "Activate " + _name);
 			_active = true;
 			_controllerProxy.OnActivate();
 		}
@@ -178,7 +178,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(!_disposed);
 			Debug.Assert(_active);
 
-			_stateManager.TraceEvent(TraceEventType.Verbose, "Deactivate " + _deeplinkId);
+			_stateManager.TraceEvent(TraceEventType.Verbose, "Deactivate " + _name);
 			_active = false;
 			_controllerProxy.OnDeactivate();
 		}
@@ -188,7 +188,7 @@ namespace UnityFx.AppStates
 			Debug.Assert(!_disposed);
 			Debug.Assert(!_active);
 
-			_stateManager.TraceEvent(TraceEventType.Verbose, "Dismiss " + _deeplinkId);
+			_stateManager.TraceEvent(TraceEventType.Verbose, "Dismiss " + _name);
 			_controllerProxy.OnDismiss();
 		}
 
