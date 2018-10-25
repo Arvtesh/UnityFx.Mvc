@@ -17,7 +17,7 @@ namespace UnityFx.AppStates
 	/// </remarks>
 	/// <seealso href="http://gameprogrammingpatterns.com/state.html"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/State_pattern"/>
-	public interface IAppState : ITreeListNode<IAppState>, IPresenter, IDeeplinkable, IDismissable, IDisposable
+	public interface IAppState : ITreeListNode<IAppState>, IPresenter, IDeeplinkable, IDismissable, ICommandTarget, IDisposable
 	{
 		/// <summary>
 		/// Raised when the state has been disposed.

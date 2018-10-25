@@ -221,6 +221,22 @@ namespace UnityFx.AppStates
 
 		#endregion
 
+		#region ICommandTarget
+
+		public bool InvokeCommand(string commandName, object args)
+		{
+			ThrowIfDisposed();
+
+			if (commandName == null)
+			{
+				throw new ArgumentNullException(nameof(commandName));
+			}
+
+			return _controllerProxy.InvokeCommand(commandName, args);
+		}
+
+		#endregion
+
 		#region IServiceProvider
 
 		public object GetService(Type serviceType)

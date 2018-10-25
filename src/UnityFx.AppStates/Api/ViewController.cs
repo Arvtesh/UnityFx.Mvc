@@ -14,7 +14,7 @@ namespace UnityFx.AppStates
 	/// Note that minimal controller implementation should implement <see cref="IViewController"/>.
 	/// </summary>
 	/// <seealso cref="ViewController{TView}"/>
-	public abstract class ViewController : IViewController, IPresentable, IPresentableEvents, IPresenter, ISynchronizeInvoke, IDisposable
+	public abstract class ViewController : IViewController, IPresentable, IPresentableEvents, IPresenter, ICommandTarget, ISynchronizeInvoke, IDisposable
 	{
 		#region data
 
@@ -30,9 +30,9 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
-		/// Enumerates basic comaands.
+		/// Enumerates basic controller comaands.
 		/// </summary>
-		public class Commands
+		public abstract class Commands
 		{
 			/// <summary>
 			/// Name of the CLOSE command.
@@ -148,12 +148,13 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
-		/// Called when a command is issued on the view.
+		/// Called to process a command.
 		/// </summary>
-		/// <param name="sender">A reference to the property owner.</param>
-		/// <param name="e">Event arguments.</param>
-		protected virtual void OnCommand(object sender, CommandEventArgs e)
+		/// <param name="e">Command name and arguments.</param>
+		/// <returns>Returns <see langword="true"/> if the command has been handles; <see langword="false"/> otherwise.</returns>
+		protected virtual bool OnCommand(CommandEventArgs e)
 		{
+			return false;
 		}
 
 		/// <summary>
@@ -191,7 +192,9 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Called when the controller is disposed. Default implementation does nothing.
 		/// </summary>
-		/// <seealso cref="OnPresent"/>
+		/// <seealso cref="Dispose(bool)"/>
+		/// <seealso cref="Dispose()"/>
+		/// <seealso cref="ThrowIfDisposed"/>
 		protected virtual void OnDispose()
 		{
 		}
@@ -201,6 +204,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <param name="disposing">Should be <see langword="true"/> if the method is called from <see cref="Dispose()"/>; <see langword="false"/> otherwise.</param>
 		/// <seealso cref="Dispose()"/>
+		/// <seealso cref="OnDispose"/>
 		/// <seealso cref="ThrowIfDisposed"/>
 		protected virtual void Dispose(bool disposing)
 		{
@@ -374,6 +378,28 @@ namespace UnityFx.AppStates
 
 		#endregion
 
+		#region ICommandTarget
+
+		/// <summary>
+		/// Invokes a specific command.
+		/// </summary>
+		/// <param name="commandName">Name of the command to invoke.</param>
+		/// <param name="args">Command-specific arguments.</param>
+		/// <returns>Returns <see langword="true"/> if the command has been handles; <see langword="false"/> otherwise.</returns>
+		public bool InvokeCommand(string commandName, object args)
+		{
+			ThrowIfDisposed();
+
+			if (commandName == null)
+			{
+				throw new ArgumentNullException(nameof(commandName));
+			}
+
+			return OnCommand(new CommandEventArgs(commandName, args));
+		}
+
+		#endregion
+
 		#region ISynchronizeInvoke
 
 		/// <summary>
@@ -463,6 +489,13 @@ namespace UnityFx.AppStates
 			_view = view ?? throw new ArgumentNullException(nameof(view));
 
 			OnViewLoaded();
+		}
+
+		private void OnCommand(object sender, CommandEventArgs e)
+		{
+			Debug.Assert(e != null);
+			Debug.Assert(!_disposed);
+			OnCommand(e);
 		}
 
 		private static void OnViewLoadedInternal(IAsyncOperation<IView> op, object userState)

@@ -17,7 +17,7 @@ namespace UnityFx.AppStates
 	/// for it (via implementation of <see cref="IViewControllerContext"/> and injecting it into the controller) and serves
 	/// as a proxy between a parent state/controller and the owned one.
 	/// </remarks>
-	internal class ViewControllerProxy : IViewControllerContext, IPresentContext, IDismissContext, IPresentable, IPresentableEvents, IDisposable
+	internal class ViewControllerProxy : IViewControllerContext, IPresentContext, IDismissContext, IPresentable, IPresentableEvents, ICommandTarget, IDisposable
 	{
 		#region data
 
@@ -200,6 +200,22 @@ namespace UnityFx.AppStates
 			{
 				controllerEvents.OnDismiss();
 			}
+		}
+
+		#endregion
+
+		#region ICommandTarget
+
+		public bool InvokeCommand(string commandName, object args)
+		{
+			Debug.Assert(!_disposed);
+
+			if (_controller is ICommandTarget cmdTarget)
+			{
+				return cmdTarget.InvokeCommand(commandName, args);
+			}
+
+			return false;
 		}
 
 		#endregion
