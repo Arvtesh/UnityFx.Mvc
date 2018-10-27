@@ -15,6 +15,7 @@ namespace UnityFx.AppStates
 
 		public string Name { get; set; }
 		public object Tag { get; set; }
+		public ViewOptions Options { get; set; }
 		public bool Visible { get; set; }
 		public bool Enabled { get; set; }
 		public ISite Site { get; set; }

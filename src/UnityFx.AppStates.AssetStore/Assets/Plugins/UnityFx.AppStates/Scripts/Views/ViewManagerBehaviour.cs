@@ -9,9 +9,9 @@ using UnityFx.Async;
 namespace UnityFx.AppStates
 {
 	/// <summary>
-	/// Prefab view manager.
+	/// A view manager.
 	/// </summary>
-	public abstract class ViewManagerBehaviour<TView> : ContainerBehaviour, IViewFactory, IServiceProvider where TView : ViewBehaviour
+	public abstract class ViewManagerBehaviour : ContainerBehaviour, IViewFactory, IServiceProvider
 	{
 		#region data
 
@@ -27,7 +27,7 @@ namespace UnityFx.AppStates
 		/// <param name="view">A view to add.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the container is disposed.</exception>
-		public void Add(TView view)
+		public void Add(ViewBehaviour view)
 		{
 			base.Add(view);
 		}
@@ -40,7 +40,7 @@ namespace UnityFx.AppStates
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is invalid.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the container is disposed.</exception>
-		public void Add(TView view, int index)
+		public void Add(ViewBehaviour view, int index)
 		{
 			Add(view, name, index);
 		}
@@ -52,7 +52,7 @@ namespace UnityFx.AppStates
 		/// <param name="name">Name of the view.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the container is disposed.</exception>
-		public void Add(TView view, string name)
+		public void Add(ViewBehaviour view, string name)
 		{
 			base.Add(view, name);
 		}
@@ -66,7 +66,7 @@ namespace UnityFx.AppStates
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="index"/> is invalid.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the container is disposed.</exception>
-		public void Add(TView view, string name, int index)
+		public void Add(ViewBehaviour view, string name, int index)
 		{
 			if (index < 0 || index > ComponentCount)
 			{
@@ -101,14 +101,22 @@ namespace UnityFx.AppStates
 		#region ContainerBehaviour
 
 		/// <inheritdoc/>
-		protected override bool OnAddComponent(IComponent component, int index)
+		protected override bool OnAddComponent(IComponent component, string name, int index)
 		{
-			if (base.OnAddComponent(component, index) && component is TView)
+			if (base.OnAddComponent(component, name, index) && component is ViewBehaviour)
 			{
-				var view = component as TView;
+				var view = component as ViewBehaviour;
+				var viewParent = transform.Find(name);
 
-				view.transform.SetParent(transform, false);
-				view.transform.SetSiblingIndex(index);
+				if (ReferenceEquals(viewParent, null))
+				{
+					var parentGo = new GameObject(name);
+					viewParent = parentGo.transform;
+					viewParent.SetParent(transform, false);
+					viewParent.SetSiblingIndex(index);
+				}
+
+				view.transform.SetParent(viewParent, false);
 
 				UpdateViews(index);
 				return true;
@@ -120,7 +128,7 @@ namespace UnityFx.AppStates
 		/// <inheritdoc/>
 		protected override void OnRemoveComponent(IComponent component)
 		{
-			((TView)component).transform.SetParent(null);
+			((ViewBehaviour)component).transform.SetParent(null);
 			base.OnRemoveComponent(component);
 		}
 
@@ -131,13 +139,18 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Asynchronously loads the specified view.
 		/// </summary>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="viewId"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="resourceId"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the container is disposed.</exception>
-		public IAsyncOperation<IView> LoadViewAsync(string viewId, IView insertAfter)
+		public IAsyncOperation<IView> LoadViewAsync(string name, string resourceId, ViewOptions options, IView insertAfter)
 		{
 			ThrowIfDisposed();
 
-			if (viewId == null)
+			if (name == null)
+			{
+				throw new ArgumentNullException("name");
+			}
+
+			if (resourceId == null)
 			{
 				throw new ArgumentNullException("viewId");
 			}
@@ -146,18 +159,20 @@ namespace UnityFx.AppStates
 
 			if (insertAfterBehaviour)
 			{
-				if (insertAfterBehaviour.transform.parent == transform)
+				var insertAfterParent = insertAfterBehaviour.transform.parent;
+
+				if (insertAfterParent && insertAfterParent.parent == transform)
 				{
-					return LoadViewInternal(viewId, insertAfterBehaviour.transform.GetSiblingIndex() + 1);
+					return LoadViewInternal(name, resourceId, insertAfterParent.GetSiblingIndex() + 1);
 				}
 				else
 				{
-					return LoadViewInternal(viewId, 0);
+					return LoadViewInternal(name, resourceId, 0);
 				}
 			}
 			else
 			{
-				return LoadViewInternal(viewId, 0);
+				return LoadViewInternal(name, resourceId, 0);
 			}
 		}
 
@@ -186,21 +201,34 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private IAsyncOperation<IView> LoadViewInternal(string viewId, int index)
+		private IAsyncOperation<IView> LoadViewInternal(string viewName, string viewResourceId, int index)
 		{
-			return _viewLoader.LoadViewAsync(viewId, transform).ContinueWith(
+			var parentGo = new GameObject(viewName);
+			parentGo.transform.SetParent(transform, false);
+			parentGo.transform.SetSiblingIndex(index);
+
+			return _viewLoader.LoadViewAsync(viewResourceId, parentGo.transform).ContinueWith(
 				op =>
 				{
-					var view = op.Result;
-
-					if (!Add(view, viewId, index))
+					if (op.IsCompletedSuccessfully)
 					{
-						throw new InvalidOperationException();
-					}
+						var view = op.Result;
 
-					return view;
-				},
-				AsyncContinuationOptions.OnlyOnRanToCompletion);
+						if (!Add(view, viewName, index))
+						{
+							GameObject.Destroy(parentGo);
+							throw new InvalidOperationException();
+						}
+
+						return view;
+					}
+					else
+					{
+						GameObject.Destroy(parentGo);
+						op.ThrowIfNonSuccess();
+						return null;
+					}
+				});
 		}
 
 		private void UpdateViews(int startIndex)

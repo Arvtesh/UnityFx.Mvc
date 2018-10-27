@@ -14,12 +14,18 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
+		private ViewOptions _options;
 		private bool _visible;
 		private bool _enabled;
 
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// Raised when <see cref="Options"/> value changes.
+		/// </summary>
+		public event EventHandler OptionsChanged;
 
 		/// <summary>
 		/// Raised when <see cref="Visible"/> value changes.
@@ -45,10 +51,25 @@ namespace UnityFx.AppStates
 		}
 
 		/// <summary>
+		/// Called when <see cref="Options"/> property value changes.
+		/// </summary>
+		/// <param name="options">The new value of <see cref="Options"/> propoerty.</param>
+		/// <seealso cref="OnVisibleChanged(bool)"/>
+		/// <seealso cref="OnEnabledChanged(bool)"/>
+		protected virtual void OnOptionsChanged(ViewOptions options)
+		{
+			if (OptionsChanged != null)
+			{
+				OptionsChanged(this, EventArgs.Empty);
+			}
+		}
+
+		/// <summary>
 		/// Called when <see cref="Visible"/> property value changes.
 		/// </summary>
 		/// <param name="visible">The new value of <see cref="Visible"/> propoerty.</param>
 		/// <seealso cref="OnEnabledChanged(bool)"/>
+		/// <seealso cref="OnOptionsChanged(ViewOptions)"/>
 		protected virtual void OnVisibleChanged(bool visible)
 		{
 			if (VisibleChanged != null)
@@ -62,6 +83,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		/// <param name="enabled">The new value of <see cref="Enabled"/> propoerty.</param>
 		/// <seealso cref="OnVisibleChanged(bool)"/>
+		/// <seealso cref="OnOptionsChanged(ViewOptions)"/>
 		protected virtual void OnEnabledChanged(bool enabled)
 		{
 			foreach (var c in GetComponentsInChildren<Selectable>())
@@ -110,11 +132,6 @@ namespace UnityFx.AppStates
 		#region IView
 
 		/// <summary>
-		/// Raised when a user issues a command.
-		/// </summary>
-		public event EventHandler<CommandEventArgs> Command;
-
-		/// <summary>
 		/// Gets the view name.
 		/// </summary>
 		public string Name
@@ -122,6 +139,32 @@ namespace UnityFx.AppStates
 			get
 			{
 				return GetName();
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the object that contains data about the view.
+		/// </summary>
+		public object Tag { get; set; }
+
+		/// <summary>
+		/// Gets or sets the view options.
+		/// </summary>
+		public ViewOptions Options
+		{
+			get
+			{
+				return _options;
+			}
+			set
+			{
+				ThrowIfDisposed();
+
+				if (_options != value)
+				{
+					_options = value;
+					OnOptionsChanged(value);
+				}
 			}
 		}
 
@@ -171,6 +214,15 @@ namespace UnityFx.AppStates
 				}
 			}
 		}
+
+		#endregion
+
+		#region INotifyCommand
+
+		/// <summary>
+		/// Raised when a user issues a command.
+		/// </summary>
+		public event EventHandler<CommandEventArgs> Command;
 
 		#endregion
 	}

@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\UnityFx.AppStates.Abstractions\UnityFx.AppStates.Abstractions.csproj" />
     <ProjectReference Include="..\UnityFx.AppStates\UnityFx.AppStates.csproj" />
   </ItemGroup>
 

@@ -10,17 +10,22 @@ namespace UnityFx.AppStates
 	/// A generic view.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
-	public interface IView : IComponent
+	public interface IView : IComponent, INotifyCommand
 	{
-		/// <summary>
-		/// Raised when a user issues a command.
-		/// </summary>
-		event EventHandler<CommandEventArgs> Command;
-
 		/// <summary>
 		/// Gets the view name.
 		/// </summary>
 		string Name { get; }
+
+		/// <summary>
+		/// Gets or sets the object that contains data about the view.
+		/// </summary>
+		object Tag { get; set; }
+
+		/// <summary>
+		/// Gets or sets the view options.
+		/// </summary>
+		ViewOptions Options { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether the view is visible.

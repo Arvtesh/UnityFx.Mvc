@@ -14,6 +14,6 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Asynchronously loads the specified view.
 		/// </summary>
-		IAsyncOperation<IView> LoadViewAsync(string viewId, IView insertAfter);
+		IAsyncOperation<IView> LoadViewAsync(string name, string resourceId, ViewOptions options, IView insertAfter);
 	}
 }

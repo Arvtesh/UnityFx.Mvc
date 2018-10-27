@@ -79,6 +79,11 @@ namespace UnityFx.AppStates
 			return result;
 		}
 
+		internal static ViewOptions GetViewOptions(Type controllerType)
+		{
+			return ViewOptions.None;
+		}
+
 		internal static PresentOptions GetControllerOptions(Type controllerType)
 		{
 			if (Attribute.GetCustomAttribute(controllerType, typeof(ViewControllerOptionsAttribute)) is ViewControllerOptionsAttribute attr)

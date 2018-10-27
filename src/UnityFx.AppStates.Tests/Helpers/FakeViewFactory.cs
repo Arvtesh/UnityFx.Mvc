@@ -8,7 +8,7 @@ namespace UnityFx.AppStates
 {
 	internal class FakeViewFactory : IViewFactory
 	{
-		public IAsyncOperation<IView> LoadViewAsync(string viewId, IView insertAfter)
+		public IAsyncOperation<IView> LoadViewAsync(string name, string resourceId, ViewOptions options, IView insertAfter)
 		{
 			return AsyncResult.FromResult<IView>(new FakeView());
 		}

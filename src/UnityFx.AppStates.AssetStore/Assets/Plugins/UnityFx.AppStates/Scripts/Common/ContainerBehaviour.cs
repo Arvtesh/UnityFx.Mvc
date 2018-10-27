@@ -117,7 +117,7 @@ namespace UnityFx.AppStates
 			{
 				ValidateName(component, name);
 
-				if (OnAddComponent(component, index))
+				if (OnAddComponent(component, name, index))
 				{
 					if (site != null)
 					{
@@ -140,7 +140,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Called when a component is about to be added.
 		/// </summary>
-		protected virtual bool OnAddComponent(IComponent component, int index)
+		protected virtual bool OnAddComponent(IComponent component, string name, int index)
 		{
 			return true;
 		}

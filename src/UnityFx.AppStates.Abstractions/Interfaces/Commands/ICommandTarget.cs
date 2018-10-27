@@ -8,6 +8,7 @@ namespace UnityFx.AppStates
 	/// <summary>
 	/// Represents an object capable of command processing.
 	/// </summary>
+	/// <seealso cref="INotifyCommand"/>
 	public interface ICommandTarget
 	{
 		/// <summary>

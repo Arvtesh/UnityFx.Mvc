@@ -88,10 +88,11 @@ namespace UnityFx.AppStates
 		{
 			Debug.Assert(!_disposed);
 
-			var viewId = Utility.GetViewResourceId(_controller.GetType());
+			var resourceId = Utility.GetViewResourceId(_controller.GetType());
+			var options = Utility.GetViewOptions(_controller.GetType());
 			var insertAfter = _parentState.Prev?.Controller.View;
 
-			return _viewFactory.LoadViewAsync(viewId, insertAfter);
+			return _viewFactory.LoadViewAsync(_controller.Name, resourceId, options, insertAfter);
 		}
 
 		public IAsyncOperation<IViewController> PresentAsync(Type controllerType, PresentArgs args)
