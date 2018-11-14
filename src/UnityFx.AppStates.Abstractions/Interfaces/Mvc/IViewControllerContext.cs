@@ -5,39 +5,29 @@ using System;
 using System.ComponentModel;
 using UnityFx.Async;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Context data for an <see cref="IViewController"/> instance. The class is basically a link between <see cref="IAppState"/> and child controllers.
+	/// Context data for an <see cref="IViewController"/> instance. The class is a link between <see cref="IPresentService"/> and its controllers.
 	/// It is here for the sake of testability/explicit dependencies for <see cref="IViewController"/> implementations.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
-	public interface IViewControllerContext : ISynchronizeInvoke
+	public interface IViewControllerContext : ISynchronizeInvoke, IServiceProvider
 	{
 		/// <summary>
-		/// Gets the controller creation arguments.
+		/// Gets the controller name.
 		/// </summary>
-		PresentArgs PresentArgs { get; }
+		string Name { get; }
 
 		/// <summary>
-		/// Gets a <see cref="IServiceProvider"/> that can be used to resolve controller dependencies.
+		/// Gets a value indicating whether the controller is active.
 		/// </summary>
-		IServiceProvider ServiceProvider { get; }
+		bool IsActive { get; }
 
 		/// <summary>
-		/// Gets parent state.
+		/// Gets a value indicating whether the controller is modal.
 		/// </summary>
-		IAppState ParentState { get; }
-
-		/// <summary>
-		/// Gets parent controller (or <see langword="null"/>).
-		/// </summary>
-		IViewController ParentController { get; }
-
-		/// <summary>
-		/// Asynchronously loads view for the controller.
-		/// </summary>
-		IAsyncOperation<IView> LoadViewAsync();
+		bool IsModal { get; }
 
 		/// <summary>
 		/// Presents a new controller of the specified type.

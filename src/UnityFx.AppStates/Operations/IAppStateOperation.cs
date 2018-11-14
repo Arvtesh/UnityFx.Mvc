@@ -3,7 +3,7 @@
 
 using System;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// Helper interface for managing sync/async operatino completion.

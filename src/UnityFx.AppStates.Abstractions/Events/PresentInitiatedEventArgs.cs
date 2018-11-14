@@ -3,10 +3,10 @@
 
 using System;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Event arguments for <see cref="IAppStateService.PresentInitiated"/>.
+	/// Event arguments for <see cref="IPresentService.PresentInitiated"/>.
 	/// </summary>
 	public class PresentInitiatedEventArgs : EventArgs
 	{

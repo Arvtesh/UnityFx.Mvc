@@ -4,17 +4,16 @@
 using System;
 using System.ComponentModel;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Event arguments for <see cref="IAppStateService.DismissCompleted"/>.
+	/// Event arguments for <see cref="IPresentService.DismissCompleted"/>.
 	/// </summary>
 	public class DismissCompletedEventArgs : AsyncCompletedEventArgs
 	{
 		#region data
 
 		private readonly int _id;
-		private readonly IAppState _state;
 		private readonly IViewController _controller;
 
 		#endregion
@@ -27,11 +26,6 @@ namespace UnityFx.AppStates
 		public int OperationId => _id;
 
 		/// <summary>
-		/// Gets a state being dismissed.
-		/// </summary>
-		public IAppState State => _state;
-
-		/// <summary>
 		/// Gets a controller being dismissed.
 		/// </summary>
 		public IViewController Controller => _controller;
@@ -39,22 +33,20 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DismissCompletedEventArgs"/> class.
 		/// </summary>
-		public DismissCompletedEventArgs(IAppState state, IViewController controller, int opId, object userState)
+		public DismissCompletedEventArgs(IViewController controller, int opId, object userState)
 			: base(null, false, userState)
 		{
 			_id = opId;
-			_state = state;
 			_controller = controller;
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DismissCompletedEventArgs"/> class.
 		/// </summary>
-		public DismissCompletedEventArgs(IAppState state, IViewController controller, int opId, object userState, Exception e, bool canceled)
+		public DismissCompletedEventArgs(IViewController controller, int opId, object userState, Exception e, bool canceled)
 			: base(e, canceled, userState)
 		{
 			_id = opId;
-			_state = state;
 			_controller = controller;
 		}
 

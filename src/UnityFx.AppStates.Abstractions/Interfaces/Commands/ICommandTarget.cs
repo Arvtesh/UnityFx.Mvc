@@ -3,7 +3,7 @@
 
 using System;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// Represents an object capable of command processing.
@@ -17,7 +17,7 @@ namespace UnityFx.AppStates
 		/// <param name="commandName">Name of the command to invoke.</param>
 		/// <param name="args">Command-specific arguments.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandName"/> is <see langword="null"/>.</exception>
-		/// <returns>Returns <see langword="true"/> if the command has been handles; <see langword="false"/> otherwise.</returns>
+		/// <returns>Returns <see langword="true"/> if the command has been handled; <see langword="false"/> otherwise.</returns>
 		bool InvokeCommand(string commandName, object args);
 	}
 }

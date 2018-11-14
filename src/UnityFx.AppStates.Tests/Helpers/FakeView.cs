@@ -4,7 +4,7 @@
 using System;
 using System.ComponentModel;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	internal class FakeView : IView
 	{
@@ -14,9 +14,6 @@ namespace UnityFx.AppStates
 		public event EventHandler Disposed;
 
 		public string Name { get; set; }
-		public object Tag { get; set; }
-		public ViewOptions Options { get; set; }
-		public bool Visible { get; set; }
 		public bool Enabled { get; set; }
 		public ISite Site { get; set; }
 

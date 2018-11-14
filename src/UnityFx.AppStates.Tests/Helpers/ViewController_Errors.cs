@@ -4,9 +4,9 @@
 using System;
 using UnityFx.Async;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
-	public class ViewController_Errors : IViewController, IPresentable, IPresentableEvents, IDisposable
+	public class ViewController_Errors : IViewController, IAsyncPresentable, IPresentableEvents, IDisposable
 	{
 		private readonly IViewControllerContext _ctx;
 		private readonly MyPresentArgs _args;
@@ -44,12 +44,13 @@ namespace UnityFx.AppStates
 		}
 
 		public string Name { get; set; }
+		public bool IsViewLoaded { get; }
 		public IView View { get; }
 
-		public ViewController_Errors(IViewControllerContext ctx)
+		public ViewController_Errors(IViewControllerContext ctx, MyPresentArgs args)
 		{
 			_ctx = ctx;
-			_args = (MyPresentArgs)ctx.PresentArgs;
+			_args = args;
 
 			if (_args.CtorThrows)
 			{
@@ -57,9 +58,9 @@ namespace UnityFx.AppStates
 			}
 		}
 
-		public IAsyncOperation DismissAsync()
+		public bool InvokeCommand(string commandName, object args)
 		{
-			return _ctx.DismissAsync();
+			return false;
 		}
 
 		public void Dispose()

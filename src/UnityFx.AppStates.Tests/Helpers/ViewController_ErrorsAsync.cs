@@ -4,12 +4,12 @@
 using System;
 using UnityFx.Async;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	public class ViewController_ErrorsAsync : ViewController_Errors
 	{
-		public ViewController_ErrorsAsync(IViewControllerContext ctx)
-			: base(ctx)
+		public ViewController_ErrorsAsync(IViewControllerContext ctx, MyPresentArgs args)
+			: base(ctx, args)
 		{
 		}
 

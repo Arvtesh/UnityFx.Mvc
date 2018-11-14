@@ -4,14 +4,13 @@
 using System;
 using UnityFx.Async;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// A dismissable object (i.e. object that supports asynchronous disposal).
 	/// </summary>
 	/// <seealso cref="IViewController"/>
-	/// <seealso cref="IAppState"/>
-	public interface IDismissable
+	public interface IAsyncDismissable
 	{
 		/// <summary>
 		/// Dismisses the object. Act like asynchronous <c>Dispose()</c>.

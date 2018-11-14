@@ -15,3 +15,6 @@ using System.Runtime.InteropServices;
 
 // CSL compilance.
 [assembly: CLSCompliant(true)]
+
+// Allow test assembly to use internal classes.
+[assembly: InternalsVisibleTo("UnityFx.AppStates.Tests")]

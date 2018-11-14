@@ -4,7 +4,7 @@
 using System;
 using UnityFx.Async;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	public class ViewController_EventsAsync : ViewController_Events
 	{

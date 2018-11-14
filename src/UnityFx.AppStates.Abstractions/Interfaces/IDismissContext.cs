@@ -3,19 +3,19 @@
 
 using System;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// Defines context data for a dismiss operation.
 	/// </summary>
-	/// <seealso cref="IPresentable"/>
+	/// <seealso cref="IAsyncPresentable"/>
 	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IPresentContext"/>
 	public interface IDismissContext
 	{
 		/// <summary>
-		/// Gets the next state (a state that will be activated after the dismiss operation).
+		/// Gets the next controller (a controller that will be activated after the dismiss operation).
 		/// </summary>
-		IAppState NextState { get; }
+		IViewController NextController { get; }
 	}
 }

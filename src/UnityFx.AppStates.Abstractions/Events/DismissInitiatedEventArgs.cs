@@ -3,10 +3,10 @@
 
 using System;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Event arguments for <see cref="IAppStateService.DismissInitiated"/>.
+	/// Event arguments for <see cref="IPresentService.DismissInitiated"/>.
 	/// </summary>
 	public class DismissInitiatedEventArgs : EventArgs
 	{
@@ -14,7 +14,6 @@ namespace UnityFx.AppStates
 
 		private readonly int _id;
 		private readonly object _userState;
-		private readonly IAppState _state;
 		private readonly IViewController _controller;
 
 		#endregion
@@ -32,11 +31,6 @@ namespace UnityFx.AppStates
 		public object UserState => _userState;
 
 		/// <summary>
-		/// Gets a state being dismissed.
-		/// </summary>
-		public IAppState State => _state;
-
-		/// <summary>
 		/// Gets a controller being dismissed.
 		/// </summary>
 		public IViewController Controller => _controller;
@@ -44,11 +38,10 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DismissInitiatedEventArgs"/> class.
 		/// </summary>
-		public DismissInitiatedEventArgs(IAppState state, IViewController controller, int opId, object userState)
+		public DismissInitiatedEventArgs(IViewController controller, int opId, object userState)
 		{
 			_id = opId;
 			_userState = userState;
-			_state = state;
 			_controller = controller;
 		}
 

@@ -4,7 +4,7 @@
 using System;
 using UnityEngine;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// A disposable <see cref="MonoBehaviour"/>.

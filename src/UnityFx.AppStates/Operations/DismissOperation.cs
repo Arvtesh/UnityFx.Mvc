@@ -5,23 +5,23 @@ using System;
 using System.Diagnostics;
 using UnityFx.Async;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	internal class DismissOperation : AppStateOperation<object>
 	{
 		#region data
 
-		private AppState _state;
+		private ViewControllerProxy _controllerProxy;
 		private IAsyncOperation _dismissOp;
 
 		#endregion
 
 		#region interface
 
-		public DismissOperation(AppStateService stateManager, AppState state, object asyncState)
+		public DismissOperation(PresentService stateManager, ViewControllerProxy controllerProxy, object asyncState)
 			: base(stateManager, asyncState)
 		{
-			_state = state;
+			_controllerProxy = controllerProxy;
 
 			stateManager.TraceEvent(TraceEventType.Verbose, "Dismiss initiated");
 		}
@@ -35,17 +35,17 @@ namespace UnityFx.AppStates
 			try
 			{
 				StateManager.TraceStart(this);
-				StateManager.InvokeDismissStarted(_state, _state.Controller, this);
+				StateManager.InvokeDismissStarted(_controllerProxy, this);
 
-				if (_state != null)
+				if (_controllerProxy != null)
 				{
-					_dismissOp = _state.DismissAsync(null);
+					_dismissOp = _controllerProxy.DismissAsync(null);
 					_dismissOp.AddCompletionCallback(this);
 				}
 				else
 				{
 					// Remove all states from the stack.
-					DismissAllStates();
+					DismissAllControllers();
 					TrySetCompleted();
 				}
 			}
@@ -60,11 +60,11 @@ namespace UnityFx.AppStates
 			try
 			{
 				// This should not throw.
-				StateManager.InvokeDismissCompleted(_state, _state.Controller, this);
+				StateManager.InvokeDismissCompleted(_controllerProxy, this);
 
-				// The state should be disposed in any case.
-				_state?.Dispose();
-				_state = null;
+				// The controller should be disposed in any case.
+				_controllerProxy?.Dispose();
+				_controllerProxy = null;
 			}
 			finally
 			{
@@ -111,9 +111,9 @@ namespace UnityFx.AppStates
 
 		public override string ToString()
 		{
-			if (_state != null)
+			if (_controllerProxy != null)
 			{
-				return "Dismiss_" + _state.Name;
+				return "Dismiss_" + _controllerProxy.Name;
 			}
 			else
 			{

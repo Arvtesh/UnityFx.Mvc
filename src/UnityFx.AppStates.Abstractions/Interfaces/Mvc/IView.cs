@@ -4,12 +4,13 @@
 using System;
 using System.ComponentModel;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// A generic view.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
+	/// <seealso href="https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller"/>
 	public interface IView : IComponent, INotifyCommand
 	{
 		/// <summary>
@@ -18,25 +19,8 @@ namespace UnityFx.AppStates
 		string Name { get; }
 
 		/// <summary>
-		/// Gets or sets the object that contains data about the view.
+		/// Gets or sets a value indicating whether the view is enabled.
 		/// </summary>
-		object Tag { get; set; }
-
-		/// <summary>
-		/// Gets or sets the view options.
-		/// </summary>
-		ViewOptions Options { get; set; }
-
-		/// <summary>
-		/// Gets or sets a value indicating whether the view is visible.
-		/// </summary>
-		/// <seealso cref="Enabled"/>
-		bool Visible { get; set; }
-
-		/// <summary>
-		/// Gets or sets a value indicating whether the view can respond to user interaction.
-		/// </summary>
-		/// <seealso cref="Visible"/>
 		bool Enabled { get; set; }
 	}
 }

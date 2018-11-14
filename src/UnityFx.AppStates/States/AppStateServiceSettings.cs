@@ -6,9 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
-	internal class AppStateServiceSettings : IAppStateServiceSettings
+	internal class AppStateServiceSettings : IPresentServiceSettings
 	{
 		#region data
 

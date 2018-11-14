@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading;
 using UnityFx.Async;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// A yieldable asynchronous state operation.
@@ -18,17 +18,16 @@ namespace UnityFx.AppStates
 	{
 		#region data
 
-		private readonly AppStateService _stateManager;
+		private readonly PresentService _stateManager;
 		private bool _completedSynchronously = true;
 
 		#endregion
 
 		#region interface
 
-		protected AppStateService StateManager => _stateManager;
-		protected IAppStateCollection States => _stateManager.States;
+		protected PresentService StateManager => _stateManager;
 
-		protected AppStateOperation(AppStateService stateManager, object asyncState)
+		protected AppStateOperation(PresentService stateManager, object asyncState)
 			: base(AsyncOperationStatus.Scheduled, asyncState)
 		{
 			Debug.Assert(stateManager != null);
@@ -36,13 +35,9 @@ namespace UnityFx.AppStates
 			_stateManager = stateManager;
 		}
 
-		protected void DismissAllStates()
+		protected void DismissAllControllers()
 		{
-			while (_stateManager.States.TryPeek(out var state))
-			{
-				(state as IPresentableEvents).OnDismiss();
-				state.Dispose();
-			}
+			_stateManager.DismissAllControllers();
 		}
 
 		protected new bool TrySetCanceled()

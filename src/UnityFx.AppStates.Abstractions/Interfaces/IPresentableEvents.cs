@@ -3,12 +3,12 @@
 
 using System;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// Defines event handlers for a presentable obejct.
 	/// </summary>
-	/// <seealso cref="IPresentable"/>
+	/// <seealso cref="IAsyncPresentable"/>
 	public interface IPresentableEvents
 	{
 		/// <summary>

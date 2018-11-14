@@ -6,13 +6,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// A generic tree list collection.
 	/// </summary>
 	/// <seealso cref="TreeListNode{T}"/>
-	public class TreeListCollection<T> : ITreeListCollection<T>, ICollection<T> where T : class, ITreeListNode<T>
+	internal class TreeListCollection<T> : ICollection<T> where T : TreeListNode<T>
 	{
 		#region data
 
@@ -49,7 +49,8 @@ namespace UnityFx.AppStates
 				Debug.Assert(_last != null);
 				Debug.Assert(_count > 0);
 
-				SetLink(_last, node);
+				_last.Next = node;
+				node.Prev = _last;
 
 				_last = node;
 				++_count;
@@ -77,7 +78,8 @@ namespace UnityFx.AppStates
 				Debug.Assert(_last != null);
 				Debug.Assert(_count > 0);
 
-				SetLink(node, _first);
+				node.Next = _first;
+				_first.Prev = node;
 
 				_first = node;
 				++_count;
@@ -105,7 +107,8 @@ namespace UnityFx.AppStates
 				Debug.Assert(_first != null);
 				Debug.Assert(_count > 0);
 
-				SetLink(_last, node);
+				_last.Next = node;
+				node.Prev = _last;
 
 				_last = node;
 				++_count;
@@ -131,7 +134,8 @@ namespace UnityFx.AppStates
 				}
 
 				Debug.Assert(Contains(insertAfter));
-				SetLink(insertAfter, node);
+				insertAfter.Next = node;
+				node.Prev = insertAfter;
 
 				if (insertAfter == _last)
 				{
@@ -160,15 +164,16 @@ namespace UnityFx.AppStates
 				{
 					if (prev != null)
 					{
-						SetNext(prev, next);
+						prev.Next = next;
 					}
 
 					if (next != null)
 					{
-						SetPrev(next, prev);
+						next.Prev = prev;
 					}
 
-					Unlink(node);
+					node.Next = null;
+					node.Prev = null;
 
 					if (_first == node)
 					{
@@ -189,7 +194,8 @@ namespace UnityFx.AppStates
 					Debug.Assert(_last == node);
 					Debug.Assert(_count == 1);
 
-					Unlink(node);
+					node.Next = null;
+					node.Prev = null;
 
 					_first = null;
 					_last = null;
@@ -212,7 +218,8 @@ namespace UnityFx.AppStates
 			while (cur != null)
 			{
 				var next = cur.Next;
-				Unlink(cur);
+				cur.Next = null;
+				cur.Prev = null;
 				cur = next;
 			}
 
@@ -517,36 +524,6 @@ namespace UnityFx.AppStates
 			{
 				throw new InvalidOperationException("The collection is empty.");
 			}
-		}
-
-		private static void SetNext(T node, T next)
-		{
-			Debug.Assert(node != null);
-			(node as ITreeListNodeAccess<T>).SetNext(next);
-		}
-
-		private static void SetPrev(T node, T prev)
-		{
-			Debug.Assert(node != null);
-			(node as ITreeListNodeAccess<T>).SetPrev(prev);
-		}
-
-		private static void Unlink(T node)
-		{
-			Debug.Assert(node != null);
-
-			var n = node as ITreeListNodeAccess<T>;
-			n.SetNext(null);
-			n.SetPrev(null);
-		}
-
-		private static void SetLink(T prev, T next)
-		{
-			Debug.Assert(next != null);
-			Debug.Assert(prev != null);
-
-			(next as ITreeListNodeAccess<T>).SetPrev(prev);
-			(prev as ITreeListNodeAccess<T>).SetNext(next);
 		}
 
 		#endregion

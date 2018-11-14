@@ -4,14 +4,15 @@
 using System;
 using UnityFx.Async;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
-	public class ViewController_Events : IViewController, IPresentable, IPresentableEvents, IDisposable
+	public class ViewController_Events : IViewController, IAsyncPresentable, IPresentableEvents, IDisposable
 	{
 		private readonly IViewControllerContext _ctx;
 		private int _index;
 
 		public string Name { get; set; }
+		public bool IsViewLoaded { get; }
 		public IView View { get; }
 
 		public int OnPresentIndex { get; private set; }
@@ -27,9 +28,9 @@ namespace UnityFx.AppStates
 			_ctx = ctx;
 		}
 
-		public IAsyncOperation DismissAsync()
+		public bool InvokeCommand(string commandName, object args)
 		{
-			return _ctx.DismissAsync();
+			return false;
 		}
 
 		public void Dispose()

@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using UnityFx.Async;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	internal class PresentOperation<T> : AppStateOperation<T> where T : class, IViewController
 	{
@@ -13,16 +13,16 @@ namespace UnityFx.AppStates
 
 		private readonly Type _controllerType;
 		private readonly PresentArgs _args;
-		private readonly AppState _parentState;
+		private readonly ViewControllerProxy _parent;
 
-		private AppState _state;
+		private ViewControllerProxy _controllerProxy;
 		private IAsyncOperation _pushOp;
 
 		#endregion
 
 		#region interface
 
-		public PresentOperation(AppStateService stateManager, AppState parentState, Type controllerType, PresentArgs args)
+		public PresentOperation(PresentService stateManager, ViewControllerProxy parent, Type controllerType, PresentArgs args)
 			: base(stateManager, args.Data)
 		{
 			Debug.Assert(controllerType != null);
@@ -30,7 +30,7 @@ namespace UnityFx.AppStates
 
 			_controllerType = controllerType;
 			_args = args;
-			_parentState = parentState;
+			_parent = parent;
 
 			stateManager.TraceEvent(TraceEventType.Verbose, "Present initiated: " + GetStateDesc(controllerType, args));
 		}
@@ -48,16 +48,16 @@ namespace UnityFx.AppStates
 
 				if ((_args.Options & PresentOptions.DismissAllStates) != 0)
 				{
-					DismissAllStates();
+					DismissAllControllers();
 				}
-				else if ((_args.Options & PresentOptions.DismissCurrentState) != 0 && _parentState != null)
+				else if ((_args.Options & PresentOptions.DismissCurrentController) != 0 && _parent != null)
 				{
-					_parentState.DismissChildStates();
-					_parentState.OnDismiss();
+					_parent.DismissChildControllers();
+					_parent.OnDismiss();
 				}
 
-				_state = new AppState(StateManager, _parentState, _controllerType, _args);
-				_pushOp = _state.PresentAsync(default(IPresentContext));
+				_controllerProxy = new ViewControllerProxy(StateManager, _parent, _controllerType, _args);
+				_pushOp = _controllerProxy.PresentAsync(default(IPresentContext));
 				_pushOp.AddCompletionCallback(this);
 			}
 			catch (Exception e)
@@ -73,12 +73,12 @@ namespace UnityFx.AppStates
 				// Make sure the state is disposed on operation failure.
 				if (IsCompletedSuccessfully)
 				{
-					StateManager.InvokePresentCompleted(_state, _state.Controller, this);
+					StateManager.InvokePresentCompleted(_controllerProxy, this);
 				}
 				else
 				{
-					StateManager.InvokePresentCompleted(null, null, this);
-					_state?.Dispose();
+					StateManager.InvokePresentCompleted(null, this);
+					_controllerProxy?.Dispose();
 				}
 			}
 			finally
@@ -99,7 +99,7 @@ namespace UnityFx.AppStates
 		public override void Invoke(IAsyncOperation op)
 		{
 			Debug.Assert(_pushOp != null);
-			Debug.Assert(_state != null);
+			Debug.Assert(_controllerProxy != null);
 
 			try
 			{
@@ -113,15 +113,15 @@ namespace UnityFx.AppStates
 				if (op.IsCompletedSuccessfully)
 				{
 					// Make sure parent state is disposed.
-					if (_parentState != null && (_args.Options & PresentOptions.DismissCurrentState) != 0)
+					if (_parent != null && (_args.Options & PresentOptions.DismissCurrentController) != 0)
 					{
-						_parentState.Dispose();
+						_parent.Dispose();
 					}
 
 					// Present the new state. If this thows the operation should fail as well.
-					_state.OnPresent();
+					_controllerProxy.OnPresent();
 
-					TrySetResult((T)_state.Controller);
+					TrySetResult((T)_controllerProxy.Controller);
 				}
 				else
 				{

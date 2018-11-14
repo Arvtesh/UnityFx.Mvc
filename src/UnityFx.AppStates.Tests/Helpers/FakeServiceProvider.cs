@@ -3,7 +3,7 @@
 
 using System;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	internal class FakeServiceProvider : IServiceProvider
 	{

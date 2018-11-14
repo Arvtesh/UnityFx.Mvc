@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using UnityFx.Async;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// Defines a wrapper data/services for a <see cref="IViewController"/>.
@@ -14,23 +14,30 @@ namespace UnityFx.AppStates
 	/// <remarks>
 	/// We want <see cref="IViewController"/> interface to be as minimalistic as possible. That's why we need to store
 	/// controller context outside of actual controller. This class manages the controller created, provides its context
-	/// for it (via implementation of <see cref="IViewControllerContext"/> and injecting it into the controller) and serves
-	/// as a proxy between a parent state/controller and the owned one.
+	/// (via <see cref="IViewControllerContext"/> interface) and serves as a proxy between the controller and
+	/// <see cref="IPresentService"/> implementation.
 	/// </remarks>
-	internal class ViewControllerProxy : IViewControllerContext, IPresentContext, IDismissContext, IPresentable, IPresentableEvents, ICommandTarget, IDisposable
+	internal class ViewControllerProxy : TreeListNode<ViewControllerProxy>, IViewControllerContext, IPresentContext, IDismissContext, IAsyncPresentable, IPresentableEvents, ICommandTarget, IDisposable
 	{
 		#region data
 
-		private readonly IAppStateService _stateManager;
-		private readonly IViewFactory _viewFactory;
+		private enum State
+		{
+			Initialized,
+			Presented,
+			Active,
+			Dismissed,
+			Disposed
+		}
+
+		private readonly PresentService _mvcService;
 		private readonly IServiceProvider _serviceProvider;
 		private readonly IDisposable _scope;
-		private readonly IAppState _parentState;
-		private readonly IViewController _parentController;
 		private readonly IViewController _controller;
-		private readonly PresentArgs _args;
+		private readonly PresentOptions _presentOptions;
+		private readonly string _name;
 
-		private bool _disposed;
+		private State _state;
 
 		#endregion
 
@@ -38,19 +45,17 @@ namespace UnityFx.AppStates
 
 		public IViewController Controller => _controller;
 
-		public ViewControllerProxy(AppStateService stateManager, AppState parentState, IViewController parentController, Type controllerType, PresentArgs args)
+		public ViewControllerProxy(PresentService stateManager, ViewControllerProxy parent, Type controllerType, PresentArgs args)
+			: base(parent)
 		{
 			Debug.Assert(stateManager != null);
-			Debug.Assert(parentState != null);
 			Debug.Assert(controllerType != null);
 			Debug.Assert(args != null);
 
-			_stateManager = stateManager;
-			_serviceProvider = parentState;
-			_viewFactory = stateManager.ViewFactory;
-			_parentState = parentState;
-			_parentController = parentController;
-			_args = args;
+			_mvcService = stateManager;
+			_serviceProvider = stateManager.ServiceProvider;
+			_presentOptions = args.Options;
+			_name = Utility.GetControllerTypeId(controllerType);
 
 			// Controller should be created after the proxy has been initialized.
 			try
@@ -58,11 +63,11 @@ namespace UnityFx.AppStates
 				if (_serviceProvider.GetService(typeof(IViewControllerFactory)) is IViewControllerFactory controllerFactory)
 				{
 					_scope = controllerFactory.CreateControllerScope(ref _serviceProvider);
-					_controller = controllerFactory.CreateController(controllerType, this);
+					_controller = controllerFactory.CreateController(controllerType, this, args);
 				}
 				else
 				{
-					_controller = (IViewController)Utility.CreateInstance(_serviceProvider, controllerType, this);
+					_controller = (IViewController)ActivatorUtilities.CreateInstance(_serviceProvider, controllerType, this, args);
 				}
 			}
 			catch
@@ -72,58 +77,58 @@ namespace UnityFx.AppStates
 			}
 		}
 
+		internal void DismissChildControllers()
+		{
+			var children = GetChildControllers();
+
+			if (children != null)
+			{
+				foreach (var controller in children)
+				{
+					controller.Dispose();
+				}
+			}
+		}
+
 		#endregion
 
 		#region IViewControllerContext
 
-		public PresentArgs PresentArgs => _args;
+		public string Name => _name;
 
-		public IServiceProvider ServiceProvider => _serviceProvider;
+		public bool IsActive => _state == State.Active;
 
-		public IAppState ParentState => _parentState;
-
-		public IViewController ParentController => _parentController;
-
-		public IAsyncOperation<IView> LoadViewAsync()
-		{
-			Debug.Assert(!_disposed);
-
-			var resourceId = Utility.GetViewResourceId(_controller.GetType());
-			var options = Utility.GetViewOptions(_controller.GetType());
-			var insertAfter = _parentState.Prev?.Controller.View;
-
-			return _viewFactory.LoadViewAsync(_controller.Name, resourceId, options, insertAfter);
-		}
+		public bool IsModal => (_presentOptions & PresentOptions.Modal) != 0;
 
 		public IAsyncOperation<IViewController> PresentAsync(Type controllerType, PresentArgs args)
 		{
-			Debug.Assert(!_disposed);
-			return _parentState.PresentAsync(controllerType, args);
+			Debug.Assert(_state == State.Presented || _state == State.Active);
+			return _mvcService.PresentAsync(this, controllerType, args);
 		}
 
 		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IViewController
 		{
-			Debug.Assert(!_disposed);
-			return _parentState.PresentAsync<TController>(args);
+			Debug.Assert(_state == State.Presented || _state == State.Active);
+			return _mvcService.PresentAsync<TController>(this, args);
 		}
 
 		public IAsyncOperation DismissAsync()
 		{
-			Debug.Assert(!_disposed);
-			return _parentState.DismissAsync();
+			Debug.Assert(_state == State.Presented || _state == State.Active);
+			return _mvcService.DismissAsync(this);
 		}
 
 		#endregion
 
 		#region IPresentContext
 
-		public IAppState PrevState => null;
+		public IViewController PrevController => null;
 
 		#endregion
 
 		#region IDismissContext
 
-		public IAppState NextState => null;
+		public IViewController NextController => null;
 
 		#endregion
 
@@ -132,9 +137,9 @@ namespace UnityFx.AppStates
 		public IAsyncOperation PresentAsync(IPresentContext presentContext)
 		{
 			Debug.Assert(presentContext == null);
-			Debug.Assert(!_disposed);
+			Debug.Assert(_state == State.Initialized);
 
-			if (_controller is IPresentable presentable)
+			if (_controller is IAsyncPresentable presentable)
 			{
 				// Make sure the method never returns null.
 				var op = presentable.PresentAsync(this);
@@ -147,9 +152,9 @@ namespace UnityFx.AppStates
 		public IAsyncOperation DismissAsync(IDismissContext dismissContext)
 		{
 			Debug.Assert(dismissContext == null);
-			Debug.Assert(!_disposed);
+			Debug.Assert(_state == State.Presented);
 
-			if (_controller is IPresentable presentable)
+			if (_controller is IAsyncPresentable presentable)
 			{
 				// Make sure the method never returns null.
 				var op = presentable.DismissAsync(this);
@@ -165,7 +170,10 @@ namespace UnityFx.AppStates
 
 		public void OnPresent()
 		{
-			Debug.Assert(!_disposed);
+			Debug.Assert(_state == State.Initialized);
+
+			_mvcService.TraceEvent(TraceEventType.Verbose, "Present " + _name);
+			_state = State.Presented;
 
 			if (_controller is IPresentableEvents controllerEvents)
 			{
@@ -175,7 +183,10 @@ namespace UnityFx.AppStates
 
 		public void OnActivate()
 		{
-			Debug.Assert(!_disposed);
+			Debug.Assert(_state == State.Presented);
+
+			_mvcService.TraceEvent(TraceEventType.Verbose, "Activate " + _name);
+			_state = State.Active;
 
 			if (_controller is IPresentableEvents controllerEvents)
 			{
@@ -185,21 +196,37 @@ namespace UnityFx.AppStates
 
 		public void OnDeactivate()
 		{
-			Debug.Assert(!_disposed);
+			Debug.Assert(_state == State.Active);
 
-			if (_controller is IPresentableEvents controllerEvents)
+			try
 			{
-				controllerEvents.OnDeactivate();
+				if (_controller is IPresentableEvents controllerEvents)
+				{
+					controllerEvents.OnDeactivate();
+				}
+			}
+			finally
+			{
+				_mvcService.TraceEvent(TraceEventType.Verbose, "Deactivate " + _name);
+				_state = State.Presented;
 			}
 		}
 
 		public void OnDismiss()
 		{
-			Debug.Assert(!_disposed);
+			Debug.Assert(_state == State.Presented);
 
-			if (_controller is IPresentableEvents controllerEvents)
+			try
 			{
-				controllerEvents.OnDismiss();
+				if (_controller is IPresentableEvents controllerEvents)
+				{
+					controllerEvents.OnDismiss();
+				}
+			}
+			finally
+			{
+				_mvcService.TraceEvent(TraceEventType.Verbose, "Dismiss " + _name);
+				_state = State.Dismissed;
 			}
 		}
 
@@ -209,7 +236,7 @@ namespace UnityFx.AppStates
 
 		public bool InvokeCommand(string commandName, object args)
 		{
-			Debug.Assert(!_disposed);
+			Debug.Assert(_state == State.Presented || _state == State.Active);
 
 			if (_controller is ICommandTarget cmdTarget)
 			{
@@ -223,13 +250,27 @@ namespace UnityFx.AppStates
 
 		#region ISynchronizeInvoke
 
-		public bool InvokeRequired => _stateManager.InvokeRequired;
+		public bool InvokeRequired => _mvcService.InvokeRequired;
 
-		public IAsyncResult BeginInvoke(Delegate method, object[] args) => _stateManager.BeginInvoke(method, args);
+		public IAsyncResult BeginInvoke(Delegate method, object[] args) => _mvcService.BeginInvoke(method, args);
 
-		public object EndInvoke(IAsyncResult result) => _stateManager.EndInvoke(result);
+		public object EndInvoke(IAsyncResult result) => _mvcService.EndInvoke(result);
 
-		public object Invoke(Delegate method, object[] args) => _stateManager.Invoke(method, args);
+		public object Invoke(Delegate method, object[] args) => _mvcService.Invoke(method, args);
+
+		#endregion
+
+		#region IServiceProvider
+
+		public object GetService(Type serviceType)
+		{
+			if (serviceType == typeof(IViewControllerContext))
+			{
+				return this;
+			}
+
+			return _serviceProvider.GetService(serviceType);
+		}
 
 		#endregion
 
@@ -237,9 +278,14 @@ namespace UnityFx.AppStates
 
 		public void Dispose()
 		{
-			if (!_disposed)
+			if (_state != State.Disposed)
 			{
-				_disposed = true;
+				if (_state == State.Presented)
+				{
+					OnDismiss();
+				}
+
+				_state = State.Disposed;
 
 				try
 				{
@@ -250,9 +296,37 @@ namespace UnityFx.AppStates
 				}
 				finally
 				{
+					_mvcService.RemoveController(this);
 					_scope?.Dispose();
 				}
 			}
+		}
+
+		#endregion
+
+		#region implementation
+
+		private Stack<ViewControllerProxy> GetChildControllers()
+		{
+			var result = default(Stack<ViewControllerProxy>);
+			var nextState = Next;
+
+			while (nextState != null)
+			{
+				if (nextState.Parent == this)
+				{
+					if (result == null)
+					{
+						result = new Stack<ViewControllerProxy>();
+					}
+
+					result.Push(nextState);
+				}
+
+				nextState = nextState.Next;
+			}
+
+			return result;
 		}
 
 		#endregion

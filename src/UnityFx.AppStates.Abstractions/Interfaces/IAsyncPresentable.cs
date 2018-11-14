@@ -4,14 +4,14 @@
 using System;
 using UnityFx.Async;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// A presentable object (i.e. object that supports asynchronous present operation).
 	/// </summary>
 	/// <seealso cref="IPresenter"/>
 	/// <seealso cref="IPresentableEvents"/>
-	public interface IPresentable
+	public interface IAsyncPresentable
 	{
 		/// <summary>
 		/// Performs any asynchronous actions needed to present this object. The method is invoked by the system.

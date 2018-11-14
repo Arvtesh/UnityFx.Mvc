@@ -4,12 +4,12 @@
 using System;
 using System.Diagnostics;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Seetings of a <see cref="IAppStateService"/> instance.
+	/// Seetings of a <see cref="IPresentService"/> instance.
 	/// </summary>
-	public interface IAppStateServiceSettings
+	public interface IPresentServiceSettings
 	{
 		/// <summary>
 		/// Gets or sets trace switch used by the <see cref="TraceSource"/> instance.
@@ -20,10 +20,5 @@ namespace UnityFx.AppStates
 		/// Gets a collection of trace listeners attached to the <see cref="TraceSource"/> used for logging.
 		/// </summary>
 		TraceListenerCollection TraceListeners { get; }
-
-		/// <summary>
-		/// Gets or sets maximum allowed number of simultanous stack operations. Default value is 0 (no limits).
-		/// </summary>
-		int MaxNumberOfPendingOperations { get; set; }
 	}
 }

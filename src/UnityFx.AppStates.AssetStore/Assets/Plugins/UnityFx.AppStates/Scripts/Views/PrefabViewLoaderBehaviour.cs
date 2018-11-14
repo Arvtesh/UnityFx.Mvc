@@ -6,7 +6,7 @@ using System.Collections;
 using UnityEngine;
 using UnityFx.Async;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// Implementation of <see cref="IViewLoader"/> that loads views from <see cref="Resources"/>.

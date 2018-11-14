@@ -4,14 +4,13 @@
 using System;
 using UnityFx.Async;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// An object capable of presenting view controllers.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
-	/// <seealso cref="IAppState"/>
-	/// <seealso cref="IAppStateService"/>
+	/// <seealso cref="IPresentService"/>
 	public interface IPresenter
 	{
 		/// <summary>

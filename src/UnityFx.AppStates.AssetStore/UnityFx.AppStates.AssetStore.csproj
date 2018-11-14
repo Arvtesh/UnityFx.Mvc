@@ -31,7 +31,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta009" PrivateAssets="All" />
-		<PackageReference Include="UnityFx.Async" Version="0.9.7" />
+		<PackageReference Include="UnityFx.Async" Version="0.9.8" />
 		<PackageReference Include="UnityFx.DependencyInjection" Version="0.2.0" />
 	</ItemGroup>
 

@@ -6,12 +6,12 @@ using System.ComponentModel;
 using UnityEngine;
 using UnityFx.Async;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// A view manager.
 	/// </summary>
-	public abstract class ViewManagerBehaviour : ContainerBehaviour, IViewFactory, IServiceProvider
+	public abstract class ViewManagerBehaviour : ContainerBehaviour, IServiceProvider
 	{
 		#region data
 
@@ -134,50 +134,6 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region IViewFactory
-
-		/// <summary>
-		/// Asynchronously loads the specified view.
-		/// </summary>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="resourceId"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the container is disposed.</exception>
-		public IAsyncOperation<IView> LoadViewAsync(string name, string resourceId, ViewOptions options, IView insertAfter)
-		{
-			ThrowIfDisposed();
-
-			if (name == null)
-			{
-				throw new ArgumentNullException("name");
-			}
-
-			if (resourceId == null)
-			{
-				throw new ArgumentNullException("viewId");
-			}
-
-			var insertAfterBehaviour = insertAfter as ViewBehaviour;
-
-			if (insertAfterBehaviour)
-			{
-				var insertAfterParent = insertAfterBehaviour.transform.parent;
-
-				if (insertAfterParent && insertAfterParent.parent == transform)
-				{
-					return LoadViewInternal(name, resourceId, insertAfterParent.GetSiblingIndex() + 1);
-				}
-				else
-				{
-					return LoadViewInternal(name, resourceId, 0);
-				}
-			}
-			else
-			{
-				return LoadViewInternal(name, resourceId, 0);
-			}
-		}
-
-		#endregion
-
 		#region IServiceProvider
 
 		/// <summary>
@@ -185,11 +141,7 @@ namespace UnityFx.AppStates
 		/// </summary>
 		public override object GetService(Type serviceType)
 		{
-			if (serviceType == typeof(IViewFactory))
-			{
-				return this;
-			}
-			else if (serviceType == typeof(IViewLoader))
+			if (serviceType == typeof(IViewLoader))
 			{
 				return _viewLoader;
 			}

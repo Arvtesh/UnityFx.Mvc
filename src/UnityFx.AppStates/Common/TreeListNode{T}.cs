@@ -6,20 +6,18 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// A generic node of linked list.
 	/// </summary>
 	/// <typeparam name="T">Type of the node.</typeparam>
 	/// <seealso cref="TreeListCollection{T}"/>
-	public class TreeListNode<T> : ITreeListNode<T>, ITreeListNodeAccess<T> where T : class, ITreeListNode<T>
+	internal class TreeListNode<T> where T : TreeListNode<T>
 	{
 		#region data
 
-		private readonly T _parentNode;
-		private T _next;
-		private T _prev;
+		private readonly T _parent;
 
 		#endregion
 
@@ -35,45 +33,25 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TreeListNode{T}"/> class.
 		/// </summary>
-		protected TreeListNode(T parentNode)
+		protected TreeListNode(T parent)
 		{
-			_parentNode = parentNode;
+			_parent = parent;
 		}
-
-		#endregion
-
-		#region ITreeListNode
 
 		/// <summary>
 		/// Gets parent node.
 		/// </summary>
-		public T Parent => _parentNode;
+		public T Parent => _parent;
 
 		/// <summary>
-		/// Gets previous sibling node.
+		/// Gets or sets previous sibling node.
 		/// </summary>
-		public T Prev => _prev;
+		public T Prev { get; set; }
 
 		/// <summary>
-		/// Gets next sibling node.
+		/// Gets or sets next sibling node.
 		/// </summary>
-		public T Next => _next;
-
-		#endregion
-
-		#region ITreeListNodeAccess
-
-		/// <inheritdoc/>
-		void ITreeListNodeAccess<T>.SetNext(T next)
-		{
-			_next = next;
-		}
-
-		/// <inheritdoc/>
-		void ITreeListNodeAccess<T>.SetPrev(T prev)
-		{
-			_prev = prev;
-		}
+		public T Next { get; set; }
 
 		#endregion
 	}

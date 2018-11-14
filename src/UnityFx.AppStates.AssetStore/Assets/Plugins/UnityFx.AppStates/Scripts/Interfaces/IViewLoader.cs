@@ -5,7 +5,7 @@ using System;
 using UnityEngine;
 using UnityFx.Async;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// A factory of <see cref="IView"/> instances.

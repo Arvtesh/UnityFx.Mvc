@@ -7,20 +7,20 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Extensions for <see cref="ITreeListNode{T}"/> and <see cref="ITreeListCollection{T}"/>.
+	/// Extensions for <see cref="TreeListNode{T}"/> and <see cref="TreeListCollection{T}"/>.
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
-	public static class TreeListExtensions
+	internal static class TreeListExtensions
 	{
-		#region ITreeListNode
+		#region TreeListNode
 
 		/// <summary>
 		/// Gets the node children.
 		/// </summary>
-		public static IEnumerable<T> GetChildren<T>(this T node) where T : class, ITreeListNode<T>
+		public static IEnumerable<T> GetChildren<T>(this T node) where T : TreeListNode<T>
 		{
 			return new ChildEnumerable<T>(node, false);
 		}
@@ -28,7 +28,7 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the node children recursively.
 		/// </summary>
-		public static IEnumerable<T> GetChildrenRecursive<T>(this T node) where T : class, ITreeListNode<T>
+		public static IEnumerable<T> GetChildrenRecursive<T>(this T node) where T : TreeListNode<T>
 		{
 			return new ChildEnumerable<T>(node, true);
 		}
@@ -39,7 +39,7 @@ namespace UnityFx.AppStates
 		/// <param name="node">The owner node.</param>
 		/// <param name="other">The node in question.</param>
 		/// <returns>Returns <see langword="true"/> if the specified node is child of this one; <see langword="false"/> otherwise.</returns>
-		public static bool IsChildOf<T>(this T node, T other) where T : class, ITreeListNode<T>
+		public static bool IsChildOf<T>(this T node, T other) where T : TreeListNode<T>
 		{
 			if (other != null)
 			{
@@ -62,7 +62,7 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private class ChildEnumerable<T> : IEnumerable<T> where T : class, ITreeListNode<T>
+		private class ChildEnumerable<T> : IEnumerable<T> where T : TreeListNode<T>
 		{
 			private readonly T _parent;
 			private readonly bool _recursive;

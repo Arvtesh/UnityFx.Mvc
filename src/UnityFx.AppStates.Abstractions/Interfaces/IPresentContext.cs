@@ -3,19 +3,19 @@
 
 using System;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// Defines context data for a present operation.
 	/// </summary>
-	/// <seealso cref="IPresentable"/>
+	/// <seealso cref="IAsyncPresentable"/>
 	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IDismissContext"/>
 	public interface IPresentContext
 	{
 		/// <summary>
-		/// Gets a state that was active before the present operation.
+		/// Gets a controller that was active before the present operation.
 		/// </summary>
-		IAppState PrevState { get; }
+		IViewController PrevController { get; }
 	}
 }

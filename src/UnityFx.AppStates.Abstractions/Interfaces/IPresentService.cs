@@ -2,16 +2,16 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// A generic application state service.
+	/// A generic presenter service.
 	/// </summary>
-	/// <seealso cref="IAppState"/>
-	public interface IAppStateService : IPresenter, ISynchronizeInvoke, IDisposable
+	/// <seealso cref="IPresenter"/>
+	/// <seealso cref="IViewController"/>
+	public interface IPresentService : IPresenter, ICommandTarget, ISynchronizeInvoke, IDisposable
 	{
 		/// <summary>
 		/// Raised when a new present operation is initiated.
@@ -36,17 +36,17 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the service settings.
 		/// </summary>
-		IAppStateServiceSettings Settings { get; }
+		IPresentServiceSettings Settings { get; }
 
 		/// <summary>
-		/// Gets the child states.
+		/// Gets service provider used to resolve controller dependencies.
 		/// </summary>
-		IAppStateCollection States { get; }
+		IServiceProvider ServiceProvider { get; }
 
 		/// <summary>
-		/// Gets active state (or <see langword="null"/>).
+		/// Gets an active <see cref="IViewController"/> (or <see langword="null"/>).
 		/// </summary>
-		IAppState ActiveState { get; }
+		IViewController ActiveController { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether thare are any pending operations.

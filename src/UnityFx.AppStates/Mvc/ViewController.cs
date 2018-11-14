@@ -7,22 +7,26 @@ using System.ComponentModel;
 using System.Diagnostics;
 using UnityFx.Async;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// A generic view controller. It is recommended to use this class as base for all other controllers.
 	/// Note that minimal controller implementation should implement <see cref="IViewController"/>.
 	/// </summary>
 	/// <seealso cref="ViewController{TView}"/>
-	public abstract class ViewController : IViewController, IPresentable, IPresentableEvents, IPresenter, ICommandTarget, ISynchronizeInvoke, IDisposable
+	public abstract class ViewController : IViewController, IPresentableEvents, IPresenter, ICommandTarget
 	{
 		#region data
 
 		private readonly IViewControllerContext _context;
-		private readonly string _name;
 
+		private ViewOptions _viewOptions;
 		private IView _view;
+
 		private IAsyncOperation _dismissOp;
+
+		private bool _presented;
+		private bool _active;
 		private bool _disposed;
 
 		#endregion
@@ -30,24 +34,31 @@ namespace UnityFx.AppStates
 		#region interface
 
 		/// <summary>
+		/// Defines view-related flags.
+		/// </summary>
+		[Flags]
+		public enum ViewOptions
+		{
+			/// <summary>
+			/// No options.
+			/// </summary>
+			None = 0,
+
+			/// <summary>
+			/// If set, the view managed by the controller is not disposed.
+			/// </summary>
+			DoNotDispose = 1
+		}
+
+		/// <summary>
 		/// Enumerates basic controller comaands.
 		/// </summary>
 		public abstract class Commands
 		{
 			/// <summary>
-			/// Name of the CLOSE command.
-			/// </summary>
-			public const string Close = "Close";
-
-			/// <summary>
 			/// Name of the OK command.
 			/// </summary>
 			public const string Ok = "Ok";
-
-			/// <summary>
-			/// Name of the APPLY command.
-			/// </summary>
-			public const string Apply = "Apply";
 
 			/// <summary>
 			/// Name of the CANCEL command.
@@ -60,6 +71,11 @@ namespace UnityFx.AppStates
 			public const string Back = "Back";
 
 			/// <summary>
+			/// Name of the APPLY command.
+			/// </summary>
+			public const string Apply = "Apply";
+
+			/// <summary>
 			/// Name of the NEXT command.
 			/// </summary>
 			public const string Next = "Next";
@@ -68,27 +84,97 @@ namespace UnityFx.AppStates
 			/// Name of the PREV command.
 			/// </summary>
 			public const string Prev = "Prev";
+
+			/// <summary>
+			/// Name of the NEW command.
+			/// </summary>
+			public const string New = "New";
+
+			/// <summary>
+			/// Name of the OPEN command.
+			/// </summary>
+			public const string Open = "Open";
+
+			/// <summary>
+			/// Name of the CLOSE command.
+			/// </summary>
+			public const string Close = "Close";
+
+			/// <summary>
+			/// Name of the SAVE command.
+			/// </summary>
+			public const string Save = "Save";
+
+			/// <summary>
+			/// Name of the EXIT command.
+			/// </summary>
+			public const string Exit = "Exit";
+
+			/// <summary>
+			/// Name of the ADD command.
+			/// </summary>
+			public const string Add = "Add";
+
+			/// <summary>
+			/// Name of the REMOVE command.
+			/// </summary>
+			public const string Remove = "Remove";
+
+			/// <summary>
+			/// Name of the EDIT command.
+			/// </summary>
+			public const string Edit = "Edit";
+
+			/// <summary>
+			/// Name of the HELP command.
+			/// </summary>
+			public const string Help = "Help";
+
+			/// <summary>
+			/// Name of the COPY command.
+			/// </summary>
+			public const string Copy = "Copy";
+
+			/// <summary>
+			/// Name of the CUT command.
+			/// </summary>
+			public const string Cut = "Cut";
+
+			/// <summary>
+			/// Name of the PASTE command.
+			/// </summary>
+			public const string Paste = "Paste";
+
+			/// <summary>
+			/// Name of the DUPLICATE command.
+			/// </summary>
+			public const string Duplicate = "Duplicate";
+
+			/// <summary>
+			/// Name of the DELETE command.
+			/// </summary>
+			public const string Delete = "Delete";
+
+			/// <summary>
+			/// Name of the UNDO command.
+			/// </summary>
+			public const string Undo = "Undo";
+
+			/// <summary>
+			/// Name of the REDO command.
+			/// </summary>
+			public const string Redo = "Redo";
 		}
+
+		/// <summary>
+		/// Gets a value indicating whether the controller is presented.
+		/// </summary>
+		protected bool IsPresented => _presented;
 
 		/// <summary>
 		/// Gets a value indicating whether the controller is active (i.e. can accept input).
 		/// </summary>
-		protected bool IsActive => _context.ParentState.IsActive;
-
-		/// <summary>
-		/// Gets the parent state.
-		/// </summary>
-		protected IAppState ParentState => _context.ParentState;
-
-		/// <summary>
-		/// Gets the controller creation arguments.
-		/// </summary>
-		protected PresentArgs Args => _context.PresentArgs;
-
-		/// <summary>
-		/// Gets a value indicating whether view is loaded.
-		/// </summary>
-		protected bool IsViewLoaded => _view != null;
+		protected bool IsActive => _active;
 
 		/// <summary>
 		/// Gets a value indicating whether the controller is disposed.
@@ -98,11 +184,52 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ViewController"/> class.
 		/// </summary>
-		/// <param name="context">Context data for the controller instance.</param>
+		/// <param name="context">The controller context.</param>
+		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="context"/> is <see langword="null"/>.</exception>
 		protected ViewController(IViewControllerContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
-			_name = Utility.GetControllerTypeId(GetType());
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ViewController"/> class.
+		/// </summary>
+		/// <param name="context">The controller context.</param>
+		/// <param name="view">A view managed by the controller.</param>
+		/// <exception cref="ArgumentNullException">Thrown if the either <paramref name="context"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
+		protected ViewController(IViewControllerContext context, IView view)
+		{
+			_context = context ?? throw new ArgumentNullException(nameof(context));
+			_view = view ?? throw new ArgumentNullException(nameof(view));
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ViewController"/> class.
+		/// </summary>
+		/// <param name="context">The controller context.</param>
+		/// <param name="view">A view managed by the controller.</param>
+		/// <param name="viewOptions">View-related flags.</param>
+		/// <exception cref="ArgumentNullException">Thrown if the either <paramref name="context"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
+		protected ViewController(IViewControllerContext context, IView view, ViewOptions viewOptions)
+		{
+			_context = context ?? throw new ArgumentNullException(nameof(context));
+			_view = view ?? throw new ArgumentNullException(nameof(view));
+			_viewOptions = viewOptions;
+		}
+
+		/// <summary>
+		/// Sets the view value.
+		/// </summary>
+		/// <param name="view">The view reference to set.</param>
+		/// <param name="viewOptions">View-related flags.</param>
+		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="view"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
+		protected void SetView(IView view, ViewOptions viewOptions)
+		{
+			ThrowIfDisposed();
+
+			_view = view ?? throw new ArgumentNullException(nameof(view));
+			_viewOptions = viewOptions;
 		}
 
 		/// <summary>
@@ -114,37 +241,8 @@ namespace UnityFx.AppStates
 		{
 			if (_disposed)
 			{
-				throw new ObjectDisposedException(_name);
+				throw new ObjectDisposedException(_context.Name);
 			}
-		}
-
-		/// <summary>
-		/// Performs any asynchronous actions needed to present this object.
-		/// </summary>
-		/// <param name="presentContext">Context data provided by the system.</param>
-		/// <returns>Returns an object that can be used to track the operation state.</returns>
-		/// <seealso cref="DismissAsync(IDismissContext)"/>
-		protected virtual IAsyncOperation PresentAsync(IPresentContext presentContext)
-		{
-			return _context.LoadViewAsync().ContinueWith(OnViewLoadedInternal, this, AsyncContinuationOptions.OnlyOnRanToCompletion);
-		}
-
-		/// <summary>
-		/// Performs any asynchronous actions needed to dismiss this object.
-		/// </summary>
-		/// <param name="dismissContext">Context data provided by the system.</param>
-		/// <returns>Returns an object that can be used to track the operation state.</returns>
-		/// <seealso cref="PresentAsync(IPresentContext)"/>
-		protected virtual IAsyncOperation DismissAsync(IDismissContext dismissContext)
-		{
-			return AsyncResult.CompletedOperation;
-		}
-
-		/// <summary>
-		/// Called when the view is loaded. Default implementation does nothing.
-		/// </summary>
-		protected virtual void OnViewLoaded()
-		{
 		}
 
 		/// <summary>
@@ -220,7 +318,10 @@ namespace UnityFx.AppStates
 					}
 					finally
 					{
-						_view?.Dispose();
+						if ((_viewOptions & ViewOptions.DoNotDispose) == 0)
+						{
+							_view?.Dispose();
+						}
 					}
 				}
 			}
@@ -233,47 +334,20 @@ namespace UnityFx.AppStates
 		/// <summary>
 		/// Gets the controller name.
 		/// </summary>
-		public string Name => _name;
+		public string Name => _context.Name;
+
+		/// <summary>
+		/// Gets a value indicating whether the <see cref="View"/> can be safely used.
+		/// </summary>
+		/// <seealso cref="View"/>
+		public bool IsViewLoaded => _view != null;
 
 		/// <summary>
 		/// Gets a view managed by the controller.
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Thrown if the view is not initialized.</exception>
-		public IView View
-		{
-			get
-			{
-				if (_view == null)
-				{
-					throw new InvalidOperationException();
-				}
-
-				return _view;
-			}
-		}
-
-		#endregion
-
-		#region IPresentable
-
-		/// <inheritdoc/>
-		IAsyncOperation IPresentable.PresentAsync(IPresentContext presentContext)
-		{
-			Debug.Assert(presentContext != null);
-			Debug.Assert(_view == null);
-			Debug.Assert(!_disposed);
-
-			return PresentAsync(presentContext);
-		}
-
-		/// <inheritdoc/>
-		IAsyncOperation IPresentable.DismissAsync(IDismissContext dismissContext)
-		{
-			Debug.Assert(dismissContext != null);
-			Debug.Assert(!_disposed);
-
-			return DismissAsync(dismissContext);
-		}
+		/// <seealso cref="IsViewLoaded"/>
+		public IView View => _view ?? throw new InvalidOperationException();
 
 		#endregion
 
@@ -283,20 +357,23 @@ namespace UnityFx.AppStates
 		void IPresentableEvents.OnPresent()
 		{
 			Debug.Assert(!_disposed);
-			Debug.Assert(_view != null);
-
-			_view.Command += OnCommand;
-			_view.Visible = true;
+			Debug.Assert(!_active);
+			Debug.Assert(!_presented);
 
 			OnPresent();
+
+			_view.Command += OnCommand;
+			_presented = true;
 		}
 
 		/// <inheritdoc/>
 		void IPresentableEvents.OnDismiss()
 		{
 			Debug.Assert(!_disposed);
-			Debug.Assert(_view != null);
+			Debug.Assert(!_active);
+			Debug.Assert(_presented);
 
+			_presented = false;
 			_view.Command -= OnCommand;
 
 			OnDismiss();
@@ -306,9 +383,11 @@ namespace UnityFx.AppStates
 		void IPresentableEvents.OnActivate()
 		{
 			Debug.Assert(!_disposed);
-			Debug.Assert(_view != null);
+			Debug.Assert(!_active);
+			Debug.Assert(_presented);
 
-			_view.Enabled = true;
+			_active = true;
+
 			OnActivate();
 		}
 
@@ -316,10 +395,17 @@ namespace UnityFx.AppStates
 		void IPresentableEvents.OnDeactivate()
 		{
 			Debug.Assert(!_disposed);
-			Debug.Assert(_view != null);
+			Debug.Assert(_active);
+			Debug.Assert(_presented);
 
-			_view.Enabled = false;
-			OnDeactivate();
+			try
+			{
+				OnDeactivate();
+			}
+			finally
+			{
+				_active = false;
+			}
 		}
 
 		#endregion
@@ -401,69 +487,6 @@ namespace UnityFx.AppStates
 
 		#endregion
 
-		#region ISynchronizeInvoke
-
-		/// <summary>
-		/// Gets a value indicating whether the caller must call <see cref="Invoke(Delegate, object[])"/> when calling the controller.
-		/// </summary>
-		/// <seealso cref="BeginInvoke(Delegate, object[])"/>
-		/// <seealso cref="EndInvoke(IAsyncResult)"/>
-		/// <seealso cref="Invoke(Delegate, object[])"/>
-		public bool InvokeRequired => _context.InvokeRequired;
-
-		/// <summary>
-		/// Asynchronously executes the delegate on the thread that created the controller.
-		/// </summary>
-		/// <param name="method">A delegate to a method that takes parameters of the same number and type that are contained in <paramref name="args"/>.</param>
-		/// <param name="args">An array of type <see cref="object"/> to pass as arguments to the given <paramref name="method"/>. This can be <see langword="null"/> if no arguments are needed.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="method"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
-		/// <returns>An <see cref="IAsyncResult"/> interface that represents the asynchronous operation started by calling the <paramref name="method"/>.</returns>
-		/// <seealso cref="EndInvoke(IAsyncResult)"/>
-		/// <seealso cref="Invoke(Delegate, object[])"/>
-		/// <seealso cref="InvokeRequired"/>
-		public IAsyncResult BeginInvoke(Delegate method, object[] args)
-		{
-			ThrowIfDisposed();
-			return _context.BeginInvoke(method, args);
-		}
-
-		/// <summary>
-		/// Waits until the process started by calling <see cref="BeginInvoke(Delegate, object[])"/> completes, and then returns the value generated by the process.
-		/// </summary>
-		/// <param name="result">An <see cref="IAsyncResult"/> interface that represents the asynchronous operation started by calling <see cref="BeginInvoke(Delegate, object[])"/>.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="result"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Thrown if the <paramref name="result"/> is not created with <see cref="BeginInvoke(Delegate, object[])"/>.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
-		/// <returns>An <see cref="object"/> that represents the return value generated by the asynchronous operation.</returns>
-		/// <seealso cref="BeginInvoke(Delegate, object[])"/>
-		/// <seealso cref="Invoke(Delegate, object[])"/>
-		/// <seealso cref="InvokeRequired"/>
-		public object EndInvoke(IAsyncResult result)
-		{
-			ThrowIfDisposed();
-			return _context.EndInvoke(result);
-		}
-
-		/// <summary>
-		/// Synchronously executes the delegate on the thread that created the controller and marshals the call to the creating thread.
-		/// </summary>
-		/// <param name="method">A delegate that contains a method to call, in the context of the thread for the controller.</param>
-		/// <param name="args">An array of type <see cref="object"/> that represents the arguments to pass to the given <paramref name="method"/>. This can be <see langword="null"/> if no arguments are needed.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="method"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
-		/// <returns>An <see cref="object"/> that represents the return value from the delegate being invoked, or <see langword="null"/> if the delegate has no return value.</returns>
-		/// <seealso cref="BeginInvoke(Delegate, object[])"/>
-		/// <seealso cref="EndInvoke(IAsyncResult)"/>
-		/// <seealso cref="InvokeRequired"/>
-		public object Invoke(Delegate method, object[] args)
-		{
-			ThrowIfDisposed();
-			return _context.Invoke(method, args);
-		}
-
-		#endregion
-
 		#region IDisposable
 
 		/// <summary>
@@ -483,27 +506,12 @@ namespace UnityFx.AppStates
 
 		#region implementation
 
-		private void SetView(IView view)
-		{
-			Debug.Assert(_view == null);
-			Debug.Assert(!_disposed);
-
-			_view = view ?? throw new ArgumentNullException(nameof(view));
-
-			OnViewLoaded();
-		}
-
 		private void OnCommand(object sender, CommandEventArgs e)
 		{
 			Debug.Assert(e != null);
 			Debug.Assert(!_disposed);
 
 			OnCommand(e);
-		}
-
-		private static void OnViewLoadedInternal(IAsyncOperation<IView> op, object userState)
-		{
-			((ViewController)userState).SetView(op.Result);
 		}
 
 		#endregion

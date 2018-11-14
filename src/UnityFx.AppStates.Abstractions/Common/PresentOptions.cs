@@ -3,7 +3,7 @@
 
 using System;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// Enumerates state controller push options.
@@ -19,19 +19,19 @@ namespace UnityFx.AppStates
 		None = 0,
 
 		/// <summary>
-		/// tt
+		/// Makes sure the present call return immediately after queueing the operation.
 		/// </summary>
-		Child = 1,
+		ExcecuteAsync = 1,
 
 		/// <summary>
-		/// If set the controller tries to reuse view of its parent controller/state.
+		/// Marks the controller as modal. Modal controllers do not forward unprocessed commands to controllers below them is the stack.
 		/// </summary>
-		ReuseParentView = 2,
+		Modal = 2,
 
 		/// <summary>
 		/// Presents a new state and dismisses the previous one.
 		/// </summary>
-		DismissCurrentState = 0x00001000,
+		DismissCurrentController = 0x00001000,
 
 		/// <summary>
 		/// Presents a new state and dismisses all other states.

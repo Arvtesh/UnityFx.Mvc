@@ -5,7 +5,7 @@ using System;
 using System.ComponentModel;
 using UnityEngine;
 
-namespace UnityFx.AppStates
+namespace UnityFx.Mvc
 {
 	/// <summary>
 	/// A <see cref="MonoBehaviour"/> that implements <see cref="IComponent"/>.
@@ -31,6 +31,14 @@ namespace UnityFx.AppStates
 			}
 
 			return name;
+		}
+
+		/// <summary>
+		/// Called when value of <see cref="Site"/> changes. Default implementation does nothing.
+		/// </summary>
+		/// <see cref="Site"/>
+		protected virtual void OnSiteChanged()
+		{
 		}
 
 		#endregion
@@ -69,7 +77,12 @@ namespace UnityFx.AppStates
 			}
 			set
 			{
-				_site = value;
+				// NOTE: This may be called during the object disposal (when IsDisposed is true), so do not call ThrowIfDisposed().
+				if (_site != value)
+				{
+					_site = value;
+					OnSiteChanged();
+				}
 			}
 		}
 
