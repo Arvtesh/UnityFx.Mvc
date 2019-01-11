@@ -1,5 +1,5 @@
 $scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
-$solutionPath = Join-Path $scriptPath "UnityFx.AppStates.sln"
+$solutionPath = Join-Path $scriptPath "UnityFx.Mvc.sln"
 $configuration = $args[0]
 $packagesPath = Join-Path $scriptPath "..\temp\BuildTools"
 $binPath = Join-Path $scriptPath "..\bin"
@@ -54,7 +54,7 @@ if ($LastExitCode -ne 0) {
 }
 
 # publish build results to .\Build\Bin
-$filesToPublish = (Join-Path $scriptPath (Join-Path "UnityFx.AppStates\bin" (Join-Path $configuration "\*")))
+$filesToPublish = (Join-Path $scriptPath (Join-Path "UnityFx.Mvc\bin" (Join-Path $configuration "\*")))
 Copy-Item -Path $filesToPublish -Destination $binPath -Force -Recurse
 
 # publish AssetStore package
@@ -63,19 +63,17 @@ function _PublishAssetStorePackage
 	param([string]$targetFramework)
 
 	$changelogPath = (Join-Path $scriptPath "..\CHANGELOG.md")
-	$readmePath = (Join-Path $scriptPath "UnityFx.AppStates\README.txt")
-	$filesToPublish = (Join-Path $scriptPath "UnityFx.AppStates.AssetStore\Assets\*")
+	$filesToPublish = (Join-Path $scriptPath "UnityFx.Mvc.AssetStore\Assets\*")
 	$binToPublish =(Join-Path $binPath (Join-Path $targetFramework "\*"))
 	$publishPath = (Join-Path $assetStorePath (Join-Path $targetFramework "Assets"))
-	$publishPath2 = (Join-Path $publishPath "Plugins\UnityFx.AppStates")
-	$publishBinPath = (Join-Path $publishPath "Plugins\UnityFx.AppStates\Bin")
+	$publishPath2 = (Join-Path $publishPath "Plugins\UnityFx.Mvc")
+	$publishBinPath = (Join-Path $publishPath "Plugins\UnityFx.Mvc\Bin")
 	$asyncPath = (Join-Path $publishBinPath "UnityFx.Async.dll")
 
 	New-Item $publishBinPath -ItemType Directory
 	Copy-Item -Path $filesToPublish -Destination $publishPath -Force -Recurse
 	Copy-Item -Path $binToPublish -Destination $publishBinPath -Force -Recurse
 	Copy-Item -Path $changelogPath -Destination $publishPath2 -Force
-	Copy-Item -Path $readmePath -Destination $publishPath2 -Force
 
 	if (Test-Path $asyncPath) {
 		Remove-Item -Path $asyncPath -Force

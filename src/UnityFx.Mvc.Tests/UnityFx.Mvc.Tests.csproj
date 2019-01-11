@@ -19,8 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UnityFx.AppStates.Abstractions\UnityFx.AppStates.Abstractions.csproj" />
-    <ProjectReference Include="..\UnityFx.AppStates\UnityFx.AppStates.csproj" />
+    <ProjectReference Include="..\UnityFx.Mvc.Abstractions\UnityFx.Mvc.Abstractions.csproj" />
+    <ProjectReference Include="..\UnityFx.Mvc\UnityFx.Mvc.csproj" />
   </ItemGroup>
 
 </Project>

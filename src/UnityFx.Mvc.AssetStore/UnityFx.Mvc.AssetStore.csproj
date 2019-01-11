@@ -2,11 +2,11 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net35;net46</TargetFrameworks>
-		<Description>Asset Store code for UnityFx.AppStates.</Description>
+		<Description>Asset Store code for UnityFx.Mvc.</Description>
 		<Company />
 		<Authors>Alexander Bogarsukov</Authors>
 		<Copyright>Alexander Bogarsukov</Copyright>
-		<RepositoryUrl>https://github.com/Arvtesh/UnityFx.AppStates</RepositoryUrl>
+		<RepositoryUrl>https://github.com/Arvtesh/UnityFx.Mvc</RepositoryUrl>
 		<RepositoryType>Git</RepositoryType>
 		<Version>0.7.0</Version>
 		<AssemblyVersion>0.7.0.0</AssemblyVersion>
@@ -40,7 +40,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\UnityFx.AppStates.Abstractions\UnityFx.AppStates.Abstractions.csproj" />
+	  <ProjectReference Include="..\UnityFx.Mvc.Abstractions\UnityFx.Mvc.Abstractions.csproj" />
 	</ItemGroup>
 
 </Project>

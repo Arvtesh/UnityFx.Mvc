@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.AppStates", "UnityFx.AppStates\UnityFx.AppStates.csproj", "{C7D875E0-B7DE-4F90-9931-2D879B1CE32E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.Mvc", "UnityFx.Mvc\UnityFx.Mvc.csproj", "{C7D875E0-B7DE-4F90-9931-2D879B1CE32E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.AppStates.Tests", "UnityFx.AppStates.Tests\UnityFx.AppStates.Tests.csproj", "{CB7C17FF-4B84-4457-A9FE-53CD7B23F751}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.Mvc.Tests", "UnityFx.Mvc.Tests\UnityFx.Mvc.Tests.csproj", "{CB7C17FF-4B84-4457-A9FE-53CD7B23F751}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.AppStates.AssetStore", "UnityFx.AppStates.AssetStore\UnityFx.AppStates.AssetStore.csproj", "{770CF159-0048-4A49-8EF9-A23541991EC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.Mvc.AssetStore", "UnityFx.Mvc.AssetStore\UnityFx.Mvc.AssetStore.csproj", "{770CF159-0048-4A49-8EF9-A23541991EC1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityFx.AppStates.Abstractions", "UnityFx.AppStates.Abstractions\UnityFx.AppStates.Abstractions.csproj", "{2A8BE919-0FD5-40BE-BD09-52F277D5001C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityFx.Mvc.Abstractions", "UnityFx.Mvc.Abstractions\UnityFx.Mvc.Abstractions.csproj", "{2A8BE919-0FD5-40BE-BD09-52F277D5001C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

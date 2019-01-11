@@ -21,11 +21,11 @@ build_script:
 
 artifacts:
   - path: .\bin\net35
-    name: UnityFx.AppStates-net35
+    name: UnityFx.Mvc-net35
   - path: .\bin\net46
-    name: UnityFx.AppStates-net46
+    name: UnityFx.Mvc-net46
   - path: .\bin\netstandard2.0
-    name: UnityFx.AppStates-netstandard2.0
+    name: UnityFx.Mvc-netstandard2.0
   - path: .\bin\*.nupkg
 
 dotnet_csproj:

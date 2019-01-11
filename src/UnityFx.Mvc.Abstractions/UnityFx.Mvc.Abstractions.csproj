@@ -2,14 +2,14 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net35;net46;netstandard2.0</TargetFrameworks>
-		<Description>Application states for Unity3d.</Description>
+		<Description>MVC framework for Unity3d.</Description>
 		<Company />
 		<Authors>Alexander Bogarsukov</Authors>
-		<PackageProjectUrl>https://github.com/Arvtesh/UnityFx.AppStates</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/Arvtesh/UnityFx.AppStates</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/Arvtesh/UnityFx.Mvc</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/Arvtesh/UnityFx.Mvc</RepositoryUrl>
 		<RepositoryType>Git</RepositoryType>
-		<PackageTags>Unity3d;Application;States;FSM;MVC</PackageTags>
-		<PackageLicenseUrl>https://github.com/Arvtesh/UnityFx.AppStates/blob/master/LICENSE.md</PackageLicenseUrl>
+		<PackageTags>Unity3d;Application;MVC</PackageTags>
+		<PackageLicenseUrl>https://github.com/Arvtesh/UnityFx.Mvc/blob/master/LICENSE.md</PackageLicenseUrl>
 		<PackageIconUrl></PackageIconUrl>
 		<Version>0.3.0</Version>
 		<AssemblyVersion>0.3.0.0</AssemblyVersion>
@@ -31,10 +31,6 @@
 
 	<ItemGroup>
 		<AdditionalFiles Include="../CodingConventions/Common/stylecop.json" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\UnityFx.AppStates.Abstractions\UnityFx.AppStates.Abstractions.csproj" />
 	</ItemGroup>
 
 </Project>

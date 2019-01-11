@@ -17,4 +17,4 @@ using System.Runtime.InteropServices;
 [assembly: CLSCompliant(true)]
 
 // Allow test assembly to use internal classes.
-[assembly: InternalsVisibleTo("UnityFx.AppStates.Tests")]
+[assembly: InternalsVisibleTo("UnityFx.Mvc.Tests")]
