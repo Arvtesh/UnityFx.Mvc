@@ -3,7 +3,6 @@
 
 using System;
 using System.ComponentModel;
-using UnityFx.Async;
 
 namespace UnityFx.Mvc
 {
@@ -12,7 +11,7 @@ namespace UnityFx.Mvc
 	/// It is here for the sake of testability/explicit dependencies for <see cref="IViewController"/> implementations.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
-	public interface IViewControllerContext : ISynchronizeInvoke, IServiceProvider
+	public interface IViewControllerContext : IPresenter, IServiceProvider
 	{
 		/// <summary>
 		/// Gets the controller name.
@@ -30,18 +29,8 @@ namespace UnityFx.Mvc
 		bool IsModal { get; }
 
 		/// <summary>
-		/// Presents a new controller of the specified type.
+		/// Dismisses the controller.
 		/// </summary>
-		IAsyncOperation<IViewController> PresentAsync(Type controllerType, PresentArgs args);
-
-		/// <summary>
-		/// Presents a new controller of the specified type.
-		/// </summary>
-		IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IViewController;
-
-		/// <summary>
-		/// Dismisses this controller.
-		/// </summary>
-		IAsyncOperation DismissAsync();
+		void Dismiss();
 	}
 }

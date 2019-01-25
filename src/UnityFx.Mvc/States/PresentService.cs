@@ -351,9 +351,10 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		internal IAsyncOperation<IViewController> PresentAsync(ViewControllerProxy parent, Type controllerType, PresentArgs args)
+		internal IPresentResult Present(ViewControllerProxy parent, Type controllerType, PresentArgs args)
 		{
 			Debug.Assert(args != null);
+
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
@@ -363,9 +364,10 @@ namespace UnityFx.Mvc
 			return result;
 		}
 
-		internal IAsyncOperation<T> PresentAsync<T>(ViewControllerProxy parent, PresentArgs args) where T : class, IViewController
+		internal IPresentResult<T> Present<T>(ViewControllerProxy parent, PresentArgs args) where T : class, IViewController
 		{
 			Debug.Assert(args != null);
+
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(typeof(T));
 
@@ -375,14 +377,13 @@ namespace UnityFx.Mvc
 			return result;
 		}
 
-		internal IAsyncOperation DismissAsync(ViewControllerProxy controller)
+		internal void Dismiss(ViewControllerProxy controller)
 		{
 			ThrowIfDisposed();
 
 			var result = new DismissOperation(this, controller, null);
 			OnDismissInitiated(controller.Controller, result);
 			QueueOperation(result, PresentOptions.None);
-			return result;
 		}
 
 		#endregion
@@ -447,37 +448,37 @@ namespace UnityFx.Mvc
 		#region IPresenter
 
 		/// <inheritdoc/>
-		public IAsyncOperation<IViewController> PresentAsync(Type controllerType)
+		public IPresentResult Present(Type controllerType)
 		{
-			return PresentAsync(null, controllerType, PresentArgs.Default);
+			return Present(null, controllerType, PresentArgs.Default);
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<IViewController> PresentAsync(Type controllerType, PresentArgs args)
+		public IPresentResult Present(Type controllerType, PresentArgs args)
 		{
 			if (args == null)
 			{
 				throw new ArgumentNullException(nameof(args));
 			}
 
-			return PresentAsync(null, controllerType, args);
+			return Present(null, controllerType, args);
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>() where TController : class, IViewController
+		public IPresentResult<TController> Present<TController>() where TController : class, IViewController
 		{
-			return PresentAsync<TController>(null, PresentArgs.Default);
+			return Present<TController>(null, PresentArgs.Default);
 		}
 
 		/// <inheritdoc/>
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IViewController
+		public IPresentResult<TController> Present<TController>(PresentArgs args) where TController : class, IViewController
 		{
 			if (args == null)
 			{
 				throw new ArgumentNullException(nameof(args));
 			}
 
-			return PresentAsync<TController>(null, args);
+			return Present<TController>(null, args);
 		}
 
 		#endregion

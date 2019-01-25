@@ -11,7 +11,7 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="IPresenter"/>
 	/// <seealso cref="IViewController"/>
-	public interface IPresentService : IPresenter, ICommandTarget, ISynchronizeInvoke, IDisposable
+	public interface IPresentService : IPresenter, ICommandTarget, IDisposable
 	{
 		/// <summary>
 		/// Raised when a new present operation is initiated.
@@ -32,11 +32,6 @@ namespace UnityFx.Mvc
 		/// Raised when a dismiss operation is completed (either successfully or not).
 		/// </summary>
 		event EventHandler<DismissCompletedEventArgs> DismissCompleted;
-
-		/// <summary>
-		/// Gets the service settings.
-		/// </summary>
-		IPresentServiceSettings Settings { get; }
 
 		/// <summary>
 		/// Gets service provider used to resolve controller dependencies.

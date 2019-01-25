@@ -9,7 +9,7 @@ using System.Text;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Arguments for <see cref="IPresenter.PresentAsync(Type, PresentArgs)"/>.
+	/// Arguments for <see cref="IPresenter.Present(Type, PresentArgs)"/>.
 	/// </summary>
 	public class PresentArgs
 	{

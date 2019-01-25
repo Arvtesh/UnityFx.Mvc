@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using UnityFx.Async;
 
 namespace UnityFx.Mvc
 {
@@ -22,8 +21,8 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		/// <seealso cref="PresentAsync(Type, PresentArgs)"/>
-		IAsyncOperation<IViewController> PresentAsync(Type controllerType);
+		/// <seealso cref="Present(Type, PresentArgs)"/>
+		IPresentResult Present(Type controllerType);
 
 		/// <summary>
 		/// Presents a controller of the specified type.
@@ -35,8 +34,8 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate state controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		/// <seealso cref="PresentAsync(Type)"/>
-		IAsyncOperation<IViewController> PresentAsync(Type controllerType, PresentArgs args);
+		/// <seealso cref="Present(Type)"/>
+		IPresentResult Present(Type controllerType, PresentArgs args);
 
 		/// <summary>
 		/// Presents a controller of the specified type.
@@ -44,8 +43,8 @@ namespace UnityFx.Mvc
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		/// <seealso cref="PresentAsync{TController}(PresentArgs)"/>
-		IAsyncOperation<TController> PresentAsync<TController>() where TController : class, IViewController;
+		/// <seealso cref="Present{TController}(PresentArgs)"/>
+		IPresentResult<TController> Present<TController>() where TController : class, IViewController;
 
 		/// <summary>
 		/// Presents a controller of the specified type.
@@ -55,7 +54,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="args"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		/// <seealso cref="PresentAsync{TController}()"/>
-		IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IViewController;
+		/// <seealso cref="Present{TController}()"/>
+		IPresentResult<TController> Present<TController>(PresentArgs args) where TController : class, IViewController;
 	}
 }

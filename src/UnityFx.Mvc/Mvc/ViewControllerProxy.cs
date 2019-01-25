@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using UnityFx.Async;
 
 namespace UnityFx.Mvc
 {
@@ -17,7 +16,7 @@ namespace UnityFx.Mvc
 	/// (via <see cref="IViewControllerContext"/> interface) and serves as a proxy between the controller and
 	/// <see cref="IPresentService"/> implementation.
 	/// </remarks>
-	internal class ViewControllerProxy : TreeListNode<ViewControllerProxy>, IViewControllerContext, IPresentContext, IDismissContext, IAsyncPresentable, IPresentableEvents, ICommandTarget, IDisposable
+	internal class ViewControllerProxy : TreeListNode<ViewControllerProxy>, IViewControllerContext, IPresentResult, IPresentableEvents, ICommandTarget, IDisposable
 	{
 		#region data
 
@@ -42,8 +41,6 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region interface
-
-		public IViewController Controller => _controller;
 
 		public ViewControllerProxy(PresentService stateManager, ViewControllerProxy parent, Type controllerType, PresentArgs args)
 			: base(parent)
@@ -100,69 +97,48 @@ namespace UnityFx.Mvc
 
 		public bool IsModal => (_presentOptions & PresentOptions.Modal) != 0;
 
-		public IAsyncOperation<IViewController> PresentAsync(Type controllerType, PresentArgs args)
+		public void Dismiss()
 		{
-			Debug.Assert(_state == State.Presented || _state == State.Active);
-			return _mvcService.PresentAsync(this, controllerType, args);
-		}
-
-		public IAsyncOperation<TController> PresentAsync<TController>(PresentArgs args) where TController : class, IViewController
-		{
-			Debug.Assert(_state == State.Presented || _state == State.Active);
-			return _mvcService.PresentAsync<TController>(this, args);
-		}
-
-		public IAsyncOperation DismissAsync()
-		{
-			Debug.Assert(_state == State.Presented || _state == State.Active);
-			return _mvcService.DismissAsync(this);
+			Dispose();
 		}
 
 		#endregion
 
-		#region IPresentContext
+		#region IPresenter
 
-		public IViewController PrevController => null;
+		/// <inheritdoc/>
+		public IPresentResult Present(Type controllerType)
+		{
+			Debug.Assert(_state != State.Disposed);
+			return _mvcService.Present(this, controllerType, PresentArgs.Default);
+		}
+
+		/// <inheritdoc/>
+		public IPresentResult Present(Type controllerType, PresentArgs args)
+		{
+			Debug.Assert(_state != State.Disposed);
+			return _mvcService.Present(this, controllerType, args);
+		}
+
+		/// <inheritdoc/>
+		public IPresentResult<TController> Present<TController>() where TController : class, IViewController
+		{
+			Debug.Assert(_state != State.Disposed);
+			return _mvcService.Present<TController>(this, PresentArgs.Default);
+		}
+
+		/// <inheritdoc/>
+		public IPresentResult<TController> Present<TController>(PresentArgs args) where TController : class, IViewController
+		{
+			Debug.Assert(_state != State.Disposed);
+			return _mvcService.Present<TController>(this, args);
+		}
 
 		#endregion
 
-		#region IDismissContext
+		#region IPresentResult
 
-		public IViewController NextController => null;
-
-		#endregion
-
-		#region IPresentable
-
-		public IAsyncOperation PresentAsync(IPresentContext presentContext)
-		{
-			Debug.Assert(presentContext == null);
-			Debug.Assert(_state == State.Initialized);
-
-			if (_controller is IAsyncPresentable presentable)
-			{
-				// Make sure the method never returns null.
-				var op = presentable.PresentAsync(this);
-				return op ?? AsyncResult.CompletedOperation;
-			}
-
-			return AsyncResult.CompletedOperation;
-		}
-
-		public IAsyncOperation DismissAsync(IDismissContext dismissContext)
-		{
-			Debug.Assert(dismissContext == null);
-			Debug.Assert(_state == State.Presented);
-
-			if (_controller is IAsyncPresentable presentable)
-			{
-				// Make sure the method never returns null.
-				var op = presentable.DismissAsync(this);
-				return op ?? AsyncResult.CompletedOperation;
-			}
-
-			return AsyncResult.CompletedOperation;
-		}
+		public IViewController Controller => _controller;
 
 		#endregion
 
@@ -248,18 +224,6 @@ namespace UnityFx.Mvc
 
 		#endregion
 
-		#region ISynchronizeInvoke
-
-		public bool InvokeRequired => _mvcService.InvokeRequired;
-
-		public IAsyncResult BeginInvoke(Delegate method, object[] args) => _mvcService.BeginInvoke(method, args);
-
-		public object EndInvoke(IAsyncResult result) => _mvcService.EndInvoke(result);
-
-		public object Invoke(Delegate method, object[] args) => _mvcService.Invoke(method, args);
-
-		#endregion
-
 		#region IServiceProvider
 
 		public object GetService(Type serviceType)
@@ -289,10 +253,7 @@ namespace UnityFx.Mvc
 
 				try
 				{
-					if (_controller is IDisposable d)
-					{
-						d.Dispose();
-					}
+					_controller.Dispose();
 				}
 				finally
 				{
