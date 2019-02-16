@@ -278,7 +278,7 @@ namespace UnityFx.Mvc
 		{
 			if (_state == StateId.Disposed)
 			{
-				throw new ObjectDisposedException(_context.Name);
+				throw new ObjectDisposedException(_context.ControllerTypeName);
 			}
 		}
 
@@ -346,32 +346,59 @@ namespace UnityFx.Mvc
 		#region IViewController
 
 		/// <summary>
-		/// Raised when <see cref="LoadViewAsync"/> is completed.
+		/// Raised when <see cref="LoadView"/> is completed.
 		/// </summary>
+		/// <seealso cref="View"/>
+		/// <seealso cref="LoadView"/>
 		public event EventHandler<AsyncCompletedEventArgs> LoadViewCompleted;
+
+		/// <summary>
+		/// Raised when <see cref="UnloadView"/> is completed.
+		/// </summary>
+		/// <seealso cref="View"/>
+		/// <seealso cref="UnloadView"/>
+		public event EventHandler<AsyncCompletedEventArgs> UnloadViewCompleted;
 
 		/// <summary>
 		/// Gets the controller name.
 		/// </summary>
-		public string Name => _context.Name;
+		public string Name => _context.ControllerTypeName;
+
+		/// <summary>
+		/// Gets a value indicating whether <see cref="View"/> is being loaded/unloaded.
+		/// </summary>
+		/// <seealso cref="View"/>
+		/// <seealso cref="LoadView"/>
+		public bool IsBusy => false;
 
 		/// <summary>
 		/// Gets a value indicating whether the <see cref="View"/> can be safely used.
 		/// </summary>
 		/// <seealso cref="View"/>
+		/// <seealso cref="LoadView"/>
 		public bool IsViewLoaded => _view != null;
 
 		/// <summary>
-		/// Gets a view managed by the controller.
+		/// Gets a view managed by the controller. Returns <see langword="null"/> if the view is not loaded.
 		/// </summary>
-		/// <exception cref="InvalidOperationException">Thrown if the view is not initialized.</exception>
 		/// <seealso cref="IsViewLoaded"/>
-		public IView View => _view ?? throw new InvalidOperationException();
+		/// <seealso cref="LoadView"/>
+		/// <seealso cref="UnloadView"/>
+		public IView View => _view;
 
 		/// <summary>
-		/// Initiates loading <see cref="View"/> if it is not loaded yet.
+		/// Loads <see cref="View"/>. If view is already loaded (or another load operation is already running) the method returns immediately.
 		/// </summary>
-		public void LoadViewAsync()
+		/// <remarks>
+		/// Implementation may decide to load views asynchronously. In this case the method just initiates the operation and returns.
+		/// Subscribe to <see cref="LoadViewCompleted"/> event to await the load results.
+		/// </remarks>
+		/// <exception cref="InvalidOperationException">Thrown if unload operation is pending.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
+		/// <seealso cref="View"/>
+		/// <seealso cref="LoadViewCompleted"/>
+		/// <seealso cref="UnloadView"/>
+		public void LoadView()
 		{
 			ThrowIfDisposed();
 
@@ -382,8 +409,15 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Unloads the view (if any).
+		/// Unloads the view. Does nothing is view is not loaded or another unload operation is already running. Cancels load operation (if any).
 		/// </summary>
+		/// <remarks>
+		/// Implementation may decide to unload views asynchronously. In this case the method just initiates the operation and returns.
+		/// Subscribe to <see cref="UnloadViewCompleted"/> event to await the unload results.
+		/// </remarks>
+		/// <seealso cref="View"/>
+		/// <seealso cref="UnloadViewCompleted"/>
+		/// <seealso cref="LoadView"/>
 		public void UnloadView()
 		{
 			if ((_viewOptions & ViewOptions.DoNotDispose) == 0)

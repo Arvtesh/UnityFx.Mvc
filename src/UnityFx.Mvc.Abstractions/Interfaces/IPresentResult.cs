@@ -8,6 +8,8 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// Result of a present operation.
 	/// </summary>
+	/// <seealso cref="IViewController"/>
+	/// <seealso cref="IPresenter"/>
 	public interface IPresentResult : IDisposable
 	{
 		/// <summary>

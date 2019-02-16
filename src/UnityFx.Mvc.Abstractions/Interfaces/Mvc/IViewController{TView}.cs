@@ -8,14 +8,20 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// A generic view controller.
 	/// </summary>
-	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IView"/>
+	/// <seealso cref="IPresenter"/>
+	/// <seealso cref="IPresentService"/>
+	/// <seealso cref="IViewControllerContext"/>
+	/// <seealso cref="IViewControllerFactory"/>
+	/// <seealso cref="IViewController"/>
 	public interface IViewController<TView> : IViewController where TView : class, IView
 	{
 		/// <summary>
-		/// Gets a view managed by the controller.
+		/// Gets a view managed by the controller. Returns <see langword="null"/> if the view is not loaded.
 		/// </summary>
-		/// <exception cref="InvalidOperationException">Thrown if the view is not initialized.</exception>
+		/// <remarks>
+		/// Implementation may decide to lazy-load its view on first access. In this case the property would never return <see langword="null"/>.
+		/// </remarks>
 		new TView View { get; }
 	}
 }

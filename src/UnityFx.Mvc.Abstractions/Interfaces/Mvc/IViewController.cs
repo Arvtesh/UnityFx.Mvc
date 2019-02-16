@@ -9,14 +9,33 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// A generic view controller.
 	/// </summary>
+	/// <remarks>
+	/// As the name states, main responsibility of a view controller is managing its view. While <see cref="View"/> can be loaded
+	/// and unloaded multiple times during the controller lifetime, the typical use-case is to load view at the controller constructor
+	/// and unload it when the constroller is disposed. Disposing a controller typically disposed the attached view.
+	/// </remarks>
 	/// <seealso cref="IView"/>
+	/// <seealso cref="IPresenter"/>
+	/// <seealso cref="IPresentService"/>
+	/// <seealso cref="IViewControllerContext"/>
+	/// <seealso cref="IViewControllerFactory"/>
+	/// <seealso cref="IViewController{TView}"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller"/>
 	public interface IViewController : ICommandTarget, IDisposable
 	{
 		/// <summary>
-		/// Raised when <see cref="LoadViewAsync"/> is completed.
+		/// Raised when <see cref="LoadView"/> is completed.
 		/// </summary>
+		/// <seealso cref="View"/>
+		/// <seealso cref="LoadView"/>
 		event EventHandler<AsyncCompletedEventArgs> LoadViewCompleted;
+
+		/// <summary>
+		/// Raised when <see cref="UnloadView"/> is completed.
+		/// </summary>
+		/// <seealso cref="View"/>
+		/// <seealso cref="UnloadView"/>
+		event EventHandler<AsyncCompletedEventArgs> UnloadViewCompleted;
 
 		/// <summary>
 		/// Gets the controller name.
@@ -24,33 +43,54 @@ namespace UnityFx.Mvc
 		string Name { get; }
 
 		/// <summary>
-		/// Gets a view managed by the controller.
+		/// Gets a value indicating whether <see cref="View"/> is being loaded/unloaded.
 		/// </summary>
-		/// <exception cref="InvalidOperationException">Thrown if the view is not loaded.</exception>
-		/// <seealso cref="IsViewLoaded"/>
-		/// <seealso cref="LoadViewAsync"/>
-		/// <seealso cref="UnloadView"/>
-		IView View { get; }
+		/// <seealso cref="View"/>
+		/// <seealso cref="LoadView"/>
+		bool IsBusy { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the <see cref="View"/> can be safely used.
 		/// </summary>
 		/// <seealso cref="View"/>
+		/// <seealso cref="LoadView"/>
 		bool IsViewLoaded { get; }
 
 		/// <summary>
-		/// Initiates loading <see cref="View"/> if it is not loaded yet.
+		/// Gets a view managed by the controller. Returns <see langword="null"/> if the view is not loaded.
 		/// </summary>
-		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
-		/// <seealso cref="LoadViewCompleted"/>
-		/// <seealso cref="View"/>
-		void LoadViewAsync();
+		/// <remarks>
+		/// Implementation may decide to lazy-load its view on first access. In this case the property would never return <see langword="null"/>.
+		/// </remarks>
+		/// <seealso cref="IsViewLoaded"/>
+		/// <seealso cref="LoadView"/>
+		/// <seealso cref="UnloadView"/>
+		IView View { get; }
 
 		/// <summary>
-		/// Unloads the view (if any).
+		/// Loads <see cref="View"/>. If view is already loaded (or another load operation is already running) the method returns immediately.
 		/// </summary>
-		/// <seealso cref="LoadViewAsync"/>
+		/// <remarks>
+		/// Implementation may decide to load views asynchronously. In this case the method just initiates the operation and returns.
+		/// Subscribe to <see cref="LoadViewCompleted"/> event to await the load results.
+		/// </remarks>
+		/// <exception cref="InvalidOperationException">Thrown if unload operation is pending.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
 		/// <seealso cref="View"/>
+		/// <seealso cref="LoadViewCompleted"/>
+		/// <seealso cref="UnloadView"/>
+		void LoadView();
+
+		/// <summary>
+		/// Unloads the view. Does nothing is view is not loaded or another unload operation is already running. Cancels load operation (if any).
+		/// </summary>
+		/// <remarks>
+		/// Implementation may decide to unload views asynchronously. In this case the method just initiates the operation and returns.
+		/// Subscribe to <see cref="UnloadViewCompleted"/> event to await the unload results.
+		/// </remarks>
+		/// <seealso cref="View"/>
+		/// <seealso cref="UnloadViewCompleted"/>
+		/// <seealso cref="LoadView"/>
 		void UnloadView();
 	}
 }

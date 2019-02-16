@@ -10,8 +10,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using UnityFx.Async;
-using UnityFx.Async.Extensions;
 
 namespace UnityFx.Mvc
 {
@@ -26,18 +24,11 @@ namespace UnityFx.Mvc
 
 		private readonly IServiceProvider _serviceProvider;
 		private readonly SynchronizationContext _synchronizationContext;
-		private readonly AppStateServiceSettings _config;
 		private readonly TraceSource _traceSource = new TraceSource(ServiceName);
 		private readonly TreeListCollection<ViewControllerProxy> _controllers = new TreeListCollection<ViewControllerProxy>();
-#if NET35
-		private readonly List<AsyncResult> _ops = new List<AsyncResult>();
-#else
-		private readonly ConcurrentQueue<AsyncResult> _ops = new ConcurrentQueue<AsyncResult>();
-#endif
 
-		private IAsyncOperation _currentOp;
 		private SendOrPostCallback _startCallback;
-		private Action<IAsyncOperation> _completionCallback;
+		private int _idCounter;
 		private bool _disposed;
 
 		#endregion
@@ -68,7 +59,6 @@ namespace UnityFx.Mvc
 		{
 			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			_synchronizationContext = SynchronizationContext.Current;
-			_config = new AppStateServiceSettings(_traceSource);
 		}
 
 		/// <summary>
@@ -80,39 +70,38 @@ namespace UnityFx.Mvc
 		{
 			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			_synchronizationContext = syncContext;
-			_config = new AppStateServiceSettings(_traceSource);
 		}
 
 		/// <summary>
 		/// Called when a new present operation has been initiated.
 		/// </summary>
-		protected internal virtual void OnPresentInitiated(PresentArgs args, IAsyncOperation op)
+		protected internal virtual void OnPresentInitiated(PresentArgs args, int opId, object userState)
 		{
-			PresentInitiated?.Invoke(this, new PresentInitiatedEventArgs(args, op.Id, op.AsyncState));
+			PresentInitiated?.Invoke(this, new PresentInitiatedEventArgs(args, opId, userState));
 		}
 
 		/// <summary>
 		/// Called when a present operation has completed.
 		/// </summary>
-		protected internal virtual void OnPresentCompleted(IViewController controller, IAsyncOperation op)
+		protected internal virtual void OnPresentCompleted(IViewController controller, int opId, object userState)
 		{
-			PresentCompleted?.Invoke(this, new PresentCompletedEventArgs(controller, op.Id, op.AsyncState, op.Exception, op.IsCanceled));
+			PresentCompleted?.Invoke(this, new PresentCompletedEventArgs(controller, opId, userState, op.Exception, op.IsCanceled));
 		}
 
 		/// <summary>
 		/// Called when a new dismiss operation has been initiated.
 		/// </summary>
-		protected internal virtual void OnDismissInitiated(IViewController controller, IAsyncOperation op)
+		protected internal virtual void OnDismissInitiated(IViewController controller, int opId, object userState)
 		{
-			DismissInitiated?.Invoke(this, new DismissInitiatedEventArgs(controller, op.Id, op.AsyncState));
+			DismissInitiated?.Invoke(this, new DismissInitiatedEventArgs(controller, opId, userState));
 		}
 
 		/// <summary>
 		/// Called when a dismiss operation has completed.
 		/// </summary>
-		protected internal virtual void OnDismissCompleted(IViewController controller, IAsyncOperation op)
+		protected internal virtual void OnDismissCompleted(IViewController controller, int opId, object userState)
 		{
-			DismissCompleted?.Invoke(this, new DismissCompletedEventArgs(controller, op.Id, op.AsyncState, op.Exception, op.IsCanceled));
+			DismissCompleted?.Invoke(this, new DismissCompletedEventArgs(controller, opId, userState, op.Exception, op.IsCanceled));
 		}
 
 		/// <summary>
@@ -244,40 +233,6 @@ namespace UnityFx.Mvc
 			_traceSource.TraceData(eventType, opId, data);
 		}
 
-		internal void AddController(ViewControllerProxy controller)
-		{
-			Debug.Assert(controller != null);
-			Debug.Assert(!_disposed);
-
-			var parent = controller.Parent;
-
-			if (parent != null)
-			{
-				var prev = parent;
-				var next = parent.Next;
-
-				while (next != null && next.IsChildOf(parent))
-				{
-					prev = next;
-					next = prev.Next;
-				}
-
-				_controllers.Add(controller, prev);
-			}
-			else
-			{
-				_controllers.Add(controller);
-			}
-		}
-
-		internal void RemoveController(ViewControllerProxy controller)
-		{
-			Debug.Assert(controller != null);
-			Debug.Assert(!_disposed);
-
-			_controllers.Remove(controller);
-		}
-
 		internal void DismissAllControllers()
 		{
 			while (_controllers.TryPeek(out var controller))
@@ -358,10 +313,20 @@ namespace UnityFx.Mvc
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
-			var result = new PresentOperation<IViewController>(this, parent, controllerType, args);
-			OnPresentInitiated(args, result);
-			QueueOperation(result, args.Options);
-			return result;
+			try
+			{
+				var id = PrePresent(parent, args);
+				var result = new ViewControllerProxy(this, parent, controllerType, args, id);
+
+				AddController(result);
+				Present(result);
+
+				return result;
+			}
+			catch (Exception e)
+			{
+				throw;
+			}
 		}
 
 		internal IPresentResult<T> Present<T>(ViewControllerProxy parent, PresentArgs args) where T : class, IViewController
@@ -371,8 +336,8 @@ namespace UnityFx.Mvc
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(typeof(T));
 
-			var result = new PresentOperation<T>(this, parent, typeof(T), args);
-			OnPresentInitiated(args, result);
+			var result = new ViewControllerProxy<T>(this, parent, typeof(T), args);
+			OnPresentInitiated(args, result.Id, null);
 			QueueOperation(result, args.Options);
 			return result;
 		}
@@ -381,7 +346,7 @@ namespace UnityFx.Mvc
 		{
 			ThrowIfDisposed();
 
-			var result = new DismissOperation(this, controller, null);
+			// TODO
 			OnDismissInitiated(controller.Controller, result);
 			QueueOperation(result, PresentOptions.None);
 		}
@@ -653,6 +618,69 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
+		private int PrePresent(ViewControllerProxy parent, PresentArgs args)
+		{
+			Debug.Assert(args != null);
+			Debug.Assert(!_disposed);
+
+			var id = ++_idCounter;
+
+			OnPresentInitiated(args, id, null);
+
+			if (parent != null)
+			{
+				parent.TryDeactivate();
+			}
+			else if (_controllers.TryPeek(out var topController))
+			{
+				topController.TryDeactivate();
+			}
+
+			return id;
+		}
+
+		private void Present(ViewControllerProxy controller)
+		{
+			Debug.Assert(controller != null);
+			Debug.Assert(!_disposed);
+
+			controller.OnPresent();
+		}
+
+		private void AddController(ViewControllerProxy controller)
+		{
+			Debug.Assert(controller != null);
+			Debug.Assert(!_disposed);
+
+			var parent = controller.Parent;
+
+			if (parent != null)
+			{
+				var prev = parent;
+				var next = parent.Next;
+
+				while (next != null && next.IsChildOf(parent))
+				{
+					prev = next;
+					next = prev.Next;
+				}
+
+				_controllers.Add(controller, prev);
+			}
+			else
+			{
+				_controllers.Add(controller);
+			}
+		}
+
+		private void RemoveController(ViewControllerProxy controller)
+		{
+			Debug.Assert(controller != null);
+			Debug.Assert(!_disposed);
+
+			_controllers.Remove(controller);
+		}
+
 		private void QueueOperation(AsyncResult op, PresentOptions options)
 		{
 			Debug.Assert(op != null);
@@ -774,22 +802,6 @@ namespace UnityFx.Mvc
 #else
 			TryStartUnsafe();
 #endif
-		}
-
-		private void TryActivateTopState()
-		{
-			if (_controllers.TryPeek(out var state) && !state.IsActive)
-			{
-				(state as IPresentableEvents).OnActivate();
-			}
-		}
-
-		private void TryDeactivateTopState()
-		{
-			if (_controllers.TryPeek(out var state) && state.IsActive)
-			{
-				(state as IPresentableEvents).OnDeactivate();
-			}
 		}
 
 		private void PostToSyncContext(Delegate method, object[] args, AsyncCompletionSource<object> op)

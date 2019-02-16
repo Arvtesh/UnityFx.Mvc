@@ -57,7 +57,7 @@ namespace UnityFx.Mvc
 		#region IViewController
 
 		/// <summary>
-		/// Gets a view managed by the controller.
+		/// Gets a view managed by the controller. Returns <see langword="null"/> if the view is not loaded.
 		/// </summary>
 		public new TView View
 		{

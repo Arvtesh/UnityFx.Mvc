@@ -35,6 +35,7 @@ namespace UnityFx.Mvc
 		private readonly IViewController _controller;
 		private readonly PresentOptions _presentOptions;
 		private readonly string _name;
+		private readonly int _id;
 
 		private State _state;
 
@@ -42,17 +43,18 @@ namespace UnityFx.Mvc
 
 		#region interface
 
-		public ViewControllerProxy(PresentService stateManager, ViewControllerProxy parent, Type controllerType, PresentArgs args)
+		internal ViewControllerProxy(PresentService presentManager, ViewControllerProxy parent, Type controllerType, PresentArgs args, int id)
 			: base(parent)
 		{
-			Debug.Assert(stateManager != null);
+			Debug.Assert(presentManager != null);
 			Debug.Assert(controllerType != null);
 			Debug.Assert(args != null);
 
-			_mvcService = stateManager;
-			_serviceProvider = stateManager.ServiceProvider;
+			_mvcService = presentManager;
+			_serviceProvider = presentManager.ServiceProvider;
 			_presentOptions = args.Options;
 			_name = Utility.GetControllerTypeId(controllerType);
+			_id = id;
 
 			// Controller should be created after the proxy has been initialized.
 			try
@@ -74,6 +76,28 @@ namespace UnityFx.Mvc
 			}
 		}
 
+		internal bool TryActivate()
+		{
+			if (_state == State.Presented)
+			{
+				OnActivate();
+				return true;
+			}
+
+			return false;
+		}
+
+		internal bool TryDeactivate()
+		{
+			if (_state == State.Active)
+			{
+				OnDeactivate();
+				return true;
+			}
+
+			return false;
+		}
+
 		internal void DismissChildControllers()
 		{
 			var children = GetChildControllers();
@@ -91,7 +115,11 @@ namespace UnityFx.Mvc
 
 		#region IViewControllerContext
 
-		public string Name => _name;
+		public int Id => _id;
+
+		public string ControllerTypeName => _name;
+
+		public string ViewTypeName => throw new NotImplementedException();
 
 		public bool IsActive => _state == State.Active;
 
@@ -106,28 +134,24 @@ namespace UnityFx.Mvc
 
 		#region IPresenter
 
-		/// <inheritdoc/>
 		public IPresentResult Present(Type controllerType)
 		{
 			Debug.Assert(_state != State.Disposed);
 			return _mvcService.Present(this, controllerType, PresentArgs.Default);
 		}
 
-		/// <inheritdoc/>
 		public IPresentResult Present(Type controllerType, PresentArgs args)
 		{
 			Debug.Assert(_state != State.Disposed);
 			return _mvcService.Present(this, controllerType, args);
 		}
 
-		/// <inheritdoc/>
 		public IPresentResult<TController> Present<TController>() where TController : class, IViewController
 		{
 			Debug.Assert(_state != State.Disposed);
 			return _mvcService.Present<TController>(this, PresentArgs.Default);
 		}
 
-		/// <inheritdoc/>
 		public IPresentResult<TController> Present<TController>(PresentArgs args) where TController : class, IViewController
 		{
 			Debug.Assert(_state != State.Disposed);

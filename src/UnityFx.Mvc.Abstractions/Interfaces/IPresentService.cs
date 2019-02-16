@@ -44,7 +44,7 @@ namespace UnityFx.Mvc
 		IViewController ActiveController { get; }
 
 		/// <summary>
-		/// Gets a value indicating whether thare are any pending operations.
+		/// Gets a value indicating whether there are any pending operations.
 		/// </summary>
 		bool IsBusy { get; }
 	}
