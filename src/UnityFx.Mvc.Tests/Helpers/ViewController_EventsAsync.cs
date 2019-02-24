@@ -8,7 +8,7 @@ namespace UnityFx.Mvc
 {
 	public class ViewController_EventsAsync : ViewController_Events
 	{
-		public ViewController_EventsAsync(IViewControllerContext ctx)
+		public ViewController_EventsAsync(IPresentContext ctx)
 			: base(ctx)
 		{
 		}

@@ -7,11 +7,11 @@ using System.ComponentModel;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Context data for an <see cref="IViewController"/> instance. The class is a link between <see cref="IPresenter"/> and its controllers.
-	/// It is here for the sake of testability/explicit dependencies for <see cref="IViewController"/> implementations.
+	/// Context data for an <see cref="IPresentable"/> instance. The class is a link between <see cref="IPresenter"/> and its controllers.
+	/// It is here for the sake of testability/explicit dependencies for <see cref="IPresentable"/> implementations.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
-	public interface IViewControllerContext : IPresenter, IServiceProvider
+	public interface IPresentContext : IPresenter, IServiceProvider
 	{
 		/// <summary>
 		/// Gets an unique controller id.
@@ -19,14 +19,14 @@ namespace UnityFx.Mvc
 		int Id { get; }
 
 		/// <summary>
-		/// Gets the controller name.
+		/// Gets normalized name of the controller type.
 		/// </summary>
-		string ControllerTypeName { get; }
+		string ControllerName { get; }
 
 		/// <summary>
-		/// Gets the view name.
+		/// Gets normalized name of the view type.
 		/// </summary>
-		string ViewTypeName { get; }
+		string ViewName { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the controller is active.

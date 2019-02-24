@@ -7,14 +7,14 @@ using System.Diagnostics;
 
 namespace UnityFx.Mvc
 {
-	internal class ViewControllerProxy<TController> : ViewControllerProxy, IPresentResult<TController> where TController : IViewController
+	internal class PresentableProxy<TController> : PresentableProxy, IPresentResult<TController> where TController : IPresentable
 	{
 		#region data
 		#endregion
 
 		#region interface
 
-		public ViewControllerProxy(PresentService presentManager, ViewControllerProxy parent, Type controllerType, PresentArgs args)
+		public PresentableProxy(PresentService presentManager, PresentableProxy parent, Type controllerType, PresentArgs args)
 			: base(presentManager, parent, controllerType, args)
 		{
 		}

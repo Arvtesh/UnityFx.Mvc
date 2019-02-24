@@ -10,8 +10,8 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="IView"/>
 	/// <seealso cref="IPresenter"/>
+	/// <seealso cref="IPresentContext"/>
 	/// <seealso cref="IPresentService"/>
-	/// <seealso cref="IViewControllerContext"/>
 	/// <seealso cref="IViewControllerFactory"/>
 	/// <seealso cref="IViewController"/>
 	public interface IViewController<TView> : IViewController where TView : class, IView

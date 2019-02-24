@@ -22,33 +22,28 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ViewController{TView}"/> class.
 		/// </summary>
-		/// <param name="context">Context data for the controller instance.</param>
-		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="context"/> is <see langword="null"/>.</exception>
-		protected ViewController(IViewControllerContext context)
-			: base(context)
+		protected ViewController()
 		{
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ViewController{TView}"/> class.
 		/// </summary>
-		/// <param name="context">Context data for the controller instance.</param>
 		/// <param name="view">A view managed by the controller.</param>
-		/// <exception cref="ArgumentNullException">Thrown if the either <paramref name="context"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
-		protected ViewController(IViewControllerContext context, TView view)
-			: base(context, view)
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
+		protected ViewController(TView view)
+			: base(view)
 		{
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ViewController{TView}"/> class.
 		/// </summary>
-		/// <param name="context">Context data for the controller instance.</param>
 		/// <param name="view">A view managed by the controller.</param>
 		/// <param name="viewOptions">View-related flags.</param>
-		/// <exception cref="ArgumentNullException">Thrown if the either <paramref name="context"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
-		protected ViewController(IViewControllerContext context, TView view, ViewOptions viewOptions)
-			: base(context, view, viewOptions)
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
+		protected ViewController(TView view, ViewOptions viewOptions)
+			: base(view, viewOptions)
 		{
 		}
 

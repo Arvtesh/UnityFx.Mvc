@@ -8,7 +8,7 @@ namespace UnityFx.Mvc
 {
 	public class ViewController_Events : IViewController, IAsyncPresentable, IPresentableEvents, IDisposable
 	{
-		private readonly IViewControllerContext _ctx;
+		private readonly IPresentContext _ctx;
 		private int _index;
 
 		public string Name { get; set; }
@@ -23,7 +23,7 @@ namespace UnityFx.Mvc
 		public int DismissIndex { get; private set; }
 		public int DisposeIndex { get; private set; }
 
-		public ViewController_Events(IViewControllerContext ctx)
+		public ViewController_Events(IPresentContext ctx)
 		{
 			_ctx = ctx;
 		}

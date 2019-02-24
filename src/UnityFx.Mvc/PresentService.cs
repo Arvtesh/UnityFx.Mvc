@@ -25,7 +25,7 @@ namespace UnityFx.Mvc
 		private readonly IServiceProvider _serviceProvider;
 		private readonly SynchronizationContext _synchronizationContext;
 		private readonly TraceSource _traceSource = new TraceSource(ServiceName);
-		private readonly TreeListCollection<ViewControllerProxy> _controllers = new TreeListCollection<ViewControllerProxy>();
+		private readonly TreeListCollection<PresentableProxy> _controllers = new TreeListCollection<PresentableProxy>();
 
 		private SendOrPostCallback _startCallback;
 		private int _idCounter;
@@ -248,7 +248,7 @@ namespace UnityFx.Mvc
 			TryDeactivateTopState();
 		}
 
-		internal void InvokePresentCompleted(ViewControllerProxy controllerProxy, IAsyncOperation op)
+		internal void InvokePresentCompleted(PresentableProxy controllerProxy, IAsyncOperation op)
 		{
 			Debug.Assert(op != null);
 			Debug.Assert(op.IsCompleted);
@@ -273,14 +273,14 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		internal void InvokeDismissStarted(ViewControllerProxy controllerProxy, IAsyncOperation op)
+		internal void InvokeDismissStarted(PresentableProxy controllerProxy, IAsyncOperation op)
 		{
 			Debug.Assert(op != null);
 
 			TryDeactivateTopState();
 		}
 
-		internal void InvokeDismissCompleted(ViewControllerProxy controllerProxy, IAsyncOperation op)
+		internal void InvokeDismissCompleted(PresentableProxy controllerProxy, IAsyncOperation op)
 		{
 			Debug.Assert(op != null);
 			Debug.Assert(op.IsCompleted);
@@ -306,7 +306,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		internal IPresentResult Present(ViewControllerProxy parent, Type controllerType, PresentArgs args)
+		internal IPresentResult Present(PresentableProxy parent, Type controllerType, PresentArgs args)
 		{
 			Debug.Assert(args != null);
 
@@ -316,7 +316,7 @@ namespace UnityFx.Mvc
 			try
 			{
 				var id = PrePresent(parent, args);
-				var result = new ViewControllerProxy(this, parent, controllerType, args, id);
+				var result = new PresentableProxy(this, parent, controllerType, args, id);
 
 				AddController(result);
 				Present(result);
@@ -329,20 +329,20 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		internal IPresentResult<T> Present<T>(ViewControllerProxy parent, PresentArgs args) where T : class, IViewController
+		internal IPresentResult<T> Present<T>(PresentableProxy parent, PresentArgs args) where T : class, IViewController
 		{
 			Debug.Assert(args != null);
 
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(typeof(T));
 
-			var result = new ViewControllerProxy<T>(this, parent, typeof(T), args);
+			var result = new PresentableProxy<T>(this, parent, typeof(T), args);
 			OnPresentInitiated(args, result.Id, null);
 			QueueOperation(result, args.Options);
 			return result;
 		}
 
-		internal void Dismiss(ViewControllerProxy controller)
+		internal void Dismiss(PresentableProxy controller)
 		{
 			ThrowIfDisposed();
 
@@ -618,7 +618,7 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private int PrePresent(ViewControllerProxy parent, PresentArgs args)
+		private int PrePresent(PresentableProxy parent, PresentArgs args)
 		{
 			Debug.Assert(args != null);
 			Debug.Assert(!_disposed);
@@ -639,7 +639,7 @@ namespace UnityFx.Mvc
 			return id;
 		}
 
-		private void Present(ViewControllerProxy controller)
+		private void Present(PresentableProxy controller)
 		{
 			Debug.Assert(controller != null);
 			Debug.Assert(!_disposed);
@@ -647,7 +647,7 @@ namespace UnityFx.Mvc
 			controller.OnPresent();
 		}
 
-		private void AddController(ViewControllerProxy controller)
+		private void AddController(PresentableProxy controller)
 		{
 			Debug.Assert(controller != null);
 			Debug.Assert(!_disposed);
@@ -673,7 +673,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		private void RemoveController(ViewControllerProxy controller)
+		private void RemoveController(PresentableProxy controller)
 		{
 			Debug.Assert(controller != null);
 			Debug.Assert(!_disposed);

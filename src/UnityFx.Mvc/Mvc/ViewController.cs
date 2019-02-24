@@ -9,28 +9,16 @@ using System.Diagnostics;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// A generic view controller. It is recommended to use this class as base for all other controllers.
-	/// Note that minimal controller implementation should implement <see cref="IViewController"/>.
+	/// Implementation of <see cref="IViewController"/>.
 	/// </summary>
 	/// <seealso cref="ViewController{TView}"/>
-	public abstract class ViewController : IViewController, IPresentableEvents, IPresenter, ICommandTarget
+	public abstract class ViewController : IViewController
 	{
 		#region data
 
-		private enum StateId
-		{
-			Initialized,
-			Presented,
-			Active,
-			Dismissed,
-			Disposed
-		}
-
-		private readonly IViewControllerContext _context;
-
 		private ViewOptions _viewOptions;
 		private IView _view;
-		private StateId _state;
+		private bool _disposed;
 
 		#endregion
 
@@ -58,6 +46,8 @@ namespace UnityFx.Mvc
 		/// </summary>
 		public abstract class Commands
 		{
+			#region Common
+
 			/// <summary>
 			/// Name of the OK command.
 			/// </summary>
@@ -69,14 +59,38 @@ namespace UnityFx.Mvc
 			public const string Cancel = "Cancel";
 
 			/// <summary>
-			/// Name of the BACK command.
-			/// </summary>
-			public const string Back = "Back";
-
-			/// <summary>
 			/// Name of the APPLY command.
 			/// </summary>
 			public const string Apply = "Apply";
+
+			/// <summary>
+			/// Name of the EXIT command.
+			/// </summary>
+			public const string Exit = "Exit";
+
+			/// <summary>
+			/// Name of the HELP command.
+			/// </summary>
+			public const string Help = "Help";
+
+			/// <summary>
+			/// Name of the ADD command.
+			/// </summary>
+			public const string Add = "Add";
+
+			/// <summary>
+			/// Name of the REMOVE command.
+			/// </summary>
+			public const string Remove = "Remove";
+
+			#endregion
+
+			#region Navigation
+
+			/// <summary>
+			/// Name of the BACK command.
+			/// </summary>
+			public const string Back = "Back";
 
 			/// <summary>
 			/// Name of the NEXT command.
@@ -87,6 +101,10 @@ namespace UnityFx.Mvc
 			/// Name of the PREV command.
 			/// </summary>
 			public const string Prev = "Prev";
+
+			#endregion
+
+			#region File
 
 			/// <summary>
 			/// Name of the NEW command.
@@ -108,30 +126,14 @@ namespace UnityFx.Mvc
 			/// </summary>
 			public const string Save = "Save";
 
-			/// <summary>
-			/// Name of the EXIT command.
-			/// </summary>
-			public const string Exit = "Exit";
+			#endregion
 
-			/// <summary>
-			/// Name of the ADD command.
-			/// </summary>
-			public const string Add = "Add";
-
-			/// <summary>
-			/// Name of the REMOVE command.
-			/// </summary>
-			public const string Remove = "Remove";
+			#region Editing
 
 			/// <summary>
 			/// Name of the EDIT command.
 			/// </summary>
 			public const string Edit = "Edit";
-
-			/// <summary>
-			/// Name of the HELP command.
-			/// </summary>
-			public const string Help = "Help";
 
 			/// <summary>
 			/// Name of the COPY command.
@@ -167,62 +169,44 @@ namespace UnityFx.Mvc
 			/// Name of the REDO command.
 			/// </summary>
 			public const string Redo = "Redo";
+
+			#endregion
 		}
-
-		/// <summary>
-		/// Gets a value indicating whether the controller is presented.
-		/// </summary>
-		protected bool IsPresented => _state == StateId.Presented || _state == StateId.Active;
-
-		/// <summary>
-		/// Gets a value indicating whether the controller has been dismissed.
-		/// </summary>
-		protected bool IsDismissed => _state == StateId.Dismissed;
-
-		/// <summary>
-		/// Gets a value indicating whether the controller is active (i.e. can accept input).
-		/// </summary>
-		protected bool IsActive => _state == StateId.Active;
 
 		/// <summary>
 		/// Gets a value indicating whether the controller is disposed.
 		/// </summary>
-		protected bool IsDisposed => _state == StateId.Disposed;
+		protected bool IsDisposed => _disposed;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ViewController"/> class.
 		/// </summary>
-		/// <param name="context">The controller context.</param>
-		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="context"/> is <see langword="null"/>.</exception>
-		protected ViewController(IViewControllerContext context)
+		protected ViewController()
 		{
-			_context = context ?? throw new ArgumentNullException(nameof(context));
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ViewController"/> class.
 		/// </summary>
-		/// <param name="context">The controller context.</param>
 		/// <param name="view">A view managed by the controller.</param>
-		/// <exception cref="ArgumentNullException">Thrown if the either <paramref name="context"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
-		protected ViewController(IViewControllerContext context, IView view)
+		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="view"/> is <see langword="null"/>.</exception>
+		protected ViewController(IView view)
 		{
-			_context = context ?? throw new ArgumentNullException(nameof(context));
 			_view = view ?? throw new ArgumentNullException(nameof(view));
+			_view.Command += OnCommand;
 			_view.Disposed += OnViewDisposed;
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ViewController"/> class.
 		/// </summary>
-		/// <param name="context">The controller context.</param>
 		/// <param name="view">A view managed by the controller.</param>
 		/// <param name="viewOptions">View-related flags.</param>
-		/// <exception cref="ArgumentNullException">Thrown if the either <paramref name="context"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
-		protected ViewController(IViewControllerContext context, IView view, ViewOptions viewOptions)
+		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="view"/> is <see langword="null"/>.</exception>
+		protected ViewController(IView view, ViewOptions viewOptions)
 		{
-			_context = context ?? throw new ArgumentNullException(nameof(context));
 			_view = view ?? throw new ArgumentNullException(nameof(view));
+			_view.Command += OnCommand;
 			_view.Disposed += OnViewDisposed;
 			_viewOptions = viewOptions;
 		}
@@ -234,13 +218,13 @@ namespace UnityFx.Mvc
 		/// <param name="viewOptions">View-related flags.</param>
 		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="view"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
-		/// <seealso cref="RaiseLoadViewCompleted(Exception, bool, object)"/>
 		protected void SetView(IView view, ViewOptions viewOptions)
 		{
 			ThrowIfDisposed();
 
 			if (_view != null)
 			{
+				_view.Command -= OnCommand;
 				_view.Disposed -= OnViewDisposed;
 			}
 
@@ -249,25 +233,9 @@ namespace UnityFx.Mvc
 
 			if (_view != null)
 			{
+				_view.Command += OnCommand;
 				_view.Disposed += OnViewDisposed;
 			}
-		}
-
-		/// <summary>
-		/// Dissmisses the controller.
-		/// </summary>
-		protected void Dismiss()
-		{
-			_context.Dismiss();
-		}
-
-		/// <summary>
-		/// Raises <see cref="LoadViewCompleted"/> event.
-		/// </summary>
-		/// <seealso cref="SetView(IView, ViewOptions)"/>
-		protected void RaiseLoadViewCompleted(Exception error, bool cancelled, object userState)
-		{
-			LoadViewCompleted?.Invoke(this, new AsyncCompletedEventArgs(error, cancelled, userState));
 		}
 
 		/// <summary>
@@ -276,9 +244,9 @@ namespace UnityFx.Mvc
 		/// <seealso cref="Dispose()"/>
 		protected void ThrowIfDisposed()
 		{
-			if (_state == StateId.Disposed)
+			if (_disposed)
 			{
-				throw new ObjectDisposedException(_context.ControllerTypeName);
+				throw new ObjectDisposedException(GetType().Name);
 			}
 		}
 
@@ -301,75 +269,26 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Called right after the controller transition animation finishes. Default implementation does nothing.
+		/// Initiates unloading view. Default implementation disposes the attached view.
 		/// </summary>
-		/// <seealso cref="OnDismiss"/>
-		protected virtual void OnPresent()
+		protected virtual void OnUnloadView()
 		{
+			_view?.Dispose();
 		}
 
 		/// <summary>
-		/// Called right before the controller becomes active. Default implementation does nothing.
-		/// </summary>
-		/// <seealso cref="OnDeactivate"/>
-		protected virtual void OnActivate()
-		{
-		}
-
-		/// <summary>
-		/// Called when the controller is about to become inactive. Default implementation does nothing.
-		/// </summary>
-		/// <seealso cref="OnActivate"/>
-		protected virtual void OnDeactivate()
-		{
-		}
-
-		/// <summary>
-		/// Called when the controller is about to be dismissed (before transition animation). Default implementation does nothing.
-		/// </summary>
-		/// <seealso cref="OnPresent"/>
-		protected virtual void OnDismiss()
-		{
-		}
-
-		/// <summary>
-		/// Called when the controller is disposed. Default implementation does nothing.
+		/// Called when the controller is disposed. Default implementation unloads the attached view.
 		/// </summary>
 		/// <seealso cref="Dispose()"/>
 		/// <seealso cref="ThrowIfDisposed"/>
 		protected virtual void OnDispose()
 		{
+			UnloadView();
 		}
 
 		#endregion
 
 		#region IViewController
-
-		/// <summary>
-		/// Raised when <see cref="LoadView"/> is completed.
-		/// </summary>
-		/// <seealso cref="View"/>
-		/// <seealso cref="LoadView"/>
-		public event EventHandler<AsyncCompletedEventArgs> LoadViewCompleted;
-
-		/// <summary>
-		/// Raised when <see cref="UnloadView"/> is completed.
-		/// </summary>
-		/// <seealso cref="View"/>
-		/// <seealso cref="UnloadView"/>
-		public event EventHandler<AsyncCompletedEventArgs> UnloadViewCompleted;
-
-		/// <summary>
-		/// Gets the controller name.
-		/// </summary>
-		public string Name => _context.ControllerTypeName;
-
-		/// <summary>
-		/// Gets a value indicating whether <see cref="View"/> is being loaded/unloaded.
-		/// </summary>
-		/// <seealso cref="View"/>
-		/// <seealso cref="LoadView"/>
-		public bool IsBusy => false;
 
 		/// <summary>
 		/// Gets a value indicating whether the <see cref="View"/> can be safely used.
@@ -391,12 +310,10 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <remarks>
 		/// Implementation may decide to load views asynchronously. In this case the method just initiates the operation and returns.
-		/// Subscribe to <see cref="LoadViewCompleted"/> event to await the load results.
 		/// </remarks>
 		/// <exception cref="InvalidOperationException">Thrown if unload operation is pending.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
 		/// <seealso cref="View"/>
-		/// <seealso cref="LoadViewCompleted"/>
 		/// <seealso cref="UnloadView"/>
 		public void LoadView()
 		{
@@ -413,101 +330,24 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <remarks>
 		/// Implementation may decide to unload views asynchronously. In this case the method just initiates the operation and returns.
-		/// Subscribe to <see cref="UnloadViewCompleted"/> event to await the unload results.
 		/// </remarks>
 		/// <seealso cref="View"/>
-		/// <seealso cref="UnloadViewCompleted"/>
 		/// <seealso cref="LoadView"/>
 		public void UnloadView()
 		{
-			if ((_viewOptions & ViewOptions.DoNotDispose) == 0)
+			if (_view != null)
 			{
-				_view?.Dispose();
-				_view = null;
+				if ((_viewOptions & ViewOptions.DoNotDispose) == 0)
+				{
+					_view.Command -= OnCommand;
+					_view.Disposed -= OnViewDisposed;
+					_view = null;
+				}
+				else
+				{
+					OnUnloadView();
+				}
 			}
-		}
-
-		#endregion
-
-		#region IPresentableEvents
-
-		/// <inheritdoc/>
-		void IPresentableEvents.OnPresent()
-		{
-			Debug.Assert(_state == StateId.Initialized);
-
-			OnPresent();
-
-			_view.Command += OnCommand;
-			_state = StateId.Presented;
-		}
-
-		/// <inheritdoc/>
-		void IPresentableEvents.OnDismiss()
-		{
-			Debug.Assert(_state == StateId.Presented);
-
-			_state = StateId.Dismissed;
-			_view.Command -= OnCommand;
-
-			OnDismiss();
-		}
-
-		/// <inheritdoc/>
-		void IPresentableEvents.OnActivate()
-		{
-			Debug.Assert(_state == StateId.Presented);
-
-			_state = StateId.Active;
-
-			OnActivate();
-		}
-
-		/// <inheritdoc/>
-		void IPresentableEvents.OnDeactivate()
-		{
-			Debug.Assert(_state == StateId.Active);
-
-			try
-			{
-				OnDeactivate();
-			}
-			finally
-			{
-				_state = StateId.Presented;
-			}
-		}
-
-		#endregion
-
-		#region IPresenter
-
-		/// <inheritdoc/>
-		public IPresentResult Present(Type controllerType)
-		{
-			ThrowIfDisposed();
-			return _context.Present(controllerType, PresentArgs.Default);
-		}
-
-		/// <inheritdoc/>
-		public IPresentResult Present(Type controllerType, PresentArgs args)
-		{
-			ThrowIfDisposed();
-			return _context.Present(controllerType, args);
-		}
-
-		/// <inheritdoc/>
-		public IPresentResult<TController> Present<TController>() where TController : class, IViewController
-		{
-			ThrowIfDisposed();
-			return _context.Present<TController>(PresentArgs.Default);
-		}
-
-		/// <inheritdoc/>
-		public IPresentResult<TController> Present<TController>(PresentArgs args) where TController : class, IViewController
-		{
-			ThrowIfDisposed();
-			return _context.Present<TController>(args);
 		}
 
 		#endregion
@@ -544,29 +384,10 @@ namespace UnityFx.Mvc
 		/// <seealso cref="ThrowIfDisposed"/>
 		public void Dispose()
 		{
-			if (_state != StateId.Disposed)
+			if (!_disposed)
 			{
-				var needCallDismiss = _state == StateId.Active && _state == StateId.Presented;
-
-				_state = StateId.Disposed;
-
-				try
-				{
-					if (needCallDismiss)
-					{
-						_context.Dismiss();
-					}
-
-					OnDispose();
-				}
-				finally
-				{
-					if ((_viewOptions & ViewOptions.DoNotDispose) == 0)
-					{
-						_view?.Dispose();
-						_view = null;
-					}
-				}
+				_disposed = true;
+				OnDispose();
 			}
 		}
 
@@ -582,7 +403,7 @@ namespace UnityFx.Mvc
 		private void OnCommand(object sender, CommandEventArgs e)
 		{
 			Debug.Assert(e != null);
-			Debug.Assert(_state != StateId.Disposed);
+			Debug.Assert(!_disposed);
 
 			OnCommand(e);
 		}

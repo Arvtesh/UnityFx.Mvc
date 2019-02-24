@@ -8,7 +8,7 @@ namespace UnityFx.Mvc
 {
 	public class ViewController_Errors : IViewController, IAsyncPresentable, IPresentableEvents, IDisposable
 	{
-		private readonly IViewControllerContext _ctx;
+		private readonly IPresentContext _ctx;
 		private readonly MyPresentArgs _args;
 
 		public enum ThrowSource
@@ -47,7 +47,7 @@ namespace UnityFx.Mvc
 		public bool IsViewLoaded { get; }
 		public IView View { get; }
 
-		public ViewController_Errors(IViewControllerContext ctx, MyPresentArgs args)
+		public ViewController_Errors(IPresentContext ctx, MyPresentArgs args)
 		{
 			_ctx = ctx;
 			_args = args;

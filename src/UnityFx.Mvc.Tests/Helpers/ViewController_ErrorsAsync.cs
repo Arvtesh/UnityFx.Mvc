@@ -8,7 +8,7 @@ namespace UnityFx.Mvc
 {
 	public class ViewController_ErrorsAsync : ViewController_Errors
 	{
-		public ViewController_ErrorsAsync(IViewControllerContext ctx, MyPresentArgs args)
+		public ViewController_ErrorsAsync(IPresentContext ctx, MyPresentArgs args)
 			: base(ctx, args)
 		{
 		}

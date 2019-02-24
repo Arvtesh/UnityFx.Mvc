@@ -8,6 +8,7 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// Defines event handlers for a presentable obejct.
 	/// </summary>
+	/// <seealso cref="IPresentable"/>
 	public interface IPresentableEvents
 	{
 		/// <summary>

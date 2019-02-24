@@ -10,11 +10,23 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IPresenter"/>
-	public interface IPresentResult : IDisposable
+	public interface IPresentResult
 	{
+		/// <summary>
+		/// Raised when the <see cref="Controller"/> is dismissed.
+		/// </summary>
+		/// <seealso cref="Dismiss"/>
+		event EventHandler Dismissed;
+
 		/// <summary>
 		/// Gets the view controller presented.
 		/// </summary>
-		IViewController Controller { get; }
+		IPresentable Controller { get; }
+
+		/// <summary>
+		/// Dismisses the controller.
+		/// </summary>
+		/// <seealso cref="Dismissed"/>
+		void Dismiss();
 	}
 }

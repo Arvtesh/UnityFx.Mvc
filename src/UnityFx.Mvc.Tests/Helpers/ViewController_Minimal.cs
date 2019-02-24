@@ -8,13 +8,13 @@ namespace UnityFx.Mvc
 {
 	public class ViewController_Minimal : IViewController
 	{
-		private readonly IViewControllerContext _ctx;
+		private readonly IPresentContext _ctx;
 
 		public string Name { get; set; }
 		public bool IsViewLoaded { get; }
 		public IView View { get; }
 
-		public ViewController_Minimal(IViewControllerContext ctx)
+		public ViewController_Minimal(IPresentContext ctx)
 		{
 			_ctx = ctx;
 		}

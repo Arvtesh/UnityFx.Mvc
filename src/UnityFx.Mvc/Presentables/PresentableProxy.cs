@@ -13,10 +13,10 @@ namespace UnityFx.Mvc
 	/// <remarks>
 	/// We want <see cref="IViewController"/> interface to be as minimalistic as possible. That's why we need to store
 	/// controller context outside of actual controller. This class manages the controller created, provides its context
-	/// (via <see cref="IViewControllerContext"/> interface) and serves as a proxy between the controller and
+	/// (via <see cref="IPresentContext"/> interface) and serves as a proxy between the controller and
 	/// <see cref="IPresentService"/> implementation.
 	/// </remarks>
-	internal class ViewControllerProxy : TreeListNode<ViewControllerProxy>, IViewControllerContext, IPresentResult, IPresentableEvents, ICommandTarget, IDisposable
+	internal class PresentableProxy : TreeListNode<PresentableProxy>, IPresentContext, IPresentResult, IPresentableEvents, ICommandTarget, IDisposable
 	{
 		#region data
 
@@ -32,7 +32,7 @@ namespace UnityFx.Mvc
 		private readonly PresentService _mvcService;
 		private readonly IServiceProvider _serviceProvider;
 		private readonly IDisposable _scope;
-		private readonly IViewController _controller;
+		private readonly IPresentable _controller;
 		private readonly PresentOptions _presentOptions;
 		private readonly string _name;
 		private readonly int _id;
@@ -43,7 +43,7 @@ namespace UnityFx.Mvc
 
 		#region interface
 
-		internal ViewControllerProxy(PresentService presentManager, ViewControllerProxy parent, Type controllerType, PresentArgs args, int id)
+		internal PresentableProxy(PresentService presentManager, PresentableProxy parent, Type controllerType, PresentArgs args, int id)
 			: base(parent)
 		{
 			Debug.Assert(presentManager != null);
@@ -62,11 +62,11 @@ namespace UnityFx.Mvc
 				if (_serviceProvider.GetService(typeof(IViewControllerFactory)) is IViewControllerFactory controllerFactory)
 				{
 					_scope = controllerFactory.CreateControllerScope(ref _serviceProvider);
-					_controller = controllerFactory.CreateController(controllerType, this, args);
+					_controller = (IPresentable)controllerFactory.CreateController(controllerType, this, args);
 				}
 				else
 				{
-					_controller = (IViewController)ActivatorUtilities.CreateInstance(_serviceProvider, controllerType, this, args);
+					_controller = (IPresentable)ActivatorUtilities.CreateInstance(_serviceProvider, controllerType, this, args);
 				}
 			}
 			catch
@@ -117,9 +117,9 @@ namespace UnityFx.Mvc
 
 		public int Id => _id;
 
-		public string ControllerTypeName => _name;
+		public string ControllerName => _name;
 
-		public string ViewTypeName => throw new NotImplementedException();
+		public string ViewName => throw new NotImplementedException();
 
 		public bool IsActive => _state == State.Active;
 
@@ -162,7 +162,7 @@ namespace UnityFx.Mvc
 
 		#region IPresentResult
 
-		public IViewController Controller => _controller;
+		public IPresentable Controller => _controller;
 
 		#endregion
 
@@ -252,7 +252,7 @@ namespace UnityFx.Mvc
 
 		public object GetService(Type serviceType)
 		{
-			if (serviceType == typeof(IViewControllerContext))
+			if (serviceType == typeof(IPresentContext))
 			{
 				return this;
 			}
@@ -291,9 +291,9 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private Stack<ViewControllerProxy> GetChildControllers()
+		private Stack<PresentableProxy> GetChildControllers()
 		{
-			var result = default(Stack<ViewControllerProxy>);
+			var result = default(Stack<PresentableProxy>);
 			var nextState = Next;
 
 			while (nextState != null)
@@ -302,7 +302,7 @@ namespace UnityFx.Mvc
 				{
 					if (result == null)
 					{
-						result = new Stack<ViewControllerProxy>();
+						result = new Stack<PresentableProxy>();
 					}
 
 					result.Push(nextState);

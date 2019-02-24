@@ -11,44 +11,18 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <remarks>
 	/// As the name states, main responsibility of a view controller is managing its view. While <see cref="View"/> can be loaded
-	/// and unloaded multiple times during the controller lifetime, the typical use-case is to load view at the controller constructor
-	/// and unload it when the constroller is disposed. Disposing a controller typically disposed the attached view.
+	/// and unloaded multiple times during the controller lifetime, typical use-case is loading view at the controller constructor
+	/// and unloading it when the controller is disposed. Disposing a controller typically disposes the attached view.
 	/// </remarks>
 	/// <seealso cref="IView"/>
 	/// <seealso cref="IPresenter"/>
+	/// <seealso cref="IPresentContext"/>
 	/// <seealso cref="IPresentService"/>
-	/// <seealso cref="IViewControllerContext"/>
 	/// <seealso cref="IViewControllerFactory"/>
 	/// <seealso cref="IViewController{TView}"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller"/>
 	public interface IViewController : ICommandTarget, IDisposable
 	{
-		/// <summary>
-		/// Raised when <see cref="LoadView"/> is completed.
-		/// </summary>
-		/// <seealso cref="View"/>
-		/// <seealso cref="LoadView"/>
-		event EventHandler<AsyncCompletedEventArgs> LoadViewCompleted;
-
-		/// <summary>
-		/// Raised when <see cref="UnloadView"/> is completed.
-		/// </summary>
-		/// <seealso cref="View"/>
-		/// <seealso cref="UnloadView"/>
-		event EventHandler<AsyncCompletedEventArgs> UnloadViewCompleted;
-
-		/// <summary>
-		/// Gets the controller name.
-		/// </summary>
-		string Name { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether <see cref="View"/> is being loaded/unloaded.
-		/// </summary>
-		/// <seealso cref="View"/>
-		/// <seealso cref="LoadView"/>
-		bool IsBusy { get; }
-
 		/// <summary>
 		/// Gets a value indicating whether the <see cref="View"/> can be safely used.
 		/// </summary>
@@ -72,12 +46,10 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <remarks>
 		/// Implementation may decide to load views asynchronously. In this case the method just initiates the operation and returns.
-		/// Subscribe to <see cref="LoadViewCompleted"/> event to await the load results.
 		/// </remarks>
 		/// <exception cref="InvalidOperationException">Thrown if unload operation is pending.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
 		/// <seealso cref="View"/>
-		/// <seealso cref="LoadViewCompleted"/>
 		/// <seealso cref="UnloadView"/>
 		void LoadView();
 
@@ -86,10 +58,8 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <remarks>
 		/// Implementation may decide to unload views asynchronously. In this case the method just initiates the operation and returns.
-		/// Subscribe to <see cref="UnloadViewCompleted"/> event to await the unload results.
 		/// </remarks>
 		/// <seealso cref="View"/>
-		/// <seealso cref="UnloadViewCompleted"/>
 		/// <seealso cref="LoadView"/>
 		void UnloadView();
 	}
