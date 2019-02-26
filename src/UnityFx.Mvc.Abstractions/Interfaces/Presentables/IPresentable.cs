@@ -11,7 +11,7 @@ namespace UnityFx.Mvc
 	/// <seealso cref="IPresenter"/>
 	/// <seealso cref="IPresentContext"/>
 	/// <seealso cref="IPresentService"/>
-	public interface IPresentable : IViewController
+	public interface IPresentable : IViewController, IDismissable
 	{
 	}
 }

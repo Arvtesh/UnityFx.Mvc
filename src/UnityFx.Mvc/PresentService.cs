@@ -73,38 +73,6 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Called when a new present operation has been initiated.
-		/// </summary>
-		protected internal virtual void OnPresentInitiated(PresentArgs args, int opId, object userState)
-		{
-			PresentInitiated?.Invoke(this, new PresentInitiatedEventArgs(args, opId, userState));
-		}
-
-		/// <summary>
-		/// Called when a present operation has completed.
-		/// </summary>
-		protected internal virtual void OnPresentCompleted(IViewController controller, int opId, object userState)
-		{
-			PresentCompleted?.Invoke(this, new PresentCompletedEventArgs(controller, opId, userState, op.Exception, op.IsCanceled));
-		}
-
-		/// <summary>
-		/// Called when a new dismiss operation has been initiated.
-		/// </summary>
-		protected internal virtual void OnDismissInitiated(IViewController controller, int opId, object userState)
-		{
-			DismissInitiated?.Invoke(this, new DismissInitiatedEventArgs(controller, opId, userState));
-		}
-
-		/// <summary>
-		/// Called when a dismiss operation has completed.
-		/// </summary>
-		protected internal virtual void OnDismissCompleted(IViewController controller, int opId, object userState)
-		{
-			DismissCompleted?.Invoke(this, new DismissCompletedEventArgs(controller, opId, userState, op.Exception, op.IsCanceled));
-		}
-
-		/// <summary>
 		/// Releases unmanaged resources used by the service.
 		/// </summary>
 		/// <param name="disposing">Should be <see langword="true"/> if the method is called from <see cref="Dispose()"/>; <see langword="false"/> otherwise.</param>
@@ -118,32 +86,9 @@ namespace UnityFx.Mvc
 
 				if (disposing)
 				{
-					// 1) Stop operation processing.
-#if NET35
-					lock (_ops)
+					foreach (var c in _controllers.Reverse())
 					{
-						foreach (var op in _ops)
-						{
-							op.RemoveCompletionCallback(_completionCallback);
-							op.Cancel();
-						}
-
-						_ops.Clear();
-					}
-#else
-					while (_ops.TryDequeue(out var op))
-					{
-						op.RemoveCompletionCallback(_completionCallback);
-						op.Cancel();
-					}
-#endif
-
-					_currentOp = null;
-
-					// 2) Dispose child states.
-					foreach (var state in _controllers.Reverse())
-					{
-						state.Dispose();
+						c.Dismiss();
 					}
 
 					_controllers.Clear();
@@ -241,71 +186,6 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		internal void InvokePresentStarted(Type controllerType, PresentArgs args, IAsyncOperation op)
-		{
-			Debug.Assert(op != null);
-
-			TryDeactivateTopState();
-		}
-
-		internal void InvokePresentCompleted(PresentableProxy controllerProxy, IAsyncOperation op)
-		{
-			Debug.Assert(op != null);
-			Debug.Assert(op.IsCompleted);
-
-			// Do not rethrow exceptions because the operation has already completed and we have no way to pass it to user code at this point.
-			try
-			{
-				OnPresentCompleted(controllerProxy?.Controller, op);
-			}
-			catch (Exception e)
-			{
-				TraceException(e);
-			}
-
-			try
-			{
-				TryActivateTopState();
-			}
-			catch (Exception e)
-			{
-				TraceException(e);
-			}
-		}
-
-		internal void InvokeDismissStarted(PresentableProxy controllerProxy, IAsyncOperation op)
-		{
-			Debug.Assert(op != null);
-
-			TryDeactivateTopState();
-		}
-
-		internal void InvokeDismissCompleted(PresentableProxy controllerProxy, IAsyncOperation op)
-		{
-			Debug.Assert(op != null);
-			Debug.Assert(op.IsCompleted);
-
-			// Do not rethrow exceptions because the operation has already completed and we have no way to pass it to user code at this point.
-			try
-			{
-				OnDismissCompleted(controllerProxy?.Controller, op);
-			}
-			catch (Exception e)
-			{
-				TraceException(e);
-			}
-
-			try
-			{
-				_controllers.Remove(controllerProxy);
-				TryActivateTopState();
-			}
-			catch (Exception e)
-			{
-				TraceException(e);
-			}
-		}
-
 		internal IPresentResult Present(PresentableProxy parent, Type controllerType, PresentArgs args)
 		{
 			Debug.Assert(args != null);
@@ -313,32 +193,46 @@ namespace UnityFx.Mvc
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
+			var id = PrePresent(parent, args);
+			var result = new PresentableProxy(this, parent, controllerType, args, id);
+
 			try
 			{
-				var id = PrePresent(parent, args);
-				var result = new PresentableProxy(this, parent, controllerType, args, id);
-
 				AddController(result);
 				Present(result);
-
-				return result;
 			}
-			catch (Exception e)
+			catch
 			{
+				RemoveController(result);
 				throw;
 			}
+
+			PostPresent(result);
+			return result;
 		}
 
-		internal IPresentResult<T> Present<T>(PresentableProxy parent, PresentArgs args) where T : class, IViewController
+		internal IPresentResult<T> Present<T>(PresentableProxy parent, PresentArgs args) where T : class, IPresentable
 		{
 			Debug.Assert(args != null);
 
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(typeof(T));
 
-			var result = new PresentableProxy<T>(this, parent, typeof(T), args);
-			OnPresentInitiated(args, result.Id, null);
-			QueueOperation(result, args.Options);
+			var id = PrePresent(parent, args);
+			var result = new PresentableProxy<T>(this, parent, typeof(T), args, id);
+
+			try
+			{
+				AddController(result);
+				Present(result);
+			}
+			catch
+			{
+				RemoveController(result);
+				throw;
+			}
+
+			PostPresent(result);
 			return result;
 		}
 
@@ -625,8 +519,6 @@ namespace UnityFx.Mvc
 
 			var id = ++_idCounter;
 
-			OnPresentInitiated(args, id, null);
-
 			if (parent != null)
 			{
 				parent.TryDeactivate();
@@ -645,6 +537,17 @@ namespace UnityFx.Mvc
 			Debug.Assert(!_disposed);
 
 			controller.OnPresent();
+		}
+
+		private void PostPresent(PresentableProxy controller)
+		{
+			Debug.Assert(controller != null);
+			Debug.Assert(!_disposed);
+
+			if (controller == _controllers.Last)
+			{
+				controller.TryActivate();
+			}
 		}
 
 		private void AddController(PresentableProxy controller)
@@ -679,149 +582,6 @@ namespace UnityFx.Mvc
 			Debug.Assert(!_disposed);
 
 			_controllers.Remove(controller);
-		}
-
-		private void QueueOperation(AsyncResult op, PresentOptions options)
-		{
-			Debug.Assert(op != null);
-			Debug.Assert(!op.IsStarted);
-
-#if NET35
-
-			lock (_ops)
-			{
-				_ops.Add(op);
-				TryStart(op, (options & PresentOptions.ExcecuteAsync) != 0);
-			}
-
-#else
-
-			_ops.Enqueue(op);
-			TryStart(op, (options & PresentOptions.ExcecuteAsync) != 0);
-
-#endif
-		}
-
-		private void TryStart(AsyncResult op, bool forceAsync)
-		{
-			// NOTE: This can be called from any thread.
-			// NOTE: For net35 _ops should be locked at this point.
-			if (!_disposed)
-			{
-				if ((_synchronizationContext == null || _synchronizationContext == SynchronizationContext.Current) && !forceAsync)
-				{
-					TryStartUnsafe();
-				}
-				else
-				{
-					if (_startCallback == null)
-					{
-						_startCallback = OnStartCallback;
-					}
-
-					if (op is IAppStateOperation op2)
-					{
-						op2.SetCompletedAsynchronously();
-					}
-
-					_synchronizationContext.Post(_startCallback, null);
-				}
-			}
-		}
-
-		private void TryStartUnsafe()
-		{
-			// NOTE: This is supposed to be UI thread.
-			// NOTE: For net35 _ops should be locked at this point.
-			Debug.Assert(_synchronizationContext == null || SynchronizationContext.Current == _synchronizationContext);
-
-			if (!_disposed)
-			{
-				if (_completionCallback == null)
-				{
-					_completionCallback = OnCompletedCallback;
-				}
-
-#if NET35
-
-				while (_ops.Count > 0)
-				{
-					var firstOp = _ops[0];
-
-					if (firstOp.IsCompleted)
-					{
-						_ops.RemoveAt(0);
-					}
-					else
-					{
-						firstOp.AddCompletionCallback(_completionCallback);
-						firstOp.TryStart();
-						break;
-					}
-				}
-
-#else
-
-				while (_ops.TryPeek(out var firstOp))
-				{
-					if (firstOp.IsCompleted)
-					{
-						_ops.TryDequeue(out firstOp);
-					}
-					else
-					{
-						firstOp.AddCompletionCallback(_completionCallback);
-						firstOp.TryStart();
-						break;
-					}
-				}
-
-#endif
-			}
-		}
-
-		private void OnStartCallback(object args)
-		{
-#if NET35
-			lock (_ops)
-			{
-				TryStartUnsafe();
-			}
-#else
-			TryStartUnsafe();
-#endif
-		}
-
-		private void OnCompletedCallback(IAsyncOperation op)
-		{
-#if NET35
-			lock (_ops)
-			{
-				TryStartUnsafe();
-			}
-#else
-			TryStartUnsafe();
-#endif
-		}
-
-		private void PostToSyncContext(Delegate method, object[] args, AsyncCompletionSource<object> op)
-		{
-			Debug.Assert(method != null);
-			Debug.Assert(op != null);
-			Debug.Assert(_synchronizationContext != null);
-
-			_synchronizationContext.Post(() =>
-			{
-				try
-				{
-					var result = method.DynamicInvoke(args);
-					op.SetResult(result);
-				}
-				catch (Exception e)
-				{
-					op.SetException(e);
-				}
-			});
 		}
 
 		private void ThrowIfInvalidArgs(PresentArgs args)

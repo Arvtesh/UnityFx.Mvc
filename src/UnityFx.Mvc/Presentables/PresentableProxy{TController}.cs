@@ -14,8 +14,8 @@ namespace UnityFx.Mvc
 
 		#region interface
 
-		public PresentableProxy(PresentService presentManager, PresentableProxy parent, Type controllerType, PresentArgs args)
-			: base(presentManager, parent, controllerType, args)
+		public PresentableProxy(PresentService presenter, PresentableProxy parent, Type controllerType, PresentArgs args, int id)
+			: base(presenter, parent, controllerType, args, id)
 		{
 		}
 

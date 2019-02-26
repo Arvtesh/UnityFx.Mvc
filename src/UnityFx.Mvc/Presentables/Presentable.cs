@@ -75,14 +75,6 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Dissmisses the controller.
-		/// </summary>
-		protected void Dismiss()
-		{
-			_context.Dismiss();
-		}
-
-		/// <summary>
 		/// Called right after the controller transition animation finishes. Default implementation does nothing.
 		/// </summary>
 		/// <seealso cref="OnDismiss"/>
@@ -137,24 +129,29 @@ namespace UnityFx.Mvc
 		/// <inheritdoc/>
 		void IPresentableEvents.OnPresent()
 		{
+			Debug.Assert(!IsDismissed);
 			OnPresent();
 		}
 
 		/// <inheritdoc/>
 		void IPresentableEvents.OnDismiss()
 		{
+			Debug.Assert(!IsDisposed);
 			OnDismiss();
+			Dismissed?.Invoke(this, EventArgs.Empty);
 		}
 
 		/// <inheritdoc/>
 		void IPresentableEvents.OnActivate()
 		{
+			Debug.Assert(!IsDismissed);
 			OnActivate();
 		}
 
 		/// <inheritdoc/>
 		void IPresentableEvents.OnDeactivate()
 		{
+			Debug.Assert(!IsDismissed);
 			OnDeactivate();
 		}
 
@@ -188,6 +185,24 @@ namespace UnityFx.Mvc
 		{
 			ThrowIfDisposed();
 			return _context.Present<TController>(args);
+		}
+
+		#endregion
+
+		#region IDismissable
+
+		/// <summary>
+		/// Raised when the instance is dismissed.
+		/// </summary>
+		/// <seealso cref="Dismiss"/>
+		public event EventHandler Dismissed;
+
+		/// <summary>
+		/// Dismisses the obejct.
+		/// </summary>
+		public void Dismiss()
+		{
+			_context.Dismiss();
 		}
 
 		#endregion

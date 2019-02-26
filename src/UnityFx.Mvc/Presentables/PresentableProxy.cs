@@ -16,7 +16,7 @@ namespace UnityFx.Mvc
 	/// (via <see cref="IPresentContext"/> interface) and serves as a proxy between the controller and
 	/// <see cref="IPresentService"/> implementation.
 	/// </remarks>
-	internal class PresentableProxy : TreeListNode<PresentableProxy>, IPresentContext, IPresentResult, IPresentableEvents, ICommandTarget, IDisposable
+	internal class PresentableProxy : TreeListNode<PresentableProxy>, IPresentContext, IPresentResult, IPresentableEvents, ICommandTarget
 	{
 		#region data
 
@@ -25,11 +25,10 @@ namespace UnityFx.Mvc
 			Initialized,
 			Presented,
 			Active,
-			Dismissed,
-			Disposed
+			Dismissed
 		}
 
-		private readonly PresentService _mvcService;
+		private readonly PresentService _presenter;
 		private readonly IServiceProvider _serviceProvider;
 		private readonly IDisposable _scope;
 		private readonly IPresentable _controller;
@@ -50,7 +49,7 @@ namespace UnityFx.Mvc
 			Debug.Assert(controllerType != null);
 			Debug.Assert(args != null);
 
-			_mvcService = presentManager;
+			_presenter = presentManager;
 			_serviceProvider = presentManager.ServiceProvider;
 			_presentOptions = args.Options;
 			_name = Utility.GetControllerTypeId(controllerType);
@@ -106,7 +105,7 @@ namespace UnityFx.Mvc
 			{
 				foreach (var controller in children)
 				{
-					controller.Dispose();
+					controller.Dismiss();
 				}
 			}
 		}
@@ -125,11 +124,6 @@ namespace UnityFx.Mvc
 
 		public bool IsModal => (_presentOptions & PresentOptions.Modal) != 0;
 
-		public void Dismiss()
-		{
-			Dispose();
-		}
-
 		#endregion
 
 		#region IPresenter
@@ -137,25 +131,25 @@ namespace UnityFx.Mvc
 		public IPresentResult Present(Type controllerType)
 		{
 			Debug.Assert(_state != State.Disposed);
-			return _mvcService.Present(this, controllerType, PresentArgs.Default);
+			return _presenter.Present(this, controllerType, PresentArgs.Default);
 		}
 
 		public IPresentResult Present(Type controllerType, PresentArgs args)
 		{
 			Debug.Assert(_state != State.Disposed);
-			return _mvcService.Present(this, controllerType, args);
+			return _presenter.Present(this, controllerType, args);
 		}
 
-		public IPresentResult<TController> Present<TController>() where TController : class, IViewController
+		public IPresentResult<TController> Present<TController>() where TController : class, IPresentable
 		{
 			Debug.Assert(_state != State.Disposed);
-			return _mvcService.Present<TController>(this, PresentArgs.Default);
+			return _presenter.Present<TController>(this, PresentArgs.Default);
 		}
 
-		public IPresentResult<TController> Present<TController>(PresentArgs args) where TController : class, IViewController
+		public IPresentResult<TController> Present<TController>(PresentArgs args) where TController : class, IPresentable
 		{
 			Debug.Assert(_state != State.Disposed);
-			return _mvcService.Present<TController>(this, args);
+			return _presenter.Present<TController>(this, args);
 		}
 
 		#endregion
@@ -166,13 +160,44 @@ namespace UnityFx.Mvc
 
 		#endregion
 
+		#region IDismissable
+
+		public event EventHandler Dismissed;
+
+		public void Dismiss()
+		{
+			if (_state != State.Dismissed)
+			{
+				try
+				{
+					if (_state == State.Active)
+					{
+						OnDeactivate();
+					}
+
+					if (_state == State.Presented)
+					{
+						OnDismiss();
+					}
+				}
+				finally
+				{
+					_presenter.RemoveController(this);
+					_controller.Dispose();
+					_scope?.Dispose();
+				}
+			}
+		}
+
+		#endregion
+
 		#region IPresentableEvents
 
 		public void OnPresent()
 		{
 			Debug.Assert(_state == State.Initialized);
 
-			_mvcService.TraceEvent(TraceEventType.Verbose, "Present " + _name);
+			_presenter.TraceEvent(TraceEventType.Verbose, "Present " + _name);
 			_state = State.Presented;
 
 			if (_controller is IPresentableEvents controllerEvents)
@@ -185,7 +210,7 @@ namespace UnityFx.Mvc
 		{
 			Debug.Assert(_state == State.Presented);
 
-			_mvcService.TraceEvent(TraceEventType.Verbose, "Activate " + _name);
+			_presenter.TraceEvent(TraceEventType.Verbose, "Activate " + _name);
 			_state = State.Active;
 
 			if (_controller is IPresentableEvents controllerEvents)
@@ -207,7 +232,7 @@ namespace UnityFx.Mvc
 			}
 			finally
 			{
-				_mvcService.TraceEvent(TraceEventType.Verbose, "Deactivate " + _name);
+				_presenter.TraceEvent(TraceEventType.Verbose, "Deactivate " + _name);
 				_state = State.Presented;
 			}
 		}
@@ -222,10 +247,12 @@ namespace UnityFx.Mvc
 				{
 					controllerEvents.OnDismiss();
 				}
+
+				Dismissed?.Invoke(this, EventArgs.Empty);
 			}
 			finally
 			{
-				_mvcService.TraceEvent(TraceEventType.Verbose, "Dismiss " + _name);
+				_presenter.TraceEvent(TraceEventType.Verbose, "Dismiss " + _name);
 				_state = State.Dismissed;
 			}
 		}
@@ -258,33 +285,6 @@ namespace UnityFx.Mvc
 			}
 
 			return _serviceProvider.GetService(serviceType);
-		}
-
-		#endregion
-
-		#region IDisposable
-
-		public void Dispose()
-		{
-			if (_state != State.Disposed)
-			{
-				if (_state == State.Presented)
-				{
-					OnDismiss();
-				}
-
-				_state = State.Disposed;
-
-				try
-				{
-					_controller.Dispose();
-				}
-				finally
-				{
-					_mvcService.RemoveController(this);
-					_scope?.Dispose();
-				}
-			}
 		}
 
 		#endregion
