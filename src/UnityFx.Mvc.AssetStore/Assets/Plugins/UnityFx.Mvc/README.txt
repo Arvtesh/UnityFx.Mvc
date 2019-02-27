@@ -1,14 +1,14 @@
 SUMMARY
-The package provides application states for Unity3d.
+The package provides MVC tools for Unity3d.
 
 LICENSE
-https://github.com/Arvtesh/UnityFx.AppStates/blob/master/LICENSE.md
+https://github.com/Arvtesh/UnityFx.Mvc/blob/master/LICENSE.md
 
 DOCUMENTATION
-https://arvtesh.github.io/UnityFx.AppStates
+https://arvtesh.github.io/UnityFx.Mvc
 
 SUPPORT
 mailto:arvtesh@gmail.com
 
 USEFUL LINKS
-Github project: https://github.com/Arvtesh/UnityFx.AppStates
+Github project: https://github.com/Arvtesh/UnityFx.Mvc

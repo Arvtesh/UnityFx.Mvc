@@ -19,24 +19,14 @@ namespace UnityFx.Mvc
 		None = 0,
 
 		/// <summary>
-		/// Makes sure the present call return immediately after queueing the operation.
-		/// </summary>
-		ExcecuteAsync = 1,
-
-		/// <summary>
 		/// Marks the controller as modal. Modal controllers do not forward unprocessed commands to controllers below them is the stack.
 		/// </summary>
-		Modal = 2,
+		Modal = 1,
 
 		/// <summary>
-		/// Presents a new state and dismisses the previous one.
+		/// Presents a new controller and dismisses all other controllers at the same level.
 		/// </summary>
-		DismissCurrentController = 0x00001000,
-
-		/// <summary>
-		/// Presents a new state and dismisses all other states.
-		/// </summary>
-		DismissAllStates = 0x00002000,
+		DismissAll = 0x00001000,
 
 		/// <summary>
 		/// When presented, the target controller will not be activated.
