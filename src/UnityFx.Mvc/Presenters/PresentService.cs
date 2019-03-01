@@ -27,6 +27,7 @@ namespace UnityFx.Mvc
 		private readonly PresentableStack _stack;
 
 		private int _idCounter;
+		private bool _busy;
 		private bool _disposed;
 
 		#endregion
@@ -90,23 +91,35 @@ namespace UnityFx.Mvc
 
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
-
-			var id = PrePresent(parent, args);
-			var result = new PresentableProxy(this, parent, controllerType, args, id);
+			ThrowIfBusy();
 
 			try
 			{
-				AddController(result);
-				Present(result);
-			}
-			catch
-			{
-				Dismiss(result);
-				throw;
-			}
+				SetBusy(true);
 
-			PostPresent(result, args);
-			return result;
+				var id = PrePresent(parent, args);
+				var result = new PresentableProxy(this, parent, controllerType, args, id);
+
+				try
+				{
+					AddController(result);
+					SetBusy(false);
+
+					result.OnPresent();
+				}
+				catch
+				{
+					DismissInternal(result);
+					throw;
+				}
+
+				PostPresent(result, args);
+				return result;
+			}
+			finally
+			{
+				SetBusy(false);
+			}
 		}
 
 		internal IPresentResult<T> Present<T>(PresentableProxy parent, PresentArgs args) where T : class, IPresentable
@@ -115,6 +128,7 @@ namespace UnityFx.Mvc
 
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(typeof(T));
+			ThrowIfBusy();
 
 			var id = PrePresent(parent, args);
 			var result = new PresentableProxy<T>(this, parent, typeof(T), args, id);
@@ -122,11 +136,11 @@ namespace UnityFx.Mvc
 			try
 			{
 				AddController(result);
-				Present(result);
+				result.OnPresent();
 			}
 			catch
 			{
-				Dismiss(result);
+				DismissInternal(result);
 				throw;
 			}
 
@@ -138,15 +152,22 @@ namespace UnityFx.Mvc
 		{
 			Debug.Assert(controller != null);
 
+			ThrowIfDisposed();
+			ThrowIfBusy();
+
 			try
 			{
-				controller.TryDeactivate();
-				controller.TryDismiss();
+				SetBusy(true);
+				DismissInternal(controller);
+
+				if (_controllers.TryPeek(out var topController))
+				{
+					topController.TryActivate();
+				}
 			}
 			finally
 			{
-				_controllers.Remove(controller);
-				controller.Dispose();
+				SetBusy(false);
 			}
 		}
 
@@ -276,6 +297,7 @@ namespace UnityFx.Mvc
 		{
 			Debug.Assert(args != null);
 			Debug.Assert(!_disposed);
+			Debug.Assert(!_busy);
 
 			var id = ++_idCounter;
 
@@ -322,12 +344,18 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		private void Present(PresentableProxy controller)
+		private void DismissInternal(PresentableProxy controller)
 		{
-			Debug.Assert(controller != null);
-			Debug.Assert(!_disposed);
-
-			controller.OnPresent();
+			try
+			{
+				controller.TryDeactivate();
+				controller.TryDismiss();
+			}
+			finally
+			{
+				_controllers.Remove(controller);
+				controller.Dispose();
+			}
 		}
 
 		private void AddController(PresentableProxy controller)
@@ -356,11 +384,24 @@ namespace UnityFx.Mvc
 			}
 		}
 
+		private void SetBusy(bool busy)
+		{
+			_busy = busy;
+		}
+
 		private void ThrowIfInvalidArgs(PresentArgs args)
 		{
 			if (args == null)
 			{
 				throw new ArgumentNullException(nameof(args));
+			}
+		}
+
+		private void ThrowIfBusy()
+		{
+			if (_busy)
+			{
+				throw new InvalidOperationException();
 			}
 		}
 

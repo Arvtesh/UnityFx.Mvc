@@ -176,9 +176,11 @@ namespace UnityFx.Mvc
 
 		public event EventHandler Dismissed;
 
+		public bool IsDismissed => _state == State.Dismissed || _state == State.Disposed;
+
 		public void Dismiss()
 		{
-			if (_state != State.Dismissed)
+			if (_state != State.Dismissed && _state != State.Disposed)
 			{
 				_presenter.Dismiss(this);
 			}

@@ -30,11 +30,6 @@ namespace UnityFx.Mvc
 		protected bool IsPresented => _presented;
 
 		/// <summary>
-		/// Gets a value indicating whether the controller has been dismissed.
-		/// </summary>
-		protected bool IsDismissed => IsDisposed;
-
-		/// <summary>
 		/// Gets a value indicating whether the controller is active (i.e. can accept input).
 		/// </summary>
 		protected bool IsActive => _context.IsActive;
@@ -195,11 +190,19 @@ namespace UnityFx.Mvc
 		/// Raised when the instance is dismissed.
 		/// </summary>
 		/// <seealso cref="Dismiss"/>
+		/// <seealso cref="IsDismissed"/>
 		public event EventHandler Dismissed;
+
+		/// <summary>
+		/// Gets a value indicating whether the object is dismissed.
+		/// </summary>
+		/// <seealso cref="Dismiss"/>
+		public bool IsDismissed => IsDisposed;
 
 		/// <summary>
 		/// Dismisses the obejct.
 		/// </summary>
+		/// <seealso cref="IsDismissed"/>
 		public void Dismiss()
 		{
 			_context.Dismiss();

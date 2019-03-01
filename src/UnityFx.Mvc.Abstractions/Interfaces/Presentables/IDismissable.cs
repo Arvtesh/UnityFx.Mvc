@@ -15,11 +15,21 @@ namespace UnityFx.Mvc
 		/// Raised when the instance is dismissed.
 		/// </summary>
 		/// <seealso cref="Dismiss"/>
+		/// <seealso cref="IsDismissed"/>
 		event EventHandler Dismissed;
+
+		/// <summary>
+		/// Gets a value indicating whether the object is dismissed.
+		/// </summary>
+		/// <seealso cref="Dismiss"/>
+		/// <seealso cref="Dismissed"/>
+		bool IsDismissed { get; }
 
 		/// <summary>
 		/// Dismisses the obejct.
 		/// </summary>
+		/// <seealso cref="Dismissed"/>
+		/// <seealso cref="IsDismissed"/>
 		void Dismiss();
 	}
 }
