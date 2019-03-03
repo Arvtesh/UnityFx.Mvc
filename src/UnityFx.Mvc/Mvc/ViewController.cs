@@ -17,6 +17,7 @@ namespace UnityFx.Mvc
 		#region data
 
 		private ViewOptions _viewOptions;
+		private ISite _site;
 		private IView _view;
 		private bool _disposed;
 
@@ -376,18 +377,41 @@ namespace UnityFx.Mvc
 
 		#endregion
 
+		#region IComponent
+
+		/// <summary>
+		/// Raised when the component has been disposed.
+		/// </summary>
+		/// <seealso cref="Dispose"/>
+		public event EventHandler Disposed;
+
+		/// <summary>
+		///  Gets or sets the <see cref="ISite"/> associated with the <see cref="IComponent"/>.
+		/// </summary>
+		public ISite Site { get => _site; set => _site = value; }
+
+		#endregion
+
 		#region IDisposable
 
 		/// <summary>
 		/// Releases resources used by the controller.
 		/// </summary>
 		/// <seealso cref="ThrowIfDisposed"/>
+		/// <seealso cref="Disposed"/>
 		public void Dispose()
 		{
 			if (!_disposed)
 			{
 				_disposed = true;
+
+				if (_site != null && _site.Container != null)
+				{
+					_site.Container.Remove(this);
+				}
+
 				OnDispose();
+				Disposed?.Invoke(this, EventArgs.Empty);
 			}
 		}
 

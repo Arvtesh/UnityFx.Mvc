@@ -42,6 +42,7 @@ namespace UnityFx.Mvc
 		protected Presentable(IPresentContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
+			Site = context;
 		}
 
 		/// <summary>
@@ -54,6 +55,7 @@ namespace UnityFx.Mvc
 			: base(view)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
+			Site = context;
 		}
 
 		/// <summary>
@@ -67,6 +69,7 @@ namespace UnityFx.Mvc
 			: base(view, viewOptions)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
+			Site = context;
 		}
 
 		/// <summary>
@@ -103,19 +106,6 @@ namespace UnityFx.Mvc
 
 		#endregion
 
-		#region ViewController
-
-		/// <summary>
-		/// Called when the controller is disposed. Default implementation unloads the attached view.
-		/// </summary>
-		protected override void OnDispose()
-		{
-			_context.Dismiss();
-			base.OnDispose();
-		}
-
-		#endregion
-
 		#region IPresentable
 		#endregion
 
@@ -131,7 +121,7 @@ namespace UnityFx.Mvc
 		/// <inheritdoc/>
 		void IPresentableEvents.OnDismiss()
 		{
-			Debug.Assert(!IsDisposed);
+			Debug.Assert(!IsDismissed);
 			OnDismiss();
 			Dismissed?.Invoke(this, EventArgs.Empty);
 		}
