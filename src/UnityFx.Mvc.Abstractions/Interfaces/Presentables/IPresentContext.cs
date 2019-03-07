@@ -11,7 +11,7 @@ namespace UnityFx.Mvc
 	/// It is here for the sake of testability/explicit dependencies for <see cref="IPresentable"/> implementations.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
-	public interface IPresentContext : ISite, IPresenter
+	public interface IPresentContext : IPresenter, IServiceProvider
 	{
 		/// <summary>
 		/// Gets an unique controller id.

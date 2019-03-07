@@ -7,7 +7,6 @@ using System.Collections;
 using System.Collections.Concurrent;
 #endif
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -19,7 +18,7 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <threadsafety static="true" instance="false"/>
 	/// <seealso cref="IViewController"/>
-	public class PresentService : IPresentService, IContainer
+	public class PresentService : IPresentService
 	{
 		#region data
 
@@ -27,7 +26,6 @@ namespace UnityFx.Mvc
 		private readonly TreeListCollection<PresentableProxy> _controllers = new TreeListCollection<PresentableProxy>();
 		private readonly PresentableStack _stack;
 
-		private ComponentCollection _components;
 		private int _idCounter;
 		private bool _busy;
 		private bool _disposed;
@@ -282,63 +280,6 @@ namespace UnityFx.Mvc
 
 		#endregion
 
-		#region IContainer
-
-		/// <inheritdoc/>
-		ComponentCollection IContainer.Components
-		{
-			get
-			{
-				ThrowIfDisposed();
-
-				if (_components == null)
-				{
-					var components = new IComponent[_controllers.Count];
-					var index = 0;
-
-					foreach (var c in _controllers)
-					{
-						components[index++] = c.Controller;
-					}
-
-					_components = new ComponentCollection(components);
-				}
-
-				return _components;
-			}
-		}
-
-		/// <inheritdoc/>
-		void IContainer.Add(IComponent component)
-		{
-			throw new NotSupportedException();
-		}
-
-		/// <inheritdoc/>
-		void IContainer.Add(IComponent component, string name)
-		{
-			throw new NotSupportedException();
-		}
-
-		/// <inheritdoc/>
-		void IContainer.Remove(IComponent component)
-		{
-			if (component != null)
-			{
-				var site = component.Site;
-
-				if (site != null && site.Container == this)
-				{
-					component.Site = null;
-
-					_controllers.Remove(site as PresentableProxy);
-					_components = null;
-				}
-			}
-		}
-
-		#endregion
-
 		#region IDisposable
 
 		/// <inheritdoc/>
@@ -413,8 +354,6 @@ namespace UnityFx.Mvc
 			finally
 			{
 				_controllers.Remove(controller);
-				_components = null;
-
 				controller.Dispose();
 			}
 		}
@@ -443,8 +382,6 @@ namespace UnityFx.Mvc
 			{
 				_controllers.Add(controller);
 			}
-
-			_components = null;
 		}
 
 		private void SetBusy(bool busy)

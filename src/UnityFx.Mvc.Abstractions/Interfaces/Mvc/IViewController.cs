@@ -21,7 +21,7 @@ namespace UnityFx.Mvc
 	/// <seealso cref="IViewControllerFactory"/>
 	/// <seealso cref="IViewController{TView}"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller"/>
-	public interface IViewController : IComponent, ICommandTarget
+	public interface IViewController : ICommandTarget, IDisposable
 	{
 		/// <summary>
 		/// Gets a value indicating whether the <see cref="View"/> can be safely used.

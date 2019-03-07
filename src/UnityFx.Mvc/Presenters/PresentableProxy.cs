@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 
 namespace UnityFx.Mvc
@@ -35,9 +34,9 @@ namespace UnityFx.Mvc
 		private readonly IDisposable _scope;
 		private readonly IPresentable _controller;
 		private readonly PresentOptions _presentOptions;
+		private readonly string _name;
 		private readonly int _id;
 
-		private string _name;
 		private State _state;
 
 		#endregion
@@ -256,18 +255,6 @@ namespace UnityFx.Mvc
 
 			return false;
 		}
-
-		#endregion
-
-		#region ISite
-
-		public IComponent Component => _controller;
-
-		public IContainer Container => _presenter;
-
-		public bool DesignMode => false;
-
-		public string Name { get => _name; set => _name = value; }
 
 		#endregion
 
