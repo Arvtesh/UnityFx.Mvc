@@ -27,7 +27,8 @@ namespace UnityFx.Mvc
 		private readonly PresentableStack _stack;
 
 		private int _idCounter;
-		private bool _busy;
+		private int _opCounter;
+		private int _busyCounter;
 		private bool _disposed;
 
 		#endregion
@@ -93,33 +94,9 @@ namespace UnityFx.Mvc
 			ThrowIfInvalidControllerType(controllerType);
 			ThrowIfBusy();
 
-			try
-			{
-				SetBusy(true);
-
-				var id = PrePresent(parent, args);
-				var result = new PresentableProxy(this, parent, controllerType, args, id);
-
-				try
-				{
-					AddController(result);
-					SetBusy(false);
-
-					result.OnPresent();
-				}
-				catch
-				{
-					DismissInternal(result);
-					throw;
-				}
-
-				PostPresent(result, args);
-				return result;
-			}
-			finally
-			{
-				SetBusy(false);
-			}
+			var result = CreateController(parent, controllerType, args);
+			PresentInternal(result, args);
+			return result;
 		}
 
 		internal IPresentResult<T> Present<T>(PresentableProxy parent, PresentArgs args) where T : class, IPresentable
@@ -130,21 +107,8 @@ namespace UnityFx.Mvc
 			ThrowIfInvalidControllerType(typeof(T));
 			ThrowIfBusy();
 
-			var id = PrePresent(parent, args);
-			var result = new PresentableProxy<T>(this, parent, typeof(T), args, id);
-
-			try
-			{
-				AddController(result);
-				result.OnPresent();
-			}
-			catch
-			{
-				DismissInternal(result);
-				throw;
-			}
-
-			PostPresent(result, args);
+			var result = CreateController<T>(parent, args);
+			PresentInternal(result, args);
 			return result;
 		}
 
@@ -293,54 +257,111 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private int PrePresent(PresentableProxy parent, PresentArgs args)
+		private PresentableProxy CreateController(PresentableProxy parent, Type controllerType, PresentArgs args)
 		{
-			Debug.Assert(args != null);
-			Debug.Assert(!_disposed);
-			Debug.Assert(!_busy);
+			PresentableProxy c = null;
 
-			var id = ++_idCounter;
-
-			if ((args.Options & PresentOptions.DismissAll) != 0)
+			try
 			{
-				if (parent != null)
-				{
-					foreach (var controller in parent.GetChildren().Reverse())
-					{
-						Dismiss(controller);
-					}
-				}
-				else
-				{
-					while (_controllers.TryPeek(out var controller))
-					{
-						Dismiss(controller);
-					}
-				}
+				// 1) Lock present/dismiss operations.
+				SetBusy(true);
+
+				// 2) Create a new controller. Note that while the lock is alive no other present/dismiss operation can start.
+				c = new PresentableProxy(this, parent, controllerType, args, ++_idCounter);
+
+				// 3) Add the new created controller to the stack and turn off the operations lock.
+				AddController(c);
 			}
-			else
+			catch
 			{
-				if (parent != null)
-				{
-					parent.TryDeactivate();
-				}
-				else if (_controllers.TryPeek(out var topController))
-				{
-					topController.TryDeactivate();
-				}
+				DisposeInternal(c);
+				throw;
+			}
+			finally
+			{
+				SetBusy(false);
 			}
 
-			return id;
+			return c;
 		}
 
-		private void PostPresent(PresentableProxy controller, PresentArgs args)
+		private PresentableProxy<T> CreateController<T>(PresentableProxy parent, PresentArgs args) where T : class, IPresentable
 		{
-			Debug.Assert(controller != null);
-			Debug.Assert(!_disposed);
+			PresentableProxy<T> c = null;
 
-			if ((args.Options & PresentOptions.DoNotActivate) == 0 && controller == _controllers.Last)
+			try
 			{
-				controller.TryActivate();
+				// 1) Lock present/dismiss operations.
+				SetBusy(true);
+
+				// 2) Create a new controller. Note that while the lock is alive no other present/dismiss operation can start.
+				c = new PresentableProxy<T>(this, parent, typeof(T), args, ++_idCounter);
+
+				// 3) Add the new created controller to the stack and turn off the operations lock.
+				AddController(c);
+			}
+			catch
+			{
+				DisposeInternal(c);
+				throw;
+			}
+			finally
+			{
+				SetBusy(false);
+			}
+
+			return c;
+		}
+
+		private void PresentInternal(PresentableProxy controller, PresentArgs args)
+		{
+			try
+			{
+				++_opCounter;
+
+				// Deactivate currently active controller (if needed).
+				if (_controllers.TryPeek(out var topController))
+				{
+					if (controller.Parent != null)
+					{
+						if (topController.IsChildOf(controller.Parent))
+						{
+							topController.TryDeactivate();
+						}
+					}
+					else
+					{
+						topController.TryDeactivate();
+					}
+				}
+
+				// Present the new one.
+				controller.OnPresent();
+
+				// If this is the last operation, activate the controller.
+				if (_opCounter == 1)
+				{
+					if (controller == _controllers.Last)
+					{
+						if ((args.Options & PresentOptions.DoNotActivate) == 0)
+						{
+							controller.TryActivate();
+						}
+					}
+					else if (_controllers.TryPeek(out topController))
+					{
+						topController.TryActivate();
+					}
+				}
+			}
+			catch
+			{
+				DismissInternal(controller);
+				throw;
+			}
+			finally
+			{
+				--_opCounter;
 			}
 		}
 
@@ -348,13 +369,40 @@ namespace UnityFx.Mvc
 		{
 			try
 			{
+				++_opCounter;
+
 				controller.TryDeactivate();
 				controller.TryDismiss();
+
+				// If this is the last operation, activate the controller.
+				if (_opCounter == 1 && _controllers.TryPeek(out var topController))
+				{
+					topController.TryActivate();
+				}
 			}
 			finally
 			{
+				--_opCounter;
+
+				DisposeInternal(controller);
+			}
+		}
+
+		private void DisposeInternal(PresentableProxy controller)
+		{
+			if (controller != null)
+			{
 				_controllers.Remove(controller);
-				controller.Dispose();
+
+				try
+				{
+					SetBusy(true);
+					controller.Dispose();
+				}
+				finally
+				{
+					SetBusy(false);
+				}
 			}
 		}
 
@@ -386,7 +434,14 @@ namespace UnityFx.Mvc
 
 		private void SetBusy(bool busy)
 		{
-			_busy = busy;
+			if (busy)
+			{
+				++_busyCounter;
+			}
+			else
+			{
+				--_busyCounter;
+			}
 		}
 
 		private void ThrowIfInvalidArgs(PresentArgs args)
@@ -399,7 +454,7 @@ namespace UnityFx.Mvc
 
 		private void ThrowIfBusy()
 		{
-			if (_busy)
+			if (_busyCounter > 0)
 			{
 				throw new InvalidOperationException();
 			}

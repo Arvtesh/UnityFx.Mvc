@@ -110,7 +110,9 @@ namespace UnityFx.Mvc
 		/// </summary>
 		protected override void OnDispose()
 		{
+			// Make sure the object is dismissed.
 			_context.Dismiss();
+
 			base.OnDispose();
 		}
 

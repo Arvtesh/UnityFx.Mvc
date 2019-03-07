@@ -24,11 +24,6 @@ namespace UnityFx.Mvc
 		Modal = 1,
 
 		/// <summary>
-		/// Presents a new controller and dismisses all other controllers at the same level.
-		/// </summary>
-		DismissAll = 0x00001000,
-
-		/// <summary>
 		/// When presented, the target controller will not be activated.
 		/// </summary>
 		DoNotActivate = 0x00010000,

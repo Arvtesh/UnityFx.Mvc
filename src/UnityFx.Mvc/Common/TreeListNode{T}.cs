@@ -24,6 +24,21 @@ namespace UnityFx.Mvc
 		#region interface
 
 		/// <summary>
+		/// Gets parent node.
+		/// </summary>
+		public T Parent => _parent;
+
+		/// <summary>
+		/// Gets or sets previous sibling node.
+		/// </summary>
+		public T Prev { get; set; }
+
+		/// <summary>
+		/// Gets or sets next sibling node.
+		/// </summary>
+		public T Next { get; set; }
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="TreeListNode{T}"/> class.
 		/// </summary>
 		protected TreeListNode()
@@ -39,19 +54,95 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Gets parent node.
+		/// Gets the node children.
 		/// </summary>
-		public T Parent => _parent;
+		public IEnumerable<T> GetChildren()
+		{
+			return new ChildEnumerable(this, false);
+		}
 
 		/// <summary>
-		/// Gets or sets previous sibling node.
+		/// Gets the node children recursively.
 		/// </summary>
-		public T Prev { get; set; }
+		public IEnumerable<T> GetChildrenRecursive()
+		{
+			return new ChildEnumerable(this, true);
+		}
 
 		/// <summary>
-		/// Gets or sets next sibling node.
+		/// Checks whether the specified node is a child of this one.
 		/// </summary>
-		public T Next { get; set; }
+		/// <param name="other">The node in question.</param>
+		/// <returns>Returns <see langword="true"/> if the specified node is child of this one; <see langword="false"/> otherwise.</returns>
+		public bool IsChildOf(TreeListNode<T> other)
+		{
+			if (other != null)
+			{
+				var nodeParent = _parent;
+
+				if (nodeParent == other)
+				{
+					return true;
+				}
+				else if (nodeParent != null)
+				{
+					return nodeParent.IsChildOf(other);
+				}
+			}
+
+			return false;
+		}
+
+		#endregion
+
+		#region implementation
+
+		private class ChildEnumerable : IEnumerable<T>
+		{
+			private readonly TreeListNode<T> _parent;
+			private readonly bool _recursive;
+
+			internal ChildEnumerable(TreeListNode<T> first, bool recursive)
+			{
+				_parent = first;
+				_recursive = recursive;
+			}
+
+			public IEnumerator<T> GetEnumerator()
+			{
+				var cur = _parent.Next;
+
+				if (_recursive)
+				{
+					while (cur != null)
+					{
+						if (cur.IsChildOf(_parent))
+						{
+							yield return cur;
+						}
+
+						cur = cur.Next;
+					}
+				}
+				else
+				{
+					while (cur != null)
+					{
+						if (cur.Parent == _parent)
+						{
+							yield return cur;
+						}
+
+						cur = cur.Next;
+					}
+				}
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return (this as IEnumerable<T>).GetEnumerator();
+			}
+		}
 
 		#endregion
 	}
