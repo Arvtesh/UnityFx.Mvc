@@ -61,7 +61,7 @@ namespace UnityFx.Mvc
 				{
 					foreach (var c in _controllers.Reverse())
 					{
-						c.Dismiss();
+						c.Dispose();
 					}
 
 					_controllers.Clear();
@@ -263,13 +263,9 @@ namespace UnityFx.Mvc
 
 			try
 			{
-				// 1) Lock present/dismiss operations.
 				SetBusy(true);
 
-				// 2) Create a new controller. Note that while the lock is alive no other present/dismiss operation can start.
 				c = new PresentableProxy(this, parent, controllerType, args, ++_idCounter);
-
-				// 3) Add the new created controller to the stack and turn off the operations lock.
 				AddController(c);
 			}
 			catch
@@ -291,13 +287,9 @@ namespace UnityFx.Mvc
 
 			try
 			{
-				// 1) Lock present/dismiss operations.
 				SetBusy(true);
 
-				// 2) Create a new controller. Note that while the lock is alive no other present/dismiss operation can start.
 				c = new PresentableProxy<T>(this, parent, typeof(T), args, ++_idCounter);
-
-				// 3) Add the new created controller to the stack and turn off the operations lock.
 				AddController(c);
 			}
 			catch

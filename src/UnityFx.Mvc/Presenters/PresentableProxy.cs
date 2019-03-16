@@ -140,25 +140,25 @@ namespace UnityFx.Mvc
 
 		public IPresentResult Present(Type controllerType)
 		{
-			Debug.Assert(_state != State.Disposed);
+			Debug.Assert(!IsDismissed);
 			return _presenter.Present(this, controllerType, PresentArgs.Default);
 		}
 
 		public IPresentResult Present(Type controllerType, PresentArgs args)
 		{
-			Debug.Assert(_state != State.Disposed);
+			Debug.Assert(!IsDismissed);
 			return _presenter.Present(this, controllerType, args);
 		}
 
 		public IPresentResult<TController> Present<TController>() where TController : class, IPresentable
 		{
-			Debug.Assert(_state != State.Disposed);
+			Debug.Assert(!IsDismissed);
 			return _presenter.Present<TController>(this, PresentArgs.Default);
 		}
 
 		public IPresentResult<TController> Present<TController>(PresentArgs args) where TController : class, IPresentable
 		{
-			Debug.Assert(_state != State.Disposed);
+			Debug.Assert(!IsDismissed);
 			return _presenter.Present<TController>(this, args);
 		}
 

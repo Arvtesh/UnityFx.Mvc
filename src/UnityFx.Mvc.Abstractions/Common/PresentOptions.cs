@@ -24,6 +24,16 @@ namespace UnityFx.Mvc
 		Modal = 1,
 
 		/// <summary>
+		/// Dismisses the caller before presenting.
+		/// </summary>
+		DismissCurrent = 0x00000100,
+
+		/// <summary>
+		/// Dismisses all controllers before presenting.
+		/// </summary>
+		DismissAll = 0x00000200,
+
+		/// <summary>
 		/// When presented, the target controller will not be activated.
 		/// </summary>
 		DoNotActivate = 0x00010000,
