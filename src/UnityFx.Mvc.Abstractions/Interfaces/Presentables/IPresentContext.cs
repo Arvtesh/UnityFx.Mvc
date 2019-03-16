@@ -19,14 +19,15 @@ namespace UnityFx.Mvc
 		int Id { get; }
 
 		/// <summary>
-		/// Gets normalized name of the controller type.
+		/// Gets a value indicating whether the controller has been presented (but not dismissed).
 		/// </summary>
-		string ControllerName { get; }
+		bool IsPresented { get; }
 
 		/// <summary>
-		/// Gets normalized name of the view type.
+		/// Gets a value indicating whether the controller has been dismissed.
 		/// </summary>
-		string ViewName { get; }
+		/// <seealso cref="Dismiss"/>
+		bool IsDismissed { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the controller is active.
@@ -41,6 +42,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Dismisses the controller.
 		/// </summary>
+		/// <seealso cref="IsDismissed"/>
 		void Dismiss();
 	}
 }

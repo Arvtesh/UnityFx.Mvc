@@ -18,7 +18,6 @@ namespace UnityFx.Mvc
 		#region data
 
 		private readonly IPresentContext _context;
-		private bool _presented;
 
 		#endregion
 
@@ -27,7 +26,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets a value indicating whether the controller is presented.
 		/// </summary>
-		protected bool IsPresented => _presented;
+		protected bool IsPresented => _context.IsPresented;
 
 		/// <summary>
 		/// Gets a value indicating whether the controller is active (i.e. can accept input).
@@ -199,7 +198,7 @@ namespace UnityFx.Mvc
 		/// Gets a value indicating whether the object is dismissed.
 		/// </summary>
 		/// <seealso cref="Dismiss"/>
-		public bool IsDismissed => IsDisposed;
+		public bool IsDismissed => _context.IsDismissed;
 
 		/// <summary>
 		/// Dismisses the obejct.

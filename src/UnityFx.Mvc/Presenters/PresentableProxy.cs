@@ -128,9 +128,7 @@ namespace UnityFx.Mvc
 
 		public int Id => _id;
 
-		public string ControllerName => _name;
-
-		public string ViewName => throw new NotImplementedException();
+		public bool IsPresented => _state == State.Presented || _state == State.Active;
 
 		public bool IsActive => _state == State.Active;
 
