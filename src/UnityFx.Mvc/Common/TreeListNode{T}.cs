@@ -56,17 +56,17 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets the node children.
 		/// </summary>
-		public IEnumerable<T> GetChildren()
+		public ChildEnumerable GetChildren()
 		{
-			return new ChildEnumerable(this, false);
+			return new ChildEnumerable(this as T, false);
 		}
 
 		/// <summary>
 		/// Gets the node children recursively.
 		/// </summary>
-		public IEnumerable<T> GetChildrenRecursive()
+		public ChildEnumerable GetChildrenRecursive()
 		{
-			return new ChildEnumerable(this, true);
+			return new ChildEnumerable(this as T, true);
 		}
 
 		/// <summary>
@@ -74,7 +74,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="other">The node in question.</param>
 		/// <returns>Returns <see langword="true"/> if the specified node is child of this one; <see langword="false"/> otherwise.</returns>
-		public bool IsChildOf(TreeListNode<T> other)
+		public bool IsChildOf(T other)
 		{
 			if (other != null)
 			{
@@ -97,50 +97,84 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private class ChildEnumerable : IEnumerable<T>
+		public struct ChildEnumerator : IEnumerator<T>
 		{
-			private readonly TreeListNode<T> _parent;
+			private readonly T _parent;
+			private readonly bool _recursive;
+			private T _current;
+
+			internal ChildEnumerator(T first, bool recursive)
+			{
+				_parent = first;
+				_recursive = recursive;
+				_current = first;
+			}
+
+			public T Current => _current;
+
+			object IEnumerator.Current => _current;
+
+			public bool MoveNext()
+			{
+				if (_current != null)
+				{
+					_current = _current.Next;
+
+					while (_current != null)
+					{
+						if (_recursive)
+						{
+							if (_current.IsChildOf(_parent))
+							{
+								return true;
+							}
+						}
+						else if (_current.Parent == _parent)
+						{
+							return true;
+						}
+
+						_current = _current.Next;
+					}
+				}
+
+				return false;
+			}
+
+			public void Reset()
+			{
+				_current = _parent;
+			}
+
+			public void Dispose()
+			{
+			}
+		}
+
+		public struct ChildEnumerable : IEnumerable<T>
+		{
+			private readonly T _parent;
 			private readonly bool _recursive;
 
-			internal ChildEnumerable(TreeListNode<T> first, bool recursive)
+			internal ChildEnumerable(T first, bool recursive)
 			{
 				_parent = first;
 				_recursive = recursive;
 			}
 
-			public IEnumerator<T> GetEnumerator()
+			public ChildEnumerator GetEnumerator()
 			{
-				var cur = _parent.Next;
+				return new ChildEnumerator(_parent, _recursive);
+			}
 
-				if (_recursive)
-				{
-					while (cur != null)
-					{
-						if (cur.IsChildOf(_parent))
-						{
-							yield return cur;
-						}
-
-						cur = cur.Next;
-					}
-				}
-				else
-				{
-					while (cur != null)
-					{
-						if (cur.Parent == _parent)
-						{
-							yield return cur;
-						}
-
-						cur = cur.Next;
-					}
-				}
+			IEnumerator<T> IEnumerable<T>.GetEnumerator()
+			{
+				return new ChildEnumerator(_parent, _recursive);
 			}
 
 			IEnumerator IEnumerable.GetEnumerator()
 			{
-				return (this as IEnumerable<T>).GetEnumerator();
+				return new ChildEnumerator(_parent, _recursive);
 			}
 		}
 

@@ -327,6 +327,31 @@ namespace UnityFx.Mvc
 					}
 				}
 
+				// Dismiss.
+				if ((args.Options & PresentOptions.DismissCurrent) != 0)
+				{
+					if (controller.Parent != null)
+					{
+						foreach (var c in controller.Parent.GetChildrenRecursive().Reverse())
+						{
+							if (c != controller)
+							{
+								DismissInternal(c);
+							}
+						}
+					}
+				}
+				else if ((args.Options & PresentOptions.DismissAll) != 0)
+				{
+					foreach (var c in _controllers.Reverse())
+					{
+						if (c != controller)
+						{
+							DismissInternal(c);
+						}
+					}
+				}
+
 				// Present the new one.
 				controller.OnPresent();
 
