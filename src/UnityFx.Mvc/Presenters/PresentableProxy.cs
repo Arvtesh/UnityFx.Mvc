@@ -4,6 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+#if !NET35
+using System.Runtime.CompilerServices;
+using UnityFx.Mvc.CompilerServices;
+#endif
 
 namespace UnityFx.Mvc
 {
@@ -16,7 +20,11 @@ namespace UnityFx.Mvc
 	/// (via <see cref="IPresentContext"/> interface) and serves as a proxy between the controller and
 	/// <see cref="IPresentService"/> implementation.
 	/// </remarks>
+#if NET35
 	internal class PresentableProxy : TreeListNode<PresentableProxy>, IPresentContext, IPresentResult, IPresentableEvents, ICommandTarget
+#else
+	internal class PresentableProxy : TreeListNode<PresentableProxy>, IPresentContext, IPresentResult, IPresentAwaiter, IPresentableEvents, ICommandTarget
+#endif
 	{
 		#region data
 
@@ -37,6 +45,9 @@ namespace UnityFx.Mvc
 		private readonly string _name;
 		private readonly int _id;
 
+#if !NET35
+		private Action _continuations;
+#endif
 		private State _state;
 
 		#endregion
@@ -86,6 +97,9 @@ namespace UnityFx.Mvc
 			else
 			{
 				_presenter.PresentCompleted(this, _presentOptions);
+#if !NET35
+				_continuations?.Invoke();
+#endif
 			}
 		}
 
@@ -182,6 +196,34 @@ namespace UnityFx.Mvc
 		public event EventHandler Presented;
 
 		public IPresentable Controller => _controller;
+
+#if !NET35
+
+		public IPresentAwaiter GetAwaiter() => this;
+
+#endif
+
+		#endregion
+
+		#region IPresentAwaiter
+
+#if !NET35
+
+		bool IPresentAwaiter.IsCompleted
+		{
+			get
+			{
+				return _state == State.Presented || _state == State.Active || _state == State.Dismissed;
+			}
+		}
+
+		IPresentable IPresentAwaiter.GetResult()
+		{
+			// TODO
+			return _controller;
+		}
+
+#endif
 
 		#endregion
 
@@ -287,6 +329,20 @@ namespace UnityFx.Mvc
 
 		#endregion
 
+		#region INotifyCompletion
+
+#if !NET35
+
+		void INotifyCompletion.OnCompleted(Action continuation)
+		{
+			// TODO: Make this code thread-safe.
+			_continuations += continuation;
+		}
+
+#endif
+
+		#endregion
+
 		#region IDisposable
 
 		public void Dispose()
@@ -317,6 +373,9 @@ namespace UnityFx.Mvc
 			if (_state == State.Initialized)
 			{
 				_presenter.PresentCompleted(this, _presentOptions);
+#if !NET35
+				_continuations?.Invoke();
+#endif
 			}
 		}
 
