@@ -132,7 +132,7 @@ namespace UnityFx.Mvc
 		/// <inheritdoc/>
 		void IPresentableEvents.OnDismiss()
 		{
-			Debug.Assert(!IsDisposed);
+			Debug.Assert(!IsDismissed);
 			OnDismiss();
 			Dismissed?.Invoke(this, EventArgs.Empty);
 		}

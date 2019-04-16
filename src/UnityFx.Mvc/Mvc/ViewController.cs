@@ -337,10 +337,11 @@ namespace UnityFx.Mvc
 		{
 			if (_view != null)
 			{
-				if ((_viewOptions & ViewOptions.DoNotDispose) == 0)
+				_view.Command -= OnCommand;
+				_view.Disposed -= OnViewDisposed;
+
+				if ((_viewOptions & ViewOptions.DoNotDispose) != 0)
 				{
-					_view.Command -= OnCommand;
-					_view.Disposed -= OnViewDisposed;
 					_view = null;
 				}
 				else
