@@ -13,6 +13,21 @@ namespace UnityFx.Mvc
 	public interface IPresentResult : IDismissable
 	{
 		/// <summary>
+		/// Raised when the <see cref="Controller"/> is presented.
+		/// </summary>
+		/// <seealso cref="IsPresented"/>
+		/// <seealso cref="Controller"/>
+		event EventHandler Presented;
+
+		/// <summary>
+		/// Gets a value indicating whether the <see cref="Controller"/> is presented.
+		/// </summary>
+		/// <seealso cref="Presented"/>
+		/// <seealso cref="Controller"/>
+		bool IsPresented { get; }
+
+
+		/// <summary>
 		/// Gets the view controller presented.
 		/// </summary>
 		IPresentable Controller { get; }

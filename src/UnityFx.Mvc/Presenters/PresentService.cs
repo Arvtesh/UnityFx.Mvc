@@ -135,6 +135,18 @@ namespace UnityFx.Mvc
 			}
 		}
 
+		internal void PresentCompleted(PresentableProxy controller, PresentOptions presentOptions)
+		{
+			try
+			{
+				controller.OnPresent();
+			}
+			finally
+			{
+				PostPresent(controller, presentOptions);
+			}
+		}
+
 		#endregion
 
 		#region IPresentService
@@ -305,45 +317,31 @@ namespace UnityFx.Mvc
 			return c;
 		}
 
-		private void PresentInternal(PresentableProxy controller, PresentArgs args)
+		private void DeactivateTopControllerIfNeeded(PresentableProxy controller)
 		{
-			try
+			if (_controllers.TryPeek(out var topController))
 			{
-				++_opCounter;
-
-				// Deactivate currently active controller (if needed).
-				if (_controllers.TryPeek(out var topController))
+				if (controller.Parent != null)
 				{
-					if (controller.Parent != null)
-					{
-						if (topController.IsChildOf(controller.Parent))
-						{
-							topController.TryDeactivate();
-						}
-					}
-					else
+					if (topController.IsChildOf(controller.Parent))
 					{
 						topController.TryDeactivate();
 					}
 				}
-
-				// Dismiss.
-				if ((args.Options & PresentOptions.DismissCurrent) != 0)
+				else
 				{
-					if (controller.Parent != null)
-					{
-						foreach (var c in controller.Parent.GetChildrenRecursive().Reverse())
-						{
-							if (c != controller)
-							{
-								DismissInternal(c);
-							}
-						}
-					}
+					topController.TryDeactivate();
 				}
-				else if ((args.Options & PresentOptions.DismissAll) != 0)
+			}
+		}
+
+		private void PrePresent(PresentableProxy controller, PresentOptions presentOptions)
+		{
+			if ((presentOptions & PresentOptions.DismissCurrent) != 0)
+			{
+				if (controller.Parent != null)
 				{
-					foreach (var c in _controllers.Reverse())
+					foreach (var c in controller.Parent.GetChildrenRecursive().Reverse())
 					{
 						if (c != controller)
 						{
@@ -351,34 +349,52 @@ namespace UnityFx.Mvc
 						}
 					}
 				}
-
-				// Present the new one.
-				controller.OnPresent();
-
-				// If this is the last operation, activate the controller.
-				if (_opCounter == 1)
+			}
+			else if ((presentOptions & PresentOptions.DismissAll) != 0)
+			{
+				foreach (var c in _controllers.Reverse())
 				{
-					if (controller == _controllers.Last)
+					if (c != controller)
 					{
-						if ((args.Options & PresentOptions.DoNotActivate) == 0)
-						{
-							controller.TryActivate();
-						}
-					}
-					else if (_controllers.TryPeek(out topController))
-					{
-						topController.TryActivate();
+						DismissInternal(c);
 					}
 				}
+			}
+		}
+
+		private void PostPresent(PresentableProxy controller, PresentOptions presentOptions)
+		{
+			// If this is the last operation, activate the controller.
+			if (--_opCounter == 0)
+			{
+				if (controller == _controllers.Last)
+				{
+					if ((presentOptions & PresentOptions.DoNotActivate) == 0)
+					{
+						controller.TryActivate();
+					}
+				}
+				else if (_controllers.TryPeek(out var topController))
+				{
+					topController.TryActivate();
+				}
+			}
+		}
+
+		private void PresentInternal(PresentableProxy controller, PresentArgs args)
+		{
+			try
+			{
+				DeactivateTopControllerIfNeeded(controller);
+				PrePresent(controller, args.Options);
+
+				++_opCounter;
+				controller.Present();
 			}
 			catch
 			{
 				DismissInternal(controller);
 				throw;
-			}
-			finally
-			{
-				--_opCounter;
 			}
 		}
 
