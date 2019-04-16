@@ -76,6 +76,19 @@ namespace UnityFx.Mvc
 			}
 		}
 
+		internal void Present()
+		{
+			if (!_controller.IsViewLoaded)
+			{
+				_controller.LoadView();
+				_controller.ViewLoaded += OnViewLoaded;
+			}
+			else
+			{
+				_presenter.PresentCompleted(this, _presentOptions);
+			}
+		}
+
 		internal bool TryActivate()
 		{
 			if (_state == State.Presented)
@@ -166,6 +179,8 @@ namespace UnityFx.Mvc
 
 		#region IPresentResult
 
+		public event EventHandler Presented;
+
 		public IPresentable Controller => _controller;
 
 		#endregion
@@ -198,6 +213,8 @@ namespace UnityFx.Mvc
 			{
 				controllerEvents.OnPresent();
 			}
+
+			Presented?.Invoke(this, EventArgs.Empty);
 		}
 
 		public void OnActivate()
@@ -292,6 +309,16 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region implementation
+
+		private void OnViewLoaded(object sender, EventArgs e)
+		{
+			_controller.ViewLoaded -= OnViewLoaded;
+
+			if (_state == State.Initialized)
+			{
+				_presenter.PresentCompleted(this, _presentOptions);
+			}
+		}
 
 		private Stack<PresentableProxy> GetChildControllers()
 		{

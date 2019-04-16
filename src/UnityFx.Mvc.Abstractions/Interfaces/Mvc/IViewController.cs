@@ -24,9 +24,18 @@ namespace UnityFx.Mvc
 	public interface IViewController : ICommandTarget, IDisposable
 	{
 		/// <summary>
+		/// Raised when the controller <see cref="View"/> has been loaded.
+		/// </summary>
+		/// <seealso cref="View"/>
+		/// <seealso cref="IsViewLoaded"/>
+		/// <seealso cref="LoadView"/>
+		event EventHandler ViewLoaded;
+
+		/// <summary>
 		/// Gets a value indicating whether the <see cref="View"/> can be safely used.
 		/// </summary>
 		/// <seealso cref="View"/>
+		/// <seealso cref="ViewLoaded"/>
 		/// <seealso cref="LoadView"/>
 		bool IsViewLoaded { get; }
 
@@ -37,6 +46,7 @@ namespace UnityFx.Mvc
 		/// Implementation may decide to lazy-load its view on first access. In this case the property would never return <see langword="null"/>.
 		/// </remarks>
 		/// <seealso cref="IsViewLoaded"/>
+		/// <seealso cref="ViewLoaded"/>
 		/// <seealso cref="LoadView"/>
 		/// <seealso cref="UnloadView"/>
 		IView View { get; }
@@ -50,6 +60,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="InvalidOperationException">Thrown if unload operation is pending.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
 		/// <seealso cref="View"/>
+		/// <seealso cref="ViewLoaded"/>
 		/// <seealso cref="UnloadView"/>
 		void LoadView();
 
@@ -60,6 +71,7 @@ namespace UnityFx.Mvc
 		/// Implementation may decide to unload views asynchronously. In this case the method just initiates the operation and returns.
 		/// </remarks>
 		/// <seealso cref="View"/>
+		/// <seealso cref="ViewLoaded"/>
 		/// <seealso cref="LoadView"/>
 		void UnloadView();
 	}

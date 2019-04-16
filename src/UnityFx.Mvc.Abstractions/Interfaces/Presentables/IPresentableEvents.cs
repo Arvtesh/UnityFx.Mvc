@@ -12,7 +12,7 @@ namespace UnityFx.Mvc
 	public interface IPresentableEvents
 	{
 		/// <summary>
-		/// Called right after the object is ready to be used (before first <see cref="OnActivate"/>).
+		/// Called right after the object has been presented (before first <see cref="OnActivate"/>).
 		/// The method is called exactly once per object lifetime.
 		/// </summary>
 		/// <seealso cref="OnDismiss"/>

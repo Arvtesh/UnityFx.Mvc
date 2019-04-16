@@ -235,6 +235,9 @@ namespace UnityFx.Mvc
 			{
 				_view.Command += OnCommand;
 				_view.Disposed += OnViewDisposed;
+
+				// Trigger the event only if non-null view is set.
+				ViewLoaded?.Invoke(this, EventArgs.Empty);
 			}
 		}
 
@@ -261,11 +264,10 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Initiates loading view. Default implementation throws <see cref="NotSupportedException"/>.
+		/// Initiates loading view. Default implementation does nothing.
 		/// </summary>
 		protected virtual void OnLoadView()
 		{
-			throw new NotSupportedException();
 		}
 
 		/// <summary>
@@ -291,9 +293,18 @@ namespace UnityFx.Mvc
 		#region IViewController
 
 		/// <summary>
+		/// Raised when the controller <see cref="View"/> has been loaded.
+		/// </summary>
+		/// <seealso cref="View"/>
+		/// <seealso cref="IsViewLoaded"/>
+		/// <seealso cref="LoadView"/>
+		public event EventHandler ViewLoaded;
+
+		/// <summary>
 		/// Gets a value indicating whether the <see cref="View"/> can be safely used.
 		/// </summary>
 		/// <seealso cref="View"/>
+		/// <seealso cref="ViewLoaded"/>
 		/// <seealso cref="LoadView"/>
 		public bool IsViewLoaded => _view != null;
 
@@ -301,6 +312,7 @@ namespace UnityFx.Mvc
 		/// Gets a view managed by the controller. Returns <see langword="null"/> if the view is not loaded.
 		/// </summary>
 		/// <seealso cref="IsViewLoaded"/>
+		/// <seealso cref="ViewLoaded"/>
 		/// <seealso cref="LoadView"/>
 		/// <seealso cref="UnloadView"/>
 		public IView View => _view;
@@ -314,6 +326,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="InvalidOperationException">Thrown if unload operation is pending.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
 		/// <seealso cref="View"/>
+		/// <seealso cref="ViewLoaded"/>
 		/// <seealso cref="UnloadView"/>
 		public void LoadView()
 		{
@@ -332,6 +345,7 @@ namespace UnityFx.Mvc
 		/// Implementation may decide to unload views asynchronously. In this case the method just initiates the operation and returns.
 		/// </remarks>
 		/// <seealso cref="View"/>
+		/// <seealso cref="ViewLoaded"/>
 		/// <seealso cref="LoadView"/>
 		public void UnloadView()
 		{
