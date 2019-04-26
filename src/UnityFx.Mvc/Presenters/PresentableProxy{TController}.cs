@@ -4,17 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-#if !NET35
-using UnityFx.Mvc.CompilerServices;
-#endif
 
 namespace UnityFx.Mvc
 {
-#if NET35
 	internal class PresentableProxy<TController> : PresentableProxy, IPresentResult<TController> where TController : IPresentable
-#else
-	internal class PresentableProxy<TController> : PresentableProxy, IPresentResult<TController>, IPresentAwaiter<TController> where TController : IPresentable
-#endif
 	{
 		#region data
 		#endregion
@@ -31,24 +24,6 @@ namespace UnityFx.Mvc
 		#region IPresentResult
 
 		public new TController Controller => (TController)base.Controller;
-
-#if !NET35
-
-		public new IPresentAwaiter<TController> GetAwaiter() => this;
-
-#endif
-
-		#endregion
-
-		#region IPresentAwaiter
-
-#if !NET35
-
-		bool IPresentAwaiter<TController>.IsCompleted => ((IPresentAwaiter)this).IsCompleted;
-
-		TController IPresentAwaiter<TController>.GetResult() => (TController)((IPresentAwaiter)this).GetResult();
-
-#endif
 
 		#endregion
 	}

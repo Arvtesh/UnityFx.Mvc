@@ -24,6 +24,138 @@ namespace UnityFx.Mvc
 		#region interface
 
 		/// <summary>
+		/// Enumerates basic controller comaands.
+		/// </summary>
+		public abstract class Commands
+		{
+			#region Common
+
+			/// <summary>
+			/// Name of the OK command.
+			/// </summary>
+			public const string Ok = "Ok";
+
+			/// <summary>
+			/// Name of the CANCEL command.
+			/// </summary>
+			public const string Cancel = "Cancel";
+
+			/// <summary>
+			/// Name of the APPLY command.
+			/// </summary>
+			public const string Apply = "Apply";
+
+			/// <summary>
+			/// Name of the EXIT command.
+			/// </summary>
+			public const string Exit = "Exit";
+
+			/// <summary>
+			/// Name of the HELP command.
+			/// </summary>
+			public const string Help = "Help";
+
+			/// <summary>
+			/// Name of the ADD command.
+			/// </summary>
+			public const string Add = "Add";
+
+			/// <summary>
+			/// Name of the REMOVE command.
+			/// </summary>
+			public const string Remove = "Remove";
+
+			#endregion
+
+			#region Navigation
+
+			/// <summary>
+			/// Name of the BACK command.
+			/// </summary>
+			public const string Back = "Back";
+
+			/// <summary>
+			/// Name of the NEXT command.
+			/// </summary>
+			public const string Next = "Next";
+
+			/// <summary>
+			/// Name of the PREV command.
+			/// </summary>
+			public const string Prev = "Prev";
+
+			#endregion
+
+			#region File
+
+			/// <summary>
+			/// Name of the NEW command.
+			/// </summary>
+			public const string New = "New";
+
+			/// <summary>
+			/// Name of the OPEN command.
+			/// </summary>
+			public const string Open = "Open";
+
+			/// <summary>
+			/// Name of the CLOSE command.
+			/// </summary>
+			public const string Close = "Close";
+
+			/// <summary>
+			/// Name of the SAVE command.
+			/// </summary>
+			public const string Save = "Save";
+
+			#endregion
+
+			#region Editing
+
+			/// <summary>
+			/// Name of the EDIT command.
+			/// </summary>
+			public const string Edit = "Edit";
+
+			/// <summary>
+			/// Name of the COPY command.
+			/// </summary>
+			public const string Copy = "Copy";
+
+			/// <summary>
+			/// Name of the CUT command.
+			/// </summary>
+			public const string Cut = "Cut";
+
+			/// <summary>
+			/// Name of the PASTE command.
+			/// </summary>
+			public const string Paste = "Paste";
+
+			/// <summary>
+			/// Name of the DUPLICATE command.
+			/// </summary>
+			public const string Duplicate = "Duplicate";
+
+			/// <summary>
+			/// Name of the DELETE command.
+			/// </summary>
+			public const string Delete = "Delete";
+
+			/// <summary>
+			/// Name of the UNDO command.
+			/// </summary>
+			public const string Undo = "Undo";
+
+			/// <summary>
+			/// Name of the REDO command.
+			/// </summary>
+			public const string Redo = "Redo";
+
+			#endregion
+		}
+
+		/// <summary>
 		/// Gets a value indicating whether the controller is presented.
 		/// </summary>
 		protected bool IsPresented => _context.IsPresented;

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using NSubstitute;
+//using NSubstitute;
 
 namespace UnityFx.Mvc
 {
@@ -20,6 +20,33 @@ namespace UnityFx.Mvc
 		{
 			_serviceProvider = new FakeServiceProvider();
 			_mvcService = new PresentService(_serviceProvider);
+		}
+
+		[Fact]
+		public void Present_MinimalControllerCanBePresented()
+		{
+			var presentResult = _mvcService.Present<MinimalPresentable>();
+
+			Assert.NotNull(presentResult);
+			Assert.NotNull(presentResult.Controller);
+			Assert.False(presentResult.IsDismissed);
+			Assert.NotEmpty(_mvcService.Controllers);
+			Assert.Contains(presentResult.Controller, _mvcService.Controllers);
+		}
+
+		[Fact]
+		public async Task Present_MinimalControllerCanBePresentedAsync()
+		{
+			var presentResult = _mvcService.Present<MinimalPresentable>();
+			var controller = await presentResult;
+
+			Assert.NotNull(controller);
+			Assert.True(presentResult.IsPresented);
+			Assert.False(presentResult.IsDismissed);
+			Assert.True(controller.IsViewLoaded);
+			Assert.False(controller.IsDismissed);
+			Assert.NotEmpty(_mvcService.Controllers);
+			Assert.Contains(controller, _mvcService.Controllers);
 		}
 	}
 }

@@ -3,11 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
-#if !NET35
-using System.Runtime.CompilerServices;
-using UnityFx.Mvc.CompilerServices;
-#endif
 
 namespace UnityFx.Mvc
 {
@@ -20,11 +17,7 @@ namespace UnityFx.Mvc
 	/// (via <see cref="IPresentContext"/> interface) and serves as a proxy between the controller and
 	/// <see cref="IPresentService"/> implementation.
 	/// </remarks>
-#if NET35
 	internal class PresentableProxy : TreeListNode<PresentableProxy>, IPresentContext, IPresentResult, IPresentableEvents, ICommandTarget
-#else
-	internal class PresentableProxy : TreeListNode<PresentableProxy>, IPresentContext, IPresentResult, IPresentAwaiter, IPresentableEvents, ICommandTarget
-#endif
 	{
 		#region data
 
@@ -45,9 +38,6 @@ namespace UnityFx.Mvc
 		private readonly string _name;
 		private readonly int _id;
 
-#if !NET35
-		private Action _continuations;
-#endif
 		private State _state;
 
 		#endregion
@@ -89,17 +79,23 @@ namespace UnityFx.Mvc
 
 		internal void Present()
 		{
-			if (!_controller.IsViewLoaded)
+			_controller.LoadViewAsync();
+			_controller.Dismissed += OnDismissed;
+
+			if (_controller.IsViewLoaded)
 			{
-				_controller.LoadView();
-				_controller.ViewLoaded += OnViewLoaded;
+				try
+				{
+					OnPresent();
+				}
+				finally
+				{
+					_presenter.PresentCompleted(this, _presentOptions);
+				}
 			}
 			else
 			{
-				_presenter.PresentCompleted(this, _presentOptions);
-#if !NET35
-				_continuations?.Invoke();
-#endif
+				_controller.LoadViewCompleted += OnViewLoaded;
 			}
 		}
 
@@ -151,7 +147,7 @@ namespace UnityFx.Mvc
 
 		#endregion
 
-		#region IViewControllerContext
+		#region IPresentableContext
 
 		public int Id => _id;
 
@@ -197,47 +193,26 @@ namespace UnityFx.Mvc
 
 		public IPresentable Controller => _controller;
 
-#if !NET35
-
-		public IPresentAwaiter GetAwaiter() => this;
-
-#endif
-
-		#endregion
-
-		#region IPresentAwaiter
-
-#if !NET35
-
-		bool IPresentAwaiter.IsCompleted
-		{
-			get
-			{
-				return _state == State.Presented || _state == State.Active || _state == State.Dismissed;
-			}
-		}
-
-		IPresentable IPresentAwaiter.GetResult()
-		{
-			// TODO
-			return _controller;
-		}
-
-#endif
-
 		#endregion
 
 		#region IDismissable
 
-		public event EventHandler Dismissed;
-
 		public bool IsDismissed => _state == State.Dismissed || _state == State.Disposed;
+
+		public event EventHandler Dismissed;
 
 		public void Dismiss()
 		{
 			if (_state != State.Dismissed && _state != State.Disposed)
 			{
-				_presenter.Dismiss(this);
+				try
+				{
+					_controller.Dismiss();
+				}
+				finally
+				{
+					_presenter.Dismiss(this);
+				}
 			}
 		}
 
@@ -329,20 +304,6 @@ namespace UnityFx.Mvc
 
 		#endregion
 
-		#region INotifyCompletion
-
-#if !NET35
-
-		void INotifyCompletion.OnCompleted(Action continuation)
-		{
-			// TODO: Make this code thread-safe.
-			_continuations += continuation;
-		}
-
-#endif
-
-		#endregion
-
 		#region IDisposable
 
 		public void Dispose()
@@ -366,16 +327,37 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private void OnViewLoaded(object sender, EventArgs e)
+		private void OnViewLoaded(object sender, AsyncCompletedEventArgs args)
 		{
-			_controller.ViewLoaded -= OnViewLoaded;
+			_controller.LoadViewCompleted -= OnViewLoaded;
 
 			if (_state == State.Initialized)
 			{
-				_presenter.PresentCompleted(this, _presentOptions);
-#if !NET35
-				_continuations?.Invoke();
-#endif
+				if (args.Error != null || args.Cancelled)
+				{
+					// TODO
+				}
+				else
+				{
+					try
+					{
+						OnPresent();
+					}
+					finally
+					{
+						_presenter.PresentCompleted(this, _presentOptions);
+					}
+				}
+			}
+		}
+
+		private void OnDismissed(object sender, EventArgs e)
+		{
+			_controller.Dismissed -= OnDismissed;
+
+			if (_state != State.Dismissed && _state != State.Disposed)
+			{
+				_presenter.Dismiss(this);
 			}
 		}
 

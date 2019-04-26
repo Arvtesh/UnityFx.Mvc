@@ -123,11 +123,7 @@ namespace UnityFx.Mvc
 			{
 				SetBusy(true);
 				DismissInternal(controller);
-
-				if (_controllers.TryPeek(out var topController))
-				{
-					topController.TryActivate();
-				}
+				TryActivateTopController();
 			}
 			finally
 			{
@@ -137,13 +133,20 @@ namespace UnityFx.Mvc
 
 		internal void PresentCompleted(PresentableProxy controller, PresentOptions presentOptions)
 		{
-			try
+			// If this is the last operation, activate the controller.
+			if (--_opCounter == 0)
 			{
-				controller.OnPresent();
-			}
-			finally
-			{
-				PostPresent(controller, presentOptions);
+				if (controller == _controllers.Last)
+				{
+					if ((presentOptions & PresentOptions.DoNotActivate) == 0)
+					{
+						controller.TryActivate();
+					}
+				}
+				else
+				{
+					TryActivateTopController();
+				}
 			}
 		}
 
@@ -317,6 +320,16 @@ namespace UnityFx.Mvc
 			return c;
 		}
 
+		private bool TryActivateTopController()
+		{
+			if (_controllers.TryPeek(out var topController))
+			{
+				return topController.TryActivate();
+			}
+
+			return false;
+		}
+
 		private void DeactivateTopControllerIfNeeded(PresentableProxy controller)
 		{
 			if (_controllers.TryPeek(out var topController))
@@ -358,25 +371,6 @@ namespace UnityFx.Mvc
 					{
 						DismissInternal(c);
 					}
-				}
-			}
-		}
-
-		private void PostPresent(PresentableProxy controller, PresentOptions presentOptions)
-		{
-			// If this is the last operation, activate the controller.
-			if (--_opCounter == 0)
-			{
-				if (controller == _controllers.Last)
-				{
-					if ((presentOptions & PresentOptions.DoNotActivate) == 0)
-					{
-						controller.TryActivate();
-					}
-				}
-				else if (_controllers.TryPeek(out var topController))
-				{
-					topController.TryActivate();
 				}
 			}
 		}

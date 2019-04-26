@@ -28,15 +28,15 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <seealso cref="View"/>
 		/// <seealso cref="IsViewLoaded"/>
-		/// <seealso cref="LoadView"/>
-		event EventHandler ViewLoaded;
+		/// <seealso cref="LoadViewAsync"/>
+		event EventHandler<AsyncCompletedEventArgs> LoadViewCompleted;
 
 		/// <summary>
 		/// Gets a value indicating whether the <see cref="View"/> can be safely used.
 		/// </summary>
 		/// <seealso cref="View"/>
-		/// <seealso cref="ViewLoaded"/>
-		/// <seealso cref="LoadView"/>
+		/// <seealso cref="LoadViewAsync"/>
+		/// <seealso cref="UnloadView"/>
 		bool IsViewLoaded { get; }
 
 		/// <summary>
@@ -46,8 +46,7 @@ namespace UnityFx.Mvc
 		/// Implementation may decide to lazy-load its view on first access. In this case the property would never return <see langword="null"/>.
 		/// </remarks>
 		/// <seealso cref="IsViewLoaded"/>
-		/// <seealso cref="ViewLoaded"/>
-		/// <seealso cref="LoadView"/>
+		/// <seealso cref="LoadViewAsync"/>
 		/// <seealso cref="UnloadView"/>
 		IView View { get; }
 
@@ -60,19 +59,17 @@ namespace UnityFx.Mvc
 		/// <exception cref="InvalidOperationException">Thrown if unload operation is pending.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
 		/// <seealso cref="View"/>
-		/// <seealso cref="ViewLoaded"/>
+		/// <seealso cref="IsViewLoaded"/>
+		/// <seealso cref="LoadViewCompleted"/>
 		/// <seealso cref="UnloadView"/>
-		void LoadView();
+		void LoadViewAsync();
 
 		/// <summary>
-		/// Unloads the view. Does nothing is view is not loaded or another unload operation is already running. Cancels load operation (if any).
+		/// Disposes the view.
 		/// </summary>
-		/// <remarks>
-		/// Implementation may decide to unload views asynchronously. In this case the method just initiates the operation and returns.
-		/// </remarks>
 		/// <seealso cref="View"/>
-		/// <seealso cref="ViewLoaded"/>
-		/// <seealso cref="LoadView"/>
+		/// <seealso cref="IsViewLoaded"/>
+		/// <seealso cref="LoadViewAsync"/>
 		void UnloadView();
 	}
 }

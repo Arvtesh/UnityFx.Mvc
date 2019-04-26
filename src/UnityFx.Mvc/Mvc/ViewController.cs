@@ -42,138 +42,6 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Enumerates basic controller comaands.
-		/// </summary>
-		public abstract class Commands
-		{
-			#region Common
-
-			/// <summary>
-			/// Name of the OK command.
-			/// </summary>
-			public const string Ok = "Ok";
-
-			/// <summary>
-			/// Name of the CANCEL command.
-			/// </summary>
-			public const string Cancel = "Cancel";
-
-			/// <summary>
-			/// Name of the APPLY command.
-			/// </summary>
-			public const string Apply = "Apply";
-
-			/// <summary>
-			/// Name of the EXIT command.
-			/// </summary>
-			public const string Exit = "Exit";
-
-			/// <summary>
-			/// Name of the HELP command.
-			/// </summary>
-			public const string Help = "Help";
-
-			/// <summary>
-			/// Name of the ADD command.
-			/// </summary>
-			public const string Add = "Add";
-
-			/// <summary>
-			/// Name of the REMOVE command.
-			/// </summary>
-			public const string Remove = "Remove";
-
-			#endregion
-
-			#region Navigation
-
-			/// <summary>
-			/// Name of the BACK command.
-			/// </summary>
-			public const string Back = "Back";
-
-			/// <summary>
-			/// Name of the NEXT command.
-			/// </summary>
-			public const string Next = "Next";
-
-			/// <summary>
-			/// Name of the PREV command.
-			/// </summary>
-			public const string Prev = "Prev";
-
-			#endregion
-
-			#region File
-
-			/// <summary>
-			/// Name of the NEW command.
-			/// </summary>
-			public const string New = "New";
-
-			/// <summary>
-			/// Name of the OPEN command.
-			/// </summary>
-			public const string Open = "Open";
-
-			/// <summary>
-			/// Name of the CLOSE command.
-			/// </summary>
-			public const string Close = "Close";
-
-			/// <summary>
-			/// Name of the SAVE command.
-			/// </summary>
-			public const string Save = "Save";
-
-			#endregion
-
-			#region Editing
-
-			/// <summary>
-			/// Name of the EDIT command.
-			/// </summary>
-			public const string Edit = "Edit";
-
-			/// <summary>
-			/// Name of the COPY command.
-			/// </summary>
-			public const string Copy = "Copy";
-
-			/// <summary>
-			/// Name of the CUT command.
-			/// </summary>
-			public const string Cut = "Cut";
-
-			/// <summary>
-			/// Name of the PASTE command.
-			/// </summary>
-			public const string Paste = "Paste";
-
-			/// <summary>
-			/// Name of the DUPLICATE command.
-			/// </summary>
-			public const string Duplicate = "Duplicate";
-
-			/// <summary>
-			/// Name of the DELETE command.
-			/// </summary>
-			public const string Delete = "Delete";
-
-			/// <summary>
-			/// Name of the UNDO command.
-			/// </summary>
-			public const string Undo = "Undo";
-
-			/// <summary>
-			/// Name of the REDO command.
-			/// </summary>
-			public const string Redo = "Redo";
-
-			#endregion
-		}
-
-		/// <summary>
 		/// Gets a value indicating whether the controller is disposed.
 		/// </summary>
 		protected bool IsDisposed => _disposed;
@@ -237,7 +105,7 @@ namespace UnityFx.Mvc
 				_view.Disposed += OnViewDisposed;
 
 				// Trigger the event only if non-null view is set.
-				ViewLoaded?.Invoke(this, EventArgs.Empty);
+				LoadViewCompleted?.Invoke(this, new AsyncCompletedEventArgs(null, false, null));
 			}
 		}
 
@@ -297,23 +165,21 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <seealso cref="View"/>
 		/// <seealso cref="IsViewLoaded"/>
-		/// <seealso cref="LoadView"/>
-		public event EventHandler ViewLoaded;
+		/// <seealso cref="LoadViewAsync"/>
+		public event EventHandler<AsyncCompletedEventArgs> LoadViewCompleted;
 
 		/// <summary>
 		/// Gets a value indicating whether the <see cref="View"/> can be safely used.
 		/// </summary>
 		/// <seealso cref="View"/>
-		/// <seealso cref="ViewLoaded"/>
-		/// <seealso cref="LoadView"/>
+		/// <seealso cref="LoadViewAsync"/>
 		public bool IsViewLoaded => _view != null;
 
 		/// <summary>
 		/// Gets a view managed by the controller. Returns <see langword="null"/> if the view is not loaded.
 		/// </summary>
 		/// <seealso cref="IsViewLoaded"/>
-		/// <seealso cref="ViewLoaded"/>
-		/// <seealso cref="LoadView"/>
+		/// <seealso cref="LoadViewAsync"/>
 		/// <seealso cref="UnloadView"/>
 		public IView View => _view;
 
@@ -326,9 +192,9 @@ namespace UnityFx.Mvc
 		/// <exception cref="InvalidOperationException">Thrown if unload operation is pending.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
 		/// <seealso cref="View"/>
-		/// <seealso cref="ViewLoaded"/>
+		/// <seealso cref="LoadViewCompleted"/>
 		/// <seealso cref="UnloadView"/>
-		public void LoadView()
+		public void LoadViewAsync()
 		{
 			ThrowIfDisposed();
 
@@ -345,8 +211,7 @@ namespace UnityFx.Mvc
 		/// Implementation may decide to unload views asynchronously. In this case the method just initiates the operation and returns.
 		/// </remarks>
 		/// <seealso cref="View"/>
-		/// <seealso cref="ViewLoaded"/>
-		/// <seealso cref="LoadView"/>
+		/// <seealso cref="LoadViewAsync"/>
 		public void UnloadView()
 		{
 			if (_view != null)

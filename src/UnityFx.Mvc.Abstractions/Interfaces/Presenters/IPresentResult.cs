@@ -30,15 +30,5 @@ namespace UnityFx.Mvc
 		/// Gets the view controller presented.
 		/// </summary>
 		IPresentable Controller { get; }
-
-#if !NET35
-
-		/// <summary>
-		/// Gets an awaiter used to await this <see cref="IPresentResult"/>.
-		/// </summary>
-		/// <returns>An awaiter instance.</returns>
-		CompilerServices.IPresentAwaiter GetAwaiter();
-
-#endif
 	}
 }
