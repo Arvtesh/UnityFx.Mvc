@@ -24,7 +24,12 @@ namespace UnityFx.Mvc
 	public interface IViewController : ICommandTarget, IDisposable
 	{
 		/// <summary>
-		/// Raised when the controller <see cref="View"/> has been loaded.
+		/// Raised when the controller has been disposed.
+		/// </summary>
+		event EventHandler Disposed;
+
+		/// <summary>
+		/// Raised when <see cref="LoadViewAsync"/> has completed (either successfully or not).
 		/// </summary>
 		/// <seealso cref="View"/>
 		/// <seealso cref="IsViewLoaded"/>

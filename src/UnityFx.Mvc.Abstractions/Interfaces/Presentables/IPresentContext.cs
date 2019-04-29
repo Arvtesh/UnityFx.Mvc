@@ -26,7 +26,6 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets a value indicating whether the controller has been dismissed.
 		/// </summary>
-		/// <seealso cref="Dismiss"/>
 		bool IsDismissed { get; }
 
 		/// <summary>
@@ -38,11 +37,5 @@ namespace UnityFx.Mvc
 		/// Gets a value indicating whether the controller is modal.
 		/// </summary>
 		bool IsModal { get; }
-
-		/// <summary>
-		/// Dismisses the controller.
-		/// </summary>
-		/// <seealso cref="IsDismissed"/>
-		void Dismiss();
 	}
 }

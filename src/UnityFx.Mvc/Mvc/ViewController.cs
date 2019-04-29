@@ -84,28 +84,22 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="view">The view reference to set.</param>
 		/// <param name="viewOptions">View-related flags.</param>
-		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="view"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
 		protected void SetView(IView view, ViewOptions viewOptions)
 		{
-			ThrowIfDisposed();
-
 			if (_view != null)
 			{
 				_view.Command -= OnCommand;
 				_view.Disposed -= OnViewDisposed;
 			}
 
-			_view = view ?? throw new ArgumentNullException(nameof(view));
+			_view = view;
 			_viewOptions = viewOptions;
 
 			if (_view != null)
 			{
 				_view.Command += OnCommand;
 				_view.Disposed += OnViewDisposed;
-
-				// Trigger the event only if non-null view is set.
-				LoadViewCompleted?.Invoke(this, new AsyncCompletedEventArgs(null, false, null));
 			}
 		}
 
@@ -124,11 +118,21 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Called to process a command.
 		/// </summary>
-		/// <param name="e">Command name and arguments.</param>
 		/// <returns>Returns <see langword="true"/> if the command has been handles; <see langword="false"/> otherwise.</returns>
 		protected virtual bool OnCommand(CommandEventArgs e)
 		{
 			return false;
+		}
+
+		/// <summary>
+		/// Initiates loading view. Default implementation does nothing.
+		/// </summary>
+		protected virtual void OnLoadViewCompleted(AsyncCompletedEventArgs args)
+		{
+			if (!_disposed)
+			{
+				LoadViewCompleted?.Invoke(this, args);
+			}
 		}
 
 		/// <summary>
@@ -139,26 +143,28 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Initiates unloading view. Default implementation disposes the attached view.
-		/// </summary>
-		protected virtual void OnUnloadView()
-		{
-			_view?.Dispose();
-		}
-
-		/// <summary>
-		/// Called when the controller is disposed. Default implementation unloads the attached view.
+		/// Called when the controller is being disposed. Should not thiw exceptions. Default implementation unloads the attached view.
 		/// </summary>
 		/// <seealso cref="Dispose()"/>
 		/// <seealso cref="ThrowIfDisposed"/>
-		protected virtual void OnDispose()
+		protected virtual void Dispose(bool disposing)
 		{
-			UnloadView();
+			if (disposing)
+			{
+				UnloadView();
+			}
 		}
 
 		#endregion
 
 		#region IViewController
+
+		/// <summary>
+		/// Raised when the controller has been disposed.
+		/// </summary>
+		/// <seealso cref="Dispose()"/>
+		/// <seealso cref="Dispose(bool)"/>
+		public event EventHandler Disposed;
 
 		/// <summary>
 		/// Raised when the controller <see cref="View"/> has been loaded.
@@ -205,11 +211,8 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Unloads the view. Does nothing is view is not loaded or another unload operation is already running. Cancels load operation (if any).
+		/// Unloads the <see cref="View"/> (if loaded).
 		/// </summary>
-		/// <remarks>
-		/// Implementation may decide to unload views asynchronously. In this case the method just initiates the operation and returns.
-		/// </remarks>
 		/// <seealso cref="View"/>
 		/// <seealso cref="LoadViewAsync"/>
 		public void UnloadView()
@@ -219,13 +222,16 @@ namespace UnityFx.Mvc
 				_view.Command -= OnCommand;
 				_view.Disposed -= OnViewDisposed;
 
-				if ((_viewOptions & ViewOptions.DoNotDispose) != 0)
+				try
+				{
+					if ((_viewOptions & ViewOptions.DoNotDispose) == 0)
+					{
+						_view.Dispose();
+					}
+				}
+				finally
 				{
 					_view = null;
-				}
-				else
-				{
-					OnUnloadView();
 				}
 			}
 		}
@@ -262,12 +268,15 @@ namespace UnityFx.Mvc
 		/// Releases resources used by the controller.
 		/// </summary>
 		/// <seealso cref="ThrowIfDisposed"/>
+		/// <seealso cref="Dispose(bool)"/>
+		/// <seealso cref="Disposed"/>
 		public void Dispose()
 		{
 			if (!_disposed)
 			{
 				_disposed = true;
-				OnDispose();
+				Dispose(true);
+				Disposed?.Invoke(this, EventArgs.Empty);
 			}
 		}
 

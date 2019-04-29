@@ -197,9 +197,9 @@ namespace UnityFx.Mvc
 
 		#region IDismissable
 
-		public bool IsDismissed => _state == State.Dismissed || _state == State.Disposed;
-
 		public event EventHandler Dismissed;
+
+		public bool IsDismissed => _state == State.Dismissed || _state == State.Disposed;
 
 		public void Dismiss()
 		{
@@ -225,12 +225,6 @@ namespace UnityFx.Mvc
 			Debug.Assert(_state == State.Initialized);
 
 			_state = State.Presented;
-
-			if (_controller is IPresentableEvents controllerEvents)
-			{
-				controllerEvents.OnPresent();
-			}
-
 			Presented?.Invoke(this, EventArgs.Empty);
 		}
 
@@ -263,12 +257,6 @@ namespace UnityFx.Mvc
 			Debug.Assert(_state == State.Presented);
 
 			_state = State.Dismissed;
-
-			if (_controller is IPresentableEvents controllerEvents)
-			{
-				controllerEvents.OnDismiss();
-			}
-
 			Dismissed?.Invoke(this, EventArgs.Empty);
 		}
 

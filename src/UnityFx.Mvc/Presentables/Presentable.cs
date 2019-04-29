@@ -18,6 +18,8 @@ namespace UnityFx.Mvc
 		#region data
 
 		private readonly IPresentContext _context;
+		private bool _presented;
+		private bool _dismissed;
 
 		#endregion
 
@@ -156,11 +158,6 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Gets a value indicating whether the controller is presented.
-		/// </summary>
-		protected bool IsPresented => _context.IsPresented;
-
-		/// <summary>
 		/// Gets a value indicating whether the controller is active (i.e. can accept input).
 		/// </summary>
 		protected bool IsActive => _context.IsActive;
@@ -201,11 +198,12 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Called right after the controller transition animation finishes. Default implementation does nothing.
+		/// Called right after the controller has been presented. Default raises the <see cref="Presented"/> event.
 		/// </summary>
 		/// <seealso cref="OnDismiss"/>
 		protected virtual void OnPresent()
 		{
+			Presented?.Invoke(this, EventArgs.Empty);
 		}
 
 		/// <summary>
@@ -225,61 +223,80 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Called when the controller is about to be dismissed (before transition animation). Default implementation does nothing.
+		/// Called when the controller is being dismissed. Default implementation disposes the controller.
 		/// </summary>
-		/// <seealso cref="OnPresent"/>
+		/// <seealso cref="Dismiss"/>
 		protected virtual void OnDismiss()
 		{
+			Dispose();
 		}
 
 		#endregion
 
 		#region ViewController
 
-		/// <summary>
-		/// Called when the controller is disposed. Default implementation unloads the attached view.
-		/// </summary>
-		protected override void OnDispose()
+		/// <inheritdoc/>
+		protected override void OnLoadViewCompleted(AsyncCompletedEventArgs args)
 		{
-			// Make sure the object is dismissed.
-			_context.Dismiss();
+			base.OnLoadViewCompleted(args);
 
-			base.OnDispose();
+			if (args.Error == null && !args.Cancelled)
+			{
+				_presented = true;
+
+				if (IsDisposed)
+				{
+					UnloadView();
+				}
+				else
+				{
+					OnPresent();
+				}
+			}
+		}
+
+		/// <inheritdoc/>
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				if (!_dismissed)
+				{
+					_dismissed = true;
+					Dismissed?.Invoke(this, EventArgs.Empty);
+				}
+			}
+
+			base.Dispose(disposing);
 		}
 
 		#endregion
 
 		#region IPresentable
+
+		/// <inheritdoc/>
+		public event EventHandler Presented;
+
+		/// <inheritdoc/>
+		public bool IsPresented => _presented;
+
 		#endregion
 
 		#region IPresentableEvents
 
 		/// <inheritdoc/>
-		void IPresentableEvents.OnPresent()
-		{
-			Debug.Assert(!IsDismissed);
-			OnPresent();
-		}
-
-		/// <inheritdoc/>
-		void IPresentableEvents.OnDismiss()
-		{
-			Debug.Assert(!IsDismissed);
-			OnDismiss();
-			Dismissed?.Invoke(this, EventArgs.Empty);
-		}
-
-		/// <inheritdoc/>
 		void IPresentableEvents.OnActivate()
 		{
-			Debug.Assert(!IsDismissed);
+			Debug.Assert(_presented);
+			Debug.Assert(!_dismissed);
 			OnActivate();
 		}
 
 		/// <inheritdoc/>
 		void IPresentableEvents.OnDeactivate()
 		{
-			Debug.Assert(!IsDismissed);
+			Debug.Assert(_presented);
+			Debug.Assert(!_dismissed);
 			OnDeactivate();
 		}
 
@@ -319,26 +336,29 @@ namespace UnityFx.Mvc
 
 		#region IDismissable
 
-		/// <summary>
-		/// Raised when the instance is dismissed.
-		/// </summary>
-		/// <seealso cref="Dismiss"/>
-		/// <seealso cref="IsDismissed"/>
+		/// <inheritdoc/>
 		public event EventHandler Dismissed;
 
-		/// <summary>
-		/// Gets a value indicating whether the object is dismissed.
-		/// </summary>
-		/// <seealso cref="Dismiss"/>
-		public bool IsDismissed => _context.IsDismissed;
+		/// <inheritdoc/>
+		public bool IsDismissed => _dismissed;
 
-		/// <summary>
-		/// Dismisses the obejct.
-		/// </summary>
-		/// <seealso cref="IsDismissed"/>
+		/// <inheritdoc/>
 		public void Dismiss()
 		{
-			_context.Dismiss();
+			if (_presented)
+			{
+				if (!_dismissed)
+				{
+					_dismissed = true;
+					Dismissed?.Invoke(this, EventArgs.Empty);
+					OnDismiss();
+				}
+			}
+			else
+			{
+				_dismissed = true;
+				Dispose();
+			}
 		}
 
 		#endregion
