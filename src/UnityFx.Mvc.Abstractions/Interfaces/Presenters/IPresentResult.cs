@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 
 namespace UnityFx.Mvc
 {
@@ -17,7 +18,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <seealso cref="IsPresented"/>
 		/// <seealso cref="Controller"/>
-		event EventHandler Presented;
+		event EventHandler<AsyncCompletedEventArgs> Presented;
 
 		/// <summary>
 		/// Gets a value indicating whether the <see cref="Controller"/> is presented.

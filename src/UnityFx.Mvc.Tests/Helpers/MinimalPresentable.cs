@@ -3,24 +3,24 @@
 
 using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace UnityFx.Mvc
 {
 	public class MinimalPresentable : IPresentable
 	{
-		private IView _view = new FakeView();
-
+		private IView _view;
 		private bool _presented;
 		private bool _dismissed;
 		private bool _disposed;
 
 		public bool IsViewLoaded => _view != null;
 		public IView View => _view;
-		public bool IsDismissed => _presented;
-		public bool IsPresented => _dismissed;
+		public bool IsDismissed => _dismissed;
+		public bool IsPresented => _presented;
 
 		public event EventHandler<AsyncCompletedEventArgs> LoadViewCompleted;
-		public event EventHandler Presented;
+		public event EventHandler<AsyncCompletedEventArgs> Presented;
 		public event EventHandler Dismissed;
 		public event EventHandler Disposed;
 
@@ -60,22 +60,31 @@ namespace UnityFx.Mvc
 			return false;
 		}
 
-		public void LoadViewAsync()
+		public async void LoadViewAsync()
 		{
 			if (_disposed)
 			{
 				throw new ObjectDisposedException(GetType().Name);
 			}
 
-			if (_view == null || _dismissed)
+			if (_dismissed)
 			{
 				throw new InvalidOperationException();
 			}
-			else
+			else if (_view == null)
 			{
-				LoadViewCompleted?.Invoke(this, new AsyncCompletedEventArgs(null, false, null));
-				_presented = true;
-				Presented?.Invoke(this, EventArgs.Empty);
+				await Task.Delay(10);
+				_view = new FakeView();
+
+				var args = new AsyncCompletedEventArgs(null, false, null);
+
+				LoadViewCompleted?.Invoke(this, args);
+
+				if (!_presented)
+				{
+					_presented = true;
+					Presented?.Invoke(this, args);
+				}
 			}
 		}
 

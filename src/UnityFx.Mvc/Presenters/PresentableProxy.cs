@@ -17,7 +17,7 @@ namespace UnityFx.Mvc
 	/// (via <see cref="IPresentContext"/> interface) and serves as a proxy between the controller and
 	/// <see cref="IPresentService"/> implementation.
 	/// </remarks>
-	internal class PresentableProxy : TreeListNode<PresentableProxy>, IPresentContext, IPresentResult, IPresentableEvents, ICommandTarget
+	internal class PresentableProxy : TreeListNode<PresentableProxy>, IPresentContext, IPresentResult, ICommandTarget
 	{
 		#region data
 
@@ -84,18 +84,11 @@ namespace UnityFx.Mvc
 
 			if (_controller.IsViewLoaded)
 			{
-				try
-				{
-					OnPresent();
-				}
-				finally
-				{
-					_presenter.PresentCompleted(this, _presentOptions);
-				}
+				OnPresented();
 			}
 			else
 			{
-				_controller.LoadViewCompleted += OnViewLoaded;
+				_controller.Presented += OnPresented;
 			}
 		}
 
@@ -103,7 +96,13 @@ namespace UnityFx.Mvc
 		{
 			if (_state == State.Presented)
 			{
-				OnActivate();
+				_state = State.Active;
+
+				if (_controller is IPresentableEvents controllerEvents)
+				{
+					controllerEvents.OnActivate();
+				}
+
 				return true;
 			}
 
@@ -114,7 +113,13 @@ namespace UnityFx.Mvc
 		{
 			if (_state == State.Active)
 			{
-				OnDeactivate();
+				_state = State.Presented;
+
+				if (_controller is IPresentableEvents controllerEvents)
+				{
+					controllerEvents.OnDeactivate();
+				}
+
 				return true;
 			}
 
@@ -125,7 +130,7 @@ namespace UnityFx.Mvc
 		{
 			if (_state == State.Presented)
 			{
-				OnDismiss();
+				_controller.Dismiss();
 				return true;
 			}
 
@@ -150,8 +155,6 @@ namespace UnityFx.Mvc
 		#region IPresentableContext
 
 		public int Id => _id;
-
-		public bool IsPresented => _state == State.Presented || _state == State.Active;
 
 		public bool IsActive => _state == State.Active;
 
@@ -189,7 +192,9 @@ namespace UnityFx.Mvc
 
 		#region IPresentResult
 
-		public event EventHandler Presented;
+		public event EventHandler<AsyncCompletedEventArgs> Presented { add => _controller.Presented += value; remove => _controller.Presented -= value; }
+
+		public bool IsPresented => _controller.IsPresented;
 
 		public IPresentable Controller => _controller;
 
@@ -197,68 +202,11 @@ namespace UnityFx.Mvc
 
 		#region IDismissable
 
-		public event EventHandler Dismissed;
+		public event EventHandler Dismissed { add => _controller.Dismissed += value; remove => _controller.Dismissed -= value; }
 
-		public bool IsDismissed => _state == State.Dismissed || _state == State.Disposed;
+		public bool IsDismissed => _controller.IsDismissed;
 
-		public void Dismiss()
-		{
-			if (_state != State.Dismissed && _state != State.Disposed)
-			{
-				try
-				{
-					_controller.Dismiss();
-				}
-				finally
-				{
-					_presenter.Dismiss(this);
-				}
-			}
-		}
-
-		#endregion
-
-		#region IPresentableEvents
-
-		public void OnPresent()
-		{
-			Debug.Assert(_state == State.Initialized);
-
-			_state = State.Presented;
-			Presented?.Invoke(this, EventArgs.Empty);
-		}
-
-		public void OnActivate()
-		{
-			Debug.Assert(_state == State.Presented);
-
-			_state = State.Active;
-
-			if (_controller is IPresentableEvents controllerEvents)
-			{
-				controllerEvents.OnActivate();
-			}
-		}
-
-		public void OnDeactivate()
-		{
-			Debug.Assert(_state == State.Active);
-
-			_state = State.Presented;
-
-			if (_controller is IPresentableEvents controllerEvents)
-			{
-				controllerEvents.OnDeactivate();
-			}
-		}
-
-		public void OnDismiss()
-		{
-			Debug.Assert(_state == State.Presented);
-
-			_state = State.Dismissed;
-			Dismissed?.Invoke(this, EventArgs.Empty);
-		}
+		public void Dismiss() => _controller.Dismiss();
 
 		#endregion
 
@@ -282,7 +230,7 @@ namespace UnityFx.Mvc
 
 		public object GetService(Type serviceType)
 		{
-			if (serviceType == typeof(IPresentContext))
+			if (serviceType == typeof(IPresentContext) || serviceType == typeof(IPresenter) || serviceType == typeof(IServiceProvider))
 			{
 				return this;
 			}
@@ -315,26 +263,15 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private void OnViewLoaded(object sender, AsyncCompletedEventArgs args)
+		private void OnPresented(object sender, AsyncCompletedEventArgs args)
 		{
-			_controller.LoadViewCompleted -= OnViewLoaded;
+			_controller.Presented -= OnPresented;
 
 			if (_state == State.Initialized)
 			{
-				if (args.Error != null || args.Cancelled)
+				if (args.Error == null && !args.Cancelled)
 				{
-					// TODO
-				}
-				else
-				{
-					try
-					{
-						OnPresent();
-					}
-					finally
-					{
-						_presenter.PresentCompleted(this, _presentOptions);
-					}
+					OnPresented();
 				}
 			}
 		}
@@ -345,8 +282,17 @@ namespace UnityFx.Mvc
 
 			if (_state != State.Dismissed && _state != State.Disposed)
 			{
-				_presenter.Dismiss(this);
+				_state = State.Dismissed;
+				_presenter.Dismissed(this);
 			}
+		}
+
+		private void OnPresented()
+		{
+			Debug.Assert(_state == State.Initialized);
+
+			_state = State.Presented;
+			_presenter.Presented(this, _presentOptions);
 		}
 
 		private Stack<PresentableProxy> GetChildControllers()

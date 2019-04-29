@@ -43,8 +43,6 @@ namespace UnityFx.Mvc
 			Assert.NotNull(controller);
 			Assert.True(presentResult.IsPresented);
 			Assert.False(presentResult.IsDismissed);
-			Assert.True(controller.IsViewLoaded);
-			Assert.False(controller.IsDismissed);
 			Assert.NotEmpty(_mvcService.Controllers);
 			Assert.Contains(controller, _mvcService.Controllers);
 		}

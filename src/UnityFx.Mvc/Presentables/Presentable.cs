@@ -198,12 +198,11 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Called right after the controller has been presented. Default raises the <see cref="Presented"/> event.
+		/// Called right after the controller has been presented. Default implementation does nothing.
 		/// </summary>
 		/// <seealso cref="OnDismiss"/>
-		protected virtual void OnPresent()
+		protected virtual void OnPresented()
 		{
-			Presented?.Invoke(this, EventArgs.Empty);
 		}
 
 		/// <summary>
@@ -242,16 +241,20 @@ namespace UnityFx.Mvc
 
 			if (args.Error == null && !args.Cancelled)
 			{
-				_presented = true;
-
 				if (IsDisposed)
 				{
 					UnloadView();
 				}
 				else
 				{
-					OnPresent();
+					_presented = true;
+					OnPresented();
+					Presented?.Invoke(this, args);
 				}
+			}
+			else if (!IsDisposed)
+			{
+				Presented?.Invoke(this, args);
 			}
 		}
 
@@ -275,7 +278,7 @@ namespace UnityFx.Mvc
 		#region IPresentable
 
 		/// <inheritdoc/>
-		public event EventHandler Presented;
+		public event EventHandler<AsyncCompletedEventArgs> Presented;
 
 		/// <inheritdoc/>
 		public bool IsPresented => _presented;
