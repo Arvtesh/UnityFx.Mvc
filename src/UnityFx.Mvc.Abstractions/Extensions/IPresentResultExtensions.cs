@@ -11,24 +11,5 @@ namespace UnityFx.Mvc
 	/// <seealso cref="IPresentResult"/>
 	public static class IPresentResultExtensions
 	{
-#if !NET35
-
-		/// <summary>
-		/// Gets an awaiter used to await this <see cref="IPresentResult"/>.
-		/// </summary>
-		public static CompilerServices.PresentAwaiter GetAwaiter(this IPresentResult presentResult)
-		{
-			return new CompilerServices.PresentAwaiter(presentResult);
-		}
-
-		/// <summary>
-		/// Gets an awaiter used to await this <see cref="IPresentResult"/>.
-		/// </summary>
-		public static CompilerServices.PresentAwaiter<TController> GetAwaiter<TController>(this IPresentResult<TController> presentResult) where TController : IPresentable
-		{
-			return new CompilerServices.PresentAwaiter<TController>(presentResult);
-		}
-
-#endif
 	}
 }

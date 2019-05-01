@@ -14,16 +14,5 @@ namespace UnityFx.Mvc
 	/// <seealso cref="IPresentService"/>
 	public interface IPresentable : IViewController, IDismissable
 	{
-		/// <summary>
-		/// Raised when the instance is presented.
-		/// </summary>
-		/// <seealso cref="IsPresented"/>
-		event EventHandler<AsyncCompletedEventArgs> Presented;
-
-		/// <summary>
-		/// Gets a value indicating whether the controller is presented.
-		/// </summary>
-		/// <seealso cref="Presented"/>
-		bool IsPresented { get; }
 	}
 }

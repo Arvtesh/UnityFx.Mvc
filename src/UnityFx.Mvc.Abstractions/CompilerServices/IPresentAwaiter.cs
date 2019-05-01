@@ -15,33 +15,17 @@ namespace UnityFx.Mvc.CompilerServices
 	/// This type is intended for compiler use only.
 	/// </summary>
 	/// <seealso cref="IPresentResult"/>
-	public struct PresentAwaiter : INotifyCompletion
+	public interface IPresentAwaiter : INotifyCompletion
 	{
-		private readonly IPresentResult _presentResult;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PresentAwaiter"/> struct.
-		/// </summary>
-		public PresentAwaiter(IPresentResult presentResult)
-		{
-			_presentResult = presentResult;
-		}
-
 		/// <summary>
 		/// Gets a value indicating whether the asynchronous task has completed.
 		/// </summary>
-		public bool IsCompleted => _presentResult.IsPresented;
+		bool IsCompleted { get; }
 
 		/// <summary>
 		/// Ends the wait for the completion of the asynchronous task.
 		/// </summary>
-		public IPresentable GetResult() => _presentResult.Controller;
-
-		/// <inheritdoc/>
-		public void OnCompleted(Action continuation)
-		{
-			_presentResult.Presented += (s, e) => continuation();
-		}
+		IPresentable GetResult();
 	}
 
 #endif

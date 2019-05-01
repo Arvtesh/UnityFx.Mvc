@@ -163,6 +163,11 @@ namespace UnityFx.Mvc
 		protected bool IsActive => _context.IsActive;
 
 		/// <summary>
+		/// Gets a value indicating whether the controller is presented.
+		/// </summary>
+		protected bool IsPresented => _presented;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="Presentable"/> class.
 		/// </summary>
 		/// <param name="context">The controller context.</param>
@@ -237,25 +242,16 @@ namespace UnityFx.Mvc
 		/// <inheritdoc/>
 		protected override void OnLoadViewCompleted(AsyncCompletedEventArgs args)
 		{
-			base.OnLoadViewCompleted(args);
-
 			if (args.Error == null && !args.Cancelled)
 			{
-				if (IsDisposed)
-				{
-					UnloadView();
-				}
-				else
+				if (!_dismissed)
 				{
 					_presented = true;
 					OnPresented();
-					Presented?.Invoke(this, args);
 				}
 			}
-			else if (!IsDisposed)
-			{
-				Presented?.Invoke(this, args);
-			}
+
+			base.OnLoadViewCompleted(args);
 		}
 
 		/// <inheritdoc/>
@@ -276,13 +272,6 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region IPresentable
-
-		/// <inheritdoc/>
-		public event EventHandler<AsyncCompletedEventArgs> Presented;
-
-		/// <inheritdoc/>
-		public bool IsPresented => _presented;
-
 		#endregion
 
 		#region IPresentableEvents

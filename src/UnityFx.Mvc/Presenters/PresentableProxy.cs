@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+#if !NET35
+using System.Runtime.ExceptionServices;
+#endif
 
 namespace UnityFx.Mvc
 {
@@ -18,6 +21,9 @@ namespace UnityFx.Mvc
 	/// <see cref="IPresentService"/> implementation.
 	/// </remarks>
 	internal class PresentableProxy : TreeListNode<PresentableProxy>, IPresentContext, IPresentResult, ICommandTarget
+#if !NET35
+		, CompilerServices.IPresentAwaiter
+#endif
 	{
 		#region data
 
@@ -38,6 +44,7 @@ namespace UnityFx.Mvc
 		private readonly string _name;
 		private readonly int _id;
 
+		private Exception _presentError;
 		private State _state;
 
 		#endregion
@@ -88,7 +95,7 @@ namespace UnityFx.Mvc
 			}
 			else
 			{
-				_controller.Presented += OnPresented;
+				_controller.LoadViewCompleted += OnLoadViewCompleted;
 			}
 		}
 
@@ -192,11 +199,17 @@ namespace UnityFx.Mvc
 
 		#region IPresentResult
 
-		public event EventHandler<AsyncCompletedEventArgs> Presented { add => _controller.Presented += value; remove => _controller.Presented -= value; }
+		public event EventHandler Presented;
 
-		public bool IsPresented => _controller.IsPresented;
+		public bool IsPresented => _state == State.Presented || _state == State.Active;
 
 		public IPresentable Controller => _controller;
+
+#if !NET35
+
+		public CompilerServices.IPresentAwaiter GetAwaiter() => this;
+
+#endif
 
 		#endregion
 
@@ -223,6 +236,39 @@ namespace UnityFx.Mvc
 
 			return false;
 		}
+
+		#endregion
+
+		#region IPresentAwaiter
+
+#if !NET35
+
+		public bool IsCompleted => _state != State.Initialized;
+
+		public IPresentable GetResult()
+		{
+			if (_presentError != null)
+			{
+				ExceptionDispatchInfo.Capture(_presentError).Throw();
+			}
+
+			return _controller;
+		}
+
+#endif
+
+		#endregion
+
+		#region INotifyCompletion
+
+#if !NET35
+
+		public void OnCompleted(Action continuation)
+		{
+			throw new NotImplementedException();
+		}
+
+#endif
 
 		#endregion
 
@@ -263,15 +309,22 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private void OnPresented(object sender, AsyncCompletedEventArgs args)
+		private void OnLoadViewCompleted(object sender, AsyncCompletedEventArgs args)
 		{
-			_controller.Presented -= OnPresented;
+			_controller.LoadViewCompleted -= OnLoadViewCompleted;
 
 			if (_state == State.Initialized)
 			{
-				if (args.Error == null && !args.Cancelled)
+				if (args.Error != null || args.Cancelled)
+				{
+					_presentError = args.Error ?? new OperationCanceledException();
+					_presenter.Dismissed(this);
+					Dispose();
+				}
+				else
 				{
 					OnPresented();
+					Presented?.Invoke(this, EventArgs.Empty);
 				}
 			}
 		}

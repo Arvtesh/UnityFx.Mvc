@@ -18,7 +18,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <seealso cref="IsPresented"/>
 		/// <seealso cref="Controller"/>
-		event EventHandler<AsyncCompletedEventArgs> Presented;
+		event EventHandler Presented;
 
 		/// <summary>
 		/// Gets a value indicating whether the <see cref="Controller"/> is presented.
@@ -31,5 +31,14 @@ namespace UnityFx.Mvc
 		/// Gets the view controller presented.
 		/// </summary>
 		IPresentable Controller { get; }
+
+#if !NET35
+
+		/// <summary>
+		/// Gets an awaiter used to await this <see cref="IPresentResult"/>.
+		/// </summary>
+		CompilerServices.IPresentAwaiter GetAwaiter();
+
+#endif
 	}
 }

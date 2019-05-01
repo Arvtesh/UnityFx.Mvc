@@ -15,5 +15,14 @@ namespace UnityFx.Mvc
 		/// Gets the view controller presented.
 		/// </summary>
 		new TController Controller { get; }
+
+#if !NET35
+
+		/// <summary>
+		/// Gets an awaiter used to await this <see cref="IPresentResult{TController}"/>.
+		/// </summary>
+		new CompilerServices.IPresentAwaiter<TController> GetAwaiter();
+
+#endif
 	}
 }

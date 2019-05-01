@@ -129,10 +129,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		protected virtual void OnLoadViewCompleted(AsyncCompletedEventArgs args)
 		{
-			if (!_disposed)
-			{
-				LoadViewCompleted?.Invoke(this, args);
-			}
+			LoadViewCompleted?.Invoke(this, args);
 		}
 
 		/// <summary>
