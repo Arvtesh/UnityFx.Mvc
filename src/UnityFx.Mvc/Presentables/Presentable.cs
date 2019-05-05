@@ -242,6 +242,8 @@ namespace UnityFx.Mvc
 		/// <inheritdoc/>
 		protected override void OnLoadViewCompleted(AsyncCompletedEventArgs args)
 		{
+			base.OnLoadViewCompleted(args);
+
 			if (args.Error == null && !args.Cancelled)
 			{
 				if (!_dismissed)
@@ -250,8 +252,6 @@ namespace UnityFx.Mvc
 					OnPresented();
 				}
 			}
-
-			base.OnLoadViewCompleted(args);
 		}
 
 		/// <inheritdoc/>

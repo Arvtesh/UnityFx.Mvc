@@ -20,9 +20,10 @@ namespace UnityFx.Mvc
 	/// (via <see cref="IPresentContext"/> interface) and serves as a proxy between the controller and
 	/// <see cref="IPresentService"/> implementation.
 	/// </remarks>
+#if NET35
 	internal class PresentableProxy : TreeListNode<PresentableProxy>, IPresentContext, IPresentResult, ICommandTarget
-#if !NET35
-		, CompilerServices.IPresentAwaiter
+#else
+	internal class PresentableProxy : TreeListNode<PresentableProxy>, IPresentContext, IPresentResult, ICommandTarget, CompilerServices.IPresentAwaiter
 #endif
 	{
 		#region data
@@ -44,7 +45,13 @@ namespace UnityFx.Mvc
 		private readonly string _name;
 		private readonly int _id;
 
+#if !NET35
+
+		private Action _presentContinuation;
 		private Exception _presentError;
+
+#endif
+
 		private State _state;
 
 		#endregion
@@ -86,8 +93,8 @@ namespace UnityFx.Mvc
 
 		internal void Present()
 		{
-			_controller.LoadViewAsync();
 			_controller.Dismissed += OnDismissed;
+			_controller.LoadViewAsync();
 
 			if (_controller.IsViewLoaded)
 			{
@@ -265,7 +272,7 @@ namespace UnityFx.Mvc
 
 		public void OnCompleted(Action continuation)
 		{
-			throw new NotImplementedException();
+			_presentContinuation += continuation;
 		}
 
 #endif
@@ -317,7 +324,9 @@ namespace UnityFx.Mvc
 			{
 				if (args.Error != null || args.Cancelled)
 				{
+#if !NET35
 					_presentError = args.Error ?? new OperationCanceledException();
+#endif
 					_presenter.Dismissed(this);
 					Dispose();
 				}
@@ -327,11 +336,18 @@ namespace UnityFx.Mvc
 					Presented?.Invoke(this, EventArgs.Empty);
 				}
 			}
+
+#if !NET35
+			_presentContinuation?.Invoke();
+
+#endif
 		}
 
 		private void OnDismissed(object sender, EventArgs e)
 		{
 			_controller.Dismissed -= OnDismissed;
+
+			TryDeactivate();
 
 			if (_state != State.Dismissed && _state != State.Disposed)
 			{

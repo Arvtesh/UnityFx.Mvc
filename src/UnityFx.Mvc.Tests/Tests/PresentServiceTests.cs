@@ -46,5 +46,23 @@ namespace UnityFx.Mvc
 			Assert.NotEmpty(_mvcService.Controllers);
 			Assert.Contains(controller, _mvcService.Controllers);
 		}
+
+		[Fact]
+		public void Present_InvokesLoadViewAsync()
+		{
+			var presentResult = _mvcService.Present<CallbackPresentable>();
+
+			Assert.NotNull(presentResult);
+			Assert.NotNull(presentResult.Controller);
+			Assert.Equal(1, presentResult.Controller.LoadViewAsyncCounter);
+		}
+
+		[Fact]
+		public async Task Present_InvokesOnActivate()
+		{
+			var controller = await _mvcService.Present<CallbackPresentable>();
+
+			Assert.Equal(1, controller.OnActivateCounter);
+		}
 	}
 }

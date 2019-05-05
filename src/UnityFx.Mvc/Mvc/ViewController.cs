@@ -157,13 +157,6 @@ namespace UnityFx.Mvc
 		#region IViewController
 
 		/// <summary>
-		/// Raised when the controller has been disposed.
-		/// </summary>
-		/// <seealso cref="Dispose()"/>
-		/// <seealso cref="Dispose(bool)"/>
-		public event EventHandler Disposed;
-
-		/// <summary>
 		/// Raised when the controller <see cref="View"/> has been loaded.
 		/// </summary>
 		/// <seealso cref="View"/>
@@ -266,14 +259,12 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <seealso cref="ThrowIfDisposed"/>
 		/// <seealso cref="Dispose(bool)"/>
-		/// <seealso cref="Disposed"/>
 		public void Dispose()
 		{
 			if (!_disposed)
 			{
 				_disposed = true;
 				Dispose(true);
-				Disposed?.Invoke(this, EventArgs.Empty);
 			}
 		}
 

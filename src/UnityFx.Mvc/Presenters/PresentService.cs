@@ -112,24 +112,6 @@ namespace UnityFx.Mvc
 			return result;
 		}
 
-		internal void Dismissed(PresentableProxy controller)
-		{
-			Debug.Assert(controller != null);
-
-			ThrowIfDisposed();
-
-			try
-			{
-				SetBusy(true);
-				DismissInternal(controller);
-				TryActivateTopController();
-			}
-			finally
-			{
-				SetBusy(false);
-			}
-		}
-
 		internal void Presented(PresentableProxy controller, PresentOptions presentOptions)
 		{
 			// If this is the last operation, activate the controller.
@@ -146,6 +128,17 @@ namespace UnityFx.Mvc
 				{
 					TryActivateTopController();
 				}
+			}
+		}
+
+		internal void Dismissed(PresentableProxy controller)
+		{
+			Debug.Assert(controller != null);
+
+			if (!_disposed)
+			{
+				_controllers.Remove(controller);
+				TryActivateTopController();
 			}
 		}
 

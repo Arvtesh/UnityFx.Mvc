@@ -7,11 +7,11 @@ using System.Diagnostics;
 
 namespace UnityFx.Mvc
 {
-	internal class PresentableProxy<TController> : PresentableProxy, IPresentResult<TController>
-#if !NET35
-		, CompilerServices.IPresentAwaiter<TController>
+#if NET35
+	internal class PresentableProxy<TController> : PresentableProxy, IPresentResult<TController> where TController : IPresentable
+#else
+	internal class PresentableProxy<TController> : PresentableProxy, IPresentResult<TController>, CompilerServices.IPresentAwaiter<TController> where TController : IPresentable
 #endif
-		where TController : IPresentable
 	{
 		#region data
 		#endregion
