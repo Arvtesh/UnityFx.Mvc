@@ -15,7 +15,7 @@ namespace UnityFx.Mvc.CompilerServices
 	/// This type is intended for compiler use only.
 	/// </summary>
 	/// <seealso cref="IPresentResult{TController}"/>
-	public interface IPresentAwaiter<TController> : INotifyCompletion where TController : IPresentable
+	public interface IPresentAwaiter<TController> : ICriticalNotifyCompletion where TController : IPresentable
 	{
 		/// <summary>
 		/// Gets a value indicating whether the asynchronous task has completed.

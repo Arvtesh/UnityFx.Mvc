@@ -23,7 +23,7 @@ namespace UnityFx.Mvc
 #if NET35
 	internal class PresentableProxy : TreeListNode<PresentableProxy>, IPresentContext, IPresentResult, ICommandTarget
 #else
-	internal class PresentableProxy : TreeListNode<PresentableProxy>, IPresentContext, IPresentResult, ICommandTarget, CompilerServices.IPresentAwaiter
+	internal class PresentableProxy : TreeListNode<PresentableProxy>, IPresentContext, IPresentResult, ICommandTarget, CompilerServices.IPresentAwaiter<IPresentable>
 #endif
 	{
 		#region data
@@ -214,7 +214,7 @@ namespace UnityFx.Mvc
 
 #if !NET35
 
-		public CompilerServices.IPresentAwaiter GetAwaiter() => this;
+		public CompilerServices.IPresentAwaiter<IPresentable> GetAwaiter() => this;
 
 #endif
 
@@ -271,6 +271,11 @@ namespace UnityFx.Mvc
 #if !NET35
 
 		public void OnCompleted(Action continuation)
+		{
+			_presentContinuation += continuation;
+		}
+
+		public void UnsafeOnCompleted(Action continuation)
 		{
 			_presentContinuation += continuation;
 		}

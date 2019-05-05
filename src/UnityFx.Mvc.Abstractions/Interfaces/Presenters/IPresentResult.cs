@@ -37,7 +37,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets an awaiter used to await this <see cref="IPresentResult"/>.
 		/// </summary>
-		CompilerServices.IPresentAwaiter GetAwaiter();
+		CompilerServices.IPresentAwaiter<IPresentable> GetAwaiter();
 
 #endif
 	}

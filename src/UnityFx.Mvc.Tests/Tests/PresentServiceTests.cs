@@ -64,5 +64,24 @@ namespace UnityFx.Mvc
 
 			Assert.Equal(1, controller.OnActivateCounter);
 		}
+
+		[Fact]
+		public void Dismiss_CanBeCalledBeforePresentCompleted()
+		{
+			var presentResult = _mvcService.Present<MinimalPresentable>();
+			presentResult.Dismiss();
+
+			Assert.True(presentResult.IsDismissed);
+			Assert.True(presentResult.Controller.IsDismissed);
+		}
+
+		[Fact]
+		public async Task Dismiss_InvokesOnDeactivate()
+		{
+			var controller = await _mvcService.Present<CallbackPresentable>();
+			controller.Dismiss();
+
+			Assert.Equal(1, controller.OnDeactivateCounter);
+		}
 	}
 }
