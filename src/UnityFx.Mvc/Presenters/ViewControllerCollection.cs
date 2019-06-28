@@ -3,27 +3,21 @@
 
 using System;
 using System.Collections;
-#if !NET35
-using System.Collections.Concurrent;
-#endif
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
 
 namespace UnityFx.Mvc
 {
-	internal class PresentableStack : IPresentableStack
+	internal class ViewControllerCollection : IViewControllerCollection
 	{
 		#region data
 
-		private readonly TreeListCollection<PresentableProxy> _controllers;
+		private readonly TreeListCollection<ViewControllerProxy> _controllers;
 
 		#endregion
 
 		#region interface
 
-		public PresentableStack(TreeListCollection<PresentableProxy> c)
+		public ViewControllerCollection(TreeListCollection<ViewControllerProxy> c)
 		{
 			_controllers = c;
 		}
@@ -34,7 +28,7 @@ namespace UnityFx.Mvc
 
 		public int Count => _controllers.Count;
 
-		public bool TryPeek(out IPresentable result)
+		public bool TryPeek(out IViewController result)
 		{
 			if (_controllers.TryPeek(out var proxy))
 			{
@@ -46,7 +40,7 @@ namespace UnityFx.Mvc
 			return false;
 		}
 
-		public IPresentable Peek()
+		public IViewController Peek()
 		{
 			return _controllers.Peek().Controller;
 		}
@@ -55,7 +49,7 @@ namespace UnityFx.Mvc
 
 		#region IEnumerable
 
-		public IEnumerator<IPresentable> GetEnumerator()
+		public IEnumerator<IViewController> GetEnumerator()
 		{
 			foreach (var c in _controllers)
 			{
@@ -65,7 +59,7 @@ namespace UnityFx.Mvc
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return (this as IEnumerable<IPresentable>).GetEnumerator();
+			return (this as IEnumerable<IViewController>).GetEnumerator();
 		}
 
 		#endregion

@@ -54,6 +54,23 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
+		/// Gets the object index in the list.
+		/// </summary>
+		protected int GetIndex()
+		{
+			var result = 0;
+			var prev = Prev;
+
+			while (prev != null)
+			{
+				++result;
+				prev = prev.Prev;
+			}
+
+			return result;
+		}
+
+		/// <summary>
 		/// Gets the node children.
 		/// </summary>
 		public ChildEnumerable GetChildren()

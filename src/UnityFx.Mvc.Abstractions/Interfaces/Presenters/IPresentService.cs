@@ -21,11 +21,11 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets an active <see cref="IViewController"/> (or <see langword="null"/>).
 		/// </summary>
-		IPresentable ActiveController { get; }
+		IViewController ActiveController { get; }
 
 		/// <summary>
 		/// Gets read-only stack of controllers maintained by the service.
 		/// </summary>
-		IPresentableStack Controllers { get; }
+		IViewControllerCollection Controllers { get; }
 	}
 }

@@ -10,31 +10,22 @@ namespace UnityFx.Mvc
 	/// </summary>
 	public class CommandEventArgs : EventArgs
 	{
-		#region data
-
-		private readonly string _commandName;
-		private readonly object _commandArgs;
-
-		#endregion
-
-		#region interface
-
 		/// <summary>
 		/// Gets the command name.
 		/// </summary>
-		public string CommandName => _commandName;
+		public string CommandName { get; }
 
 		/// <summary>
 		/// Gets the command arguments.
 		/// </summary>
-		public object CommandArguments => _commandArgs;
+		public object CommandArguments { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CommandEventArgs"/> class.
 		/// </summary>
 		public CommandEventArgs(string commandName)
 		{
-			_commandName = commandName;
+			CommandName = commandName;
 		}
 
 		/// <summary>
@@ -42,10 +33,8 @@ namespace UnityFx.Mvc
 		/// </summary>
 		public CommandEventArgs(string commandName, object args)
 		{
-			_commandName = commandName;
-			_commandArgs = args;
+			CommandName = commandName;
+			CommandArguments = args;
 		}
-
-		#endregion
 	}
 }

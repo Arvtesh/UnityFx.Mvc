@@ -16,7 +16,7 @@ namespace UnityFx.Mvc
 		#region data
 
 		private static Dictionary<string, string> _emptyQuery = new Dictionary<string, string>();
-		private static PresentArgs _defaultArgs;
+		private static PresentArgs _defaultArgs = new PresentArgs();
 
 		private readonly PresentOptions _options;
 		private readonly Dictionary<string, string> _query;
@@ -30,64 +30,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets default arguments value.
 		/// </summary>
-		public static PresentArgs Default
-		{
-			get
-			{
-				if (_defaultArgs == null)
-				{
-					_defaultArgs = new PresentArgs();
-				}
-
-				return _defaultArgs;
-			}
-		}
-
-		/// <summary>
-		/// Creates a <see cref="PresentArgs"/> instance from a <paramref name="deeplink"/> specified.
-		/// </summary>
-		/// <param name="deeplink">A deeplink.</param>
-		/// <returns>A <see cref="PresentArgs"/> instance representing the specified deeplink.</returns>
-		public static PresentArgs FromDeeplink(Uri deeplink)
-		{
-			if (deeplink == null)
-			{
-				throw new ArgumentNullException(nameof(deeplink));
-			}
-
-			var query = deeplink.Query;
-			var fragment = deeplink.Fragment;
-
-			if (string.IsNullOrEmpty(query))
-			{
-				return new PresentArgs(deeplink, _emptyQuery, fragment);
-			}
-			else
-			{
-				var args = query.Split('?');
-				var queryMap = new Dictionary<string, string>(args.Length);
-
-				foreach (var arg in args)
-				{
-					var index = arg.IndexOf('=');
-					var key = arg;
-					var value = string.Empty;
-
-					if (index >= 0)
-					{
-						key = arg.Substring(0, index);
-						value = arg.Substring(index);
-					}
-
-					if (!string.IsNullOrEmpty(key) && !queryMap.ContainsKey(key))
-					{
-						queryMap.Add(key, value);
-					}
-				}
-
-				return new PresentArgs(deeplink, queryMap, fragment);
-			}
-		}
+		public static PresentArgs Default => _defaultArgs;
 
 		/// <summary>
 		/// Gets user data attached to this object.
@@ -97,11 +40,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets query parameters (if any).
 		/// </summary>
-#if NET35
-		public IDictionary<string, string> Query => _query;
-#else
 		public IReadOnlyDictionary<string, string> Query => _query;
-#endif
 
 		/// <summary>
 		/// Gets fragment parameters (if any).
@@ -168,11 +107,50 @@ namespace UnityFx.Mvc
 			_fragment = fragmentParams ?? string.Empty;
 		}
 
-		private PresentArgs(Uri deeplink, Dictionary<string, string> query, string fragment)
+		/// <summary>
+		/// Creates a <see cref="PresentArgs"/> instance from a <paramref name="deeplink"/> specified.
+		/// </summary>
+		/// <param name="deeplink">A deeplink.</param>
+		/// <returns>A <see cref="PresentArgs"/> instance representing the specified deeplink.</returns>
+		public static PresentArgs FromDeeplink(Uri deeplink)
 		{
-			_data = deeplink;
-			_query = query;
-			_fragment = fragment ?? string.Empty;
+			if (deeplink == null)
+			{
+				throw new ArgumentNullException(nameof(deeplink));
+			}
+
+			var query = deeplink.Query;
+			var fragment = deeplink.Fragment;
+
+			if (string.IsNullOrEmpty(query))
+			{
+				return new PresentArgs(deeplink, _emptyQuery, fragment);
+			}
+			else
+			{
+				var args = query.Split('?');
+				var queryMap = new Dictionary<string, string>(args.Length);
+
+				foreach (var arg in args)
+				{
+					var index = arg.IndexOf('=');
+					var key = arg;
+					var value = string.Empty;
+
+					if (index >= 0)
+					{
+						key = arg.Substring(0, index);
+						value = arg.Substring(index);
+					}
+
+					if (!string.IsNullOrEmpty(key) && !queryMap.ContainsKey(key))
+					{
+						queryMap.Add(key, value);
+					}
+				}
+
+				return new PresentArgs(deeplink, queryMap, fragment);
+			}
 		}
 
 		#endregion
@@ -230,6 +208,17 @@ namespace UnityFx.Mvc
 
 				return base.ToString();
 			}
+		}
+
+		#endregion
+
+		#region implementation
+
+		private PresentArgs(Uri deeplink, Dictionary<string, string> query, string fragment)
+		{
+			_data = deeplink;
+			_query = query;
+			_fragment = fragment ?? string.Empty;
 		}
 
 		#endregion

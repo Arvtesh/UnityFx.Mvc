@@ -22,13 +22,6 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ViewController{TView}"/> class.
 		/// </summary>
-		protected ViewController()
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ViewController{TView}"/> class.
-		/// </summary>
 		/// <param name="view">A view managed by the controller.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
 		protected ViewController(TView view)
@@ -52,15 +45,9 @@ namespace UnityFx.Mvc
 		#region IViewController
 
 		/// <summary>
-		/// Gets a view managed by the controller. Returns <see langword="null"/> if the view is not loaded.
+		/// Gets a view managed by the controller. Never returns <see langword="null"/>.
 		/// </summary>
-		public new TView View
-		{
-			get
-			{
-				return (TView)base.View;
-			}
-		}
+		public new TView View => (TView)base.View;
 
 		#endregion
 

@@ -8,8 +8,8 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// An object capable of presenting view controllers.
 	/// </summary>
-	/// <seealso cref="IPresentable"/>
-	/// <seealso cref="IPresentableEvents"/>
+	/// <seealso cref="IViewController"/>
+	/// <seealso cref="IViewControllerEvents"/>
 	/// <seealso cref="IPresentContext"/>
 	/// <seealso cref="IPresentService"/>
 	public interface IPresenter
@@ -46,7 +46,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		/// <seealso cref="Present{TController}(PresentArgs)"/>
-		IPresentResult<TController> Present<TController>() where TController : class, IPresentable;
+		IPresentResult<TController> Present<TController>() where TController : class, IViewController;
 
 		/// <summary>
 		/// Presents a controller of the specified type.
@@ -57,6 +57,6 @@ namespace UnityFx.Mvc
 		/// <exception cref="InvalidOperationException">Too many operations are scheduled already.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		/// <seealso cref="Present{TController}()"/>
-		IPresentResult<TController> Present<TController>(PresentArgs args) where TController : class, IPresentable;
+		IPresentResult<TController> Present<TController>(PresentArgs args) where TController : class, IViewController;
 	}
 }

@@ -17,11 +17,8 @@ namespace UnityFx.Mvc
 	public interface IViewController<TView> : IViewController where TView : class, IView
 	{
 		/// <summary>
-		/// Gets a view managed by the controller. Returns <see langword="null"/> if the view is not loaded.
+		/// Gets a view managed by the controller. Never returns <see langword="null"/>.
 		/// </summary>
-		/// <remarks>
-		/// Implementation may decide to lazy-load its view on first access. In this case the property would never return <see langword="null"/>.
-		/// </remarks>
 		new TView View { get; }
 	}
 }

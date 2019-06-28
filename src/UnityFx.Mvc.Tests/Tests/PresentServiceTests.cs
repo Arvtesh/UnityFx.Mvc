@@ -54,7 +54,6 @@ namespace UnityFx.Mvc
 
 			Assert.NotNull(presentResult);
 			Assert.NotNull(presentResult.Controller);
-			Assert.Equal(1, presentResult.Controller.LoadViewAsyncCounter);
 		}
 
 		[Fact]
@@ -72,14 +71,13 @@ namespace UnityFx.Mvc
 			presentResult.Dismiss();
 
 			Assert.True(presentResult.IsDismissed);
-			Assert.True(presentResult.Controller.IsDismissed);
 		}
 
 		[Fact]
 		public async Task Dismiss_InvokesOnDeactivate()
 		{
 			var controller = await _mvcService.Present<CallbackPresentable>();
-			controller.Dismiss();
+			controller.Dispose();
 
 			Assert.Equal(1, controller.OnDeactivateCounter);
 		}

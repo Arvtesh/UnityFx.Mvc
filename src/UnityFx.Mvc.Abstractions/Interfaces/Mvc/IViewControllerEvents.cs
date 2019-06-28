@@ -8,8 +8,8 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// Defines event handlers for a presentable obejct.
 	/// </summary>
-	/// <seealso cref="IPresentable"/>
-	public interface IPresentableEvents
+	/// <seealso cref="IViewController"/>
+	public interface IViewControllerEvents
 	{
 		/// <summary>
 		/// Called right before the object becomes active. The method may be called multiple times during the object lifetime.
