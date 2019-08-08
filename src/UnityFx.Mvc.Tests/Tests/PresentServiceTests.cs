@@ -14,6 +14,7 @@ namespace UnityFx.Mvc
 	public class PresentServiceTests
 	{
 		private readonly IServiceProvider _serviceProvider;
+		private readonly IViewFactory _viewFactory;
 		private readonly IPresentService _mvcService;
 
 		public PresentServiceTests()
