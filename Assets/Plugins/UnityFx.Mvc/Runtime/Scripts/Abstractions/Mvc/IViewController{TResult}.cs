@@ -14,11 +14,11 @@ namespace UnityFx.Mvc
 	/// <seealso cref="IPresentService"/>
 	/// <seealso cref="IViewControllerFactory"/>
 	/// <seealso cref="IViewController"/>
-	public interface IViewController<TView> : IViewController where TView : class, IView
+	public interface IViewController<TResult> : IViewController
 	{
 		/// <summary>
-		/// Gets a view managed by the controller. Never returns <see langword="null"/>.
+		/// Gets a controller result value (if any).
 		/// </summary>
-		new TView View { get; }
+		TResult Result { get; }
 	}
 }

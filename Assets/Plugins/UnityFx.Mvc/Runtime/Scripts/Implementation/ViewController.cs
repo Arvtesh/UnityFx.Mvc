@@ -175,11 +175,6 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Gets a value indicating whether the controller is disposed.
-		/// </summary>
-		protected bool IsDisposed => _disposed;
-
-		/// <summary>
 		/// Initializes a new instance of the <see cref="ViewController"/> class.
 		/// </summary>
 		/// <param name="view">A view managed by the controller.</param>
@@ -241,23 +236,18 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Called when the controller is being disposed. Should not throw exceptions. Default implementation invokes <see cref="Disposed"/> event.
+		/// Called when the controller is being dismissed. Should not throw exceptions. Default implementation invokes <see cref="Dismissed"/> event.
 		/// </summary>
 		/// <seealso cref="Dispose"/>
 		/// <seealso cref="ThrowIfDisposed"/>
-		protected virtual void OnDispose()
+		protected virtual void OnDismiss()
 		{
-			Disposed?.Invoke(this, EventArgs.Empty);
+			Dismissed?.Invoke(this, EventArgs.Empty);
 		}
 
 		#endregion
 
 		#region IViewController
-
-		/// <summary>
-		/// Raised when the controller is disposed.
-		/// </summary>
-		public event EventHandler Disposed;
 
 		/// <summary>
 		/// Gets a view managed by the controller. Never returns <see langword="null"/>.
@@ -280,6 +270,33 @@ namespace UnityFx.Mvc
 		{
 			Debug.Assert(!_disposed);
 			OnDeactivate();
+		}
+
+		#endregion
+
+		#region IDismissable
+
+		/// <summary>
+		/// Raised when the controller is disposed.
+		/// </summary>
+		/// <seealso cref="Dismiss"/>
+		public event EventHandler Dismissed;
+
+		/// <summary>
+		/// Gets a value indicating whether the controller is dismissed.
+		/// </summary>
+		/// <seealso cref="Dismiss"/>
+		public bool IsDismissed => _disposed;
+
+		/// <summary>
+		/// Dismissed the controller.
+		/// </summary>
+		/// <seealso cref="IsDismissed"/>
+		/// <seealso cref="Dismissed"/>
+		/// <seealso cref="OnDismiss"/>
+		public void Dismiss()
+		{
+			Dispose();
 		}
 
 		#endregion
@@ -314,7 +331,7 @@ namespace UnityFx.Mvc
 		/// Releases resources used by the controller.
 		/// </summary>
 		/// <seealso cref="ThrowIfDisposed"/>
-		/// <seealso cref="OnDispose"/>
+		/// <seealso cref="OnDismiss"/>
 		public void Dispose()
 		{
 			if (!_disposed)
@@ -323,7 +340,7 @@ namespace UnityFx.Mvc
 
 				try
 				{
-					OnDispose();
+					OnDismiss();
 				}
 				finally
 				{

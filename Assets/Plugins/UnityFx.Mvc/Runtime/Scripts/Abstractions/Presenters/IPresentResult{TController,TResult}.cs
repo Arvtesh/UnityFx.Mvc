@@ -10,11 +10,11 @@ namespace UnityFx.Mvc
 	/// Result of a present operation.
 	/// </summary>
 	/// <seealso cref="IPresentResult"/>
-	public interface IPresentResult<TController> : IPresentResult where TController : IViewController
+	public interface IPresentResult<TController, TResult> : IPresentResult<TController> where TController : IViewController<TResult>
 	{
 		/// <summary>
-		/// Gets the view controller.
+		/// Gets the controller result.
 		/// </summary>
-		new TController Controller { get; }
+		TResult Result { get; }
 	}
 }

@@ -24,7 +24,7 @@ namespace UnityFx.Mvc
 
 		#endregion
 
-		#region IPresentableStack
+		#region IViewControllerCollection
 
 		public int Count => _controllers.Count;
 

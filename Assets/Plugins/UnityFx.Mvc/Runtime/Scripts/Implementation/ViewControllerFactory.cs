@@ -41,7 +41,7 @@ namespace UnityFx.Mvc
 		}
 
 		/// <inheritdoc/>
-		public IViewController CreateController(Type controllerType, params object[] args)
+		public virtual IViewController CreateController(Type controllerType, params object[] args)
 		{
 			return (IViewController)ActivatorUtilities.CreateInstance(_serviceProvider, controllerType, args);
 		}

@@ -18,13 +18,8 @@ namespace UnityFx.Mvc
 	/// <seealso cref="IViewControllerFactory"/>
 	/// <seealso cref="IViewController{TView}"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller"/>
-	public interface IViewController : ICommandTarget, IDisposable
+	public interface IViewController : ICommandTarget, IDismissable
 	{
-		/// <summary>
-		/// Raised when the controller is disposed.
-		/// </summary>
-		event EventHandler Disposed;
-
 		/// <summary>
 		/// Gets a view managed by the controller. Never returns <see langword="null"/>.
 		/// </summary>

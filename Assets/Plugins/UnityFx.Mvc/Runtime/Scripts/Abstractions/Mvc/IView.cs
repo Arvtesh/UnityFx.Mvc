@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using UnityEngine;
 
 namespace UnityFx.Mvc
 {
@@ -14,9 +15,9 @@ namespace UnityFx.Mvc
 	public interface IView : IComponent, INotifyCommand
 	{
 		/// <summary>
-		/// Gets the view name.
+		/// Gets the <see cref="Transform"/> this view is attached to.
 		/// </summary>
-		string Name { get; }
+		Transform Transform { get; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether the view is enabled.
