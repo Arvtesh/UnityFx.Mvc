@@ -3,30 +3,18 @@
 
 using System;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Result of a present operation.
+	/// Result of a present operation. Can be used very much like <see cref="Task"/>.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IPresenter"/>
-	public interface IPresentResult : IDismissable
+	public interface IPresentResult : ICommandTarget, IDisposable
 	{
-		/// <summary>
-		/// Raised right after the controller has been presented.
-		/// </summary>
-		/// <seealso cref="IsPresented"/>
-		event EventHandler<PresentCompletedEventArgs> Presented;
-
-		/// <summary>
-		/// Gets a value indicating whether the <see cref="Controller"/> is presented.
-		/// </summary>
-		/// <seealso cref="PresentCompleted"/>
-		/// <seealso cref="Controller"/>
-		bool IsPresented { get; }
-
 		/// <summary>
 		/// Gets the view controller.
 		/// </summary>
@@ -38,5 +26,10 @@ namespace UnityFx.Mvc
 		/// Gets the view.
 		/// </summary>
 		IView View { get; }
+
+		/// <summary>
+		/// Gets a <see cref="Task"/> instance that can be used to await the operatino completion.
+		/// </summary>
+		Task Task { get; }
 	}
 }

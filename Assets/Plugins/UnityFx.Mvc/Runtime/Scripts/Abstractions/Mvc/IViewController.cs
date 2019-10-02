@@ -18,10 +18,10 @@ namespace UnityFx.Mvc
 	/// <seealso cref="IViewControllerFactory"/>
 	/// <seealso cref="IViewController{TView}"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller"/>
-	public interface IViewController : ICommandTarget, IDismissable
+	public interface IViewController : ICommandTarget
 	{
 		/// <summary>
-		/// Gets a view managed by the controller. Never returns <see langword="null"/>.
+		/// Gets a view managed by the controller. Should never returns <see langword="null"/>.
 		/// </summary>
 		IView View { get; }
 	}

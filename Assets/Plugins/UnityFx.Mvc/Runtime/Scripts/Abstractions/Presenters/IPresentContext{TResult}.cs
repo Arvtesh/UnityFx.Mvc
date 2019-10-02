@@ -11,21 +11,11 @@ namespace UnityFx.Mvc
 	/// It is here for the sake of testability/explicit dependencies for <see cref="IViewController"/> implementations.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
-	public interface IPresentContext : IPresenter, IServiceProvider
+	public interface IPresentContext<TResult> : IPresentContext
 	{
-		/// <summary>
-		/// Gets the controller arguments.
-		/// </summary>
-		PresentArgs Args { get; }
-
-		/// <summary>
-		/// Gets the controller view.
-		/// </summary>
-		IView View { get; }
-
 		/// <summary>
 		/// Dismisses the controller.
 		/// </summary>
-		void Dismiss();
+		void Dismiss(TResult result);
 	}
 }

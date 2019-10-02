@@ -17,7 +17,7 @@ namespace UnityFx.Mvc
 	public interface IViewController<TResult> : IViewController
 	{
 		/// <summary>
-		/// Gets a controller result value (if any).
+		/// Gets the controller result value.
 		/// </summary>
 		TResult Result { get; }
 	}

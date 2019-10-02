@@ -24,7 +24,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		/// <seealso cref="Present(Type)"/>
-		IPresentResult Present(Type controllerType, PresentArgs args);
+		IPresentResult PresentAsync(Type controllerType, PresentArgs args);
 
 		/// <summary>
 		/// Presents a controller of the specified type.
@@ -35,7 +35,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		/// <seealso cref="Present{TController}()"/>
-		IPresentResult<TController> Present<TController>(PresentArgs args) where TController : IViewController;
+		IPresentResult<TController> PresentAsync<TController>(PresentArgs args) where TController : IViewController;
 
 		/// <summary>
 		/// Presents a controller of the specified type.
@@ -46,6 +46,6 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		/// <seealso cref="Present{TController}(PresentArgs)"/>
-		IPresentResult<TController, TResult> Present<TController, TResult>(PresentArgs args) where TController : IViewController<TResult>;
+		IPresentResult<TController, TResult> PresentAsync<TController, TResult>(PresentArgs args) where TController : IViewController<TResult>;
 	}
 }
