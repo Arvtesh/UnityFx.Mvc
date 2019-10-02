@@ -23,23 +23,12 @@ namespace UnityFx.Mvc
 		#region interface
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="ViewController{TView}"/> class.
+		/// Initializes a new instance of the <see cref="ViewController{TView, TResult}"/> class.
 		/// </summary>
-		/// <param name="view">A view managed by the controller.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
-		protected ViewController(TView view)
-			: base(view)
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ViewController{TView}"/> class.
-		/// </summary>
-		/// <param name="view">A view managed by the controller.</param>
-		/// <param name="viewOptions">View-related flags.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
-		protected ViewController(TView view, ViewOptions viewOptions)
-			: base(view, viewOptions)
+		/// <param name="context">A controller context.</param>
+		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="context"/> is <see langword="null"/>.</exception>
+		protected ViewController(IPresentContext context)
+			: base(context)
 		{
 		}
 

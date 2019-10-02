@@ -24,8 +24,20 @@ namespace UnityFx.Mvc
 		IView View { get; }
 
 		/// <summary>
+		/// Gets a value indicating whether the controller is active.
+		/// </summary>
+		bool IsActive { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether the controller is dismissed.
+		/// </summary>
+		/// <seealso cref="Dismiss"/>
+		bool IsDismissed { get; }
+
+		/// <summary>
 		/// Dismisses the controller.
 		/// </summary>
+		/// <seealso cref="IsDismissed"/>
 		void Dismiss();
 	}
 }

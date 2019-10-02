@@ -18,12 +18,12 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <threadsafety static="true" instance="false"/>
 	/// <seealso cref="IViewController"/>
-	public class PresentService : IPresentService
+	public class Presenter : IPresenter, ICommandTarget, IDisposable
 	{
 		#region data
 
 		private readonly IServiceProvider _serviceProvider;
-		private readonly TreeListCollection<ViewControllerProxy> _controllerProxies = new TreeListCollection<ViewControllerProxy>();
+		private readonly TreeListCollection<PresentResult> _controllerProxies = new TreeListCollection<PresentResult>();
 		private readonly ViewControllerCollection _controllers;
 
 		private int _idCounter;
@@ -35,10 +35,10 @@ namespace UnityFx.Mvc
 		#region interface
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="PresentService"/> class.
+		/// Initializes a new instance of the <see cref="Presenter"/> class.
 		/// </summary>
 		/// <param name="serviceProvider">A <see cref="IServiceProvider"/> used to resolve controller dependencies.</param>
-		public PresentService(IServiceProvider serviceProvider)
+		public Presenter(IServiceProvider serviceProvider)
 		{
 			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			_controllers = new ViewControllerCollection(_controllerProxies);
@@ -81,7 +81,7 @@ namespace UnityFx.Mvc
 
 		#region internals
 
-		internal IPresentResult Present(ViewControllerProxy parent, Type controllerType, PresentArgs args)
+		internal IPresentResult Present(PresentResult parent, Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidArgs(args);
@@ -93,7 +93,7 @@ namespace UnityFx.Mvc
 			return result;
 		}
 
-		internal IPresentResult<T> Present<T>(ViewControllerProxy parent, PresentArgs args) where T : class, IViewController
+		internal IPresentResult<T> Present<T>(PresentResult parent, PresentArgs args) where T : class, IViewController
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidArgs(args);
@@ -105,7 +105,7 @@ namespace UnityFx.Mvc
 			return result;
 		}
 
-		internal void Dismissed(ViewControllerProxy controller)
+		internal void Dismissed(PresentResult controller)
 		{
 			Debug.Assert(controller != null);
 
@@ -235,15 +235,15 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private ViewControllerProxy CreateController(ViewControllerProxy parent, Type controllerType, PresentArgs args)
+		private PresentResult CreateController(PresentResult parent, Type controllerType, PresentArgs args)
 		{
-			ViewControllerProxy c = null;
+			PresentResult c = null;
 
 			try
 			{
 				SetBusy(true);
 
-				c = new ViewControllerProxy(this, parent, controllerType, args, ++_idCounter);
+				c = new PresentResult(this, parent, controllerType, args, ++_idCounter);
 				AddController(c);
 			}
 			catch
@@ -259,15 +259,15 @@ namespace UnityFx.Mvc
 			return c;
 		}
 
-		private ViewControllerProxy<T> CreateController<T>(ViewControllerProxy parent, PresentArgs args) where T : class, IViewController
+		private PresentResult<T> CreateController<T>(PresentResult parent, PresentArgs args) where T : class, IViewController
 		{
-			ViewControllerProxy<T> c = null;
+			PresentResult<T> c = null;
 
 			try
 			{
 				SetBusy(true);
 
-				c = new ViewControllerProxy<T>(this, parent, typeof(T), args, ++_idCounter);
+				c = new PresentResult<T>(this, parent, typeof(T), args, ++_idCounter);
 				AddController(c);
 			}
 			catch
@@ -293,7 +293,7 @@ namespace UnityFx.Mvc
 			return false;
 		}
 
-		private void DeactivateTopControllerIfNeeded(ViewControllerProxy controller)
+		private void DeactivateTopControllerIfNeeded(PresentResult controller)
 		{
 			if (_controllerProxies.TryPeek(out var topController))
 			{
@@ -311,7 +311,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		private void PrePresent(ViewControllerProxy controller, PresentOptions presentOptions)
+		private void PrePresent(PresentResult controller, PresentOptions presentOptions)
 		{
 			if ((presentOptions & PresentOptions.DismissCurrent) != 0)
 			{
@@ -338,7 +338,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		private void PostPresent(ViewControllerProxy controller, PresentOptions presentOptions)
+		private void PostPresent(PresentResult controller, PresentOptions presentOptions)
 		{
 			// If this is the last operation, activate the controller.
 			if (controller == _controllerProxies.Last)
@@ -350,7 +350,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		private async void PresentInternal(ViewControllerProxy controller, PresentOptions presentOptions, object userState)
+		private async void PresentInternal(PresentResult controller, PresentOptions presentOptions, object userState)
 		{
 			try
 			{
@@ -376,7 +376,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		private void DismissInternal(ViewControllerProxy controller)
+		private void DismissInternal(PresentResult controller)
 		{
 			try
 			{
@@ -395,7 +395,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		private void DisposeInternal(ViewControllerProxy controller)
+		private void DisposeInternal(PresentResult controller)
 		{
 			if (controller != null)
 			{
@@ -415,10 +415,10 @@ namespace UnityFx.Mvc
 
 		private void OnDismiss(object sender, EventArgs args)
 		{
-			DisposeInternal(sender as ViewControllerProxy);
+			DisposeInternal(sender as PresentResult);
 		}
 
-		private void AddController(ViewControllerProxy controller)
+		private void AddController(PresentResult controller)
 		{
 			Debug.Assert(controller != null);
 			Debug.Assert(!_disposed);

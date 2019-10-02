@@ -11,13 +11,13 @@ namespace UnityFx.Mvc
 	{
 		#region data
 
-		private readonly TreeListCollection<ViewControllerProxy> _controllers;
+		private readonly TreeListCollection<PresentResult> _controllers;
 
 		#endregion
 
 		#region interface
 
-		public ViewControllerCollection(TreeListCollection<ViewControllerProxy> c)
+		public ViewControllerCollection(TreeListCollection<PresentResult> c)
 		{
 			_controllers = c;
 		}

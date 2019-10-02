@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace UnityFx.Mvc
 {
-	internal class ViewControllerProxy<TController> : ViewControllerProxy, IPresentResult<TController> where TController : IViewController
+	internal class PresentResult<TController> : PresentResult, IPresentResult<TController> where TController : IViewController
 	{
 		#region data
 		#endregion
 
 		#region interface
 
-		public ViewControllerProxy(PresentService presenter, ViewControllerProxy parent, Type controllerType, PresentArgs args, int id)
+		public PresentResult(Presenter presenter, PresentResult parent, Type controllerType, PresentArgs args, int id)
 			: base(presenter, parent, controllerType, args, id)
 		{
 		}

@@ -16,34 +16,14 @@ namespace UnityFx.Mvc
 	{
 		#region data
 
-		private readonly IView _view;
-		private readonly ViewOptions _viewOptions;
-
-		private bool _disposed;
+		private readonly IPresentContext _context;
 
 		#endregion
 
 		#region interface
 
 		/// <summary>
-		/// Defines view-related flags.
-		/// </summary>
-		[Flags]
-		public enum ViewOptions
-		{
-			/// <summary>
-			/// No options.
-			/// </summary>
-			None = 0,
-
-			/// <summary>
-			/// If set, the view managed by the controller is not disposed.
-			/// </summary>
-			DoNotDispose = 1
-		}
-
-		/// <summary>
-		/// Enumerates basic controller comaands.
+		/// Enumerates basic controller commands.
 		/// </summary>
 		public abstract class Commands
 		{
@@ -175,36 +155,42 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="ViewController"/> class.
+		/// Gets the controller context.
 		/// </summary>
-		/// <param name="view">A view managed by the controller.</param>
-		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="view"/> is <see langword="null"/>.</exception>
-		protected ViewController(IView view)
-		{
-			_view = view ?? throw new ArgumentNullException(nameof(view));
-			_view.Command += OnCommand;
-		}
+		protected IPresentContext Context => _context;
+
+		/// <summary>
+		/// Gets a value indicating whether the controller is dismissed.
+		/// </summary>
+		/// <seealso cref="Dismiss"/>
+		protected bool IsDismissed => _context.IsDismissed;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ViewController"/> class.
 		/// </summary>
-		/// <param name="view">A view managed by the controller.</param>
-		/// <param name="viewOptions">View-related flags.</param>
-		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="view"/> is <see langword="null"/>.</exception>
-		protected ViewController(IView view, ViewOptions viewOptions)
+		/// <param name="context">A controller context.</param>
+		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="context"/> is <see langword="null"/>.</exception>
+		protected ViewController(IPresentContext context)
 		{
-			_view = view ?? throw new ArgumentNullException(nameof(view));
-			_view.Command += OnCommand;
-			_viewOptions = viewOptions;
+			_context = context ?? throw new ArgumentNullException(nameof(context));
+		}
+
+		/// <summary>
+		/// Dismissses this controller.
+		/// </summary>
+		/// <seealso cref="IsDismissed"/>
+		protected void Dismiss()
+		{
+			_context.Dismiss();
 		}
 
 		/// <summary>
 		/// Throws an <see cref="ObjectDisposedException"/> if the controller is disposed.
 		/// </summary>
 		/// <seealso cref="Dispose()"/>
-		protected void ThrowIfDisposed()
+		protected void ThrowIfDismissed()
 		{
-			if (_disposed)
+			if (_context.IsDismissed)
 			{
 				throw new ObjectDisposedException(GetType().Name);
 			}
@@ -214,7 +200,7 @@ namespace UnityFx.Mvc
 		/// Called to process a command.
 		/// </summary>
 		/// <returns>Returns <see langword="true"/> if the command has been handles; <see langword="false"/> otherwise.</returns>
-		protected virtual bool OnCommand(CommandEventArgs e)
+		protected virtual bool OnCommand(string commandName, object commandArgs)
 		{
 			return false;
 		}
@@ -236,13 +222,11 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Called when the controller is being dismissed. Should not throw exceptions. Default implementation invokes <see cref="Dismissed"/> event.
+		/// Called when the controller is being dismissed. Should not throw exceptions. Default implementation does nothing.
 		/// </summary>
-		/// <seealso cref="Dispose"/>
-		/// <seealso cref="ThrowIfDisposed"/>
+		/// <seealso cref="ThrowIfDismissed"/>
 		protected virtual void OnDismiss()
 		{
-			Dismissed?.Invoke(this, EventArgs.Empty);
 		}
 
 		#endregion
@@ -252,7 +236,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets a view managed by the controller. Never returns <see langword="null"/>.
 		/// </summary>
-		public IView View => _view;
+		public IView View => _context.View;
 
 		#endregion
 
@@ -261,42 +245,28 @@ namespace UnityFx.Mvc
 		/// <inheritdoc/>
 		void IViewControllerEvents.OnActivate()
 		{
-			Debug.Assert(!_disposed);
+			Debug.Assert(!IsDismissed);
 			OnActivate();
 		}
 
 		/// <inheritdoc/>
 		void IViewControllerEvents.OnDeactivate()
 		{
-			Debug.Assert(!_disposed);
+			Debug.Assert(!IsDismissed);
 			OnDeactivate();
 		}
 
-		#endregion
-
-		#region IDismissable
-
-		/// <summary>
-		/// Raised when the controller is disposed.
-		/// </summary>
-		/// <seealso cref="Dismiss"/>
-		public event EventHandler Dismissed;
-
-		/// <summary>
-		/// Gets a value indicating whether the controller is dismissed.
-		/// </summary>
-		/// <seealso cref="Dismiss"/>
-		public bool IsDismissed => _disposed;
-
-		/// <summary>
-		/// Dismissed the controller.
-		/// </summary>
-		/// <seealso cref="IsDismissed"/>
-		/// <seealso cref="Dismissed"/>
-		/// <seealso cref="OnDismiss"/>
-		public void Dismiss()
+		/// <inheritdoc/>
+		void IViewControllerEvents.OnPresent()
 		{
-			Dispose();
+			Debug.Assert(!IsDismissed);
+			//TODO
+		}
+
+		/// <inheritdoc/>
+		void IViewControllerEvents.OnDismiss()
+		{
+			OnDismiss();
 		}
 
 		#endregion
@@ -313,57 +283,19 @@ namespace UnityFx.Mvc
 		/// <returns>Returns <see langword="true"/> if the command has been handles; <see langword="false"/> otherwise.</returns>
 		public bool InvokeCommand(string commandName, object args)
 		{
-			ThrowIfDisposed();
+			ThrowIfDismissed();
 
-			if (commandName == null)
+			if (commandName is null)
 			{
 				throw new ArgumentNullException(nameof(commandName));
 			}
 
-			return OnCommand(new CommandEventArgs(commandName, args));
-		}
-
-		#endregion
-
-		#region IDisposable
-
-		/// <summary>
-		/// Releases resources used by the controller.
-		/// </summary>
-		/// <seealso cref="ThrowIfDisposed"/>
-		/// <seealso cref="OnDismiss"/>
-		public void Dispose()
-		{
-			if (!_disposed)
-			{
-				_disposed = true;
-
-				try
-				{
-					OnDismiss();
-				}
-				finally
-				{
-					if (!_viewOptions.HasFlag(ViewOptions.DoNotDispose))
-					{
-						_view.Dispose();
-					}
-				}
-			}
+			return OnCommand(commandName, args);
 		}
 
 		#endregion
 
 		#region implementation
-
-		private void OnCommand(object sender, CommandEventArgs e)
-		{
-			Debug.Assert(e != null);
-			Debug.Assert(!_disposed);
-
-			OnCommand(e);
-		}
-
 		#endregion
 	}
 }

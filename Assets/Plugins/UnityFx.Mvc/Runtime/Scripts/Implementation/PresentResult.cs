@@ -19,7 +19,7 @@ namespace UnityFx.Mvc
 	/// (via <see cref="IPresentContext"/> interface) and serves as a proxy between the controller and
 	/// <see cref="IPresentService"/> implementation.
 	/// </remarks>
-	internal class ViewControllerProxy : TreeListNode<ViewControllerProxy>, IPresentContext, IPresentResult, ICommandTarget
+	internal class PresentResult : TreeListNode<PresentResult>, IPresentContext, IPresentResult, ICommandTarget
 	{
 		#region data
 
@@ -28,15 +28,13 @@ namespace UnityFx.Mvc
 			Initialized,
 			Presented,
 			Active,
-			Dismissed,
 			Disposed
 		}
 
-		private readonly PresentService _presenter;
+		private readonly Presenter _presenter;
 		private readonly Type _controllerType;
 		private readonly PresentArgs _presentArgs;
 		private readonly PresentOptions _presentOptions;
-		private readonly string _name;
 		private readonly int _id;
 
 		private IServiceProvider _serviceProvider;
@@ -53,19 +51,18 @@ namespace UnityFx.Mvc
 
 		internal PresentOptions PresentOptions => _presentOptions;
 
-		internal ViewControllerProxy(PresentService presentManager, ViewControllerProxy parent, Type controllerType, PresentArgs args, int id)
+		internal PresentResult(Presenter presenter, PresentResult parent, Type controllerType, PresentArgs args, int id)
 			: base(parent)
 		{
-			Debug.Assert(presentManager != null);
+			Debug.Assert(presenter != null);
 			Debug.Assert(controllerType != null);
 			Debug.Assert(args != null);
 
-			_presenter = presentManager;
-			_serviceProvider = presentManager.ServiceProvider;
+			_presenter = presenter;
+			_serviceProvider = presenter.ServiceProvider;
 			_controllerType = controllerType;
 			_presentArgs = args;
 			_presentOptions = args.Options;
-			_name = Utility.GetControllerTypeId(controllerType);
 			_id = id;
 		}
 
@@ -73,7 +70,7 @@ namespace UnityFx.Mvc
 		{
 			if (_serviceProvider.GetService(typeof(IViewFactory)) is IViewFactory viewFactory)
 			{
-				_presentTask = PresentInternal(viewFactory, userState);
+				_presentTask = PresentAsync(viewFactory, userState);
 				return _presentTask;
 			}
 			else
@@ -88,9 +85,9 @@ namespace UnityFx.Mvc
 			{
 				_state = State.Active;
 
-				if (_controller is IViewControllerEvents controllerEvents)
+				if (_controller is IViewControllerEvents c)
 				{
-					controllerEvents.OnActivate();
+					c.OnActivate();
 				}
 
 				return true;
@@ -105,9 +102,9 @@ namespace UnityFx.Mvc
 			{
 				_state = State.Presented;
 
-				if (_controller is IViewControllerEvents controllerEvents)
+				if (_controller is IViewControllerEvents c)
 				{
-					controllerEvents.OnDeactivate();
+					c.OnDeactivate();
 				}
 
 				return true;
@@ -142,69 +139,50 @@ namespace UnityFx.Mvc
 
 		#endregion
 
-		#region IViewControllerContext
+		#region IPresentContext
 
-		public int Id => _id;
+		public PresentArgs Args => _presentArgs;
+
+		public IView View => _view;
 
 		public bool IsActive => _state == State.Active;
+
+		public bool IsDismissed => _state == State.Disposed;
+
+		public void Dismiss()
+		{
+			Dispose();
+		}
 
 		#endregion
 
 		#region IPresenter
 
-		public IPresentResult Present(Type controllerType)
+		public IPresentResult PresentAsync(Type controllerType, PresentArgs args)
 		{
-			Debug.Assert(!IsDismissed);
-			return _presenter.Present(this, controllerType, PresentArgs.Default);
+			ThrowIfDisposed();
+			return _presenter.PresentAsync(this, controllerType, args);
 		}
 
-		public IPresentResult Present(Type controllerType, PresentArgs args)
+		public IPresentResult<TController> PresentAsync<TController>(PresentArgs args) where TController : IViewController
 		{
-			Debug.Assert(!IsDismissed);
-			return _presenter.Present(this, controllerType, args);
+			ThrowIfDisposed();
+			return _presenter.PresentAsync<TController>(this, args);
 		}
 
-		public IPresentResult<TController> Present<TController>() where TController : class, IViewController
+		public IPresentResult<TController, TResult> PresentAsync<TController, TResult>(PresentArgs args) where TController : IViewController<TResult>
 		{
-			Debug.Assert(!IsDismissed);
-			return _presenter.Present<TController>(this, PresentArgs.Default);
-		}
-
-		public IPresentResult<TController> Present<TController>(PresentArgs args) where TController : class, IViewController
-		{
-			Debug.Assert(!IsDismissed);
-			return _presenter.Present<TController>(this, args);
+			ThrowIfDisposed();
+			return _presenter.PresentAsync<TController, TResult>(this, args);
 		}
 
 		#endregion
 
 		#region IPresentResult
 
-		public event EventHandler<PresentCompletedEventArgs> PresentCompleted;
-
-		public event EventHandler Dismissed;
-
-		public bool IsPresented => _state == State.Presented || _state == State.Active;
-
-		public bool IsDismissed => _state == State.Dismissed || _state == State.Disposed;
-
-		public Task<IViewController> PresentTask => _presentTask;
-
-		public Task DismissTask => throw new NotImplementedException();
-
 		public IViewController Controller => _controller;
 
-		public void Dismiss()
-		{
-			if (_controller != null)
-			{
-				_controller.Dispose();
-			}
-			else
-			{
-				_state = State.Disposed;
-			}
-		}
+		public Task Task => null;
 
 		#endregion
 
@@ -212,12 +190,19 @@ namespace UnityFx.Mvc
 
 		public bool InvokeCommand(string commandName, object args)
 		{
-			if ((_state == State.Presented || _state == State.Active) && _controller is ICommandTarget cmdTarget)
+			ThrowIfDisposed();
+
+			if (commandName is null)
 			{
-				return cmdTarget.InvokeCommand(commandName, args);
+				throw new ArgumentNullException(nameof(commandName));
 			}
 
-			return false;
+			if (_state != State.Presented && _state != State.Active)
+			{
+				throw new InvalidOperationException();
+			}
+
+			return _controller.InvokeCommand(commandName, args);
 		}
 
 		#endregion
@@ -246,11 +231,14 @@ namespace UnityFx.Mvc
 
 				try
 				{
-					_controller?.Dispose();
-					_view?.Dispose();
+					if (_controller is IViewControllerEvents c)
+					{
+						c.OnDismiss();
+					}
 				}
 				finally
 				{
+					_view?.Dispose();
 					_scope?.Dispose();
 				}
 			}
@@ -260,15 +248,19 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private async Task<IViewController> PresentInternal(IViewFactory viewFactory, object userState)
+		private async Task<IViewController> PresentAsync(IViewFactory viewFactory, object userState)
 		{
 			try
 			{
 				_view = await viewFactory.CreateViewAsync(_controllerType, GetIndex());
 
+				if (_view is null)
+				{
+					throw new InvalidOperationException();
+				}
+
 				if (_state != State.Initialized)
 				{
-					_view.Dispose();
 					throw new OperationCanceledException();
 				}
 
@@ -282,40 +274,33 @@ namespace UnityFx.Mvc
 					_controller = (IViewController)ActivatorUtilities.CreateInstance(_serviceProvider, _controllerType, this, _presentArgs, _view);
 				}
 
-				Debug.Assert(_controller != null);
+				if (_controller is null)
+				{
+					throw new InvalidOperationException();
+				}
 
-				_controller.Disposed += OnDismissed;
+				_view.Disposed += OnDismissed;
 				_state = State.Presented;
 			}
-			catch (Exception e)
+			catch
 			{
-				_controller?.Dispose();
 				_scope?.Dispose();
 				_view?.Dispose();
-
-				PresentCompleted?.Invoke(this, new PresentCompletedEventArgs(e, userState));
 				throw;
 			}
 
-			PresentCompleted?.Invoke(this, new PresentCompletedEventArgs(_controller, userState));
 			return _controller;
 		}
 
 		private void OnDismissed(object sender, EventArgs e)
 		{
 			TryDeactivate();
-
-			if (_state != State.Dismissed && _state != State.Disposed)
-			{
-				_state = State.Dismissed;
-				_scope?.Dispose();
-				_presenter.Dismissed(this);
-			}
+			Dispose();
 		}
 
-		private Stack<ViewControllerProxy> GetChildControllers()
+		private Stack<PresentResult> GetChildControllers()
 		{
-			var result = default(Stack<ViewControllerProxy>);
+			var result = default(Stack<PresentResult>);
 			var nextState = Next;
 
 			while (nextState != null)
@@ -324,7 +309,7 @@ namespace UnityFx.Mvc
 				{
 					if (result == null)
 					{
-						result = new Stack<ViewControllerProxy>();
+						result = new Stack<PresentResult>();
 					}
 
 					result.Push(nextState);
@@ -334,6 +319,14 @@ namespace UnityFx.Mvc
 			}
 
 			return result;
+		}
+
+		private void ThrowIfDisposed()
+		{
+			if (_state == State.Disposed)
+			{
+				throw new ObjectDisposedException(GetType().Name);
+			}
 		}
 
 		#endregion

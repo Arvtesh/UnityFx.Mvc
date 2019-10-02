@@ -12,6 +12,16 @@ namespace UnityFx.Mvc
 	public interface IViewControllerEvents
 	{
 		/// <summary>
+		/// Called when the object is presented.
+		/// </summary>
+		void OnPresent();
+
+		/// <summary>
+		/// Called when the object is dismissed.
+		/// </summary>
+		void OnDismiss();
+
+		/// <summary>
 		/// Called right before the object becomes active. The method may be called multiple times during the object lifetime.
 		/// </summary>
 		/// <seealso cref="OnDeactivate"/>
