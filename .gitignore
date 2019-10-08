@@ -10,8 +10,7 @@
 [Bb]uilds/
 
 # Unity
-/unity/Sandbox/Assets/Plugins/
-/unity/Sandbox/*.*
+
 
 # Visual Studio cache directory
 .vs/
@@ -29,6 +28,8 @@ _site/
 *.booproj
 *.svd
 *.pdb
+*.sln
+*.csproj
 
 # Unity3D generated meta files
 *.pidb.meta

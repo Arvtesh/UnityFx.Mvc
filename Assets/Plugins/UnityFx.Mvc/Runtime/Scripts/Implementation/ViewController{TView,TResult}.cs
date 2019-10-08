@@ -12,22 +12,24 @@ namespace UnityFx.Mvc
 	/// Note that minimal controller implementation should implement <see cref="IViewController"/>.
 	/// </summary>
 	/// <seealso cref="ViewController"/>
-	public abstract class ViewController<TView, TResult> : ViewController<TView>, IViewController<TResult> where TView : class, IView
+	public abstract class ViewController<TView, TResult> : ViewController<TView> where TView : class, IView
 	{
 		#region data
-
-		private TResult _result;
-
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// Gets the controller context.
+		/// </summary>
+		protected new IPresentContext<TResult> Context => (IPresentContext<TResult>)base.Context;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ViewController{TView, TResult}"/> class.
 		/// </summary>
 		/// <param name="context">A controller context.</param>
 		/// <exception cref="ArgumentNullException">Thrown if the <paramref name="context"/> is <see langword="null"/>.</exception>
-		protected ViewController(IPresentContext context)
+		protected ViewController(IPresentContext<TResult> context)
 			: base(context)
 		{
 		}
@@ -37,18 +39,8 @@ namespace UnityFx.Mvc
 		/// </summary>
 		protected void Dismiss(TResult result)
 		{
-			_result = result;
-			Dismiss();
+			Context.Dismiss(result);
 		}
-
-		#endregion
-
-		#region IViewController
-
-		/// <summary>
-		/// Gets a controller result value (if any).
-		/// </summary>
-		public TResult Result { get => _result; protected set => _result = value; }
 
 		#endregion
 

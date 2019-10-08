@@ -46,6 +46,6 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		/// <seealso cref="Present{TController}(PresentArgs)"/>
-		IPresentResult<TController, TResult> PresentAsync<TController, TResult>(PresentArgs args) where TController : IViewController<TResult>;
+		IPresentResult<TController, TResult> PresentAsync<TController, TResult>(PresentArgs args) where TController : IViewController;
 	}
 }

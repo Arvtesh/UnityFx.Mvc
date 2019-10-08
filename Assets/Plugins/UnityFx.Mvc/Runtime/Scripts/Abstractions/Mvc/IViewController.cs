@@ -9,7 +9,7 @@ namespace UnityFx.Mvc
 	/// A generic view controller.
 	/// </summary>
 	/// <remarks>
-	/// As the name states, main responsibility of a view controller is managing its view. Disposing a controller typically disposes the attached view.
+	/// As the name states, main responsibility of a view controller is managing its view.
 	/// </remarks>
 	/// <seealso cref="IView"/>
 	/// <seealso cref="IPresenter"/>

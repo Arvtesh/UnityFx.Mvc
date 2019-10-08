@@ -11,7 +11,7 @@ namespace UnityFx.Mvc
 	/// Result of a present operation.
 	/// </summary>
 	/// <seealso cref="IPresentResult"/>
-	public interface IPresentResult<TController, TResult> : IPresentResult<TController> where TController : IViewController<TResult>
+	public interface IPresentResult<TController, TResult> : IPresentResult<TController> where TController : IViewController
 	{
 		/// <summary>
 		/// Gets the operation result value.

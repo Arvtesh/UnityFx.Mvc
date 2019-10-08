@@ -14,11 +14,13 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Called when the object is presented.
 		/// </summary>
+		/// <seealso cref="OnDismiss"/>
 		void OnPresent();
 
 		/// <summary>
 		/// Called when the object is dismissed.
 		/// </summary>
+		/// <seealso cref="OnPresent"/>
 		void OnDismiss();
 
 		/// <summary>

@@ -3,18 +3,17 @@
 
 using System;
 using System.Collections;
-#if !NET35
-using System.Collections.Concurrent;
-#endif
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading;
+using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
+using UnityEngine;
 
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// A present service implementation (<see cref="IPresentService"/>).
+	/// 
 	/// </summary>
 	/// <threadsafety static="true" instance="false"/>
 	/// <seealso cref="IViewController"/>
@@ -23,16 +22,105 @@ namespace UnityFx.Mvc
 		#region data
 
 		private readonly IServiceProvider _serviceProvider;
-		private readonly TreeListCollection<PresentResult> _controllerProxies = new TreeListCollection<PresentResult>();
+		private readonly LinkedList<IPresentable> _presentables = new LinkedList<IPresentable>();
 		private readonly ViewControllerCollection _controllers;
 
-		private int _idCounter;
-		private int _busyCounter;
 		private bool _disposed;
 
 		#endregion
 
+		
 		#region interface
+
+		/// <summary>
+		/// A read-only stack of <see cref="IViewController"/> objects.
+		/// </summary>
+		public class ViewControllerCollection : IReadOnlyCollection<IViewController>
+		{
+			private readonly LinkedList<IPresentable> _presentables;
+
+			internal ViewControllerCollection(LinkedList<IPresentable> presentables)
+			{
+				_presentables = presentables;
+			}
+
+			/// <summary>
+			/// Gets top element of the stack.
+			/// </summary>
+			/// <exception cref="InvalidOperationException">Thrown if the collection is empty.</exception>
+			public IViewController Peek()
+			{
+				if (_presentables.First is null)
+				{
+					throw new InvalidOperationException();
+				}
+
+				return _presentables.Last.Value.Controller;
+			}
+
+			/// <summary>
+			/// Attempts to get the top controller from the collection.
+			/// </summary>
+			public bool TryPeek(out IViewController controller)
+			{
+				controller = _presentables.Last?.Value.Controller;
+				return controller != null;
+			}
+
+			/// <summary>
+			/// Gets number of controllers in the collection.
+			/// </summary>
+			public int Count => _presentables.Count;
+
+			/// <summary>
+			/// Enumerates all controllers in the collection starting with the top (last) one.
+			/// </summary>
+			public IEnumerator<IViewController> GetEnumerator()
+			{
+				var p = _presentables.Last;
+
+				while (p != null)
+				{
+					yield return p.Value.Controller;
+					p = p.Previous;
+				}
+			}
+
+			IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+		}
+
+		/// <summary>
+		/// Gets a read-only controller collection.
+		/// </summary>
+		public ViewControllerCollection Controllers => _controllers;
+
+		/// <summary>
+		/// Gets an active controller (or <see langword="null"/>).
+		/// </summary>
+		public IViewController ActiveController
+		{
+			get
+			{
+				var p = _presentables.Last?.Value;
+
+				if (p != null && p.IsActive)
+				{
+					return p.Controller;
+				}
+
+				return default;
+			}
+		}
+
+		/// <summary>
+		/// Gets a <see cref="IServiceProvider"/> used to resolve controller dependencies.
+		/// </summary>
+		protected internal IServiceProvider ServiceProvider => _serviceProvider;
+
+		/// <summary>
+		/// Gets a value indicating whether the instance is disposed.
+		/// </summary>
+		protected bool IsDisposed => _disposed;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Presenter"/> class.
@@ -41,34 +129,14 @@ namespace UnityFx.Mvc
 		public Presenter(IServiceProvider serviceProvider)
 		{
 			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-			_controllers = new ViewControllerCollection(_controllerProxies);
+			_controllers = new ViewControllerCollection(_presentables);
 		}
 
 		/// <summary>
-		/// Releases unmanaged resources used by the service.
+		/// Throws <see cref="ObjectDisposedException"/> if the instance is disposed.
 		/// </summary>
 		/// <seealso cref="Dispose"/>
-		/// <seealso cref="ThrowIfDisposed"/>
-		protected virtual void OnDispose()
-		{
-			try
-			{
-				foreach (var c in _controllerProxies.Reverse())
-				{
-					c.Dispose();
-				}
-			}
-			finally
-			{
-				_controllerProxies.Clear();
-			}
-		}
-
-		/// <summary>
-		/// Throws an <see cref="ObjectDisposedException"/> if the instance is already disposed.
-		/// </summary>
-		/// <seealso cref="Dispose"/>
-		/// <seealso cref="OnDispose"/>
+		/// <seealso cref="IsDisposed"/>
 		protected void ThrowIfDisposed()
 		{
 			if (_disposed)
@@ -79,105 +147,101 @@ namespace UnityFx.Mvc
 
 		#endregion
 
-		#region internals
+		#region virtual interface
 
-		internal IPresentResult Present(PresentResult parent, Type controllerType, PresentArgs args)
+		/// <summary>
+		/// Called when the instance is disposed.
+		/// </summary>
+		/// <seealso cref="Dispose"/>
+		/// <seealso cref="ThrowIfDisposed"/>
+		/// <seealso cref="IsDisposed"/>
+		protected virtual void OnDispose()
 		{
-			ThrowIfDisposed();
-			ThrowIfInvalidArgs(args);
-			ThrowIfInvalidControllerType(controllerType);
-			ThrowIfBusy();
-
-			var result = CreateController(parent, controllerType, args);
-			PresentInternal(result, args.Options, args.Data);
-			return result;
-		}
-
-		internal IPresentResult<T> Present<T>(PresentResult parent, PresentArgs args) where T : class, IViewController
-		{
-			ThrowIfDisposed();
-			ThrowIfInvalidArgs(args);
-			ThrowIfInvalidControllerType(typeof(T));
-			ThrowIfBusy();
-
-			var result = CreateController<T>(parent, args);
-			PresentInternal(result, args.Options, args.Data);
-			return result;
-		}
-
-		internal void Dismissed(PresentResult controller)
-		{
-			Debug.Assert(controller != null);
-
-			if (!_disposed)
-			{
-				_controllerProxies.Remove(controller);
-				TryActivateTopController();
-			}
 		}
 
 		#endregion
 
-		#region IPresentService
+		#region internals
 
-		/// <inheritdoc/>
-		public IServiceProvider ServiceProvider => _serviceProvider;
-
-		/// <inheritdoc/>
-		public IViewController ActiveController
+		internal IPresentResult PresentAsync(IPresentable presentable, Type controllerType, PresentArgs args)
 		{
-			get
-			{
-				var result = _controllerProxies.Last;
-
-				if (result != null && result.IsActive)
-				{
-					return result.Controller;
-				}
-
-				return null;
-			}
+			ThrowIfDisposed();
+			throw new NotImplementedException();
 		}
 
-		/// <inheritdoc/>
-		public IViewControllerCollection Controllers => _controllers;
+		internal IPresentResult<TController> PresentAsync<TController>(IPresentable presentable, PresentArgs args) where TController : IViewController
+		{
+			ThrowIfDisposed();
+			throw new NotImplementedException();
+		}
+
+		internal IPresentResult<TController, TResult> PresentAsync<TController, TResult>(IPresentable presentable, PresentArgs args) where TController : IViewController
+		{
+			ThrowIfDisposed();
+			throw new NotImplementedException();
+		}
+
+		internal void DismissChildren(IPresentable presentable)
+		{
+			// 1st pass: dismiss child nodes.
+			var node = _presentables.Last;
+
+			while (node != null)
+			{
+				var p = node.Value;
+
+				if (p.IsChildOf(presentable))
+				{
+					p.DismissChild();
+				}
+
+				if (p == presentable)
+				{
+					break;
+				}
+
+				node = node.Previous;
+			}
+
+			// 2nd pass: remove the child nodes.
+			node = _presentables.Last;
+
+			while (node != null)
+			{
+				var p = node.Value;
+
+				if (p == presentable)
+				{
+					break;
+				}
+
+				node = node.Previous;
+
+				if (p.IsChildOf(presentable))
+				{
+					p.DisposeChild();
+					_presentables.Remove(p);
+				}
+			}
+		}
 
 		#endregion
 
 		#region IPresenter
 
-		/// <inheritdoc/>
-		public IPresentResult Present(Type controllerType)
+		public IPresentResult PresentAsync(Type controllerType, PresentArgs args)
 		{
-			return Present(null, controllerType, PresentArgs.Default);
+			throw new NotImplementedException();
 		}
 
-		/// <inheritdoc/>
-		public IPresentResult Present(Type controllerType, PresentArgs args)
+		public IPresentResult<TController> PresentAsync<TController>(PresentArgs args) where TController : IViewController
 		{
-			if (args == null)
-			{
-				throw new ArgumentNullException(nameof(args));
-			}
-
-			return Present(null, controllerType, args);
+			throw new NotImplementedException();
 		}
 
-		/// <inheritdoc/>
-		public IPresentResult<TController> Present<TController>() where TController : class, IViewController
+		public IPresentResult<TController, TResult> PresentAsync<TController, TResult>(PresentArgs args) where TController : IViewController
 		{
-			return Present<TController>(null, PresentArgs.Default);
-		}
-
-		/// <inheritdoc/>
-		public IPresentResult<TController> Present<TController>(PresentArgs args) where TController : class, IViewController
-		{
-			if (args == null)
-			{
-				throw new ArgumentNullException(nameof(args));
-			}
-
-			return Present<TController>(null, args);
+			throw new NotImplementedException();
 		}
 
 		#endregion
@@ -185,33 +249,32 @@ namespace UnityFx.Mvc
 		#region ICommandTarget
 
 		/// <summary>
-		/// Invokes a command. An implementation might choose to ignore the command, in this case the method should return <see langword="false"/>.
+		/// Invokes a command on the controllers presented.
 		/// </summary>
 		/// <param name="commandName">Name of the command to invoke.</param>
 		/// <param name="args">Command-specific arguments.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandName"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the service is disposed.</exception>
-		/// <returns>Returns <see langword="true"/> if the command has been handles; <see langword="false"/> otherwise.</returns>
+		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
+		/// <returns>Returns <see langword="true"/> if the command has been handled; <see langword="false"/> otherwise.</returns>
 		public bool InvokeCommand(string commandName, object args)
 		{
 			ThrowIfDisposed();
 
-			if (commandName == null)
+			if (!string.IsNullOrEmpty(commandName))
 			{
-				throw new ArgumentNullException(nameof(commandName));
-			}
+				var node = _presentables.Last;
 
-			foreach (var controllerProxy in _controllerProxies.Reverse())
-			{
-				if (controllerProxy.InvokeCommand(commandName, args))
+				while (node != null)
 				{
-					return true;
+					var p = node.Value;
+
+					if (p.InvokeCommand(commandName, args))
+					{
+						return true;
+					}
+
+					node = node.Previous;
 				}
-				else if (controllerProxy.PresentOptions.HasFlag(PresentOptions.Modal))
-				{
-					// Do not forward commands past first modal controller in the stack.
-					break;
-				}
+
 			}
 
 			return false;
@@ -221,7 +284,6 @@ namespace UnityFx.Mvc
 
 		#region IDisposable
 
-		/// <inheritdoc/>
 		public void Dispose()
 		{
 			if (!_disposed)
@@ -234,262 +296,6 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region implementation
-
-		private PresentResult CreateController(PresentResult parent, Type controllerType, PresentArgs args)
-		{
-			PresentResult c = null;
-
-			try
-			{
-				SetBusy(true);
-
-				c = new PresentResult(this, parent, controllerType, args, ++_idCounter);
-				AddController(c);
-			}
-			catch
-			{
-				DisposeInternal(c);
-				throw;
-			}
-			finally
-			{
-				SetBusy(false);
-			}
-
-			return c;
-		}
-
-		private PresentResult<T> CreateController<T>(PresentResult parent, PresentArgs args) where T : class, IViewController
-		{
-			PresentResult<T> c = null;
-
-			try
-			{
-				SetBusy(true);
-
-				c = new PresentResult<T>(this, parent, typeof(T), args, ++_idCounter);
-				AddController(c);
-			}
-			catch
-			{
-				DisposeInternal(c);
-				throw;
-			}
-			finally
-			{
-				SetBusy(false);
-			}
-
-			return c;
-		}
-
-		private bool TryActivateTopController()
-		{
-			if (_controllerProxies.TryPeek(out var topController))
-			{
-				return topController.TryActivate();
-			}
-
-			return false;
-		}
-
-		private void DeactivateTopControllerIfNeeded(PresentResult controller)
-		{
-			if (_controllerProxies.TryPeek(out var topController))
-			{
-				if (controller.Parent != null)
-				{
-					if (topController.IsChildOf(controller.Parent))
-					{
-						topController.TryDeactivate();
-					}
-				}
-				else
-				{
-					topController.TryDeactivate();
-				}
-			}
-		}
-
-		private void PrePresent(PresentResult controller, PresentOptions presentOptions)
-		{
-			if ((presentOptions & PresentOptions.DismissCurrent) != 0)
-			{
-				if (controller.Parent != null)
-				{
-					foreach (var c in controller.Parent.GetChildrenRecursive().Reverse())
-					{
-						if (c != controller)
-						{
-							DismissInternal(c);
-						}
-					}
-				}
-			}
-			else if ((presentOptions & PresentOptions.DismissAll) != 0)
-			{
-				foreach (var c in _controllerProxies.Reverse())
-				{
-					if (c != controller)
-					{
-						DismissInternal(c);
-					}
-				}
-			}
-		}
-
-		private void PostPresent(PresentResult controller, PresentOptions presentOptions)
-		{
-			// If this is the last operation, activate the controller.
-			if (controller == _controllerProxies.Last)
-			{
-				if ((presentOptions & PresentOptions.DoNotActivate) == 0)
-				{
-					controller.TryActivate();
-				}
-			}
-		}
-
-		private async void PresentInternal(PresentResult controller, PresentOptions presentOptions, object userState)
-		{
-			try
-			{
-				DeactivateTopControllerIfNeeded(controller);
-				PrePresent(controller, presentOptions);
-
-				await controller.PresentAsync(userState);
-			}
-			catch
-			{
-				DisposeInternal(controller);
-				throw;
-			}
-
-			try
-			{
-				PostPresent(controller, presentOptions);
-			}
-			catch
-			{
-				DismissInternal(controller);
-				throw;
-			}
-		}
-
-		private void DismissInternal(PresentResult controller)
-		{
-			try
-			{
-				controller.TryDeactivate();
-				controller.TryDismiss();
-
-				// If this is the last operation, activate the controller.
-				if (_controllerProxies.TryPeek(out var topController))
-				{
-					topController.TryActivate();
-				}
-			}
-			finally
-			{
-				DisposeInternal(controller);
-			}
-		}
-
-		private void DisposeInternal(PresentResult controller)
-		{
-			if (controller != null)
-			{
-				_controllerProxies.Remove(controller);
-
-				try
-				{
-					SetBusy(true);
-					controller.Dispose();
-				}
-				finally
-				{
-					SetBusy(false);
-				}
-			}
-		}
-
-		private void OnDismiss(object sender, EventArgs args)
-		{
-			DisposeInternal(sender as PresentResult);
-		}
-
-		private void AddController(PresentResult controller)
-		{
-			Debug.Assert(controller != null);
-			Debug.Assert(!_disposed);
-
-			var parent = controller.Parent;
-
-			if (parent != null)
-			{
-				var prev = parent;
-				var next = parent.Next;
-
-				while (next != null && next.IsChildOf(parent))
-				{
-					prev = next;
-					next = prev.Next;
-				}
-
-				_controllerProxies.Add(controller, prev);
-			}
-			else
-			{
-				_controllerProxies.Add(controller);
-			}
-		}
-
-		private void SetBusy(bool busy)
-		{
-			if (busy)
-			{
-				++_busyCounter;
-			}
-			else
-			{
-				--_busyCounter;
-			}
-		}
-
-		private void ThrowIfInvalidArgs(PresentArgs args)
-		{
-			if (args == null)
-			{
-				throw new ArgumentNullException(nameof(args));
-			}
-		}
-
-		private void ThrowIfBusy()
-		{
-			if (_busyCounter > 0)
-			{
-				throw new InvalidOperationException();
-			}
-		}
-
-		private static void ThrowIfInvalidControllerType(Type controllerType)
-		{
-			if (controllerType == null)
-			{
-				throw new ArgumentNullException(nameof(controllerType));
-			}
-
-			if (controllerType.IsAbstract)
-			{
-				throw new ArgumentException($"Cannot instantiate abstract type {controllerType.Name}", nameof(controllerType));
-			}
-
-			if (!typeof(IViewController).IsAssignableFrom(controllerType))
-			{
-				throw new ArgumentException($"A state controller is expected to implement " + typeof(IViewController).Name, nameof(controllerType));
-			}
-		}
-
 		#endregion
 	}
 }
