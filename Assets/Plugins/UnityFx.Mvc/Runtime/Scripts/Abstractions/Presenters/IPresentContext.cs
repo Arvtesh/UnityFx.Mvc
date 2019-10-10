@@ -37,6 +37,9 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Dismisses the controller.
 		/// </summary>
+		/// <remarks>
+		/// This call also dismisses all controllers presented by the owner.
+		/// </remarks>
 		/// <seealso cref="IsDismissed"/>
 		void Dismiss();
 	}

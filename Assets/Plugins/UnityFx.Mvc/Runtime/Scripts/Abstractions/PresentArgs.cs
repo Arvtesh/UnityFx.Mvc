@@ -3,13 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Text;
 
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Arguments for <see cref="IPresenter.Present(Type, PresentArgs)"/>.
+	/// Arguments for <see cref="IPresenter"/> methods.
 	/// </summary>
 	public class PresentArgs
 	{
@@ -18,10 +17,8 @@ namespace UnityFx.Mvc
 		private static Dictionary<string, string> _emptyQuery = new Dictionary<string, string>();
 		private static PresentArgs _defaultArgs = new PresentArgs();
 
-		private readonly PresentOptions _options;
 		private readonly Dictionary<string, string> _query;
 		private readonly string _fragment;
-		private readonly object _data;
 
 		#endregion
 
@@ -33,11 +30,6 @@ namespace UnityFx.Mvc
 		public static PresentArgs Default => _defaultArgs;
 
 		/// <summary>
-		/// Gets user data attached to this object.
-		/// </summary>
-		public PresentOptions Options => _options;
-
-		/// <summary>
 		/// Gets query parameters (if any).
 		/// </summary>
 		public IReadOnlyDictionary<string, string> Query => _query;
@@ -46,11 +38,6 @@ namespace UnityFx.Mvc
 		/// Gets fragment parameters (if any).
 		/// </summary>
 		public string Fragment => _fragment;
-
-		/// <summary>
-		/// Gets user data attached to this object.
-		/// </summary>
-		public object Data => _data;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
@@ -65,20 +52,9 @@ namespace UnityFx.Mvc
 		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
 		/// </summary>
 		/// <param name="userData"></param>
-		public PresentArgs(object userData)
-		{
-			_data = userData;
-			_query = _emptyQuery;
-			_fragment = string.Empty;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
-		/// </summary>
-		/// <param name="userData"></param>
-		/// <param name="queryParams"></param>
-		public PresentArgs(IEnumerable<KeyValuePair<string, string>> queryParams, object userData)
-			: this(queryParams, string.Empty, userData)
+		/// <param name="query"></param>
+		public PresentArgs(IEnumerable<KeyValuePair<string, string>> query)
+			: this(query, string.Empty)
 		{
 		}
 
@@ -86,25 +62,24 @@ namespace UnityFx.Mvc
 		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
 		/// </summary>
 		/// <param name="userData"></param>
-		/// <param name="queryParams"></param>
-		/// <param name="fragmentParams"></param>
-		public PresentArgs(IEnumerable<KeyValuePair<string, string>> queryParams, string fragmentParams, object userData)
+		/// <param name="query"></param>
+		/// <param name="fragment"></param>
+		public PresentArgs(IEnumerable<KeyValuePair<string, string>> query, string fragment)
 		{
-			if (queryParams == null)
+			if (query is null)
 			{
-				throw new ArgumentNullException(nameof(queryParams));
+				throw new ArgumentNullException(nameof(query));
 			}
 
 			var data = new Dictionary<string, string>();
 
-			foreach (var item in queryParams)
+			foreach (var item in query)
 			{
 				data.Add(item.Key, item.Value);
 			}
 
-			_data = userData;
 			_query = data;
-			_fragment = fragmentParams ?? string.Empty;
+			_fragment = fragment ?? string.Empty;
 		}
 
 		/// <summary>
@@ -114,7 +89,7 @@ namespace UnityFx.Mvc
 		/// <returns>A <see cref="PresentArgs"/> instance representing the specified deeplink.</returns>
 		public static PresentArgs FromDeeplink(Uri deeplink)
 		{
-			if (deeplink == null)
+			if (deeplink is null)
 			{
 				throw new ArgumentNullException(nameof(deeplink));
 			}
@@ -160,54 +135,47 @@ namespace UnityFx.Mvc
 		/// <inheritdoc/>
 		public override string ToString()
 		{
-			if (_data is Uri deeplink)
-			{
-				return deeplink.ToString();
-			}
-			else
-			{
-				var queryNotEmpty = _query.Count > 0;
-				var fragmentNotEmpty = !string.IsNullOrEmpty(_fragment);
+			var queryNotEmpty = _query.Count > 0;
+			var fragmentNotEmpty = !string.IsNullOrEmpty(_fragment);
 
-				if (queryNotEmpty || fragmentNotEmpty)
+			if (queryNotEmpty || fragmentNotEmpty)
+			{
+				var text = new StringBuilder();
+
+				if (queryNotEmpty)
 				{
-					var text = new StringBuilder();
+					var first = true;
 
-					if (queryNotEmpty)
+					foreach (var item in _query)
 					{
-						var first = true;
-
-						foreach (var item in _query)
+						if (first)
 						{
-							if (first)
-							{
-								first = false;
-							}
-							else
-							{
-								text.Append('?');
-							}
+							first = false;
+						}
+						else
+						{
+							text.Append('?');
+						}
 
-							text.Append(item.Key);
+						text.Append(item.Key);
 
-							if (!string.IsNullOrEmpty(item.Value))
-							{
-								text.Append(item.Value);
-							}
+						if (!string.IsNullOrEmpty(item.Value))
+						{
+							text.Append(item.Value);
 						}
 					}
-
-					if (fragmentNotEmpty)
-					{
-						text.Append('#');
-						text.Append(_fragment);
-					}
-
-					return text.ToString();
 				}
 
-				return base.ToString();
+				if (fragmentNotEmpty)
+				{
+					text.Append('#');
+					text.Append(_fragment);
+				}
+
+				return text.ToString();
 			}
+
+			return base.ToString();
 		}
 
 		#endregion
@@ -216,7 +184,6 @@ namespace UnityFx.Mvc
 
 		private PresentArgs(Uri deeplink, Dictionary<string, string> query, string fragment)
 		{
-			_data = deeplink;
 			_query = query;
 			_fragment = fragment ?? string.Empty;
 		}

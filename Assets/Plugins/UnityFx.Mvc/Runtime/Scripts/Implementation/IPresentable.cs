@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace UnityFx.Mvc
 {
@@ -9,8 +10,8 @@ namespace UnityFx.Mvc
 	{
 		bool IsActive { get; }
 		IPresentable Parent { get; }
-
-		void DismissChild();
-		void DisposeChild();
+		Task PresentAsync(IViewFactory viewFactory, int index);
+		void DismissUnsafe();
+		void DisposeUnsafe();
 	}
 }

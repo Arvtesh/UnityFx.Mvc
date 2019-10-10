@@ -10,7 +10,8 @@
 [Bb]uilds/
 
 # Unity
-
+Assets/StreamingAssets/*
+Assets/StreamingAssets.meta
 
 # Visual Studio cache directory
 .vs/

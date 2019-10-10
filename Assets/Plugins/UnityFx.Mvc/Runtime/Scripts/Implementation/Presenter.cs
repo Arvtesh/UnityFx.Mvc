@@ -12,6 +12,8 @@ using UnityEngine;
 
 namespace UnityFx.Mvc
 {
+	using Debug = UnityEngine.Debug;
+
 	/// <summary>
 	/// 
 	/// </summary>
@@ -22,14 +24,16 @@ namespace UnityFx.Mvc
 		#region data
 
 		private readonly IServiceProvider _serviceProvider;
+		private readonly IViewFactory _viewFactory;
 		private readonly LinkedList<IPresentable> _presentables = new LinkedList<IPresentable>();
 		private readonly ViewControllerCollection _controllers;
 
+		private int _idCounter;
+		private int _busyCounter;
 		private bool _disposed;
 
 		#endregion
 
-		
 		#region interface
 
 		/// <summary>
@@ -59,7 +63,7 @@ namespace UnityFx.Mvc
 			}
 
 			/// <summary>
-			/// Attempts to get the top controller from the collection.
+			/// Attempts to get top controller of the collection.
 			/// </summary>
 			public bool TryPeek(out IViewController controller)
 			{
@@ -126,9 +130,11 @@ namespace UnityFx.Mvc
 		/// Initializes a new instance of the <see cref="Presenter"/> class.
 		/// </summary>
 		/// <param name="serviceProvider">A <see cref="IServiceProvider"/> used to resolve controller dependencies.</param>
-		public Presenter(IServiceProvider serviceProvider)
+		/// <param name="viewFactory">A <see cref="IViewFactory"/> that is used to create views.</param>
+		public Presenter(IServiceProvider serviceProvider, IViewFactory viewFactory)
 		{
 			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			_viewFactory = viewFactory ?? throw new ArgumentNullException(nameof(viewFactory));
 			_controllers = new ViewControllerCollection(_presentables);
 		}
 
@@ -166,22 +172,35 @@ namespace UnityFx.Mvc
 		internal IPresentResult PresentAsync(IPresentable presentable, Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
-			throw new NotImplementedException();
+			ThrowIfBusy();
+			ThrowIfInvalidControllerType(controllerType);
+
+			var result = CreatePresentable(presentable, controllerType, null, args);
+			PresentAsync(result);
+			return result;
 		}
 
 		internal IPresentResult<TController> PresentAsync<TController>(IPresentable presentable, PresentArgs args) where TController : IViewController
 		{
 			ThrowIfDisposed();
-			throw new NotImplementedException();
+			ThrowIfBusy();
+
+			var result = CreatePresentable(presentable, typeof(TController), null, args);
+			PresentAsync(result);
+			return (IPresentResult<TController>)result;
 		}
 
 		internal IPresentResult<TController, TResult> PresentAsync<TController, TResult>(IPresentable presentable, PresentArgs args) where TController : IViewController
 		{
 			ThrowIfDisposed();
-			throw new NotImplementedException();
+			ThrowIfBusy();
+
+			var result = CreatePresentable(presentable, typeof(TController), typeof(TResult), args);
+			PresentAsync(result);
+			return (IPresentResult<TController, TResult>)result;
 		}
 
-		internal void DismissChildren(IPresentable presentable)
+		internal void Dismiss(IPresentable presentable)
 		{
 			// 1st pass: dismiss child nodes.
 			var node = _presentables.Last;
@@ -192,7 +211,7 @@ namespace UnityFx.Mvc
 
 				if (p.IsChildOf(presentable))
 				{
-					p.DismissChild();
+					p.DismissUnsafe();
 				}
 
 				if (p == presentable)
@@ -203,7 +222,7 @@ namespace UnityFx.Mvc
 				node = node.Previous;
 			}
 
-			// 2nd pass: remove the child nodes.
+			// 2nd pass: dispose child nodes.
 			node = _presentables.Last;
 
 			while (node != null)
@@ -219,10 +238,19 @@ namespace UnityFx.Mvc
 
 				if (p.IsChildOf(presentable))
 				{
-					p.DisposeChild();
-					_presentables.Remove(p);
+					p.DisposeUnsafe();
 				}
 			}
+		}
+
+		internal void Remove(IPresentable presentable)
+		{
+			_presentables.Remove(presentable);
+		}
+
+		internal int GetNextId()
+		{
+			return ++_idCounter;
 		}
 
 		#endregion
@@ -231,17 +259,17 @@ namespace UnityFx.Mvc
 
 		public IPresentResult PresentAsync(Type controllerType, PresentArgs args)
 		{
-			throw new NotImplementedException();
+			return PresentAsync(null, controllerType, args);
 		}
 
 		public IPresentResult<TController> PresentAsync<TController>(PresentArgs args) where TController : IViewController
 		{
-			throw new NotImplementedException();
+			return PresentAsync<TController>(null, args);
 		}
 
 		public IPresentResult<TController, TResult> PresentAsync<TController, TResult>(PresentArgs args) where TController : IViewController
 		{
-			throw new NotImplementedException();
+			return PresentAsync<TController, TResult>(null, args);
 		}
 
 		#endregion
@@ -289,13 +317,182 @@ namespace UnityFx.Mvc
 			if (!_disposed)
 			{
 				_disposed = true;
-				OnDispose();
+
+				try
+				{
+					OnDispose();
+				}
+				finally
+				{
+					DisposeInternal();
+				}
 			}
 		}
 
 		#endregion
 
 		#region implementation
+
+		private async void PresentAsync(IPresentable presentable)
+		{
+			try
+			{
+				var insertAfterIndex = -1;
+
+				foreach (var p in _presentables)
+				{
+					if (p == presentable)
+					{
+						break;
+					}
+
+					++insertAfterIndex;
+				}
+
+				await presentable.PresentAsync(_viewFactory, insertAfterIndex);
+			}
+			catch
+			{
+				_presentables.Remove(presentable);
+			}
+		}
+
+		private IPresentable CreatePresentable(IPresentable parent, Type controllerType, Type resultType, PresentArgs args)
+		{
+			Debug.Assert(controllerType != null);
+			Debug.Assert(!_disposed);
+
+			// Resolve result type from the type of the controller.
+			var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
+
+			if (resultType is null)
+			{
+				if (attrs != null && attrs.Length > 0 && attrs[0].ResultType != null)
+				{
+					resultType = attrs[0].ResultType;
+				}
+				else
+				{
+					resultType = typeof(int);
+				}
+			}
+			else
+			{
+				if (attrs != null && attrs.Length > 0 && attrs[0].ResultType != null)
+				{
+					// Verify that the result type passed matches result type in the ViewControllerAttribute.
+					if (resultType != attrs[0].ResultType)
+					{
+						throw new InvalidOperationException();
+					}
+				}
+			}
+
+			// Make sure args are valid.
+			if (args is null)
+			{
+				args = PresentArgs.Default;
+			}
+
+			// https://docs.microsoft.com/en-us/dotnet/framework/reflection-and-codedom/how-to-examine-and-instantiate-generic-types-with-reflection
+			var presentResultType = typeof(PresentResult<,>).MakeGenericType(controllerType, resultType);
+			var c = (IPresentable)Activator.CreateInstance(presentResultType, this, parent, controllerType, args);
+
+			AddPresentable(c);
+
+			return c;
+		}
+
+		private void AddPresentable(IPresentable presentable)
+		{
+			Debug.Assert(presentable != null);
+			Debug.Assert(!_disposed);
+
+			var parent = presentable.Parent;
+
+			if (parent != null)
+			{
+				// Insert the presentable right after the last one wit hthe same parent.
+				var node = _presentables.Last;
+
+				while (node != null)
+				{
+					if (node.Value.IsChildOf(parent))
+					{
+						break;
+					}
+
+					node = node.Previous;
+				}
+
+				_presentables.AddAfter(node, presentable);
+			}
+			else
+			{
+				_presentables.AddLast(presentable);
+			}
+		}
+
+		private void DisposeInternal()
+		{
+			// 1st pass: dismiss child nodes.
+			var node = _presentables.Last;
+
+			while (node != null)
+			{
+				node.Value.DismissUnsafe();
+				node = node.Previous;
+			}
+
+			// 2nd pass: dispose child nodes.
+			node = _presentables.Last;
+
+			while (node != null)
+			{
+				var p = node.Value;
+				node = node.Previous;
+				p.DisposeUnsafe();
+			}
+		}
+
+		private void SetBusy(bool busy)
+		{
+			if (busy)
+			{
+				++_busyCounter;
+			}
+			else
+			{
+				--_busyCounter;
+			}
+		}
+
+		private void ThrowIfBusy()
+		{
+			if (_busyCounter > 0)
+			{
+				throw new InvalidOperationException();
+			}
+		}
+
+		private static void ThrowIfInvalidControllerType(Type controllerType)
+		{
+			if (controllerType is null)
+			{
+				throw new ArgumentNullException(nameof(controllerType));
+			}
+
+			if (controllerType.IsAbstract)
+			{
+				throw new ArgumentException($"Cannot instantiate abstract type {controllerType.Name}.", nameof(controllerType));
+			}
+
+			if (!typeof(IViewController).IsAssignableFrom(controllerType))
+			{
+				throw new ArgumentException($"A view controller is expected to implement {typeof(IViewController).Name}.", nameof(controllerType));
+			}
+		}
+
 		#endregion
 	}
 }

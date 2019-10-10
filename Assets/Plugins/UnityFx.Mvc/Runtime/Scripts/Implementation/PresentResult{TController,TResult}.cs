@@ -34,7 +34,6 @@ namespace UnityFx.Mvc
 		private readonly Presenter _presenter;
 		private readonly Type _controllerType;
 		private readonly PresentArgs _presentArgs;
-		private readonly PresentOptions _presentOptions;
 		private readonly IPresentable _parent;
 		private readonly int _id;
 
@@ -43,15 +42,14 @@ namespace UnityFx.Mvc
 		private TController _controller;
 		private IView _view;
 
+		private List<Exception> _exceptions;
 		private State _state;
 
 		#endregion
 
 		#region interface
 
-		internal PresentOptions PresentOptions => _presentOptions;
-
-		internal PresentResult(Presenter presenter, IPresentable parent, Type controllerType, PresentArgs args, int id)
+		public PresentResult(Presenter presenter, IPresentable parent, Type controllerType, PresentArgs args)
 			: base(parent)
 		{
 			Debug.Assert(presenter != null);
@@ -63,52 +61,7 @@ namespace UnityFx.Mvc
 			_serviceProvider = presenter.ServiceProvider;
 			_controllerType = controllerType;
 			_presentArgs = args;
-			_presentOptions = args.Options;
-			_id = id;
-		}
-
-		internal async Task<TController> PresentAsync(IViewFactory viewFactory, int index)
-		{
-			try
-			{
-				_view = await viewFactory.CreateViewAsync(_controllerType, index);
-
-				if (_view is null)
-				{
-					throw new InvalidOperationException();
-				}
-
-				if (_state != State.Initialized)
-				{
-					throw new OperationCanceledException();
-				}
-
-				if (_serviceProvider.GetService(typeof(IViewControllerFactory)) is IViewControllerFactory controllerFactory)
-				{
-					_scope = controllerFactory.CreateControllerScope(ref _serviceProvider);
-					_controller = (TController)controllerFactory.CreateController(_controllerType, this, _presentArgs, _view);
-				}
-				else
-				{
-					_controller = (TController)ActivatorUtilities.CreateInstance(_serviceProvider, _controllerType, this, _presentArgs, _view);
-				}
-
-				if (_controller is null)
-				{
-					throw new InvalidOperationException();
-				}
-
-				_view.Disposed += OnDismissed;
-				_state = State.Presented;
-			}
-			catch
-			{
-				_scope?.Dispose();
-				_view?.Dispose();
-				throw;
-			}
-
-			return _controller;
+			_id = presenter.GetNextId();
 		}
 
 		#endregion
@@ -151,7 +104,54 @@ namespace UnityFx.Mvc
 			return false;
 		}
 
-		public void DismissChild()
+		public async Task PresentAsync(IViewFactory viewFactory, int index)
+		{
+			try
+			{
+				_view = await viewFactory.CreateViewAsync(_controllerType, index);
+
+				if (_view is null)
+				{
+					throw new InvalidOperationException();
+				}
+
+				if (_state != State.Initialized)
+				{
+					throw new OperationCanceledException();
+				}
+
+				if (_serviceProvider.GetService(typeof(IViewControllerFactory)) is IViewControllerFactory controllerFactory)
+				{
+					_scope = controllerFactory.CreateControllerScope(ref _serviceProvider);
+					_controller = (TController)controllerFactory.CreateController(_controllerType, this, _presentArgs, _view);
+				}
+				else
+				{
+					_controller = (TController)ActivatorUtilities.CreateInstance(_serviceProvider, _controllerType, this, _presentArgs, _view);
+				}
+
+				if (_controller is null)
+				{
+					throw new InvalidOperationException();
+				}
+
+				_view.Disposed += OnDismissed;
+
+				if (_controller is IViewControllerEvents c)
+				{
+					c.OnPresent();
+				}
+
+				_state = State.Presented;
+			}
+			catch (Exception e)
+			{
+				LogException(e);
+				DismissInternal(default, true);
+			}
+		}
+
+		public void DismissUnsafe()
 		{
 			if (_state != State.Dismissed && _state != State.Disposed)
 			{
@@ -172,7 +172,7 @@ namespace UnityFx.Mvc
 				}
 				catch (Exception e)
 				{
-					Debug.LogException(e);
+					LogException(e);
 				}
 				finally
 				{
@@ -181,7 +181,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		public void DisposeChild()
+		public void DisposeUnsafe()
 		{
 			if (_state != State.Disposed)
 			{
@@ -305,7 +305,7 @@ namespace UnityFx.Mvc
 				{
 					try
 					{
-						_presenter.DismissChildren(this);
+						_presenter.Dismiss(this);
 					}
 					finally
 					{
@@ -321,15 +321,6 @@ namespace UnityFx.Mvc
 			{
 				_state = State.Disposed;
 
-				if (cancelled)
-				{
-					TrySetCanceled();
-				}
-				else
-				{
-					TrySetResult(result);
-				}
-
 				if (_controller is IDisposable d)
 				{
 					d.Dispose();
@@ -340,7 +331,38 @@ namespace UnityFx.Mvc
 			}
 			catch (Exception e)
 			{
-				Debug.LogException(e);
+				LogException(e);
+			}
+			finally
+			{
+				_presenter.Remove(this);
+
+				if (_exceptions != null)
+				{
+					TrySetException(_exceptions);
+				}
+				else if (cancelled)
+				{
+					TrySetCanceled();
+				}
+				else
+				{
+					TrySetResult(result);
+				}
+			}
+		}
+
+		private void LogException(Exception e)
+		{
+			Debug.LogException(e);
+
+			if (_exceptions == null)
+			{
+				_exceptions = new List<Exception>() { e };
+			}
+			else
+			{
+				_exceptions.Add(e);
 			}
 		}
 

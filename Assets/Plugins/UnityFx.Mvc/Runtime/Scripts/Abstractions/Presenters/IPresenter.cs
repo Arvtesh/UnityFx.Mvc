@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using UnityEngine;
 
 namespace UnityFx.Mvc
 {
@@ -11,13 +12,13 @@ namespace UnityFx.Mvc
 	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IViewControllerEvents"/>
 	/// <seealso cref="IPresentContext"/>
-	/// <seealso cref="IPresentService"/>
 	public interface IPresenter
 	{
 		/// <summary>
 		/// Presents a controller of the specified type.
 		/// </summary>
 		/// <param name="controllerType">Type of the view controller to present.</param>
+		/// <param name="resultType">Type of the controller result value (or <see langword="null"/>).</param>
 		/// <param name="args">Controller arguments.</param>
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="controllerType"/> or <paramref name="args"/> is <see langword="null"/>.</exception>
