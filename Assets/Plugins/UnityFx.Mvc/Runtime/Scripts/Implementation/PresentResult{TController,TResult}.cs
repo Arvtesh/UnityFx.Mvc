@@ -276,18 +276,6 @@ namespace UnityFx.Mvc
 			return _presenter.PresentAsync(this, controllerType, args);
 		}
 
-		public IPresentResult<TController2> PresentAsync<TController2>(PresentArgs args) where TController2 : IViewController
-		{
-			ThrowIfDisposed();
-			return _presenter.PresentAsync<TController2>(this, args);
-		}
-
-		public IPresentResult<TController2, TResult2> PresentAsync<TController2, TResult2>(PresentArgs args) where TController2 : IViewController
-		{
-			ThrowIfDisposed();
-			return _presenter.PresentAsync<TController2, TResult2>(this, args);
-		}
-
 		#endregion
 
 		#region IPresentResult

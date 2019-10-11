@@ -184,29 +184,9 @@ namespace UnityFx.Mvc
 			ThrowIfBusy();
 			ThrowIfInvalidControllerType(controllerType);
 
-			var result = CreatePresentable(presentable, controllerType, null, args);
+			var result = CreatePresentable(presentable, controllerType, args);
 			PresentInternal(result);
 			return result;
-		}
-
-		internal IPresentResult<TController> PresentAsync<TController>(IPresentable presentable, PresentArgs args) where TController : IViewController
-		{
-			ThrowIfDisposed();
-			ThrowIfBusy();
-
-			var result = CreatePresentable(presentable, typeof(TController), null, args);
-			PresentInternal(result);
-			return (IPresentResult<TController>)result;
-		}
-
-		internal IPresentResult<TController, TResult> PresentAsync<TController, TResult>(IPresentable presentable, PresentArgs args) where TController : IViewController
-		{
-			ThrowIfDisposed();
-			ThrowIfBusy();
-
-			var result = CreatePresentable(presentable, typeof(TController), typeof(TResult), args);
-			PresentInternal(result);
-			return (IPresentResult<TController, TResult>)result;
 		}
 
 		internal void Dismiss(IPresentable presentable)
@@ -293,16 +273,6 @@ namespace UnityFx.Mvc
 			return PresentAsync(null, controllerType, args);
 		}
 
-		public IPresentResult<TController> PresentAsync<TController>(PresentArgs args) where TController : IViewController
-		{
-			return PresentAsync<TController>(null, args);
-		}
-
-		public IPresentResult<TController, TResult> PresentAsync<TController, TResult>(PresentArgs args) where TController : IViewController
-		{
-			return PresentAsync<TController, TResult>(null, args);
-		}
-
 		#endregion
 
 		#region ICommandTarget
@@ -381,31 +351,17 @@ namespace UnityFx.Mvc
 			presentable.PresentAsync(_viewFactory, insertAfterIndex);
 		}
 
-		private IPresentable CreatePresentable(IPresentable parent, Type controllerType, Type resultType, PresentArgs args)
+		private IPresentable CreatePresentable(IPresentable parent, Type controllerType, PresentArgs args)
 		{
 			Debug.Assert(controllerType != null);
 			Debug.Assert(!_disposed);
 
 			// Resolve result type from the type of the controller.
-			var controllerResultType = GetControllerResultType(controllerType);
+			var resultType = GetControllerResultType(controllerType);
 
 			if (resultType is null)
 			{
-				if (controllerResultType is null)
-				{
-					resultType = typeof(int);
-				}
-				else
-				{
-					resultType = controllerResultType;
-				}
-			}
-			else if (controllerResultType != null)
-			{
-				if (resultType != controllerResultType)
-				{
-					throw new InvalidOperationException();
-				}
+				resultType = typeof(int);
 			}
 
 			// Make sure args are valid.

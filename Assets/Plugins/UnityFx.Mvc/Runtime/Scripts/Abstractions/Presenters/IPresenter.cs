@@ -18,35 +18,11 @@ namespace UnityFx.Mvc
 		/// Presents a controller of the specified type.
 		/// </summary>
 		/// <param name="controllerType">Type of the view controller to present.</param>
-		/// <param name="resultType">Type of the controller result value (or <see langword="null"/>).</param>
 		/// <param name="args">Controller arguments.</param>
 		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="controllerType"/> or <paramref name="args"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance, it is abstract type).</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		/// <seealso cref="Present(Type)"/>
 		IPresentResult PresentAsync(Type controllerType, PresentArgs args);
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="args"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		/// <seealso cref="Present{TController}()"/>
-		IPresentResult<TController> PresentAsync<TController>(PresentArgs args) where TController : IViewController;
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="args"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		/// <seealso cref="Present{TController}(PresentArgs)"/>
-		IPresentResult<TController, TResult> PresentAsync<TController, TResult>(PresentArgs args) where TController : IViewController;
 	}
 }
