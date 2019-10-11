@@ -24,6 +24,11 @@ namespace UnityFx.Mvc
 		IView View { get; }
 
 		/// <summary>
+		/// Gets time elapsed since the controller has been created (in seconds).
+		/// </summary>
+		float Timer { get; }
+
+		/// <summary>
 		/// Gets a value indicating whether the controller is active.
 		/// </summary>
 		bool IsActive { get; }
@@ -33,6 +38,13 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <seealso cref="Dismiss"/>
 		bool IsDismissed { get; }
+
+		/// <summary>
+		/// Schedules a callback to be called in the specified <paramref name="timeout"/>.
+		/// </summary>
+		/// <param name="timerCallback">The callback to be called when the time is out.</param>
+		/// <param name="timeout">Timeout value in seconds.</param>
+		void Schedule(Action<float> timerCallback, float timeout);
 
 		/// <summary>
 		/// Dismisses the controller.

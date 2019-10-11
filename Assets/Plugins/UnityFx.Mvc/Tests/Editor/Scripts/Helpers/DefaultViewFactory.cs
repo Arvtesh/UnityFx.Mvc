@@ -2,6 +2,7 @@
 // See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -9,9 +10,10 @@ namespace UnityFx.Mvc
 {
 	public class DefaultViewFactory : IViewFactory
 	{
-		public Task<IView> CreateViewAsync(Type controllerType, int zIndex)
+		public async Task<IView> CreateViewAsync(Type controllerType, int zIndex, Transform parent)
 		{
-			return Task.FromResult<IView>(new DefaultView());
+			await Task.Delay(10);
+			return new DefaultView();
 		}
 	}
 }

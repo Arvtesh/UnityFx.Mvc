@@ -16,6 +16,11 @@ namespace UnityFx.Mvc
 	public interface IPresentResult : ICommandTarget, IDisposable
 	{
 		/// <summary>
+		/// Gets a value indicating whether the controller is dismissed.
+		/// </summary>
+		bool IsCompleted { get; }
+
+		/// <summary>
 		/// Gets the view controller.
 		/// </summary>
 		/// <seealso cref="PresentCompleted"/>

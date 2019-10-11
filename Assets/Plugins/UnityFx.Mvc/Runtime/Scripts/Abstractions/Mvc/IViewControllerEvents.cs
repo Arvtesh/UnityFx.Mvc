@@ -12,6 +12,11 @@ namespace UnityFx.Mvc
 	public interface IViewControllerEvents
 	{
 		/// <summary>
+		/// Called on each frame.
+		/// </summary>
+		void OnUpdate(float frameTime);
+
+		/// <summary>
 		/// Called when the object is presented.
 		/// </summary>
 		/// <seealso cref="OnDismiss"/>

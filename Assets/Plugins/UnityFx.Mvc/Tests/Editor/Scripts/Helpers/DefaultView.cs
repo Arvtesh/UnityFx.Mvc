@@ -29,7 +29,7 @@ namespace UnityFx.Mvc
 			if (!_disposed)
 			{
 				_disposed = true;
-				Disposed.Invoke(this, EventArgs.Empty);
+				Disposed?.Invoke(this, EventArgs.Empty);
 			}
 		}
 	}

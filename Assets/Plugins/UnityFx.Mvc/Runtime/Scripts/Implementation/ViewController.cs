@@ -222,10 +222,26 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
+		/// Called when the controller has been presented. Default implementation does nothing.
+		/// </summary>
+		/// <seealso cref="OnDismiss"/>
+		protected virtual void OnPresent()
+		{
+		}
+
+		/// <summary>
 		/// Called when the controller is being dismissed. Should not throw exceptions. Default implementation does nothing.
 		/// </summary>
+		/// <seealso cref="OnPresent"/>
 		/// <seealso cref="ThrowIfDismissed"/>
 		protected virtual void OnDismiss()
+		{
+		}
+
+		/// <summary>
+		/// Called on each frame. Default implementation does nothing.
+		/// </summary>
+		protected virtual void OnUpdate(float frameTime)
 		{
 		}
 
@@ -260,13 +276,20 @@ namespace UnityFx.Mvc
 		void IViewControllerEvents.OnPresent()
 		{
 			Debug.Assert(!IsDismissed);
-			//TODO
+			OnPresent();
 		}
 
 		/// <inheritdoc/>
 		void IViewControllerEvents.OnDismiss()
 		{
 			OnDismiss();
+		}
+
+		/// <inheritdoc/>
+		void IViewControllerEvents.OnUpdate(float frameTime)
+		{
+			Debug.Assert(!IsDismissed);
+			OnUpdate(frameTime);
 		}
 
 		#endregion

@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace UnityFx.Mvc
 {
@@ -17,6 +19,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="controllerType">Type of the view controller.</param>
 		/// <param name="zIndex">Z-order index.</param>
-		Task<IView> CreateViewAsync(Type controllerType, int zIndex);
+		/// <param name="parent">Parent transform for the view (or <see langword="null"/>).</param>
+		Task<IView> CreateViewAsync(Type controllerType, int zIndex, Transform parent);
 	}
 }

@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.TestTools;
 using NUnit.Framework;
@@ -15,6 +16,7 @@ namespace UnityFx.Mvc
 	{
 		private DefaultViewFactory _viewFactory;
 		private DefaultServiceProvider _serviceProvider;
+		private GameObject _go;
 		private Presenter _presenter;
 
 		[SetUp]
@@ -22,7 +24,10 @@ namespace UnityFx.Mvc
 		{
 			_serviceProvider = new DefaultServiceProvider();
 			_viewFactory = new DefaultViewFactory();
-			_presenter = new Presenter(_serviceProvider, _viewFactory);
+			_go = new GameObject("PresenterTest");
+
+			_presenter = _go.AddComponent<Presenter>();
+			_presenter.Initialize(_serviceProvider, _viewFactory);
 		}
 
 		[TearDown]
@@ -57,6 +62,15 @@ namespace UnityFx.Mvc
 			var presentResult = _presenter.PresentAsync<MinimalController>(null);
 
 			Assert.NotNull(presentResult);
+		}
+
+		[Test]
+		public void PresentResult_CanBeDisposedRightAfterCreation()
+		{
+			_presenter.PresentAsync<TimerController>(null).Dispose();
+
+			Assert.IsNull(_presenter.ActiveController);
+			Assert.IsEmpty(_presenter.Controllers);
 		}
 
 		[Test]

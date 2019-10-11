@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -19,14 +20,15 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <threadsafety static="true" instance="false"/>
 	/// <seealso cref="IViewController"/>
-	public class Presenter : IPresenter, ICommandTarget, IDisposable
+	public class Presenter : MonoBehaviour, IPresenter, ICommandTarget, IDisposable
 	{
 		#region data
 
-		private readonly IServiceProvider _serviceProvider;
-		private readonly IViewFactory _viewFactory;
-		private readonly LinkedList<IPresentable> _presentables = new LinkedList<IPresentable>();
-		private readonly ViewControllerCollection _controllers;
+		private IServiceProvider _serviceProvider;
+		private IViewFactory _viewFactory;
+
+		private LinkedList<IPresentable> _presentables = new LinkedList<IPresentable>();
+		private ViewControllerCollection _controllers;
 
 		private int _idCounter;
 		private int _busyCounter;
@@ -131,7 +133,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="serviceProvider">A <see cref="IServiceProvider"/> used to resolve controller dependencies.</param>
 		/// <param name="viewFactory">A <see cref="IViewFactory"/> that is used to create views.</param>
-		public Presenter(IServiceProvider serviceProvider, IViewFactory viewFactory)
+		public void Initialize(IServiceProvider serviceProvider, IViewFactory viewFactory)
 		{
 			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			_viewFactory = viewFactory ?? throw new ArgumentNullException(nameof(viewFactory));
@@ -156,7 +158,14 @@ namespace UnityFx.Mvc
 		#region virtual interface
 
 		/// <summary>
-		/// Called when the instance is disposed.
+		/// Called on each frame. Default implementation does nothing.
+		/// </summary>
+		protected virtual void OnUpdate(float frameTime)
+		{
+		}
+
+		/// <summary>
+		/// Called when the instance is disposed. Default implementation does nothing.
 		/// </summary>
 		/// <seealso cref="Dispose"/>
 		/// <seealso cref="ThrowIfDisposed"/>
@@ -176,7 +185,7 @@ namespace UnityFx.Mvc
 			ThrowIfInvalidControllerType(controllerType);
 
 			var result = CreatePresentable(presentable, controllerType, null, args);
-			PresentAsync(result);
+			PresentInternal(result);
 			return result;
 		}
 
@@ -186,7 +195,7 @@ namespace UnityFx.Mvc
 			ThrowIfBusy();
 
 			var result = CreatePresentable(presentable, typeof(TController), null, args);
-			PresentAsync(result);
+			PresentInternal(result);
 			return (IPresentResult<TController>)result;
 		}
 
@@ -196,7 +205,7 @@ namespace UnityFx.Mvc
 			ThrowIfBusy();
 
 			var result = CreatePresentable(presentable, typeof(TController), typeof(TResult), args);
-			PresentAsync(result);
+			PresentInternal(result);
 			return (IPresentResult<TController, TResult>)result;
 		}
 
@@ -251,6 +260,28 @@ namespace UnityFx.Mvc
 		internal int GetNextId()
 		{
 			return ++_idCounter;
+		}
+
+		#endregion
+
+		#region MonoBehaviour
+
+		private void Update()
+		{
+			var frameTime = Time.deltaTime;
+			var topPresentable = _presentables.Last?.Value;
+
+			foreach (var p in _presentables)
+			{
+				p.Update(frameTime, p == topPresentable);
+			}
+
+			OnUpdate(frameTime);
+		}
+
+		private void OnDestroy()
+		{
+			Dispose();
 		}
 
 		#endregion
@@ -333,28 +364,21 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private async void PresentAsync(IPresentable presentable)
+		private void PresentInternal(IPresentable presentable)
 		{
-			try
+			var insertAfterIndex = -1;
+
+			foreach (var p in _presentables)
 			{
-				var insertAfterIndex = -1;
-
-				foreach (var p in _presentables)
+				if (p == presentable)
 				{
-					if (p == presentable)
-					{
-						break;
-					}
-
-					++insertAfterIndex;
+					break;
 				}
 
-				await presentable.PresentAsync(_viewFactory, insertAfterIndex);
+				++insertAfterIndex;
 			}
-			catch
-			{
-				_presentables.Remove(presentable);
-			}
+
+			presentable.PresentAsync(_viewFactory, insertAfterIndex);
 		}
 
 		private IPresentable CreatePresentable(IPresentable parent, Type controllerType, Type resultType, PresentArgs args)
@@ -363,28 +387,24 @@ namespace UnityFx.Mvc
 			Debug.Assert(!_disposed);
 
 			// Resolve result type from the type of the controller.
-			var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
+			var controllerResultType = GetControllerResultType(controllerType);
 
 			if (resultType is null)
 			{
-				if (attrs != null && attrs.Length > 0 && attrs[0].ResultType != null)
-				{
-					resultType = attrs[0].ResultType;
-				}
-				else
+				if (controllerResultType is null)
 				{
 					resultType = typeof(int);
 				}
-			}
-			else
-			{
-				if (attrs != null && attrs.Length > 0 && attrs[0].ResultType != null)
+				else
 				{
-					// Verify that the result type passed matches result type in the ViewControllerAttribute.
-					if (resultType != attrs[0].ResultType)
-					{
-						throw new InvalidOperationException();
-					}
+					resultType = controllerResultType;
+				}
+			}
+			else if (controllerResultType != null)
+			{
+				if (resultType != controllerResultType)
+				{
+					throw new InvalidOperationException();
 				}
 			}
 
@@ -453,6 +473,36 @@ namespace UnityFx.Mvc
 				node = node.Previous;
 				p.DisposeUnsafe();
 			}
+		}
+
+		private void UpdateActiveController()
+		{
+			var topPresentable = _presentables.Last?.Value;
+
+			if (topPresentable != null && !topPresentable.IsActive)
+			{
+				
+			}
+		}
+
+		private Type GetControllerResultType(Type controllerType)
+		{
+			// Types inherited from ViewController<> do not require ViewControllerAttribute.
+			if (typeof(ViewController<,>).IsAssignableFrom(controllerType))
+			{
+				return controllerType.GenericTypeArguments[1];
+			}
+			else
+			{
+				var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
+
+				if (attrs != null && attrs.Length > 0)
+				{
+					return attrs[0].ResultType;
+				}
+			}
+
+			return null;
 		}
 
 		private void SetBusy(bool busy)
