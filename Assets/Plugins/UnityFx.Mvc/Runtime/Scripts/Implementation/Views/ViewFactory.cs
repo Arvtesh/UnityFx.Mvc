@@ -11,7 +11,7 @@ using UnityEngine.UI;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Default implementatino of <see cref="IViewFactory"/>.
+	/// Default implementation of <see cref="IViewFactory"/>.
 	/// </summary>
 	public abstract class ViewFactory : MonoBehaviour, IViewFactory, IContainer
 	{
@@ -22,6 +22,8 @@ namespace UnityFx.Mvc
 		[SerializeField]
 		private Color _popupBgColor = new Color(0, 0, 0, 0.5f);
 
+		private Dictionary<string, GameObject> _viewPrefabs = new Dictionary<string, GameObject>();
+		private Dictionary<string, Task<GameObject>> _viewPrefabTasks = new Dictionary<string, Task<GameObject>>();
 		private ComponentCollection _components;
 		private bool _disposed;
 
@@ -125,6 +127,12 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region MonoBehaviour
+
+		private void OnDestroy()
+		{
+			Dispose();
+		}
+
 		#endregion
 
 		#region IViewFactory
@@ -132,6 +140,7 @@ namespace UnityFx.Mvc
 		public async Task<IView> CreateViewAsync(Type controllerType, int zIndex, Transform parent)
 		{
 			ThrowIfDisposed();
+			ThrowIfViewRootIsNull();
 
 			if (controllerType is null)
 			{
@@ -139,26 +148,46 @@ namespace UnityFx.Mvc
 			}
 
 			ViewProxy viewProxy = null;
-			GameObject viewPrefab;
 
 			try
 			{
-				var prefabName = controllerType.Name;
+				var prefabName = GetPrefabName(controllerType);
 
 				viewProxy = CreateViewProxy(prefabName, zIndex, false);
-				viewPrefab = await LoadViewPrefabAsync(prefabName);
 
-				if (_disposed)
+				if (_viewPrefabs.TryGetValue(prefabName, out var viewPrefab))
 				{
-					throw new OperationCanceledException();
+					return CreateView(viewPrefab, viewProxy, parent);
 				}
-
-				if (!viewPrefab)
+				else
 				{
-					throw new OperationCanceledException();
-				}
+					if (_viewPrefabTasks.TryGetValue(prefabName, out var task))
+					{
+						viewPrefab = await task;
+					}
+					else
+					{
+						task = LoadViewPrefabAsync(prefabName);
+						_viewPrefabTasks.Add(prefabName, task);
 
-				return CreateView(viewPrefab, viewProxy, parent ?? viewProxy.transform);
+						try
+						{
+							viewPrefab = await task;
+						}
+						finally
+						{
+							_viewPrefabTasks.Remove(prefabName);
+						}
+					}
+
+					if (_disposed)
+					{
+						throw new OperationCanceledException();
+					}
+
+					_viewPrefabs.Add(prefabName, viewPrefab);
+					return CreateView(viewPrefab, viewProxy, parent);
+				}
 			}
 			catch
 			{
@@ -192,12 +221,33 @@ namespace UnityFx.Mvc
 
 		public void Add(IComponent component)
 		{
-			throw new NotImplementedException();
+			Add(component, null);
 		}
 
 		public void Add(IComponent component, string name)
 		{
-			throw new NotImplementedException();
+			ThrowIfDisposed();
+			ThrowIfViewRootIsNull();
+
+			if (component is null)
+			{
+				throw new ArgumentNullException(nameof(component));
+			}
+
+			var view = component as IView;
+
+			if (view is null)
+			{
+				throw new ArgumentException("The component should implement IView.", nameof(component));
+			}
+
+			if (string.IsNullOrEmpty(name))
+			{
+				name = "View";
+			}
+
+			var viewProxy = CreateViewProxy(name, _viewRootTransform.childCount, false);
+			viewProxy.Component = component;
 		}
 
 		public void Remove(IComponent component)
@@ -236,6 +286,7 @@ namespace UnityFx.Mvc
 			{
 				_disposed = true;
 				_components = null;
+				_viewPrefabs = null;
 
 				if (_viewRootTransform != null)
 				{
@@ -252,6 +303,59 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region implementation
+
+		private string GetPrefabName(Type controllerType)
+		{
+			Debug.Assert(controllerType != null);
+
+			var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
+			var attr = attrs != null && attrs.Length > 0 ? attrs[0] : null;
+
+			if (attr != null && !string.IsNullOrEmpty(attr.ViewPrefabName))
+			{
+				return attr.ViewPrefabName;
+			}
+			else
+			{
+				var viewName = controllerType.Name;
+
+				if (viewName.EndsWith("Controller"))
+				{
+					viewName = viewName.Substring(0, viewName.Length - 10);
+				}
+
+				return viewName;
+			}
+		}
+
+		private IView CreateView(GameObject viewPrefab, ViewProxy viewProxy, Transform parent)
+		{
+			Debug.Assert(viewProxy);
+
+			GameObject go;
+			IView view;
+
+			if (viewPrefab)
+			{
+				go = Instantiate(viewPrefab, parent ?? viewProxy.transform, false);
+				view = go.GetComponent<IView>();
+
+				if (view == null)
+				{
+					view = go.AddComponent<View>();
+				}
+			}
+			else
+			{
+				go = new GameObject(viewProxy.name);
+				view = go.AddComponent<View>();
+
+				go.transform.SetParent(parent ?? viewProxy.transform);
+			}
+
+			viewProxy.Component = view;
+			return view;
+		}
 
 		private ViewProxy CreateViewProxy(string viewName, int zIndex, bool exclusive)
 		{
@@ -286,27 +390,9 @@ namespace UnityFx.Mvc
 
 			viewProxy.Exclusive = exclusive;
 			viewProxy.Container = this;
-			viewProxy.name = viewName;
+			viewProxy.Name = viewName;
 
 			return viewProxy;
-		}
-
-		private IView CreateView(GameObject prefab, ViewProxy proxy, Transform parent)
-		{
-			Debug.Assert(prefab);
-			Debug.Assert(proxy);
-			Debug.Assert(parent);
-
-			var go = Instantiate(prefab, parent, false);
-			var view = go.GetComponent<IView>();
-
-			if (view == null)
-			{
-				view = go.AddComponent<View>();
-			}
-
-			view.Site = proxy;
-			return view;
 		}
 
 		private void UpdatePopupBackgrounds()
@@ -329,6 +415,22 @@ namespace UnityFx.Mvc
 						c.Image.enabled = modalFound;
 					}
 				}
+			}
+		}
+
+		private void ThrowIfInvalidPrefab(GameObject prefabGo)
+		{
+			if (!prefabGo)
+			{
+				throw new OperationCanceledException();
+			}
+		}
+
+		private void ThrowIfViewRootIsNull()
+		{
+			if (_viewRootTransform == null)
+			{
+				throw new InvalidOperationException();
 			}
 		}
 

@@ -12,6 +12,9 @@ namespace UnityFx.Mvc
 	internal class ViewProxy : MonoBehaviour, ISite
 	{
 		#region data
+
+		private IComponent _view;
+
 		#endregion
 
 		#region interface
@@ -26,10 +29,42 @@ namespace UnityFx.Mvc
 
 		#region ISite
 
-		public IComponent Component { get; set; }
+		public IComponent Component
+		{
+			get
+			{
+				return _view;
+			}
+			set
+			{
+				if (value != _view)
+				{
+					if (_view != null)
+					{
+						_view.Site?.Container?.Remove(_view);
+					}
+
+					_view = value;
+
+					if (_view != null)
+					{
+						_view.Site = this;
+
+						if (_view is MonoBehaviour b)
+						{
+							if (b.transform.parent == null)
+							{
+								b.transform.SetParent(transform, false);
+							}
+						}
+					}
+				}
+			}
+		}
+
 		public IContainer Container { get; set; }
 		public bool DesignMode => false;
-		public string Name { get; set; }
+		public string Name { get => name; set => name = value; }
 
 		#endregion
 

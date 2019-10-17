@@ -18,6 +18,11 @@ namespace UnityFx.Mvc
 		public Type ResultType { get; set; }
 
 		/// <summary>
+		/// Gets or sets name of the view prefab.
+		/// </summary>
+		public string ViewPrefabName { get; set; }
+
+		/// <summary>
 		/// Gets or sets value indicating whether the controller view covers all screen.
 		/// </summary>
 		public bool Exclusive { get; set; }
