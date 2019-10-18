@@ -8,6 +8,9 @@ using UnityEngine;
 
 namespace UnityFx.Mvc
 {
+	/// <summary>
+	/// Default <see cref="MonoBehaviour"/>-based view.
+	/// </summary>
 	public class View : MonoBehaviour, IView
 	{
 		#region data

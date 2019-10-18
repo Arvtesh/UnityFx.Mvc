@@ -11,9 +11,9 @@ using UnityEngine.UI;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Default implementation of <see cref="IViewFactory"/>.
+	/// Default <see cref="MonoBehaviour"/>-based view factory.
 	/// </summary>
-	public abstract class ViewFactory : MonoBehaviour, IViewFactory, IContainer
+	public partial class ViewFactory : MonoBehaviour, IViewFactory, IContainer
 	{
 		#region data
 
@@ -21,9 +21,11 @@ namespace UnityFx.Mvc
 		private Transform _viewRootTransform;
 		[SerializeField]
 		private Color _popupBgColor = new Color(0, 0, 0, 0.5f);
+		[SerializeField]
+		private GameObject[] _viewPrefabs;
 
-		private Dictionary<string, GameObject> _viewPrefabs = new Dictionary<string, GameObject>();
-		private Dictionary<string, Task<GameObject>> _viewPrefabTasks = new Dictionary<string, Task<GameObject>>();
+		private Dictionary<string, GameObject> _viewPrefabCache = new Dictionary<string, GameObject>();
+		private Dictionary<string, Task<GameObject>> _viewPrefabCacheTasks = new Dictionary<string, Task<GameObject>>();
 		private ComponentCollection _components;
 		private bool _disposed;
 
@@ -38,27 +40,25 @@ namespace UnityFx.Mvc
 		{
 			get
 			{
+				if (_viewRootTransform is null)
+				{
+					_viewRootTransform = transform;
+				}
+
 				return _viewRootTransform;
 			}
 			set
 			{
 				ThrowIfDisposed();
 
-				if (value == null)
+				if (value is null)
 				{
-					throw new ArgumentNullException(nameof(ViewRootTransform));
+					value = transform;
 				}
 
 				if (_viewRootTransform != value)
 				{
-					if (_viewRootTransform != null)
-					{
-						for (var i = 0; i < _viewRootTransform.childCount; ++i)
-						{
-							Destroy(_viewRootTransform.GetChild(i));
-						}
-					}
-
+					DestroyAllViews();
 					_viewRootTransform = value;
 				}
 			}
@@ -70,6 +70,11 @@ namespace UnityFx.Mvc
 		public Color PopupBackgroundColor { get => _popupBgColor; set => _popupBgColor = value; }
 
 		/// <summary>
+		/// Gets or sets list of preloaded view prefabs.
+		/// </summary>
+		public GameObject[] ViewPrefabs { get => _viewPrefabs; set => _viewPrefabs = value; }
+
+		/// <summary>
 		/// gets a value indicating whether the instance is disposed.
 		/// </summary>
 		protected bool IsDisposed => _disposed;
@@ -79,30 +84,48 @@ namespace UnityFx.Mvc
 		/// </summary>
 		protected IView[] GetViews()
 		{
-			if (_viewRootTransform)
+			var viewRoot = ViewRootTransform;
+			var result = new IView[viewRoot.childCount];
+
+			for (var i = 0; i < viewRoot.childCount; ++i)
 			{
-				var result = new IView[_viewRootTransform.childCount];
+				var proxy = viewRoot.GetChild(i).GetComponent<ViewProxy>();
 
-				for (var i = 0; i < _viewRootTransform.childCount; ++i)
+				if (proxy)
 				{
-					var proxy = _viewRootTransform.GetChild(i).GetComponent<ViewProxy>();
-
-					if (proxy)
-					{
-						result[i] = proxy.Component as IView;
-					}
+					result[i] = proxy.Component as IView;
 				}
-
-				return result;
 			}
 
-			return Array.Empty<IView>();
+			return result;
 		}
 
 		/// <summary>
-		/// Initiates loading view prefab.
+		/// Clears the prefabs cache.
 		/// </summary>
-		protected abstract Task<GameObject> LoadViewPrefabAsync(string prefabName);
+		protected void ClearPrefabCache()
+		{
+			_viewPrefabCache?.Clear();
+		}
+
+		/// <summary>
+		/// Loads view prefab with the specified name. Default implementation searches the prefab in <see cref="ViewPrefabs"/> array. Returns <see langword="null"/> on any error.
+		/// </summary>
+		protected virtual Task<GameObject> LoadViewPrefabAsync(string prefabName)
+		{
+			if (_viewPrefabs != null && !string.IsNullOrEmpty(prefabName))
+			{
+				foreach (var go in _viewPrefabs)
+				{
+					if (string.CompareOrdinal(go.name, prefabName) == 0)
+					{
+						return Task.FromResult(go);
+					}
+				}
+			}
+
+			return Task.FromResult(default(GameObject));
+		}
 
 		/// <summary>
 		/// Throws an <see cref="ObjectDisposedException"/> if the controller is disposed.
@@ -140,7 +163,6 @@ namespace UnityFx.Mvc
 		public async Task<IView> CreateViewAsync(Type controllerType, int zIndex, Transform parent)
 		{
 			ThrowIfDisposed();
-			ThrowIfViewRootIsNull();
 
 			if (controllerType is null)
 			{
@@ -155,20 +177,20 @@ namespace UnityFx.Mvc
 
 				viewProxy = CreateViewProxy(prefabName, zIndex, false);
 
-				if (_viewPrefabs.TryGetValue(prefabName, out var viewPrefab))
+				if (_viewPrefabCache.TryGetValue(prefabName, out var viewPrefab))
 				{
 					return CreateView(viewPrefab, viewProxy, parent);
 				}
 				else
 				{
-					if (_viewPrefabTasks.TryGetValue(prefabName, out var task))
+					if (_viewPrefabCacheTasks.TryGetValue(prefabName, out var task))
 					{
 						viewPrefab = await task;
 					}
 					else
 					{
 						task = LoadViewPrefabAsync(prefabName);
-						_viewPrefabTasks.Add(prefabName, task);
+						_viewPrefabCacheTasks.Add(prefabName, task);
 
 						try
 						{
@@ -176,7 +198,7 @@ namespace UnityFx.Mvc
 						}
 						finally
 						{
-							_viewPrefabTasks.Remove(prefabName);
+							_viewPrefabCacheTasks.Remove(prefabName);
 						}
 					}
 
@@ -185,7 +207,7 @@ namespace UnityFx.Mvc
 						throw new OperationCanceledException();
 					}
 
-					_viewPrefabs.Add(prefabName, viewPrefab);
+					_viewPrefabCache.Add(prefabName, viewPrefab);
 					return CreateView(viewPrefab, viewProxy, parent);
 				}
 			}
@@ -227,7 +249,6 @@ namespace UnityFx.Mvc
 		public void Add(IComponent component, string name)
 		{
 			ThrowIfDisposed();
-			ThrowIfViewRootIsNull();
 
 			if (component is null)
 			{
@@ -246,7 +267,7 @@ namespace UnityFx.Mvc
 				name = "View";
 			}
 
-			var viewProxy = CreateViewProxy(name, _viewRootTransform.childCount, false);
+			var viewProxy = CreateViewProxy(name, ViewRootTransform.childCount, false);
 			viewProxy.Component = component;
 		}
 
@@ -286,16 +307,9 @@ namespace UnityFx.Mvc
 			{
 				_disposed = true;
 				_components = null;
-				_viewPrefabs = null;
+				_viewPrefabCache = null;
 
-				if (_viewRootTransform != null)
-				{
-					for (var i = 0; i < _viewRootTransform.childCount; ++i)
-					{
-						Destroy(_viewRootTransform.GetChild(i));
-					}
-				}
-
+				DestroyAllViews();
 				OnDispose();
 			}
 		}
@@ -363,14 +377,15 @@ namespace UnityFx.Mvc
 
 			var go = new GameObject(viewName);
 			var viewProxy = go.AddComponent<ViewProxy>();
+			var viewRoot = ViewRootTransform;
 
-			go.transform.SetParent(_viewRootTransform, false);
+			go.transform.SetParent(viewRoot, false);
 
 			if (zIndex < 0)
 			{
 				go.transform.SetAsFirstSibling();
 			}
-			else if (zIndex < _viewRootTransform.childCount)
+			else if (zIndex < viewRoot.childCount)
 			{
 				go.transform.SetSiblingIndex(zIndex);
 			}
@@ -418,19 +433,26 @@ namespace UnityFx.Mvc
 			}
 		}
 
+		private void DestroyAllViews()
+		{
+			var viewRoot = ViewRootTransform;
+
+			for (var i = 0; i < viewRoot.childCount; ++i)
+			{
+				var p = viewRoot.GetChild(i).GetComponent<ViewProxy>();
+
+				if (p)
+				{
+					p.DestroyInternal();
+				}
+			}
+		}
+
 		private void ThrowIfInvalidPrefab(GameObject prefabGo)
 		{
 			if (!prefabGo)
 			{
 				throw new OperationCanceledException();
-			}
-		}
-
-		private void ThrowIfViewRootIsNull()
-		{
-			if (_viewRootTransform == null)
-			{
-				throw new InvalidOperationException();
 			}
 		}
 
