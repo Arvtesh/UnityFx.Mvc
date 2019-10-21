@@ -26,6 +26,7 @@ namespace UnityFx.Mvc
 
 		private Dictionary<string, GameObject> _viewPrefabCache = new Dictionary<string, GameObject>();
 		private Dictionary<string, Task<GameObject>> _viewPrefabCacheTasks = new Dictionary<string, Task<GameObject>>();
+		private ViewCollection _views;
 		private ComponentCollection _components;
 		private bool _disposed;
 
@@ -75,30 +76,25 @@ namespace UnityFx.Mvc
 		public GameObject[] ViewPrefabs { get => _viewPrefabs; set => _viewPrefabs = value; }
 
 		/// <summary>
-		/// gets a value indicating whether the instance is disposed.
+		/// Gets a read-only collection of views.
 		/// </summary>
-		protected bool IsDisposed => _disposed;
+		public ViewCollection Views
+		{
+			get
+			{
+				if (_views is null)
+				{
+					_views = new ViewCollection(this);
+				}
+
+				return _views;
+			}
+		}
 
 		/// <summary>
-		/// Gets all views.
+		/// Gets a value indicating whether the instance is disposed.
 		/// </summary>
-		protected IView[] GetViews()
-		{
-			var viewRoot = ViewRootTransform;
-			var result = new IView[viewRoot.childCount];
-
-			for (var i = 0; i < viewRoot.childCount; ++i)
-			{
-				var proxy = viewRoot.GetChild(i).GetComponent<ViewProxy>();
-
-				if (proxy)
-				{
-					result[i] = proxy.Component as IView;
-				}
-			}
-
-			return result;
-		}
+		protected bool IsDisposed => _disposed;
 
 		/// <summary>
 		/// Clears the prefabs cache.
@@ -226,7 +222,7 @@ namespace UnityFx.Mvc
 
 		#region IContainer
 
-		public ComponentCollection Components
+		ComponentCollection IContainer.Components
 		{
 			get
 			{
@@ -234,19 +230,14 @@ namespace UnityFx.Mvc
 
 				if (_components is null)
 				{
-					_components = new ComponentCollection(GetViews());
+					_components = new ComponentCollection(Views.ToArray());
 				}
 
 				return _components;
 			}
 		}
 
-		public void Add(IComponent component)
-		{
-			Add(component, null);
-		}
-
-		public void Add(IComponent component, string name)
+		void IContainer.Add(IComponent component)
 		{
 			ThrowIfDisposed();
 
@@ -255,23 +246,22 @@ namespace UnityFx.Mvc
 				throw new ArgumentNullException(nameof(component));
 			}
 
-			var view = component as IView;
-
-			if (view is null)
-			{
-				throw new ArgumentException("The component should implement IView.", nameof(component));
-			}
-
-			if (string.IsNullOrEmpty(name))
-			{
-				name = "View";
-			}
-
-			var viewProxy = CreateViewProxy(name, ViewRootTransform.childCount, false);
-			viewProxy.Component = component;
+			AddInternal(component, null);
 		}
 
-		public void Remove(IComponent component)
+		void IContainer.Add(IComponent component, string name)
+		{
+			ThrowIfDisposed();
+
+			if (component is null)
+			{
+				throw new ArgumentNullException(nameof(component));
+			}
+
+			AddInternal(component, name);
+		}
+
+		void IContainer.Remove(IComponent component)
 		{
 			if (component != null && !_disposed)
 			{
@@ -317,6 +307,26 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region implementation
+
+		private void AddInternal(IComponent component, string name)
+		{
+			Debug.Assert(component != null);
+
+			var view = component as IView;
+
+			if (view is null)
+			{
+				throw new ArgumentException("The component should implement IView.", nameof(component));
+			}
+
+			if (string.IsNullOrEmpty(name))
+			{
+				name = "View";
+			}
+
+			var viewProxy = CreateViewProxy(name, ViewRootTransform.childCount, false);
+			viewProxy.Component = component;
+		}
 
 		private string GetPrefabName(Type controllerType)
 		{

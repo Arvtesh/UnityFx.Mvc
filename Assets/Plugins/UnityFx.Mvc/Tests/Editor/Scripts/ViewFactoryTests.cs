@@ -33,8 +33,8 @@ namespace UnityFx.Mvc
 		[Test]
 		public void InitialStateIsValid()
 		{
-			Assert.NotNull(_viewFactory.Components);
-			Assert.IsEmpty(_viewFactory.Components);
+			Assert.NotNull(_viewFactory.Views);
+			Assert.IsEmpty(_viewFactory.Views);
 			Assert.AreEqual(_viewFactory.transform, _viewFactory.ViewRootTransform);
 		}
 	}
