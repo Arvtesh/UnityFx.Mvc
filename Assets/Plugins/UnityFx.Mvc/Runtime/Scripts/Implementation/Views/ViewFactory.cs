@@ -105,7 +105,8 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Loads view prefab with the specified name. Default implementation searches the prefab in <see cref="ViewPrefabs"/> array. Returns <see langword="null"/> on any error.
+		/// Loads view prefab with the specified name. Default implementation searches the prefab in <see cref="ViewPrefabs"/> array, returns <see langword="null"/> on any error.
+		/// Overide to implement own mechanism of loading views.
 		/// </summary>
 		protected virtual Task<GameObject> LoadViewPrefabAsync(string prefabName)
 		{
@@ -400,7 +401,7 @@ namespace UnityFx.Mvc
 				go.transform.SetSiblingIndex(zIndex);
 			}
 
-			if (viewProxy.transform is RectTransform && !exclusive)
+			if (!exclusive)
 			{
 				var image = go.AddComponent<Image>();
 
@@ -447,13 +448,16 @@ namespace UnityFx.Mvc
 		{
 			var viewRoot = ViewRootTransform;
 
-			for (var i = 0; i < viewRoot.childCount; ++i)
+			if (viewRoot)
 			{
-				var p = viewRoot.GetChild(i).GetComponent<ViewProxy>();
-
-				if (p)
+				for (var i = 0; i < viewRoot.childCount; ++i)
 				{
-					p.DestroyInternal();
+					var p = viewRoot.GetChild(i).GetComponent<ViewProxy>();
+
+					if (p)
+					{
+						p.DestroyInternal();
+					}
 				}
 			}
 		}

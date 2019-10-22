@@ -250,10 +250,12 @@ namespace UnityFx.Mvc
 		{
 			var frameTime = Time.deltaTime;
 			var topPresentable = _presentables.Last?.Value;
+			var node = _presentables.First;
 
-			foreach (var p in _presentables)
+			while (node != null)
 			{
-				p.Update(frameTime, p == topPresentable);
+				node.Value.Update(frameTime, node.Value == topPresentable);
+				node = node.Next;
 			}
 
 			OnUpdate(frameTime);
