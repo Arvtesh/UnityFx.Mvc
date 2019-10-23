@@ -1,0 +1,16 @@
+{
+    "name": "UnityFx.Mvc.Editor",
+    "references": [
+        "GUID:9ea8df79d62e76140babfdbfe4305c67"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
+}

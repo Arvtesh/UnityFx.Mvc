@@ -24,6 +24,11 @@ namespace UnityFx.Mvc
 		#region interface
 
 		/// <summary>
+		/// Gets a transform the <see cref="Site"/> is attached to (if any).
+		/// </summary>
+		protected Transform SiteTransform => (_site as UnityEngine.Component)?.transform;
+
+		/// <summary>
 		/// Gets a value indicating whether the view is disposed.
 		/// </summary>
 		/// <seealso cref="Dispose"/>
