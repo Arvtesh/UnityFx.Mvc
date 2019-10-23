@@ -123,7 +123,7 @@ namespace UnityFx.Mvc
 
 			try
 			{
-				_view = await viewFactory.CreateViewAsync(_controllerType, index, null);
+				_view = await viewFactory.CreateViewAsync(_controllerType, index, _presentArgs.Transform);
 
 				if (_state == State.Initialized)
 				{
@@ -283,8 +283,6 @@ namespace UnityFx.Mvc
 		IViewController IPresentResult.Controller => _controller;
 
 		Task IPresentResult.Task => Task;
-
-		public bool IsCompleted => Task.IsCompleted;
 
 		public TController Controller => _controller;
 

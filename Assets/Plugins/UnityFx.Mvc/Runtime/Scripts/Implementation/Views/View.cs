@@ -11,6 +11,7 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// Default <see cref="MonoBehaviour"/>-based view.
 	/// </summary>
+	/// <seealso cref="ViewController"/>
 	public class View : MonoBehaviour, IView
 	{
 		#region data
@@ -26,6 +27,7 @@ namespace UnityFx.Mvc
 		/// Gets a value indicating whether the view is disposed.
 		/// </summary>
 		/// <seealso cref="Dispose"/>
+		/// <seealso cref="ThrowIfDisposed"/>
 		protected bool IsDisposed => _disposed;
 
 		/// <summary>
@@ -42,6 +44,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Throws an <see cref="ObjectDisposedException"/> if the controller is disposed.
 		/// </summary>
+		/// <seealso cref="IsDisposed"/>
 		/// <seealso cref="Dispose"/>
 		protected void ThrowIfDisposed()
 		{
@@ -54,6 +57,8 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Called when the view is disposed.
 		/// </summary>
+		/// <seealso cref="IsDisposed"/>
+		/// <seealso cref="Dispose"/>
 		/// <seealso cref="ThrowIfDisposed"/>
 		protected virtual void OnDispose()
 		{
@@ -72,8 +77,14 @@ namespace UnityFx.Mvc
 
 		#region IView
 
+		/// <summary>
+		/// Gets the <see cref="Transform"/> this view is attached to.
+		/// </summary>
 		public Transform Transform => transform;
 
+		/// <summary>
+		/// Gets or sets a value indicating whether the view <see cref="GameObject"/> is active.
+		/// </summary>
 		public bool Enabled
 		{
 			get
@@ -91,6 +102,10 @@ namespace UnityFx.Mvc
 
 		#region INotifyCommand
 
+		/// <summary>
+		/// Raised when a user issues a command.
+		/// </summary>
+		/// <seealso cref="NotifyCommand(string, object)"/>
 		public event EventHandler<CommandEventArgs> Command;
 
 		#endregion
@@ -100,6 +115,8 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Represents the method that handles the dispose event of a component.
 		/// </summary>
+		/// <seealso cref="Dispose"/>
+		/// <seealso cref="OnDispose"/>
 		public event EventHandler Disposed;
 
 		/// <summary>
@@ -121,6 +138,13 @@ namespace UnityFx.Mvc
 
 		#region IDisposable
 
+		/// <summary>
+		/// Releases resources used by the view.
+		/// </summary>
+		/// <seealso cref="IsDisposed"/>
+		/// <seealso cref="Disposed"/>
+		/// <seealso cref="ThrowIfDisposed"/>
+		/// <seealso cref="OnDispose"/>
 		public void Dispose()
 		{
 			if (!_disposed)

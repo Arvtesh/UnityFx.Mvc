@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using UnityEngine;
 
 namespace UnityFx.Mvc
 {
@@ -17,6 +18,7 @@ namespace UnityFx.Mvc
 		private static Dictionary<string, string> _emptyQuery = new Dictionary<string, string>();
 		private static PresentArgs _defaultArgs = new PresentArgs();
 
+		private readonly Transform _transform;
 		private readonly Dictionary<string, string> _query;
 		private readonly string _fragment;
 
@@ -28,6 +30,11 @@ namespace UnityFx.Mvc
 		/// Gets default arguments value.
 		/// </summary>
 		public static PresentArgs Default => _defaultArgs;
+
+		/// <summary>
+		/// Gets a transform to attach view to.
+		/// </summary>
+		public Transform Transform => _transform;
 
 		/// <summary>
 		/// Gets query parameters (if any).
@@ -51,20 +58,40 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
 		/// </summary>
-		/// <param name="userData"></param>
+		/// <param name="transform"></param>
+		public PresentArgs(Transform transform)
+		{
+			_query = _emptyQuery;
+			_fragment = string.Empty;
+			_transform = transform;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
+		/// </summary>
 		/// <param name="query"></param>
 		public PresentArgs(IEnumerable<KeyValuePair<string, string>> query)
-			: this(query, string.Empty)
+			: this(query, null, null)
 		{
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
 		/// </summary>
-		/// <param name="userData"></param>
 		/// <param name="query"></param>
 		/// <param name="fragment"></param>
 		public PresentArgs(IEnumerable<KeyValuePair<string, string>> query, string fragment)
+			: this(query, fragment, null)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
+		/// </summary>
+		/// <param name="query"></param>
+		/// <param name="fragment"></param>
+		/// <param name="transform"></param>
+		public PresentArgs(IEnumerable<KeyValuePair<string, string>> query, string fragment, Transform transform)
 		{
 			if (query is null)
 			{
@@ -80,6 +107,7 @@ namespace UnityFx.Mvc
 
 			_query = data;
 			_fragment = fragment ?? string.Empty;
+			_transform = transform;
 		}
 
 		/// <summary>
