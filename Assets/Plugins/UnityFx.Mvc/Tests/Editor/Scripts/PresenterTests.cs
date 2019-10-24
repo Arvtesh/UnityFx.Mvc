@@ -59,7 +59,7 @@ namespace UnityFx.Mvc
 		[Test]
 		public void Present_PresentsMinimalController()
 		{
-			var presentResult = _presenter.PresentAsync<MinimalController>(null);
+			var presentResult = _presenter.PresentAsync<MinimalController>();
 
 			Assert.NotNull(presentResult);
 		}
@@ -67,7 +67,7 @@ namespace UnityFx.Mvc
 		[Test]
 		public void PresentResult_CanBeDisposedRightAfterCreation()
 		{
-			_presenter.PresentAsync<TimerController>(null).Dispose();
+			_presenter.PresentAsync<TimerController>().Dispose();
 
 			Assert.IsNull(_presenter.ActiveController);
 			Assert.IsEmpty(_presenter.Controllers);

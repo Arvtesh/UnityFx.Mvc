@@ -74,6 +74,33 @@ namespace UnityFx.Mvc
 			}
 
 			/// <summary>
+			/// Checks if a controller of the specified type is presented.
+			/// </summary>
+			public bool Contains(Type controllerType)
+			{
+				if (controllerType is null)
+				{
+					throw new ArgumentNullException(nameof(controllerType));
+				}
+
+				var p = _presentables.Last;
+
+				while (p != null)
+				{
+					var c = p.Value.Controller;
+
+					if (c != null && controllerType.IsAssignableFrom(c.GetType()))
+					{
+						return true;
+					}
+
+					p = p.Previous;
+				}
+
+				return false;
+			}
+
+			/// <summary>
 			/// Gets number of controllers in the collection.
 			/// </summary>
 			public int Count => _presentables.Count;
