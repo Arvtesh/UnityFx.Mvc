@@ -19,7 +19,8 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="controllerType">Type of the view controller.</param>
 		/// <param name="zIndex">Z-order index.</param>
+		/// <param name="options">Present options.</param>
 		/// <param name="parent">Parent transform for the view (or <see langword="null"/>).</param>
-		Task<IView> CreateViewAsync(Type controllerType, int zIndex, Transform parent);
+		Task<IView> CreateViewAsync(Type controllerType, int zIndex, PresentOptions options, Transform parent);
 	}
 }

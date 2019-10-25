@@ -16,6 +16,11 @@ namespace UnityFx.Mvc
 	public interface IPresentResult : ICommandTarget, IDisposable
 	{
 		/// <summary>
+		/// Gets unique identifier of the present operation.
+		/// </summary>
+		int Id { get; }
+
+		/// <summary>
 		/// Gets the view controller.
 		/// </summary>
 		/// <seealso cref="PresentCompleted"/>

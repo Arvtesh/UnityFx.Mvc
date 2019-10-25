@@ -14,9 +14,19 @@ namespace UnityFx.Mvc
 	public interface IPresentContext : IPresenter, IServiceProvider
 	{
 		/// <summary>
-		/// Gets the controller arguments.
+		/// Gets unique identifier of the controller.
 		/// </summary>
-		PresentArgs Args { get; }
+		int Id { get; }
+
+		/// <summary>
+		/// Gets the controller present arguments.
+		/// </summary>
+		PresentArgs PresentArgs { get; }
+
+		/// <summary>
+		/// Gets the present flags used when instantiating the controller.
+		/// </summary>
+		PresentOptions PresentOptions { get; }
 
 		/// <summary>
 		/// Gets the controller view.

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using UnityEngine;
 
 namespace UnityFx.Mvc
@@ -9,6 +10,7 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// Extensions of <see cref="IPresenter"/> interface.
 	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class IPresenterExtensions
 	{
 		/// <summary>

@@ -157,7 +157,7 @@ namespace UnityFx.Mvc
 
 		#region IViewFactory
 
-		public async Task<IView> CreateViewAsync(Type controllerType, int zIndex, Transform parent)
+		public async Task<IView> CreateViewAsync(Type controllerType, int zIndex, PresentOptions options, Transform parent)
 		{
 			ThrowIfDisposed();
 
@@ -170,9 +170,12 @@ namespace UnityFx.Mvc
 
 			try
 			{
-				var prefabName = GetPrefabName(controllerType);
+				var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
+				var attr = attrs != null && attrs.Length > 0 ? attrs[0] : null;
+				var exclusive = (options & PresentOptions.Exclusive) != 0;
+				var prefabName = GetPrefabName(controllerType, attr);
 
-				viewProxy = CreateViewProxy(prefabName, zIndex, false);
+				viewProxy = CreateViewProxy(prefabName, zIndex, exclusive);
 
 				if (_viewPrefabCache.TryGetValue(prefabName, out var viewPrefab))
 				{
@@ -329,12 +332,9 @@ namespace UnityFx.Mvc
 			viewProxy.Component = component;
 		}
 
-		private string GetPrefabName(Type controllerType)
+		private string GetPrefabName(Type controllerType, ViewControllerAttribute attr)
 		{
 			Debug.Assert(controllerType != null);
-
-			var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
-			var attr = attrs != null && attrs.Length > 0 ? attrs[0] : null;
 
 			if (attr != null && !string.IsNullOrEmpty(attr.ViewPrefabName))
 			{

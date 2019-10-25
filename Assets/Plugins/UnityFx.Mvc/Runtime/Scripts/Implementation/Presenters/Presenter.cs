@@ -168,6 +168,29 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
+		/// Gets top popup controller or <see langword="null"/>.
+		/// </summary>
+		/// <returns></returns>
+		protected IViewController GetTopPopup()
+		{
+			var node = _presentables.Last;
+
+			while (node != null)
+			{
+				var p = node.Value;
+
+				if ((p.PresentOptions & PresentOptions.Exclusive) == 0 && p.Controller != null)
+				{
+					return node.Value.Controller;
+				}
+
+				node = node.Previous;
+			}
+
+			return null;
+		}
+
+		/// <summary>
 		/// Throws <see cref="ObjectDisposedException"/> if the instance is disposed.
 		/// </summary>
 		/// <seealso cref="Dispose"/>
@@ -330,6 +353,11 @@ namespace UnityFx.Mvc
 						return true;
 					}
 
+					if ((p.PresentOptions & PresentOptions.Exclusive) != 0)
+					{
+						return false;
+					}
+
 					node = node.Previous;
 				}
 
@@ -385,12 +413,20 @@ namespace UnityFx.Mvc
 			Debug.Assert(controllerType != null);
 			Debug.Assert(!_disposed);
 
-			// Resolve result type from the type of the controller.
-			var resultType = GetControllerResultType(controllerType);
+			var resultType = typeof(int);
+			var controllerAttr = default(ViewControllerAttribute);
+			var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
 
-			if (resultType is null)
+			if (attrs != null && attrs.Length > 0)
 			{
-				resultType = typeof(int);
+				controllerAttr = attrs[0];
+				resultType = controllerAttr.ResultType;
+			}
+
+			// Types inherited from ViewController<,> do not require ViewControllerAttribute.
+			if (typeof(ViewController<,>).IsAssignableFrom(controllerType))
+			{
+				resultType = controllerType.GenericTypeArguments[1];
 			}
 
 			// Make sure args are valid.
@@ -401,7 +437,7 @@ namespace UnityFx.Mvc
 
 			// https://docs.microsoft.com/en-us/dotnet/framework/reflection-and-codedom/how-to-examine-and-instantiate-generic-types-with-reflection
 			var presentResultType = typeof(PresentResult<,>).MakeGenericType(controllerType, resultType);
-			var c = (IPresentable)Activator.CreateInstance(presentResultType, this, parent, controllerType, args);
+			var c = (IPresentable)Activator.CreateInstance(presentResultType, this, parent, controllerType, controllerAttr, args);
 
 			AddPresentable(c);
 
@@ -466,7 +502,7 @@ namespace UnityFx.Mvc
 
 			if (topPresentable != null && !topPresentable.IsActive)
 			{
-				
+				// TODO
 			}
 		}
 

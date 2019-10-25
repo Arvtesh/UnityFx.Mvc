@@ -19,23 +19,13 @@ namespace UnityFx.Mvc
 		None = 0,
 
 		/// <summary>
+		/// Marks the controller as exclusive. Exclusive controllers cover all other controllers below.
+		/// </summary>
+		Exclusive = 1,
+
+		/// <summary>
 		/// Marks the controller as modal. Modal controllers do not forward unprocessed commands to controllers below them is the stack.
 		/// </summary>
-		Modal = 1,
-
-		/// <summary>
-		/// Dismisses the caller before presenting.
-		/// </summary>
-		DismissCurrent = 0x00000100,
-
-		/// <summary>
-		/// Dismisses all controllers before presenting.
-		/// </summary>
-		DismissAll = 0x00000200,
-
-		/// <summary>
-		/// When presented, the target controller will not be activated.
-		/// </summary>
-		DoNotActivate = 0x00010000,
+		Modal = 2
 	}
 }

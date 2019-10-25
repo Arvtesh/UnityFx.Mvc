@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -11,6 +12,7 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// Extensions of <see cref="IPresentResult"/>.
 	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class IPresentResultExtensions
 	{
 		/// <summary>

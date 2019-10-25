@@ -23,9 +23,9 @@ namespace UnityFx.Mvc
 		public string ViewPrefabName { get; set; }
 
 		/// <summary>
-		/// Gets or sets value indicating whether the controller view covers all screen.
+		/// Gets or sets present options.
 		/// </summary>
-		public bool Exclusive { get; set; }
+		public PresentOptions PresentOptions { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ViewControllerAttribute"/> class.

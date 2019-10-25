@@ -43,6 +43,7 @@ namespace UnityFx.Mvc
 		private readonly Presenter _presenter;
 		private readonly Type _controllerType;
 		private readonly PresentArgs _presentArgs;
+		private readonly PresentOptions _presentOptions;
 		private readonly IPresentable _parent;
 		private readonly int _id;
 
@@ -61,12 +62,26 @@ namespace UnityFx.Mvc
 
 		#region interface
 
-		public PresentResult(Presenter presenter, IPresentable parent, Type controllerType, PresentArgs args)
+		public PresentResult(Presenter presenter, IPresentable parent, Type controllerType, ViewControllerAttribute controllerAttr, PresentArgs args)
 			: base(parent)
 		{
 			Debug.Assert(presenter != null);
 			Debug.Assert(controllerType != null);
 			Debug.Assert(args != null);
+
+			if (controllerAttr != null)
+			{
+				if (controllerAttr.ResultType != typeof(TResult))
+				{
+					throw new InvalidOperationException();
+				}
+
+				_presentOptions = controllerAttr.PresentOptions | _presentArgs.PresentOptions;
+			}
+			else
+			{
+				_presentOptions = _presentArgs.PresentOptions;
+			}
 
 			_presenter = presenter;
 			_parent = parent;
@@ -123,7 +138,7 @@ namespace UnityFx.Mvc
 
 			try
 			{
-				_view = await viewFactory.CreateViewAsync(_controllerType, index, _presentArgs.Transform);
+				_view = await viewFactory.CreateViewAsync(_controllerType, index, _presentOptions, _presentArgs.Transform);
 
 				if (_state == State.Initialized)
 				{
@@ -224,7 +239,11 @@ namespace UnityFx.Mvc
 
 		#region IPresentContext
 
-		public PresentArgs Args => _presentArgs;
+		public int Id => _id;
+
+		public PresentArgs PresentArgs => _presentArgs;
+
+		public PresentOptions PresentOptions => _presentOptions;
 
 		public IView View => _view;
 

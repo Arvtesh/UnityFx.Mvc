@@ -10,7 +10,7 @@ namespace UnityFx.Mvc
 {
 	public class DefaultViewFactory : IViewFactory
 	{
-		public async Task<IView> CreateViewAsync(Type controllerType, int zIndex, Transform parent)
+		public async Task<IView> CreateViewAsync(Type controllerType, int zIndex, PresentOptions options, Transform parent)
 		{
 			await Task.Delay(10);
 			return new DefaultView();
