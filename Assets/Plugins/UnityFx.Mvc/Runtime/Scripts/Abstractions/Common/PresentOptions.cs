@@ -19,13 +19,18 @@ namespace UnityFx.Mvc
 		None = 0,
 
 		/// <summary>
-		/// Marks the controller as exclusive. Exclusive controllers cover all other controllers below.
+		/// Marks the controller as exclusive. Exclusive controllers cover all other controllers below. Cannot be combined with <see cref="Popup"/>.
 		/// </summary>
 		Exclusive = 1,
 
 		/// <summary>
+		/// Marks the controller as popup. Cannot be combined with <see cref="Exclusive"/>.
+		/// </summary>
+		Popup = 2,
+
+		/// <summary>
 		/// Marks the controller as modal. Modal controllers do not forward unprocessed commands to controllers below them is the stack.
 		/// </summary>
-		Modal = 2
+		Modal = 4
 	}
 }

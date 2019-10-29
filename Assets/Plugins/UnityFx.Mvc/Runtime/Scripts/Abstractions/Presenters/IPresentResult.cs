@@ -13,13 +13,8 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IPresenter"/>
-	public interface IPresentResult : ICommandTarget, IDisposable
+	public interface IPresentResult : IViewControllerInfo, ICommandTarget, IDisposable
 	{
-		/// <summary>
-		/// Gets unique identifier of the present operation.
-		/// </summary>
-		int Id { get; }
-
 		/// <summary>
 		/// Gets the view controller.
 		/// </summary>

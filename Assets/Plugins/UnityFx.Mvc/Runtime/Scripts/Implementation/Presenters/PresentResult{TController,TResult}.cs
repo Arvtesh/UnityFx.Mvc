@@ -20,7 +20,7 @@ namespace UnityFx.Mvc
 	/// controller context outside of actual controller. This class manages the controller created, provides its context
 	/// (via <see cref="IPresentContext"/> interface) and serves as a proxy between the controller and user.
 	/// </remarks>
-	internal class PresentResult<TController, TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TController, TResult>, IPresentable, IEnumerator where TController : class, IViewController
+	internal class PresentResult<TController, TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TController, TResult>, IPresentable<TController>, IEnumerator where TController : class, IViewController
 	{
 		#region data
 
@@ -40,7 +40,7 @@ namespace UnityFx.Mvc
 			public Action<float> Callback;
 		}
 
-		private readonly Presenter _presenter;
+		private readonly IPresenterInternal _presenter;
 		private readonly Type _controllerType;
 		private readonly PresentArgs _presentArgs;
 		private readonly PresentOptions _presentOptions;
@@ -62,32 +62,19 @@ namespace UnityFx.Mvc
 
 		#region interface
 
-		public PresentResult(Presenter presenter, IPresentable parent, Type controllerType, ViewControllerAttribute controllerAttr, PresentArgs args)
+		public PresentResult(IPresenterInternal presenter, IPresentable parent, Type controllerType, PresentOptions presentOptions, PresentArgs args)
 			: base(parent)
 		{
 			Debug.Assert(presenter != null);
 			Debug.Assert(controllerType != null);
 			Debug.Assert(args != null);
 
-			if (controllerAttr != null)
-			{
-				if (controllerAttr.ResultType != typeof(TResult))
-				{
-					throw new InvalidOperationException();
-				}
-
-				_presentOptions = controllerAttr.PresentOptions | _presentArgs.PresentOptions;
-			}
-			else
-			{
-				_presentOptions = _presentArgs.PresentOptions;
-			}
-
 			_presenter = presenter;
 			_parent = parent;
 			_serviceProvider = presenter.ServiceProvider;
 			_controllerType = controllerType;
 			_presentArgs = args;
+			_presentOptions = presentOptions;
 			_id = presenter.GetNextId();
 		}
 
@@ -131,14 +118,14 @@ namespace UnityFx.Mvc
 			return false;
 		}
 
-		public async Task PresentAsync(IViewFactory viewFactory, int index)
+		public async Task PresentAsync(IViewFactory viewFactory, int index, Transform parent)
 		{
 			Debug.Assert(viewFactory != null);
 			Debug.Assert(_state == State.Initialized);
 
 			try
 			{
-				_view = await viewFactory.CreateViewAsync(_controllerType, index, _presentOptions, _presentArgs.Transform);
+				_view = await viewFactory.CreateViewAsync(_controllerType, index, _presentOptions, parent);
 
 				if (_state == State.Initialized)
 				{
@@ -239,17 +226,7 @@ namespace UnityFx.Mvc
 
 		#region IPresentContext
 
-		public int Id => _id;
-
-		public PresentArgs PresentArgs => _presentArgs;
-
-		public PresentOptions PresentOptions => _presentOptions;
-
 		public IView View => _view;
-
-		public float Timer => _timer;
-
-		public bool IsActive => _state == State.Active;
 
 		public bool IsDismissed => _state == State.Dismissed || _state == State.Disposed;
 
@@ -287,12 +264,26 @@ namespace UnityFx.Mvc
 
 		#endregion
 
+		#region IViewControllerInfo
+
+		public int Id => _id;
+
+		public PresentArgs PresentArgs => _presentArgs;
+
+		public PresentOptions PresentOptions => _presentOptions;
+
+		public float Timer => _timer;
+
+		public bool IsActive => _state == State.Active;
+
+		#endregion
+
 		#region IPresenter
 
-		public IPresentResult PresentAsync(Type controllerType, PresentArgs args)
+		public IPresentResult PresentAsync(Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args)
 		{
 			ThrowIfDisposed();
-			return _presenter.PresentAsync(this, controllerType, args);
+			return _presenter.PresentAsync(this, controllerType, presentOptions, parent, args);
 		}
 
 		#endregion

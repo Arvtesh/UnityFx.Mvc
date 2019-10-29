@@ -4,15 +4,14 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace UnityFx.Mvc
 {
 	internal interface IPresentable : IPresentResult, ICommandTarget
 	{
-		bool IsActive { get; }
-		PresentOptions PresentOptions { get; }
 		IPresentable Parent { get; }
-		Task PresentAsync(IViewFactory viewFactory, int index);
+		Task PresentAsync(IViewFactory viewFactory, int index, Transform parent);
 		void Update(float frameTime, bool isTop);
 		void DismissUnsafe();
 		void DisposeUnsafe();

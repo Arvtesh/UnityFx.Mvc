@@ -11,37 +11,12 @@ namespace UnityFx.Mvc
 	/// It is here for the sake of testability/explicit dependencies for <see cref="IViewController"/> implementations.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
-	public interface IPresentContext : IPresenter, IServiceProvider
+	public interface IPresentContext : IViewControllerInfo, IPresenter, IServiceProvider
 	{
-		/// <summary>
-		/// Gets unique identifier of the controller.
-		/// </summary>
-		int Id { get; }
-
-		/// <summary>
-		/// Gets the controller present arguments.
-		/// </summary>
-		PresentArgs PresentArgs { get; }
-
-		/// <summary>
-		/// Gets the present flags used when instantiating the controller.
-		/// </summary>
-		PresentOptions PresentOptions { get; }
-
 		/// <summary>
 		/// Gets the controller view.
 		/// </summary>
 		IView View { get; }
-
-		/// <summary>
-		/// Gets time elapsed since the controller has been created (in seconds).
-		/// </summary>
-		float Timer { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether the controller is active.
-		/// </summary>
-		bool IsActive { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the controller is dismissed.

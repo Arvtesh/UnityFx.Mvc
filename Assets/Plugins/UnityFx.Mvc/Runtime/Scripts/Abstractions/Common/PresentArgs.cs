@@ -18,8 +18,6 @@ namespace UnityFx.Mvc
 		private static Dictionary<string, string> _emptyQuery = new Dictionary<string, string>();
 		private static PresentArgs _defaultArgs = new PresentArgs();
 
-		private readonly PresentOptions _presentOptions;
-		private readonly Transform _transform;
 		private readonly Dictionary<string, string> _query;
 		private readonly string _fragment;
 
@@ -31,16 +29,6 @@ namespace UnityFx.Mvc
 		/// Gets default arguments value.
 		/// </summary>
 		public static PresentArgs Default => _defaultArgs;
-
-		/// <summary>
-		/// Gets present options.
-		/// </summary>
-		public PresentOptions PresentOptions => _presentOptions;
-
-		/// <summary>
-		/// Gets a transform to attach view to.
-		/// </summary>
-		public Transform Transform => _transform;
 
 		/// <summary>
 		/// Gets query parameters (if any).
@@ -64,40 +52,9 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
 		/// </summary>
-		public PresentArgs(PresentOptions options)
-		{
-			_query = _emptyQuery;
-			_fragment = string.Empty;
-			_presentOptions = options;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
-		/// </summary>
-		public PresentArgs(PresentOptions options, Transform transform)
-		{
-			_query = _emptyQuery;
-			_fragment = string.Empty;
-			_presentOptions = options;
-			_transform = transform;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
-		/// </summary>
-		public PresentArgs(Transform transform)
-		{
-			_query = _emptyQuery;
-			_fragment = string.Empty;
-			_transform = transform;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
-		/// </summary>
 		/// <param name="query"></param>
-		public PresentArgs(PresentOptions options, IEnumerable<KeyValuePair<string, string>> query)
-			: this(options, query, null, null)
+		public PresentArgs(IEnumerable<KeyValuePair<string, string>> query)
+			: this(query, null)
 		{
 		}
 
@@ -106,18 +63,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="query"></param>
 		/// <param name="fragment"></param>
-		public PresentArgs(PresentOptions options, IEnumerable<KeyValuePair<string, string>> query, string fragment)
-			: this(options, query, fragment, null)
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
-		/// </summary>
-		/// <param name="query"></param>
-		/// <param name="fragment"></param>
-		/// <param name="transform"></param>
-		public PresentArgs(PresentOptions options, IEnumerable<KeyValuePair<string, string>> query, string fragment, Transform transform)
+		public PresentArgs(IEnumerable<KeyValuePair<string, string>> query, string fragment)
 		{
 			if (query is null)
 			{
@@ -133,8 +79,6 @@ namespace UnityFx.Mvc
 
 			_query = data;
 			_fragment = fragment ?? string.Empty;
-			_presentOptions = options;
-			_transform = transform;
 		}
 
 		/// <summary>
