@@ -31,6 +31,16 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Marks the controller as modal. Modal controllers do not forward unprocessed commands to controllers below them is the stack.
 		/// </summary>
-		Modal = 4
+		Modal = 4,
+
+		/// <summary>
+		/// If set the caller presenter is dismissed.
+		/// </summary>
+		DismissCurrent = 0x1000,
+
+		/// <summary>
+		/// If set the caller presenter is dismissed.
+		/// </summary>
+		DismissAll = 0x2000
 	}
 }

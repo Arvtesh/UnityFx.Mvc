@@ -13,7 +13,6 @@ namespace UnityFx.Mvc
 		IServiceProvider ServiceProvider { get; }
 		IPresentResult PresentAsync(IPresentable presentable, Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args);
 		void Dismiss(IPresentable presentable);
-		void Remove(IPresentable presentable);
 		int GetNextId();
 	}
 }

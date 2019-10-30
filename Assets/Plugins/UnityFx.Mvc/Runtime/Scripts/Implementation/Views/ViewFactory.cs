@@ -405,14 +405,24 @@ namespace UnityFx.Mvc
 			if (modal)
 			{
 				var image = go.AddComponent<Image>();
+				var rt = image.rectTransform;
+
+				rt.anchorMin = Vector2.zero;
+				rt.anchorMax = Vector2.one;
+				rt.offsetMin = Vector2.zero;
+				rt.offsetMax = Vector2.zero;
 
 				image.color = _popupBgColor;
-				image.rectTransform.anchorMin = Vector2.zero;
-				image.rectTransform.anchorMax = Vector2.one;
-				image.rectTransform.offsetMin = Vector2.zero;
-				image.rectTransform.offsetMax = Vector2.zero;
-
 				viewProxy.Image = image;
+			}
+			else
+			{
+				var rt = go.AddComponent<RectTransform>();
+
+				rt.anchorMin = Vector2.zero;
+				rt.anchorMax = Vector2.one;
+				rt.offsetMin = Vector2.zero;
+				rt.offsetMax = Vector2.zero;
 			}
 
 			viewProxy.Modal = modal;

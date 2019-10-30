@@ -10,6 +10,7 @@ namespace UnityFx.Mvc
 {
 	internal interface IPresentable : IPresentResult, ICommandTarget
 	{
+		bool IsDismissed { get; }
 		IPresentable Parent { get; }
 		Task PresentAsync(IViewFactory viewFactory, int index, Transform parent);
 		void Update(float frameTime, bool isTop);

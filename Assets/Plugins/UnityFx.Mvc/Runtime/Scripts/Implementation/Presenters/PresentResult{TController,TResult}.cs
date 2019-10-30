@@ -401,8 +401,6 @@ namespace UnityFx.Mvc
 			}
 			finally
 			{
-				_presenter.Remove(this);
-
 				if (_exceptions != null)
 				{
 					TrySetException(_exceptions);

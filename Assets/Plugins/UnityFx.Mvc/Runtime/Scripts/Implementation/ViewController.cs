@@ -55,14 +55,9 @@ namespace UnityFx.Mvc
 			public const string Help = "Help";
 
 			/// <summary>
-			/// Name of the ADD command.
+			/// Name of the ABOUT command.
 			/// </summary>
-			public const string Add = "Add";
-
-			/// <summary>
-			/// Name of the REMOVE command.
-			/// </summary>
-			public const string Remove = "Remove";
+			public const string About = "About";
 
 			#endregion
 
@@ -82,6 +77,16 @@ namespace UnityFx.Mvc
 			/// Name of the PREV command.
 			/// </summary>
 			public const string Prev = "Prev";
+
+			/// <summary>
+			/// Name of the HOME command.
+			/// </summary>
+			public const string Home = "Home";
+
+			/// <summary>
+			/// Name of the END command.
+			/// </summary>
+			public const string End = "End";
 
 			#endregion
 
@@ -112,6 +117,16 @@ namespace UnityFx.Mvc
 			#region Editing
 
 			/// <summary>
+			/// Name of the ADD command.
+			/// </summary>
+			public const string Add = "Add";
+
+			/// <summary>
+			/// Name of the REMOVE command.
+			/// </summary>
+			public const string Remove = "Remove";
+
+			/// <summary>
 			/// Name of the EDIT command.
 			/// </summary>
 			public const string Edit = "Edit";
@@ -132,14 +147,19 @@ namespace UnityFx.Mvc
 			public const string Paste = "Paste";
 
 			/// <summary>
-			/// Name of the DUPLICATE command.
+			/// Name of the INSERT command.
 			/// </summary>
-			public const string Duplicate = "Duplicate";
+			public const string Insert = "Insert";
 
 			/// <summary>
 			/// Name of the DELETE command.
 			/// </summary>
 			public const string Delete = "Delete";
+
+			/// <summary>
+			/// Name of the DUPLICATE command.
+			/// </summary>
+			public const string Duplicate = "Duplicate";
 
 			/// <summary>
 			/// Name of the UNDO command.

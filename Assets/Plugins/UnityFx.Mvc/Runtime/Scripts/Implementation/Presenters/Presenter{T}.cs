@@ -107,12 +107,18 @@ namespace UnityFx.Mvc
 			/// </summary>
 			public IEnumerator<T> GetEnumerator()
 			{
-				var p = _presentables.Last;
+				var node = _presentables.Last;
 
-				while (p != null)
+				while (node != null)
 				{
-					yield return p.Value.Controller;
-					p = p.Previous;
+					var p = node.Value;
+
+					if (!p.IsDismissed)
+					{
+						yield return p.Controller;
+					}
+
+					node = node.Previous;
 				}
 			}
 
@@ -248,8 +254,17 @@ namespace UnityFx.Mvc
 
 			while (node != null)
 			{
-				node.Value.Update(frameTime, node.Value == topPresentable);
+				var p = node.Value;
 				node = node.Next;
+
+				if (p.IsDismissed)
+				{
+					_presentables.Remove(p);
+				}
+				else
+				{
+					p.Update(frameTime, p == topPresentable);
+				}
 			}
 
 			OnUpdate(frameTime);
@@ -315,14 +330,6 @@ namespace UnityFx.Mvc
 				{
 					p.DisposeUnsafe();
 				}
-			}
-		}
-
-		void IPresenterInternal.Remove(IPresentable presentable)
-		{
-			if (presentable is IPresentable<T> p)
-			{
-				_presentables.Remove(p);
 			}
 		}
 
@@ -406,18 +413,18 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private IPresentResult PresentInternal(IPresentable presentable, Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args)
+		private IPresentResult PresentInternal(IPresentable presentable, Type controllerType, PresentOptions presentOptions, Transform transform, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfBusy();
 			ThrowIfInvalidControllerType(controllerType);
 
 			var result = CreatePresentable(presentable, controllerType, presentOptions, args);
-			PresentInternal(result, parent);
+			PresentInternal(result, presentable, transform);
 			return result;
 		}
 
-		private void PresentInternal(IPresentable<T> presentable, Transform parent)
+		private void PresentInternal(IPresentable<T> presentable, IPresentable presentableParent, Transform transform)
 		{
 			var insertAfterIndex = -1;
 
@@ -431,7 +438,22 @@ namespace UnityFx.Mvc
 				++insertAfterIndex;
 			}
 
-			presentable.PresentAsync(_viewFactory, insertAfterIndex, parent);
+			presentable.PresentAsync(_viewFactory, insertAfterIndex, transform);
+
+			if ((presentable.PresentOptions & PresentOptions.DismissAll) != 0)
+			{
+				foreach (var p in _presentables)
+				{
+					if (p != presentable)
+					{
+						p.Dispose();
+					}
+				}
+			}
+			else if ((presentable.PresentOptions & PresentOptions.DismissCurrent) != 0)
+			{
+				presentableParent?.Dispose();
+			}
 		}
 
 		private IPresentable<T> CreatePresentable(IPresentable parent, Type controllerType, PresentOptions presentOptions, PresentArgs args)
@@ -460,6 +482,12 @@ namespace UnityFx.Mvc
 			if (args is null)
 			{
 				args = PresentArgs.Default;
+			}
+
+			// If parent is going to be dismissed, use its parent instead.
+			if ((presentOptions & PresentOptions.DismissCurrent) != 0)
+			{
+				parent = parent?.Parent;
 			}
 
 			// https://docs.microsoft.com/en-us/dotnet/framework/reflection-and-codedom/how-to-examine-and-instantiate-generic-types-with-reflection
@@ -520,16 +548,6 @@ namespace UnityFx.Mvc
 				var p = node.Value;
 				node = node.Previous;
 				p.DisposeUnsafe();
-			}
-		}
-
-		private void UpdateActiveController()
-		{
-			var topPresentable = _presentables.Last?.Value;
-
-			if (topPresentable != null && !topPresentable.IsActive)
-			{
-				// TODO
 			}
 		}
 
