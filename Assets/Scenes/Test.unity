@@ -310,8 +310,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1385712681}
   - component: {fileID: 1385712680}
-  - component: {fileID: 1385712683}
   - component: {fileID: 1385712682}
+  - component: {fileID: 1385712683}
   m_Layer: 0
   m_Name: AppRoot
   m_TagString: Untagged
@@ -374,6 +374,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 1385712679}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d14eeb70434c2c4293c20d50739b1b1, type: 3}
+  m_Script: {fileID: 11500000, guid: c49772d129aaaae4ebbbac9aeea10f93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

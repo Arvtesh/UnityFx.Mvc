@@ -25,6 +25,7 @@ namespace UnityFx.Mvc
 
 			public Image Image { get; set; }
 			public bool Exclusive { get; set; }
+			public bool Modal { get; set; }
 
 			internal void DestroyInternal()
 			{

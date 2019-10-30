@@ -17,7 +17,7 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <threadsafety static="true" instance="false"/>
 	/// <seealso cref="IViewController"/>
-	public class Presenter<T> : MonoBehaviour, IPresenterInternal, IPresenter, ICommandTarget, IDisposable where T : class, IViewController
+	public class Presenter<T> : PresenterBase, IPresenterInternal, IPresenter, ICommandTarget, IDisposable where T : class, IViewController
 	{
 		#region data
 
@@ -259,6 +259,12 @@ namespace UnityFx.Mvc
 		{
 			Dispose();
 		}
+
+		#endregion
+
+		#region PresenterBase
+
+		internal override IReadOnlyCollection<IViewController> GetControllers() => _controllers;
 
 		#endregion
 

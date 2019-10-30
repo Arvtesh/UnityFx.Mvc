@@ -173,9 +173,10 @@ namespace UnityFx.Mvc
 				var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
 				var attr = attrs != null && attrs.Length > 0 ? attrs[0] : null;
 				var exclusive = (options & PresentOptions.Exclusive) != 0;
+				var modal = (options & PresentOptions.Modal) != 0;
 				var prefabName = GetPrefabName(controllerType, attr);
 
-				viewProxy = CreateViewProxy(prefabName, zIndex, exclusive);
+				viewProxy = CreateViewProxy(prefabName, zIndex, exclusive, modal);
 
 				if (_viewPrefabCache.TryGetValue(prefabName, out var viewPrefab))
 				{
@@ -328,7 +329,7 @@ namespace UnityFx.Mvc
 				name = "View";
 			}
 
-			var viewProxy = CreateViewProxy(name, ViewRootTransform.childCount, false);
+			var viewProxy = CreateViewProxy(name, ViewRootTransform.childCount, false, false);
 			viewProxy.Component = component;
 		}
 
@@ -382,7 +383,7 @@ namespace UnityFx.Mvc
 			return view;
 		}
 
-		private ViewProxy CreateViewProxy(string viewName, int zIndex, bool exclusive)
+		private ViewProxy CreateViewProxy(string viewName, int zIndex, bool exclusive, bool modal)
 		{
 			Debug.Assert(viewName != null);
 
@@ -401,7 +402,7 @@ namespace UnityFx.Mvc
 				go.transform.SetSiblingIndex(zIndex);
 			}
 
-			if (!exclusive)
+			if (modal)
 			{
 				var image = go.AddComponent<Image>();
 
@@ -414,6 +415,7 @@ namespace UnityFx.Mvc
 				viewProxy.Image = image;
 			}
 
+			viewProxy.Modal = modal;
 			viewProxy.Exclusive = exclusive;
 			viewProxy.Container = this;
 			viewProxy.Name = viewName;
@@ -437,7 +439,7 @@ namespace UnityFx.Mvc
 					}
 					else
 					{
-						modalFound = c.Exclusive;
+						modalFound = c.Modal;
 						c.Image.enabled = modalFound;
 					}
 				}

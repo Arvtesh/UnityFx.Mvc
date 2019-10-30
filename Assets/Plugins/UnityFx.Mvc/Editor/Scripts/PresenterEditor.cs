@@ -7,21 +7,21 @@ using UnityEngine;
 
 namespace UnityFx.Mvc
 {
-	[CustomEditor(typeof(Presenter))]
+	[CustomEditor(typeof(PresenterBase), true)]
 	public class PresenterEditor : Editor
 	{
-		private Presenter _presenter;
+		private PresenterBase _presenter;
 
 		private void OnEnable()
 		{
-			_presenter = (Presenter)target;
+			_presenter = (PresenterBase)target;
 		}
 
 		public override void OnInspectorGUI()
 		{
 			base.OnInspectorGUI();
 
-			var controllers = _presenter.Controllers;
+			var controllers = _presenter.GetControllers();
 
 			if (controllers != null && controllers.Count > 0)
 			{
@@ -31,7 +31,7 @@ namespace UnityFx.Mvc
 				EditorGUILayout.LabelField("Controllers");
 				EditorGUI.indentLevel += 1;
 
-				foreach (var c in _presenter.Controllers)
+				foreach (var c in controllers)
 				{
 					EditorGUILayout.LabelField("#" + controllerId.ToString(), c.GetType().Name);
 					controllerId++;

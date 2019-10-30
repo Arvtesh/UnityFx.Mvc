@@ -14,6 +14,16 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 
 	private void Awake()
 	{
+		if (_presenter is null)
+		{
+			_presenter = gameObject.AddComponent<Presenter>();
+		}
+
+		if (_viewFactory is null)
+		{
+			_viewFactory = gameObject.AddComponent<ViewFactory>();
+		}
+
 		_presenter.Initialize(this, _viewFactory);
 	}
 
