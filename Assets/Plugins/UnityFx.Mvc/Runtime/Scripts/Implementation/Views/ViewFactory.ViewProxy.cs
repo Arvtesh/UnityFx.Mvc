@@ -13,7 +13,7 @@ namespace UnityFx.Mvc
 	{
 		#region implementation
 
-		private class ViewProxy : MonoBehaviour, ISite
+		internal class ViewProxy : MonoBehaviour, ISite
 		{
 			#region data
 
