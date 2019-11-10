@@ -107,7 +107,7 @@ namespace UnityFx.Mvc
 			/// </summary>
 			public IEnumerator<T> GetEnumerator()
 			{
-				var node = _presentables.Last;
+				var node = _presentables.First;
 
 				while (node != null)
 				{
@@ -118,7 +118,7 @@ namespace UnityFx.Mvc
 						yield return p.Controller;
 					}
 
-					node = node.Previous;
+					node = node.Next;
 				}
 			}
 
@@ -426,7 +426,7 @@ namespace UnityFx.Mvc
 
 		private void PresentInternal(IPresentable<T> presentable, IPresentable presentableParent, Transform transform)
 		{
-			var insertAfterIndex = -1;
+			var zIndex = 0;
 
 			foreach (var p in _presentables)
 			{
@@ -435,10 +435,10 @@ namespace UnityFx.Mvc
 					break;
 				}
 
-				++insertAfterIndex;
+				++zIndex;
 			}
 
-			presentable.PresentAsync(_viewFactory, insertAfterIndex, transform);
+			presentable.PresentAsync(_viewFactory, zIndex, transform);
 
 			if ((presentable.PresentOptions & PresentOptions.DismissAll) != 0)
 			{
@@ -512,7 +512,7 @@ namespace UnityFx.Mvc
 
 			if (parent != null)
 			{
-				// Insert the presentable right after the last one wit hthe same parent.
+				// Insert the presentable right after the last one with the same parent.
 				var node = _presentables.Last;
 
 				while (node != null)
