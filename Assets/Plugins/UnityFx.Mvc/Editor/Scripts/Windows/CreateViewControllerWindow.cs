@@ -92,6 +92,9 @@ namespace UnityFx.Mvc
 				var viewPath = Path.Combine(Directory.GetCurrentDirectory(), Path.Combine(path, viewFileName));
 				var viewText = new StringBuilder();
 
+				var prefabPath = Path.Combine(path, _controllerName + ".prefab");
+
+				// Controller source.
 				controllerText.AppendLine("using System;");
 				controllerText.AppendLine("using System.Collections.Generic;");
 				controllerText.AppendLine("using UnityEngine;");
@@ -161,9 +164,11 @@ namespace UnityFx.Mvc
 
 				File.WriteAllText(controllerPath, controllerText.ToString());
 
+				// View source.
 				viewText.AppendLine("using System;");
 				viewText.AppendLine("using System.Collections.Generic;");
 				viewText.AppendLine("using UnityEngine;");
+				viewText.AppendLine("using UnityEngine.UI;");
 				viewText.AppendLine("using UnityFx.Mvc;");
 				viewText.AppendLine("");
 
@@ -215,12 +220,66 @@ namespace UnityFx.Mvc
 
 				File.WriteAllText(viewPath, viewText.ToString());
 				AssetDatabase.Refresh();
+
+				// Prefab.
+				var go = new GameObject(_controllerName);
+				var t = go.AddComponent<RectTransform>();
+
+				try
+				{
+					t.anchorMin = Vector2.zero;
+					t.anchorMax = Vector2.one;
+					t.anchoredPosition = Vector2.zero;
+					t.sizeDelta = Vector2.zero;
+
+					PrefabUtility.SaveAsPrefabAssetAndConnect(go, prefabPath, InteractionMode.AutomatedAction);
+				}
+				finally
+				{
+					DestroyImmediate(go);
+				}
 			}
 		}
 
 		private static string GetPresentOptions(bool exclusive, bool popup, bool modal)
 		{
-			return nameof(PresentOptions) + '.' + nameof(PresentOptions.None);
+			var text = string.Empty;
+
+			if (exclusive || popup || modal)
+			{
+				text = string.Empty;
+
+				if (exclusive)
+				{
+					text = nameof(PresentOptions) + '.' + nameof(PresentOptions.Exclusive);
+				}
+
+				if (popup)
+				{
+					if (!string.IsNullOrEmpty(text))
+					{
+						text += " || ";
+					}
+
+					text += nameof(PresentOptions) + '.' + nameof(PresentOptions.Popup);
+				}
+
+				if (modal)
+				{
+					if (!string.IsNullOrEmpty(text))
+					{
+						text += " || ";
+					}
+
+					text += nameof(PresentOptions) + '.' + nameof(PresentOptions.Modal);
+				}
+			}
+			else
+			{
+				text = nameof(PresentOptions) + '.' + nameof(PresentOptions.None);
+			}
+
+			return text;
 		}
 
 		private static string GetSelectedPath()

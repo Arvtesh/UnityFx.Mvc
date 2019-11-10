@@ -5,6 +5,7 @@ using System;
 using UnityEngine;
 using UnityFx.Mvc;
 
+[ViewController(PresentOptions = PresentOptions.Exclusive)]
 public class SplashController : ViewController
 {
 	public SplashController(IPresentContext context)
