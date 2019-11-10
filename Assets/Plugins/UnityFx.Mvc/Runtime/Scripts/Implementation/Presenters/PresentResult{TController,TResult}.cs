@@ -56,6 +56,7 @@ namespace UnityFx.Mvc
 		private float _timer;
 
 		private List<Exception> _exceptions;
+		private TaskCompletionSource<TController> _presentTcs;
 		private State _state;
 
 		#endregion
@@ -157,6 +158,7 @@ namespace UnityFx.Mvc
 					}
 
 					_state = State.Presented;
+					_presentTcs?.TrySetResult(_controller);
 				}
 				else
 				{
@@ -167,6 +169,8 @@ namespace UnityFx.Mvc
 			}
 			catch (Exception e)
 			{
+				_presentTcs?.TrySetException(e);
+
 				LogException(e);
 				DismissInternal(default, true);
 			}
@@ -292,7 +296,27 @@ namespace UnityFx.Mvc
 
 		IViewController IPresentResult.Controller => _controller;
 
-		Task IPresentResult.Task => Task;
+		Task IPresentResult.DismissTask => Task;
+
+		Task<TResult> IPresentResult<TController, TResult>.DismissTask => Task;
+
+		Task IPresentResult.PresentTask
+		{
+			get
+			{
+				if (_presentTcs is null)
+				{
+					if (_state != State.Initialized)
+					{
+						return System.Threading.Tasks.Task.CompletedTask;
+					}
+
+					_presentTcs = new TaskCompletionSource<TController>();
+				}
+
+				return _presentTcs.Task;
+			}
+		}
 
 		public TController Controller => _controller;
 

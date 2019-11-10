@@ -27,6 +27,6 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets a <see cref="Task"/> instance that can be used to await the operatino completion.
 		/// </summary>
-		new Task<TResult> Task { get; }
+		new Task<TResult> DismissTask { get; }
 	}
 }

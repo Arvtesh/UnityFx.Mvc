@@ -31,7 +31,9 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 	{
 		try
 		{
+			await _presenter.PresentAsync<AppController>().ConfigureAwait(true);
 			await _presenter.PresentAsync<SplashController>();
+			await _presenter.PresentAsync<LobbyController>();
 		}
 		catch (OperationCanceledException)
 		{
