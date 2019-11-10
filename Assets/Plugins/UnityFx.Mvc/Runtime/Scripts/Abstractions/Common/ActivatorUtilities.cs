@@ -5,9 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
-#if !NET35
 using System.Runtime.ExceptionServices;
-#endif
 
 namespace UnityFx.Mvc
 {
