@@ -468,8 +468,12 @@ namespace UnityFx.Mvc
 			if (attrs != null && attrs.Length > 0)
 			{
 				controllerAttr = attrs[0];
-				resultType = controllerAttr.ResultType;
 				presentOptions |= controllerAttr.PresentOptions;
+
+				if (controllerAttr.ResultType != null)
+				{
+					resultType = controllerAttr.ResultType;
+				}
 			}
 
 			// Types inherited from ViewController<,> do not require ViewControllerAttribute.
