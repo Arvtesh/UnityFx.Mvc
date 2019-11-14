@@ -1,1 +1,0 @@
-powershell .\RunTests.ps1

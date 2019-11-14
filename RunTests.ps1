@@ -1,1 +1,0 @@
-.\src\RunTests.ps1 Release
