@@ -15,7 +15,7 @@ Please see [CHANGELOG](CHANGELOG.md) for information on recent changes.
 ## Getting Started
 ### Prerequisites
 You may need the following software installed in order to build/use the library:
-- [Unity3d 2017+](https://store.unity.com/).
+- [Unity3d 2018.4+](https://store.unity.com/).
 
 ### Getting the code
 You can get the code by cloning the github repository using your preffered git client UI or you can do it from command line as follows:
@@ -39,7 +39,7 @@ Npm package is available at [npmjs.com](https://www.npmjs.com/package/com.unityf
     }
   ],
   "dependencies": {
-    "com.unityfx.mvc": "0.4.0"
+    "com.unityfx.mvc": "0.1.0"
   }
 }
 ```
