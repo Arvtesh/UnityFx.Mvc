@@ -14,7 +14,7 @@ namespace UnityFx.Mvc
 	{
 		#region interface
 
-		public class ViewCollection : IList<IView>, IReadOnlyList<IView>
+		public class ViewCollection : ICollection<IView>, IReadOnlyCollection<IView>
 		{
 			#region data
 
@@ -31,75 +31,36 @@ namespace UnityFx.Mvc
 
 			public IView[] ToArray()
 			{
-				var viewRoot = _factory.ViewRootTransform;
-				var result = new IView[viewRoot.childCount];
-
-				for (var i = 0; i < result.Length; ++i)
-				{
-					result[i] = viewRoot.GetChild(i).GetComponent<ViewProxy>()?.Component as IView;
-				}
-
+				var result = new IView[Count];
+				CopyTo(result, 0);
 				return result;
-			}
-
-			#endregion
-
-			#region IList
-
-			public IView this[int index]
-			{
-				get
-				{
-					var viewRoot = _factory.ViewRootTransform;
-
-					if (index < 0 || index >= viewRoot.childCount)
-					{
-						throw new ArgumentOutOfRangeException(nameof(index));
-					}
-
-					return viewRoot.GetChild(index).GetComponent<ViewProxy>()?.Component as IView;
-				}
-				set
-				{
-					throw new NotSupportedException();
-				}
-			}
-
-			public int IndexOf(IView view)
-			{
-				if (view != null)
-				{
-					var viewRoot = _factory.ViewRootTransform;
-
-					for (var i = 0; i < viewRoot.childCount; ++i)
-					{
-						var proxy = viewRoot.GetChild(i).GetComponent<ViewProxy>();
-
-						if (proxy && proxy.Component == view)
-						{
-							return i;
-						}
-					}
-				}
-
-				return -1;
-			}
-
-			public void Insert(int index, IView item)
-			{
-				throw new NotSupportedException();
-			}
-
-			public void RemoveAt(int index)
-			{
-				throw new NotSupportedException();
 			}
 
 			#endregion
 
 			#region ICollection
 
-			public int Count => _factory.ViewRootTransform.childCount;
+			public int Count
+			{
+				get
+				{
+					var viewRoots = _factory.ViewRoots;
+
+					if (viewRoots != null)
+					{
+						var result = 0;
+
+						foreach (var viewRoot in viewRoots)
+						{
+							result += viewRoot.childCount;
+						}
+
+						return result;
+					}
+
+					return 0;
+				}
+			}
 
 			public bool IsReadOnly => true;
 
@@ -122,15 +83,21 @@ namespace UnityFx.Mvc
 			{
 				if (view != null)
 				{
-					var viewRoot = _factory.ViewRootTransform;
+					var viewRoots = _factory.ViewRoots;
 
-					for (var i = 0; i < viewRoot.childCount; ++i)
+					if (viewRoots != null)
 					{
-						var proxy = viewRoot.GetChild(i).GetComponent<ViewProxy>();
-
-						if (proxy && proxy.Component == view)
+						foreach (var viewRoot in viewRoots)
 						{
-							return true;
+							for (var i = 0; i < viewRoot.childCount; ++i)
+							{
+								var proxy = viewRoot.GetChild(i).GetComponent<ViewProxy>();
+
+								if (proxy && proxy.Component == view)
+								{
+									return true;
+								}
+							}
 						}
 					}
 				}
@@ -140,11 +107,17 @@ namespace UnityFx.Mvc
 
 			public void CopyTo(IView[] array, int arrayIndex)
 			{
-				var viewRoot = _factory.ViewRootTransform;
+				var viewRoots = _factory.ViewRoots;
 
-				for (var i = 0; i < viewRoot.childCount; ++i)
+				if (viewRoots != null)
 				{
-					array[arrayIndex + i] = viewRoot.GetChild(i).GetComponent<ViewProxy>()?.Component as IView;
+					foreach (var viewRoot in viewRoots)
+					{
+						for (var i = 0; i < viewRoot.childCount; ++i)
+						{
+							array[arrayIndex + i] = viewRoot.GetChild(i).GetComponent<ViewProxy>()?.Component as IView;
+						}
+					}
 				}
 			}
 
@@ -154,23 +127,35 @@ namespace UnityFx.Mvc
 
 			public IEnumerator<IView> GetEnumerator()
 			{
-				var viewRoot = _factory.ViewRootTransform;
+				var viewRoots = _factory.ViewRoots;
 
-				for (var i = 0; i < viewRoot.childCount; ++i)
+				if (viewRoots != null)
 				{
-					var proxy = viewRoot.GetChild(i).GetComponent<ViewProxy>();
-					yield return proxy?.Component as IView;
+					foreach (var viewRoot in viewRoots)
+					{
+						for (var i = 0; i < viewRoot.childCount; ++i)
+						{
+							var proxy = viewRoot.GetChild(i).GetComponent<ViewProxy>();
+							yield return proxy?.Component as IView;
+						}
+					}
 				}
 			}
 
 			IEnumerator IEnumerable.GetEnumerator()
 			{
-				var viewRoot = _factory.ViewRootTransform;
+				var viewRoots = _factory.ViewRoots;
 
-				for (var i = 0; i < viewRoot.childCount; ++i)
+				if (viewRoots != null)
 				{
-					var proxy = viewRoot.GetChild(i).GetComponent<ViewProxy>();
-					yield return proxy?.Component;
+					foreach (var viewRoot in viewRoots)
+					{
+						for (var i = 0; i < viewRoot.childCount; ++i)
+						{
+							var proxy = viewRoot.GetChild(i).GetComponent<ViewProxy>();
+							yield return proxy?.Component;
+						}
+					}
 				}
 			}
 

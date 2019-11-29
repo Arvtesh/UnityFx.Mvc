@@ -35,7 +35,6 @@ namespace UnityFx.Mvc
 		{
 			Assert.NotNull(_viewFactory.Views);
 			Assert.IsEmpty(_viewFactory.Views);
-			Assert.AreEqual(_viewFactory.transform, _viewFactory.ViewRootTransform);
 		}
 	}
 }

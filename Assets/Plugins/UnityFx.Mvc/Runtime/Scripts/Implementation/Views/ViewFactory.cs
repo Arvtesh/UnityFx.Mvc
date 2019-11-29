@@ -18,9 +18,9 @@ namespace UnityFx.Mvc
 		#region data
 
 		[SerializeField]
-		private Transform _viewRootTransform;
-		[SerializeField]
 		private Color _popupBgColor = new Color(0, 0, 0, 0.5f);
+		[SerializeField]
+		private Transform[] _viewRoots;
 		[SerializeField]
 		private GameObject[] _viewPrefabs;
 
@@ -35,37 +35,6 @@ namespace UnityFx.Mvc
 		#region interface
 
 		/// <summary>
-		/// Gets root transform for the created views.
-		/// </summary>
-		public Transform ViewRootTransform
-		{
-			get
-			{
-				if (_viewRootTransform is null)
-				{
-					_viewRootTransform = transform;
-				}
-
-				return _viewRootTransform;
-			}
-			set
-			{
-				ThrowIfDisposed();
-
-				if (value is null)
-				{
-					value = transform;
-				}
-
-				if (_viewRootTransform != value)
-				{
-					DestroyAllViews();
-					_viewRootTransform = value;
-				}
-			}
-		}
-
-		/// <summary>
 		/// Gets background color of the popup views.
 		/// </summary>
 		public Color PopupBackgroundColor { get => _popupBgColor; set => _popupBgColor = value; }
@@ -74,6 +43,11 @@ namespace UnityFx.Mvc
 		/// Gets or sets list of preloaded view prefabs.
 		/// </summary>
 		public GameObject[] ViewPrefabs { get => _viewPrefabs; set => _viewPrefabs = value; }
+
+		/// <summary>
+		/// Gets or sets list of preloaded view prefabs.
+		/// </summary>
+		public Transform[] ViewRoots { get => _viewRoots; set => _viewRoots = value; }
 
 		/// <summary>
 		/// Gets a read-only collection of views.
@@ -102,6 +76,19 @@ namespace UnityFx.Mvc
 		protected void ClearPrefabCache()
 		{
 			_viewPrefabCache?.Clear();
+		}
+
+		/// <summary>
+		/// Gets root <see cref="Transform"/> for a view of the specified controller.
+		/// </summary>
+		protected virtual Transform GetViewRoot(Type controllerType, ViewControllerAttribute attr)
+		{
+			if (_viewRoots is null)
+			{
+				return transform;
+			}
+
+			return _viewRoots[attr.ViewLayer];
 		}
 
 		/// <summary>
@@ -148,6 +135,22 @@ namespace UnityFx.Mvc
 
 		#region MonoBehaviour
 
+#if UNITY_EDITOR
+
+		protected virtual void Reset()
+		{
+			var cs = GetComponentsInChildren<Canvas>();
+
+			_viewRoots = new Transform[cs.Length];
+
+			for (var i = 0; i < cs.Length; i++)
+			{
+				_viewRoots[i] = cs[i].transform;
+			}
+		}
+
+#endif
+
 		private void OnDestroy()
 		{
 			Dispose();
@@ -175,8 +178,9 @@ namespace UnityFx.Mvc
 				var exclusive = (options & PresentOptions.Exclusive) != 0;
 				var modal = (options & PresentOptions.Modal) != 0;
 				var prefabName = GetPrefabName(controllerType, attr);
+				var viewRoot = GetViewRoot(controllerType, attr);
 
-				viewProxy = CreateViewProxy(prefabName, zIndex, exclusive, modal);
+				viewProxy = CreateViewProxy(viewRoot, prefabName, zIndex, exclusive, modal);
 
 				if (_viewPrefabCache.TryGetValue(prefabName, out var viewPrefab))
 				{
@@ -304,7 +308,6 @@ namespace UnityFx.Mvc
 				_components = null;
 				_viewPrefabCache = null;
 
-				DestroyAllViews();
 				OnDispose();
 			}
 		}
@@ -329,7 +332,7 @@ namespace UnityFx.Mvc
 				name = "View";
 			}
 
-			var viewProxy = CreateViewProxy(name, ViewRootTransform.childCount, false, false);
+			var viewProxy = CreateViewProxy(null, name, transform.childCount, false, false);
 			viewProxy.Component = component;
 		}
 
@@ -383,13 +386,12 @@ namespace UnityFx.Mvc
 			return view;
 		}
 
-		private ViewProxy CreateViewProxy(string viewName, int zIndex, bool exclusive, bool modal)
+		private ViewProxy CreateViewProxy(Transform viewRoot, string viewName, int zIndex, bool exclusive, bool modal)
 		{
 			Debug.Assert(viewName != null);
 
 			var go = new GameObject(viewName);
 			var viewProxy = go.AddComponent<ViewProxy>();
-			var viewRoot = ViewRootTransform;
 
 			go.transform.SetParent(viewRoot, false);
 
@@ -451,24 +453,6 @@ namespace UnityFx.Mvc
 					{
 						modalFound = c.Modal;
 						c.Image.enabled = modalFound;
-					}
-				}
-			}
-		}
-
-		private void DestroyAllViews()
-		{
-			var viewRoot = ViewRootTransform;
-
-			if (viewRoot)
-			{
-				for (var i = 0; i < viewRoot.childCount; ++i)
-				{
-					var p = viewRoot.GetChild(i).GetComponent<ViewProxy>();
-
-					if (p)
-					{
-						p.DestroyInternal();
 					}
 				}
 			}

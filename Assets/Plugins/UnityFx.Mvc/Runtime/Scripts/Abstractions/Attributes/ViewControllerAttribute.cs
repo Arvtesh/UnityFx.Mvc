@@ -23,6 +23,11 @@ namespace UnityFx.Mvc
 		public string ViewPrefabName { get; set; }
 
 		/// <summary>
+		/// Gets or sets index of the view layer.
+		/// </summary>
+		public int ViewLayer { get; set; }
+
+		/// <summary>
 		/// Gets or sets present options.
 		/// </summary>
 		public PresentOptions PresentOptions { get; set; }
