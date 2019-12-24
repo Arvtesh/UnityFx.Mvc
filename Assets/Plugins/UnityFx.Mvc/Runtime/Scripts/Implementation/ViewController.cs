@@ -193,6 +193,7 @@ namespace UnityFx.Mvc
 		protected ViewController(IPresentContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
+			_context.View.Command += OnCommand;
 		}
 
 		/// <summary>
@@ -339,6 +340,12 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region implementation
+
+		private void OnCommand(object sender, CommandEventArgs e)
+		{
+			OnCommand(e.CommandName, e.CommandArguments);
+		}
+
 		#endregion
 	}
 }

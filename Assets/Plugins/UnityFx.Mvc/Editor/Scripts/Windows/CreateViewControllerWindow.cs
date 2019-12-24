@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2019 Alexander Bogarsukov. All rights reserved.
+// Copyright (C) 2019 Alexander Bogarsukov. All rights reserved.
 // See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -258,7 +258,7 @@ namespace UnityFx.Mvc
 				{
 					if (!string.IsNullOrEmpty(text))
 					{
-						text += " || ";
+						text += " | ";
 					}
 
 					text += nameof(PresentOptions) + '.' + nameof(PresentOptions.Popup);
@@ -268,7 +268,7 @@ namespace UnityFx.Mvc
 				{
 					if (!string.IsNullOrEmpty(text))
 					{
-						text += " || ";
+						text += " | ";
 					}
 
 					text += nameof(PresentOptions) + '.' + nameof(PresentOptions.Modal);
