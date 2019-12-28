@@ -41,7 +41,7 @@ namespace UnityFx.Mvc
 		/// <seealso cref="Present(Type)"/>
 		public static Task PresentAsync(this IPresenter presenter, Type controllerType)
 		{
-			return presenter.Present(controllerType, null, PresentOptions.None, null).DismissTask;
+			return presenter.Present(controllerType, null, PresentOptions.None, null).Task;
 		}
 
 		/// <summary>
@@ -73,7 +73,7 @@ namespace UnityFx.Mvc
 		/// <seealso cref="Present(Type)"/>
 		public static Task PresentAsync(this IPresenter presenter, Type controllerType, PresentArgs args)
 		{
-			return presenter.Present(controllerType, args, PresentOptions.None, null).DismissTask;
+			return presenter.Present(controllerType, args, PresentOptions.None, null).Task;
 		}
 
 		/// <summary>
@@ -107,7 +107,7 @@ namespace UnityFx.Mvc
 		/// <seealso cref="Present(Type)"/>
 		public static Task PresentAsync(this IPresenter presenter, Type controllerType, PresentArgs args, PresentOptions options)
 		{
-			return presenter.Present(controllerType, args, options, null).DismissTask;
+			return presenter.Present(controllerType, args, options, null).Task;
 		}
 
 		/// <summary>
@@ -125,7 +125,7 @@ namespace UnityFx.Mvc
 		/// <seealso cref="Present(Type)"/>
 		public static Task PresentAsync(this IPresenter presenter, Type controllerType, PresentArgs args, PresentOptions options, Transform transform)
 		{
-			return presenter.Present(controllerType, args, options, transform).DismissTask;
+			return presenter.Present(controllerType, args, options, transform).Task;
 		}
 
 		/// <summary>
@@ -157,7 +157,7 @@ namespace UnityFx.Mvc
 		/// <seealso cref="Present(Type)"/>
 		public static Task PresentAsync(this IPresenter presenter, Type controllerType, PresentOptions options)
 		{
-			return presenter.Present(controllerType, null, options, null).DismissTask;
+			return presenter.Present(controllerType, null, options, null).Task;
 		}
 
 		/// <summary>
@@ -191,7 +191,7 @@ namespace UnityFx.Mvc
 		/// <seealso cref="Present(Type)"/>
 		public static Task PresentAsync(this IPresenter presenter, Type controllerType, PresentOptions options, Transform transform)
 		{
-			return presenter.Present(controllerType, null, options, transform).DismissTask;
+			return presenter.Present(controllerType, null, options, transform).Task;
 		}
 
 		/// <summary>
@@ -217,7 +217,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static Task PresentAsync<TController>(this IPresenter presenter) where TController : IViewController
 		{
-			return presenter.Present(typeof(TController), null, PresentOptions.None, null).DismissTask;
+			return presenter.Present(typeof(TController), null, PresentOptions.None, null).Task;
 		}
 
 		/// <summary>
@@ -245,7 +245,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static Task PresentAsync<TController>(this IPresenter presenter, PresentArgs args) where TController : IViewController
 		{
-			return presenter.Present(typeof(TController), args, PresentOptions.None, null).DismissTask;
+			return presenter.Present(typeof(TController), args, PresentOptions.None, null).Task;
 		}
 
 		/// <summary>
@@ -275,7 +275,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static Task PresentAsync<TController>(this IPresenter presenter, PresentArgs args, PresentOptions options) where TController : IViewController
 		{
-			return presenter.Present(typeof(TController), args, options, null).DismissTask;
+			return presenter.Present(typeof(TController), args, options, null).Task;
 		}
 
 		/// <summary>
@@ -307,7 +307,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static Task PresentAsync<TController>(this IPresenter presenter, PresentArgs args, PresentOptions options, Transform transform) where TController : IViewController
 		{
-			return presenter.Present(typeof(TController), args, options, transform).DismissTask;
+			return presenter.Present(typeof(TController), args, options, transform).Task;
 		}
 
 		/// <summary>
@@ -337,7 +337,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static Task PresentAsync<TController>(this IPresenter presenter, PresentOptions options, Transform transform) where TController : IViewController
 		{
-			return presenter.Present(typeof(TController), null, options, transform).DismissTask;
+			return presenter.Present(typeof(TController), null, options, transform).Task;
 		}
 
 		/// <summary>
@@ -367,7 +367,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter) where TController : IViewController
 		{
-			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), null, PresentOptions.None, null)).DismissTask;
+			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), null, PresentOptions.None, null)).Task;
 		}
 
 		/// <summary>
@@ -399,7 +399,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentArgs args) where TController : IViewController
 		{
-			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, PresentOptions.None, null)).DismissTask;
+			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, PresentOptions.None, null)).Task;
 		}
 
 		/// <summary>
@@ -433,7 +433,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentArgs args, PresentOptions options) where TController : IViewController
 		{
-			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, options, null)).DismissTask;
+			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, options, null)).Task;
 		}
 
 		/// <summary>
@@ -469,7 +469,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentArgs args, PresentOptions options, Transform transform) where TController : IViewController
 		{
-			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, options, transform)).DismissTask;
+			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, options, transform)).Task;
 		}
 
 		/// <summary>
@@ -503,7 +503,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentOptions options, Transform transform) where TController : IViewController
 		{
-			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), null, options, transform)).DismissTask;
+			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), null, options, transform)).Task;
 		}
 	}
 }

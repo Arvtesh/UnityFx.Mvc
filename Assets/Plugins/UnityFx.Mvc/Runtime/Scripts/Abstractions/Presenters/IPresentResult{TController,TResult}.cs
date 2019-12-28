@@ -1,4 +1,4 @@
-﻿// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -27,6 +27,6 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets a <see cref="Task"/> instance that can be used to await the operatino completion.
 		/// </summary>
-		new Task<TResult> DismissTask { get; }
+		new Task<TResult> Task { get; }
 	}
 }

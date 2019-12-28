@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Result of a present operation. Can be used very much like <see cref="DismissTask"/>.
+	/// Result of a present operation. Can be used very much like <see cref="Task"/>.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IPresenter"/>
@@ -27,12 +27,12 @@ namespace UnityFx.Mvc
 		IView View { get; }
 
 		/// <summary>
-		/// Gets a <see cref="Task"/> instance that can be used to await the operation completion (i.e. until the <see cref="Controller"/> is dismissed).
+		/// Gets a <see cref="System.Threading.Tasks.Task"/> instance that can be used to await the operation completion (i.e. until the <see cref="Controller"/> is dismissed).
 		/// </summary>
-		Task DismissTask { get; }
+		Task Task { get; }
 
 		/// <summary>
-		/// Gets a <see cref="Task"/> instance that can be used to await the operation completion (i.e. until the <see cref="Controller"/> is presented/visible).
+		/// Gets a <see cref="System.Threading.Tasks.Task"/> instance that can be used to await the operation completion (i.e. until the <see cref="Controller"/> is presented/visible).
 		/// </summary>
 		Task PresentTask { get; }
 	}

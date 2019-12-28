@@ -296,9 +296,7 @@ namespace UnityFx.Mvc
 
 		IViewController IPresentResult.Controller => _controller;
 
-		Task IPresentResult.DismissTask => Task;
-
-		Task<TResult> IPresentResult<TController, TResult>.DismissTask => Task;
+		Task IPresentResult.Task => Task;
 
 		Task IPresentResult.PresentTask
 		{
