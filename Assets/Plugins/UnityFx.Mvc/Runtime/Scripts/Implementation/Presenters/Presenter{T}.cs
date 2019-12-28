@@ -342,7 +342,7 @@ namespace UnityFx.Mvc
 
 		#region IPresenter
 
-		public IPresentResult Present(Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args)
+		public IPresentResult Present(Type controllerType, PresentArgs args, PresentOptions presentOptions, Transform parent)
 		{
 			return PresentInternal(null, controllerType, presentOptions, parent, args);
 		}

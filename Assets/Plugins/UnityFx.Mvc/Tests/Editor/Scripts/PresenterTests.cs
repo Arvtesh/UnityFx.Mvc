@@ -46,14 +46,14 @@ namespace UnityFx.Mvc
 		[Test]
 		public void Present_ThrownOnNullControllerType()
 		{
-			Assert.Throws<ArgumentNullException>(() => _presenter.Present(null, PresentOptions.None, PresentArgs.Default));
+			Assert.Throws<ArgumentNullException>(() => _presenter.Present(null));
 		}
 
 		[Test]
 		public void Present_ThrownOnInvalidControllerType()
 		{
-			Assert.Throws<ArgumentException>(() => _presenter.Present(typeof(AbstractController), PresentOptions.None, PresentArgs.Default));
-			Assert.Throws<ArgumentException>(() => _presenter.Present(typeof(InvalidController), PresentOptions.None, PresentArgs.Default));
+			Assert.Throws<ArgumentException>(() => _presenter.Present(typeof(AbstractController)));
+			Assert.Throws<ArgumentException>(() => _presenter.Present(typeof(InvalidController)));
 		}
 
 		[Test]

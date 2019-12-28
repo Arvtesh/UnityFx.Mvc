@@ -26,7 +26,7 @@ namespace UnityFx.Mvc
 		/// <seealso cref="Present(Type)"/>
 		public static IPresentResult Present(this IPresenter presenter, Type controllerType)
 		{
-			return presenter.Present(controllerType, PresentOptions.None, null, null);
+			return presenter.Present(controllerType, null, PresentOptions.None, null);
 		}
 
 		/// <summary>
@@ -41,105 +41,7 @@ namespace UnityFx.Mvc
 		/// <seealso cref="Present(Type)"/>
 		public static Task PresentAsync(this IPresenter presenter, Type controllerType)
 		{
-			return presenter.Present(controllerType, PresentOptions.None, null, null).DismissTask;
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="controllerType">Type of the view controller to present.</param>
-		/// <param name="transform">Parent transform of the controller view.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		/// <seealso cref="Present(Type)"/>
-		public static IPresentResult Present(this IPresenter presenter, Type controllerType, Transform transform)
-		{
-			return presenter.Present(controllerType, PresentOptions.Popup, transform, null);
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="controllerType">Type of the view controller to present.</param>
-		/// <param name="transform">Parent transform of the controller view.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		/// <seealso cref="Present(Type)"/>
-		public static Task PresentAsync(this IPresenter presenter, Type controllerType, Transform transform)
-		{
-			return presenter.Present(controllerType, PresentOptions.Popup, transform, null).DismissTask;
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="controllerType">Type of the view controller to present.</param>
-		/// <param name="options">Present options.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		/// <seealso cref="Present(Type)"/>
-		public static IPresentResult Present(this IPresenter presenter, Type controllerType, PresentOptions options)
-		{
-			return presenter.Present(controllerType, options, null, null);
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="controllerType">Type of the view controller to present.</param>
-		/// <param name="options">Present options.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		/// <seealso cref="Present(Type)"/>
-		public static Task PresentAsync(this IPresenter presenter, Type controllerType, PresentOptions options)
-		{
-			return presenter.Present(controllerType, options, null, null).DismissTask;
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="controllerType">Type of the view controller to present.</param>
-		/// <param name="options">Present options.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		/// <seealso cref="Present(Type)"/>
-		public static IPresentResult Present(this IPresenter presenter, Type controllerType, PresentOptions options, PresentArgs args)
-		{
-			return presenter.Present(controllerType, options, null, args);
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="controllerType">Type of the view controller to present.</param>
-		/// <param name="options">Present options.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		/// <seealso cref="Present(Type)"/>
-		public static Task PresentAsync(this IPresenter presenter, Type controllerType, PresentOptions options, PresentArgs args)
-		{
-			return presenter.Present(controllerType, options, null, args).DismissTask;
+			return presenter.Present(controllerType, null, PresentOptions.None, null).DismissTask;
 		}
 
 		/// <summary>
@@ -155,7 +57,7 @@ namespace UnityFx.Mvc
 		/// <seealso cref="Present(Type)"/>
 		public static IPresentResult Present(this IPresenter presenter, Type controllerType, PresentArgs args)
 		{
-			return presenter.Present(controllerType, PresentOptions.None, null, args);
+			return presenter.Present(controllerType, args, PresentOptions.None, null);
 		}
 
 		/// <summary>
@@ -171,7 +73,125 @@ namespace UnityFx.Mvc
 		/// <seealso cref="Present(Type)"/>
 		public static Task PresentAsync(this IPresenter presenter, Type controllerType, PresentArgs args)
 		{
-			return presenter.Present(controllerType, PresentOptions.None, null, args).DismissTask;
+			return presenter.Present(controllerType, args, PresentOptions.None, null).DismissTask;
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <param name="presenter">The presenter.</param>
+		/// <param name="controllerType">Type of the view controller to present.</param>
+		/// <param name="options">Present options.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		/// <seealso cref="Present(Type)"/>
+		public static IPresentResult Present(this IPresenter presenter, Type controllerType, PresentArgs args, PresentOptions options)
+		{
+			return presenter.Present(controllerType, args, options, null);
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <param name="presenter">The presenter.</param>
+		/// <param name="controllerType">Type of the view controller to present.</param>
+		/// <param name="options">Present options.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		/// <seealso cref="Present(Type)"/>
+		public static Task PresentAsync(this IPresenter presenter, Type controllerType, PresentArgs args, PresentOptions options)
+		{
+			return presenter.Present(controllerType, args, options, null).DismissTask;
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <param name="presenter">The presenter.</param>
+		/// <param name="controllerType">Type of the view controller to present.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <param name="options">Present options.</param>
+		/// <param name="transform">Parent transform of the controller view.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		/// <seealso cref="Present(Type)"/>
+		public static Task PresentAsync(this IPresenter presenter, Type controllerType, PresentArgs args, PresentOptions options, Transform transform)
+		{
+			return presenter.Present(controllerType, args, options, transform).DismissTask;
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <param name="presenter">The presenter.</param>
+		/// <param name="controllerType">Type of the view controller to present.</param>
+		/// <param name="options">Present options.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		/// <seealso cref="Present(Type)"/>
+		public static IPresentResult Present(this IPresenter presenter, Type controllerType, PresentOptions options)
+		{
+			return presenter.Present(controllerType, null, options, null);
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <param name="presenter">The presenter.</param>
+		/// <param name="controllerType">Type of the view controller to present.</param>
+		/// <param name="options">Present options.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		/// <seealso cref="Present(Type)"/>
+		public static Task PresentAsync(this IPresenter presenter, Type controllerType, PresentOptions options)
+		{
+			return presenter.Present(controllerType, null, options, null).DismissTask;
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <param name="presenter">The presenter.</param>
+		/// <param name="controllerType">Type of the view controller to present.</param>
+		/// <param name="options">Present options.</param>
+		/// <param name="transform">Parent transform of the controller view.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		/// <seealso cref="Present(Type)"/>
+		public static IPresentResult Present(this IPresenter presenter, Type controllerType, PresentOptions options, Transform transform)
+		{
+			return presenter.Present(controllerType, null, options, transform);
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <param name="presenter">The presenter.</param>
+		/// <param name="controllerType">Type of the view controller to present.</param>
+		/// <param name="options">Present options.</param>
+		/// <param name="transform">Parent transform of the controller view.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		/// <seealso cref="Present(Type)"/>
+		public static Task PresentAsync(this IPresenter presenter, Type controllerType, PresentOptions options, Transform transform)
+		{
+			return presenter.Present(controllerType, null, options, transform).DismissTask;
 		}
 
 		/// <summary>
@@ -184,7 +204,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static IPresentResult<TController> Present<TController>(this IPresenter presenter) where TController : IViewController
 		{
-			return (IPresentResult<TController>)presenter.Present(typeof(TController), PresentOptions.None, null, null);
+			return (IPresentResult<TController>)presenter.Present(typeof(TController), null, PresentOptions.None, null);
 		}
 
 		/// <summary>
@@ -197,7 +217,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static Task PresentAsync<TController>(this IPresenter presenter) where TController : IViewController
 		{
-			return presenter.Present(typeof(TController), PresentOptions.None, null, null).DismissTask;
+			return presenter.Present(typeof(TController), null, PresentOptions.None, null).DismissTask;
 		}
 
 		/// <summary>
@@ -205,13 +225,13 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
 		/// <param name="presenter">The presenter.</param>
-		/// <param name="transform">Parent transform of the controller view.</param>
+		/// <param name="args">Controller arguments.</param>
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static IPresentResult<TController> Present<TController>(this IPresenter presenter, Transform transform) where TController : IViewController
+		public static IPresentResult<TController> Present<TController>(this IPresenter presenter, PresentArgs args) where TController : IViewController
 		{
-			return (IPresentResult<TController>)presenter.Present(typeof(TController), PresentOptions.Popup, transform, null);
+			return (IPresentResult<TController>)presenter.Present(typeof(TController), args, PresentOptions.None, null);
 		}
 
 		/// <summary>
@@ -219,13 +239,75 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
 		/// <param name="presenter">The presenter.</param>
-		/// <param name="transform">Parent transform of the controller view.</param>
+		/// <param name="args">Controller arguments.</param>
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static Task PresentAsync<TController>(this IPresenter presenter, Transform transform) where TController : IViewController
+		public static Task PresentAsync<TController>(this IPresenter presenter, PresentArgs args) where TController : IViewController
 		{
-			return presenter.Present(typeof(TController), PresentOptions.Popup, transform, null).DismissTask;
+			return presenter.Present(typeof(TController), args, PresentOptions.None, null).DismissTask;
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
+		/// <param name="presenter">The presenter.</param>
+		/// <param name="options">Present options.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		public static IPresentResult<TController> Present<TController>(this IPresenter presenter, PresentArgs args, PresentOptions options) where TController : IViewController
+		{
+			return (IPresentResult<TController>)presenter.Present(typeof(TController), args, options, null);
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
+		/// <param name="presenter">The presenter.</param>
+		/// <param name="options">Present options.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		public static Task PresentAsync<TController>(this IPresenter presenter, PresentArgs args, PresentOptions options) where TController : IViewController
+		{
+			return presenter.Present(typeof(TController), args, options, null).DismissTask;
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
+		/// <param name="presenter">The presenter.</param>
+		/// <param name="options">Present options.</param>
+		/// <param name="transform">Parent transform of the controller view.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		public static IPresentResult<TController> Present<TController>(this IPresenter presenter, PresentArgs args, PresentOptions options, Transform transform) where TController : IViewController
+		{
+			return (IPresentResult<TController>)presenter.Present(typeof(TController), args, options, transform);
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
+		/// <param name="presenter">The presenter.</param>
+		/// <param name="options">Present options.</param>
+		/// <param name="transform">Parent transform of the controller view.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		public static Task PresentAsync<TController>(this IPresenter presenter, PresentArgs args, PresentOptions options, Transform transform) where TController : IViewController
+		{
+			return presenter.Present(typeof(TController), args, options, transform).DismissTask;
 		}
 
 		/// <summary>
@@ -240,7 +322,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static IPresentResult<TController> Present<TController>(this IPresenter presenter, PresentOptions options, Transform transform) where TController : IViewController
 		{
-			return (IPresentResult<TController>)presenter.Present(typeof(TController), options, transform, null);
+			return (IPresentResult<TController>)presenter.Present(typeof(TController), null, options, transform);
 		}
 
 		/// <summary>
@@ -255,127 +337,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static Task PresentAsync<TController>(this IPresenter presenter, PresentOptions options, Transform transform) where TController : IViewController
 		{
-			return presenter.Present(typeof(TController), options, transform, null).DismissTask;
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static IPresentResult<TController> Present<TController>(this IPresenter presenter, PresentArgs args) where TController : IViewController
-		{
-			return (IPresentResult<TController>)presenter.Present(typeof(TController), PresentOptions.None, null, args);
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static Task PresentAsync<TController>(this IPresenter presenter, PresentArgs args) where TController : IViewController
-		{
-			return presenter.Present(typeof(TController), PresentOptions.None, null, args).DismissTask;
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="options">Present options.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static IPresentResult<TController> Present<TController>(this IPresenter presenter, PresentOptions options, PresentArgs args) where TController : IViewController
-		{
-			return (IPresentResult<TController>)presenter.Present(typeof(TController), options, null, args);
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="options">Present options.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static Task PresentAsync<TController>(this IPresenter presenter, PresentOptions options, PresentArgs args) where TController : IViewController
-		{
-			return presenter.Present(typeof(TController), options, null, args).DismissTask;
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="transform">Parent transform of the controller view.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static IPresentResult<TController> Present<TController>(this IPresenter presenter, Transform transform, PresentArgs args) where TController : IViewController
-		{
-			return (IPresentResult<TController>)presenter.Present(typeof(TController), PresentOptions.Popup, transform, args);
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="transform">Parent transform of the controller view.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static Task PresentAsync<TController>(this IPresenter presenter, Transform transform, PresentArgs args) where TController : IViewController
-		{
-			return presenter.Present(typeof(TController), PresentOptions.Popup, transform, args).DismissTask;
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="options">Present options.</param>
-		/// <param name="transform">Parent transform of the controller view.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static IPresentResult<TController> Present<TController>(this IPresenter presenter, PresentOptions options, Transform transform, PresentArgs args) where TController : IViewController
-		{
-			return (IPresentResult<TController>)presenter.Present(typeof(TController), options, transform, args);
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="options">Present options.</param>
-		/// <param name="transform">Parent transform of the controller view.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static Task PresentAsync<TController>(this IPresenter presenter, PresentOptions options, Transform transform, PresentArgs args) where TController : IViewController
-		{
-			return presenter.Present(typeof(TController), options, transform, args).DismissTask;
+			return presenter.Present(typeof(TController), null, options, transform).DismissTask;
 		}
 
 		/// <summary>
@@ -390,7 +352,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter) where TController : IViewController
 		{
-			return (IPresentResult<TController, TResult>)presenter.Present(typeof(TController), PresentOptions.None, null, null);
+			return (IPresentResult<TController, TResult>)presenter.Present(typeof(TController), null, PresentOptions.None, null);
 		}
 
 		/// <summary>
@@ -405,7 +367,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter) where TController : IViewController
 		{
-			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), PresentOptions.None, null, null)).DismissTask;
+			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), null, PresentOptions.None, null)).DismissTask;
 		}
 
 		/// <summary>
@@ -421,7 +383,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter, PresentArgs args) where TController : IViewController
 		{
-			return (IPresentResult<TController, TResult>)presenter.Present(typeof(TController), PresentOptions.None, null, args);
+			return (IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, PresentOptions.None, null);
 		}
 
 		/// <summary>
@@ -437,7 +399,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentArgs args) where TController : IViewController
 		{
-			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), PresentOptions.None, null, args)).DismissTask;
+			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, PresentOptions.None, null)).DismissTask;
 		}
 
 		/// <summary>
@@ -446,14 +408,15 @@ namespace UnityFx.Mvc
 		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
 		/// <typeparam name="TResult">Type of the controller result value.</typeparam>
 		/// <param name="presenter">The presenter.</param>
-		/// <param name="transform">Parent transform of the controller view.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <param name="options">Present options.</param>
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter, Transform transform) where TController : IViewController
+		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter, PresentArgs args, PresentOptions options) where TController : IViewController
 		{
-			return (IPresentResult<TController, TResult>)presenter.Present(typeof(TController), PresentOptions.Popup, transform, null);
+			return (IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, options, null);
 		}
 
 		/// <summary>
@@ -462,14 +425,51 @@ namespace UnityFx.Mvc
 		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
 		/// <typeparam name="TResult">Type of the controller result value.</typeparam>
 		/// <param name="presenter">The presenter.</param>
-		/// <param name="transform">Parent transform of the controller view.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <param name="options">Present options.</param>
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, Transform transform) where TController : IViewController
+		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentArgs args, PresentOptions options) where TController : IViewController
 		{
-			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), PresentOptions.Popup, transform, null)).DismissTask;
+			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, options, null)).DismissTask;
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
+		/// <typeparam name="TResult">Type of the controller result value.</typeparam>
+		/// <param name="presenter">The presenter.</param>
+		/// <param name="options">Present options.</param>
+		/// <param name="transform">Parent transform of the controller view.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter, PresentArgs args, PresentOptions options, Transform transform) where TController : IViewController
+		{
+			return (IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, options, transform);
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
+		/// <typeparam name="TResult">Type of the controller result value.</typeparam>
+		/// <param name="presenter">The presenter.</param>
+		/// <param name="options">Present options.</param>
+		/// <param name="transform">Parent transform of the controller view.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentArgs args, PresentOptions options, Transform transform) where TController : IViewController
+		{
+			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, options, transform)).DismissTask;
 		}
 
 		/// <summary>
@@ -486,7 +486,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter, PresentOptions options, Transform transform) where TController : IViewController
 		{
-			return (IPresentResult<TController, TResult>)presenter.Present(typeof(TController), options, transform, null);
+			return (IPresentResult<TController, TResult>)presenter.Present(typeof(TController), null, options, transform);
 		}
 
 		/// <summary>
@@ -503,77 +503,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
 		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentOptions options, Transform transform) where TController : IViewController
 		{
-			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), options, transform, null)).DismissTask;
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
-		/// <typeparam name="TResult">Type of the controller result value.</typeparam>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="transform">Parent transform of the controller view.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter, Transform transform, PresentArgs args) where TController : IViewController
-		{
-			return (IPresentResult<TController, TResult>)presenter.Present(typeof(TController), PresentOptions.Popup, transform, args);
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
-		/// <typeparam name="TResult">Type of the controller result value.</typeparam>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="transform">Parent transform of the controller view.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, Transform transform, PresentArgs args) where TController : IViewController
-		{
-			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), PresentOptions.Popup, transform, args)).DismissTask;
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
-		/// <typeparam name="TResult">Type of the controller result value.</typeparam>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="options">Present options.</param>
-		/// <param name="transform">Parent transform of the controller view.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter, PresentOptions options, Transform transform, PresentArgs args) where TController : IViewController
-		{
-			return (IPresentResult<TController, TResult>)presenter.Present(typeof(TController), options, transform, args);
-		}
-
-		/// <summary>
-		/// Presents a controller of the specified type.
-		/// </summary>
-		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
-		/// <typeparam name="TResult">Type of the controller result value.</typeparam>
-		/// <param name="presenter">The presenter.</param>
-		/// <param name="options">Present options.</param>
-		/// <param name="transform">Parent transform of the controller view.</param>
-		/// <param name="args">Controller arguments.</param>
-		/// <returns>An object that can be used to track the operation progress.</returns>
-		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
-		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentOptions options, Transform transform, PresentArgs args) where TController : IViewController
-		{
-			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), options, transform, args)).DismissTask;
+			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), null, options, transform)).DismissTask;
 		}
 	}
 }
