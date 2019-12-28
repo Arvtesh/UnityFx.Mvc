@@ -1,9 +1,8 @@
-﻿// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace UnityFx.Mvc
@@ -33,7 +32,7 @@ namespace UnityFx.Mvc
 		Task DismissTask { get; }
 
 		/// <summary>
-		/// Gets a <see cref="Task"/> instance that can be used to await the operation completion (i.e. until the <see cref="Controller"/> is presented).
+		/// Gets a <see cref="Task"/> instance that can be used to await the operation completion (i.e. until the <see cref="Controller"/> is presented/visible).
 		/// </summary>
 		Task PresentTask { get; }
 	}

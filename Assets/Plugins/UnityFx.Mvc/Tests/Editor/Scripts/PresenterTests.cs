@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2019 Alexander Bogarsukov. All rights reserved.
+// Copyright (C) 2019 Alexander Bogarsukov. All rights reserved.
 // See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -46,20 +46,20 @@ namespace UnityFx.Mvc
 		[Test]
 		public void Present_ThrownOnNullControllerType()
 		{
-			Assert.Throws<ArgumentNullException>(() => _presenter.PresentAsync(null, PresentOptions.None, PresentArgs.Default));
+			Assert.Throws<ArgumentNullException>(() => _presenter.Present(null, PresentOptions.None, PresentArgs.Default));
 		}
 
 		[Test]
 		public void Present_ThrownOnInvalidControllerType()
 		{
-			Assert.Throws<ArgumentException>(() => _presenter.PresentAsync(typeof(AbstractController), PresentOptions.None, PresentArgs.Default));
-			Assert.Throws<ArgumentException>(() => _presenter.PresentAsync(typeof(InvalidController), PresentOptions.None, PresentArgs.Default));
+			Assert.Throws<ArgumentException>(() => _presenter.Present(typeof(AbstractController), PresentOptions.None, PresentArgs.Default));
+			Assert.Throws<ArgumentException>(() => _presenter.Present(typeof(InvalidController), PresentOptions.None, PresentArgs.Default));
 		}
 
 		[Test]
 		public void Present_PresentsMinimalController()
 		{
-			var presentResult = _presenter.PresentAsync<MinimalController>();
+			var presentResult = _presenter.Present<MinimalController>();
 
 			Assert.NotNull(presentResult);
 		}
@@ -67,7 +67,7 @@ namespace UnityFx.Mvc
 		[Test]
 		public void PresentResult_CanBeDisposedRightAfterCreation()
 		{
-			_presenter.PresentAsync<TimerController>().Dispose();
+			_presenter.Present<TimerController>().Dispose();
 
 			Assert.IsNull(_presenter.ActiveController);
 			Assert.IsEmpty(_presenter.Controllers);

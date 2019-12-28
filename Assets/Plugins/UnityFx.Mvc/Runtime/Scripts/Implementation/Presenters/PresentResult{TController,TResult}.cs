@@ -284,7 +284,7 @@ namespace UnityFx.Mvc
 
 		#region IPresenter
 
-		public IPresentResult PresentAsync(Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args)
+		public IPresentResult Present(Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			return _presenter.PresentAsync(this, controllerType, presentOptions, parent, args);

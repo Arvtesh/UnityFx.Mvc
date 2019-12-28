@@ -1,4 +1,4 @@
-﻿// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -25,6 +25,6 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance, it is abstract type).</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		IPresentResult PresentAsync(Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args);
+		IPresentResult Present(Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args);
 	}
 }

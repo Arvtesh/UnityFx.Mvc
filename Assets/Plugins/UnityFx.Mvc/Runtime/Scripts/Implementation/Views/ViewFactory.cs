@@ -1,4 +1,4 @@
-﻿// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -83,7 +83,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		protected virtual Transform GetViewRoot(Type controllerType, ViewControllerAttribute attr)
 		{
-			if (_viewRoots is null)
+			if (_viewRoots is null || _viewRoots.Length == 0)
 			{
 				return transform;
 			}

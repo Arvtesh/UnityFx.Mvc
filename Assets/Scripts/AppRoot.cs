@@ -1,4 +1,4 @@
-﻿// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -31,7 +31,6 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 	{
 		try
 		{
-			await _presenter.PresentAsync<AppController>().ConfigureAwait(true);
 			await _presenter.PresentAsync<SplashController>();
 			await _presenter.PresentAsync<LobbyController>();
 		}
