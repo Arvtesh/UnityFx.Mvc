@@ -1,4 +1,4 @@
-﻿// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -12,11 +12,6 @@ namespace UnityFx.Mvc
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
 	public sealed class ViewControllerAttribute : Attribute
 	{
-		/// <summary>
-		/// Gets or sets type of the controller result value.
-		/// </summary>
-		public Type ResultType { get; set; }
-
 		/// <summary>
 		/// Gets or sets name of the view prefab.
 		/// </summary>

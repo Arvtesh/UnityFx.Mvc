@@ -15,7 +15,7 @@ namespace UnityFx.Mvc
 	/// <seealso cref="IPresenter"/>
 	/// <seealso cref="IPresentContext"/>
 	/// <seealso cref="IViewControllerFactory"/>
-	/// <seealso cref="IViewController{TResult}"/>
+	/// <seealso cref="IViewControllerResult{TResult}"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller"/>
 	public interface IViewController : ICommandTarget
 	{

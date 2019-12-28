@@ -1,4 +1,4 @@
-﻿// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -12,7 +12,7 @@ namespace UnityFx.Mvc
 	/// Note that minimal controller implementation should implement <see cref="IViewController"/>.
 	/// </summary>
 	/// <seealso cref="ViewController"/>
-	public abstract class ViewController<TView, TResult> : ViewController<TView> where TView : class, IView
+	public abstract class ViewController<TView, TResult> : ViewController<TView>, IViewControllerResult<TResult> where TView : class, IView
 	{
 		#region data
 		#endregion

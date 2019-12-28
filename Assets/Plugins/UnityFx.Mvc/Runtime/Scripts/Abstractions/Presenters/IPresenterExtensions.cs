@@ -350,7 +350,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter) where TController : IViewController
+		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter) where TController : IViewController, IViewControllerResult<TResult>
 		{
 			return (IPresentResult<TController, TResult>)presenter.Present(typeof(TController), null, PresentOptions.None, null);
 		}
@@ -365,7 +365,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter) where TController : IViewController
+		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter) where TController : IViewController, IViewControllerResult<TResult>
 		{
 			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), null, PresentOptions.None, null)).Task;
 		}
@@ -381,7 +381,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter, PresentArgs args) where TController : IViewController
+		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter, PresentArgs args) where TController : IViewController, IViewControllerResult<TResult>
 		{
 			return (IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, PresentOptions.None, null);
 		}
@@ -397,7 +397,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentArgs args) where TController : IViewController
+		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentArgs args) where TController : IViewController, IViewControllerResult<TResult>
 		{
 			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, PresentOptions.None, null)).Task;
 		}
@@ -414,7 +414,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter, PresentArgs args, PresentOptions options) where TController : IViewController
+		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter, PresentArgs args, PresentOptions options) where TController : IViewController, IViewControllerResult<TResult>
 		{
 			return (IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, options, null);
 		}
@@ -431,7 +431,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentArgs args, PresentOptions options) where TController : IViewController
+		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentArgs args, PresentOptions options) where TController : IViewController, IViewControllerResult<TResult>
 		{
 			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, options, null)).Task;
 		}
@@ -449,7 +449,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter, PresentArgs args, PresentOptions options, Transform transform) where TController : IViewController
+		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter, PresentArgs args, PresentOptions options, Transform transform) where TController : IViewController, IViewControllerResult<TResult>
 		{
 			return (IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, options, transform);
 		}
@@ -467,7 +467,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentArgs args, PresentOptions options, Transform transform) where TController : IViewController
+		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentArgs args, PresentOptions options, Transform transform) where TController : IViewController, IViewControllerResult<TResult>
 		{
 			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), args, options, transform)).Task;
 		}
@@ -484,7 +484,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter, PresentOptions options, Transform transform) where TController : IViewController
+		public static IPresentResult<TController, TResult> Present<TController, TResult>(this IPresenter presenter, PresentOptions options, Transform transform) where TController : IViewController, IViewControllerResult<TResult>
 		{
 			return (IPresentResult<TController, TResult>)presenter.Present(typeof(TController), null, options, transform);
 		}
@@ -501,7 +501,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
 		/// <exception cref="InvalidCastException">Thrown if the <typeparamref name="TResult"/> does not match result type of the <typeparamref name="TController"/>.</exception>
 		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
-		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentOptions options, Transform transform) where TController : IViewController
+		public static Task<TResult> PresentAsync<TController, TResult>(this IPresenter presenter, PresentOptions options, Transform transform) where TController : IViewController, IViewControllerResult<TResult>
 		{
 			return ((IPresentResult<TController, TResult>)presenter.Present(typeof(TController), null, options, transform)).Task;
 		}

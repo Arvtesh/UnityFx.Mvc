@@ -462,24 +462,18 @@ namespace UnityFx.Mvc
 			Debug.Assert(!_disposed);
 
 			var resultType = typeof(int);
-			var controllerAttr = default(ViewControllerAttribute);
 			var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
 
 			if (attrs != null && attrs.Length > 0)
 			{
-				controllerAttr = attrs[0];
+				var controllerAttr = attrs[0];
 				presentOptions |= controllerAttr.PresentOptions;
-
-				if (controllerAttr.ResultType != null)
-				{
-					resultType = controllerAttr.ResultType;
-				}
 			}
 
 			// Types inherited from ViewController<,> do not require ViewControllerAttribute.
-			if (typeof(ViewController<,>).IsAssignableFrom(controllerType))
+			if (typeof(IViewControllerResult<>).IsAssignableFrom(controllerType))
 			{
-				resultType = controllerType.GenericTypeArguments[1];
+				resultType = controllerType.GenericTypeArguments[0];
 			}
 
 			// Make sure args are valid.
@@ -553,26 +547,6 @@ namespace UnityFx.Mvc
 				node = node.Previous;
 				p.DisposeUnsafe();
 			}
-		}
-
-		private Type GetControllerResultType(Type controllerType)
-		{
-			// Types inherited from ViewController<> do not require ViewControllerAttribute.
-			if (typeof(ViewController<,>).IsAssignableFrom(controllerType))
-			{
-				return controllerType.GenericTypeArguments[1];
-			}
-			else
-			{
-				var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
-
-				if (attrs != null && attrs.Length > 0)
-				{
-					return attrs[0].ResultType;
-				}
-			}
-
-			return null;
 		}
 
 		private void SetBusy(bool busy)

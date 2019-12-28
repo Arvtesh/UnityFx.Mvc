@@ -1,4 +1,4 @@
-﻿// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -12,7 +12,7 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// Defines <see cref="Activator"/>-related helpers.
 	/// </summary>
-	public static class ActivatorUtilities
+	internal static class ActivatorUtilities
 	{
 		#region interface
 
