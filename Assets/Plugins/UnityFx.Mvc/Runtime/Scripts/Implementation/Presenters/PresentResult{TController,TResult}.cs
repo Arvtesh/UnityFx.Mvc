@@ -20,7 +20,7 @@ namespace UnityFx.Mvc
 	/// controller context outside of actual controller. This class manages the controller created, provides its context
 	/// (via <see cref="IPresentContext"/> interface) and serves as a proxy between the controller and user.
 	/// </remarks>
-	internal class PresentResult<TController, TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TController, TResult>, IPresentable<TController>, IEnumerator where TController : class, IViewController
+	internal class PresentResult<TController, TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TResult>, IPresentResultOf<TController, TResult>, IPresentResultOf<TController>, IPresentable<TController>, IEnumerator where TController : class, IViewController
 	{
 		#region data
 
@@ -294,27 +294,25 @@ namespace UnityFx.Mvc
 
 		#region IPresentResult
 
-		IViewController IPresentResult.Controller => _controller;
-
 		Task IPresentResult.Task => Task;
 
-		Task IPresentResult.PresentTask
-		{
-			get
-			{
-				if (_presentTcs is null)
-				{
-					if (_state != State.Initialized)
-					{
-						return System.Threading.Tasks.Task.CompletedTask;
-					}
+		////Task IPresentResult.PresentTask
+		////{
+		////	get
+		////	{
+		////		if (_presentTcs is null)
+		////		{
+		////			if (_state != State.Initialized)
+		////			{
+		////				return System.Threading.Tasks.Task.CompletedTask;
+		////			}
 
-					_presentTcs = new TaskCompletionSource<TController>();
-				}
+		////			_presentTcs = new TaskCompletionSource<TController>();
+		////		}
 
-				return _presentTcs.Task;
-			}
-		}
+		////		return _presentTcs.Task;
+		////	}
+		////}
 
 		public TController Controller => _controller;
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -10,11 +10,7 @@ namespace UnityFx.Mvc
 	/// Result of a present operation.
 	/// </summary>
 	/// <seealso cref="IPresentResult"/>
-	public interface IPresentResult<out TController> : IPresentResult where TController : IViewController
+	public interface IPresentResultOf<out TController> : IPresentResult, IViewControllerAccess<TController> where TController : IViewController
 	{
-		/// <summary>
-		/// Gets the view controller.
-		/// </summary>
-		new TController Controller { get; }
 	}
 }

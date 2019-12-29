@@ -195,7 +195,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets top popup controller or <see langword="null"/>.
 		/// </summary>
-		protected IPresentResult<T> GetPresentResult(T controller)
+		protected IPresentResultOf<T> GetPresentResult(T controller)
 		{
 			foreach (var p in _presentables)
 			{

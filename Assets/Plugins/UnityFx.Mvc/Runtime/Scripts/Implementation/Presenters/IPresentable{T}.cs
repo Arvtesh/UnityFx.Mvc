@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityFx.Mvc
 {
-	internal interface IPresentable<out T> : IPresentable, IPresentResult<T> where T : IViewController
+	internal interface IPresentable<out T> : IPresentable, IPresentResultOf<T> where T : IViewController
 	{
 	}
 }

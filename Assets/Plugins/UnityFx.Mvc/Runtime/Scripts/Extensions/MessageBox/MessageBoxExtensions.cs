@@ -17,9 +17,25 @@ namespace UnityFx.Mvc.Extensions
 		/// <summary>
 		/// Presents a message box with the specified <paramref name="text"/>.
 		/// </summary>
+		public static IPresentResult<MessageBoxResult> PresentMessageBox(this IPresenter presenter, MessageBoxOptions options, string text)
+		{
+			return (IPresentResult<MessageBoxResult>)presenter.Present(typeof(MessageBoxController), new MessageBoxArgs(options, text));
+		}
+
+		/// <summary>
+		/// Presents a message box with the specified <paramref name="text"/>.
+		/// </summary>
 		public static Task<MessageBoxResult> PresentMessageBoxAsync(this IPresenter presenter, MessageBoxOptions options, string text)
 		{
-			return ((IPresentResult<MessageBoxController, MessageBoxResult>)presenter.Present(typeof(MessageBoxController), new MessageBoxArgs(options, text))).Task;
+			return ((IPresentResult<MessageBoxResult>)presenter.Present(typeof(MessageBoxController), new MessageBoxArgs(options, text))).Task;
+		}
+
+		/// <summary>
+		/// Presents a message box with the specified <paramref name="text"/> and <paramref name="title"/>.
+		/// </summary>
+		public static IPresentResult<MessageBoxResult> PresentMessageBox(this IPresenter presenter, MessageBoxOptions options, string text, string title)
+		{
+			return (IPresentResult<MessageBoxResult>)presenter.Present(typeof(MessageBoxController), new MessageBoxArgs(options, text, title));
 		}
 
 		/// <summary>
@@ -27,7 +43,15 @@ namespace UnityFx.Mvc.Extensions
 		/// </summary>
 		public static Task<MessageBoxResult> PresentMessageBoxAsync(this IPresenter presenter, MessageBoxOptions options, string text, string title)
 		{
-			return ((IPresentResult<MessageBoxController, MessageBoxResult>)presenter.Present(typeof(MessageBoxController), new MessageBoxArgs(options, text, title))).Task;
+			return ((IPresentResult<MessageBoxResult>)presenter.Present(typeof(MessageBoxController), new MessageBoxArgs(options, text, title))).Task;
+		}
+
+		/// <summary>
+		/// Presents a message box with the specified <paramref name="text"/> and <paramref name="title"/>.
+		/// </summary>
+		public static IPresentResult<MessageBoxResult> PresentMessageBox(this IPresenter presenter, MessageBoxOptions options, string text, string title, string okText, string cancelText)
+		{
+			return (IPresentResult<MessageBoxResult>)presenter.Present(typeof(MessageBoxController), new MessageBoxArgs(options, text, title, okText, cancelText));
 		}
 
 		/// <summary>
@@ -35,7 +59,7 @@ namespace UnityFx.Mvc.Extensions
 		/// </summary>
 		public static Task<MessageBoxResult> PresentMessageBoxAsync(this IPresenter presenter, MessageBoxOptions options, string text, string title, string okText, string cancelText)
 		{
-			return ((IPresentResult<MessageBoxController, MessageBoxResult>)presenter.Present(typeof(MessageBoxController), new MessageBoxArgs(options, text, title, okText, cancelText))).Task;
+			return ((IPresentResult<MessageBoxResult>)presenter.Present(typeof(MessageBoxController), new MessageBoxArgs(options, text, title, okText, cancelText))).Task;
 		}
 	}
 }

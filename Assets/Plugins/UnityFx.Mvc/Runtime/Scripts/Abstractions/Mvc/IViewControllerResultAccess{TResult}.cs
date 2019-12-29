@@ -2,16 +2,15 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Result of a present operation.
+	/// Represents results of a <see cref="IViewController"/> present operation.
 	/// </summary>
-	/// <seealso cref="IPresentResult"/>
-	public interface IPresentResult<out TController, TResult> : IPresentResult<TController> where TController : IViewController
+	/// <seealso cref="IViewController"/>
+	public interface IViewControllerResultAccess<TResult>
 	{
 		/// <summary>
 		/// Gets the operation result value.
@@ -21,12 +20,14 @@ namespace UnityFx.Mvc
 		/// Note that, if an exception occurred during the operation, or if the operation has been cancelled, the <see cref="Result"/> property does not return a value.
 		/// Instead, attempting to access the property value throws an exception.
 		/// </remarks>
-		/// <exception cref="InvalidOperationException">Thrown if the property is accessed before operation is completed or the operation completed with errors.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if the property is accessed before operation is completed.</exception>
+		/// <seealso cref="Task"/>
 		TResult Result { get; }
 
 		/// <summary>
-		/// Gets a <see cref="Task"/> instance that can be used to await the operatino completion.
+		/// Gets a <see cref="Task"/> instance that can be used to await the operation completion.
 		/// </summary>
-		new Task<TResult> Task { get; }
+		/// <seealso cref="Result"/>
+		Task<TResult> Task { get; }
 	}
 }
