@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 Alexander Bogarsukov.
+﻿// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -13,7 +13,7 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// Default <see cref="MonoBehaviour"/>-based view factory.
 	/// </summary>
-	public partial class ViewFactory : MonoBehaviour, IViewFactory, IContainer
+	public partial class UGUIViewFactory : MonoBehaviour, IViewFactory, IContainer
 	{
 		#region data
 

@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace UnityFx.Mvc
 {
-	partial class ViewFactory
+	partial class UGUIViewFactory
 	{
 		#region implementation
 

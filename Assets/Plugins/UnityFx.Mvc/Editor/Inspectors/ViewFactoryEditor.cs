@@ -7,14 +7,14 @@ using UnityEngine;
 
 namespace UnityFx.Mvc
 {
-	[CustomEditor(typeof(ViewFactory))]
+	[CustomEditor(typeof(UGUIViewFactory))]
 	public class ViewFactoryEditor : Editor
 	{
-		private ViewFactory _viewFactory;
+		private UGUIViewFactory _viewFactory;
 
 		private void OnEnable()
 		{
-			_viewFactory = (ViewFactory)target;
+			_viewFactory = (UGUIViewFactory)target;
 		}
 
 		public override void OnInspectorGUI()

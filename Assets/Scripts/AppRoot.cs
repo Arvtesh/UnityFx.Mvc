@@ -10,7 +10,7 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 	[SerializeField]
 	private Presenter _presenter;
 	[SerializeField]
-	private ViewFactory _viewFactory;
+	private UGUIViewFactory _viewFactory;
 
 	private void Awake()
 	{
@@ -21,7 +21,7 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 
 		if (_viewFactory is null)
 		{
-			_viewFactory = gameObject.AddComponent<ViewFactory>();
+			_viewFactory = gameObject.AddComponent<UGUIViewFactory>();
 		}
 
 		_presenter.Initialize(this);

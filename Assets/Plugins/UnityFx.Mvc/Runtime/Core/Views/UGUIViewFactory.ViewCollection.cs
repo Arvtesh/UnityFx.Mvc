@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace UnityFx.Mvc
 {
-	partial class ViewFactory
+	partial class UGUIViewFactory
 	{
 		#region interface
 
@@ -18,13 +18,13 @@ namespace UnityFx.Mvc
 		{
 			#region data
 
-			private readonly ViewFactory _factory;
+			private readonly UGUIViewFactory _factory;
 
 			#endregion
 
 			#region interface
 
-			internal ViewCollection(ViewFactory factory)
+			internal ViewCollection(UGUIViewFactory factory)
 			{
 				_factory = factory;
 			}

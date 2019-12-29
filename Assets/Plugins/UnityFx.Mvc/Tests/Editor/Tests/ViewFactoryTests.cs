@@ -11,17 +11,17 @@ using NUnit.Framework;
 
 namespace UnityFx.Mvc
 {
-	[Category("ViewFactory"), TestOf(typeof(ViewFactory))]
+	[Category("ViewFactory"), TestOf(typeof(UGUIViewFactory))]
 	public class ViewFactoryTests : IDisposable
 	{
 		private GameObject _go;
-		private ViewFactory _viewFactory;
+		private UGUIViewFactory _viewFactory;
 
 		[SetUp]
 		public void Init()
 		{
 			_go = new GameObject("ViewFactoryTest");
-			_viewFactory = _go.AddComponent<ViewFactory>();
+			_viewFactory = _go.AddComponent<UGUIViewFactory>();
 		}
 
 		[TearDown]
