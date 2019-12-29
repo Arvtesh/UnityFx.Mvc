@@ -1,13 +1,10 @@
 {
-    "name": "UnityFx.Mvc.Editor",
+    "name": "UnityFx.Mvc.Extensions",
     "references": [
-        "UnityFx.Mvc.Abstractions",
-        "UnityFx.Mvc"
+        "UnityFx.Mvc.Abstractions"
     ],
     "optionalUnityReferences": [],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

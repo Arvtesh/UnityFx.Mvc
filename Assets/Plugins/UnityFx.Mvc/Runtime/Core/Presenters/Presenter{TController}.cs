@@ -17,7 +17,7 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <threadsafety static="true" instance="false"/>
 	/// <seealso cref="IViewController"/>
-	public class Presenter<T> : PresenterBase, IPresenterInternal, IPresenter, ICommandTarget, IDisposable where T : class, IViewController
+	public class Presenter<TController> : PresenterBase, IPresenterInternal, IPresenter, ICommandTarget, IDisposable where TController : class, IViewController
 	{
 		#region data
 
@@ -25,7 +25,7 @@ namespace UnityFx.Mvc
 		private IViewFactory _viewFactory;
 		private IViewControllerFactory _controllerFactory;
 
-		private LinkedList<IPresentable<T>> _presentables = new LinkedList<IPresentable<T>>();
+		private LinkedList<IPresentable<TController>> _presentables = new LinkedList<IPresentable<TController>>();
 		private ViewControllerCollection _controllers;
 
 		private int _idCounter;
@@ -39,11 +39,11 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// A read-only stack of <see cref="IViewController"/> objects.
 		/// </summary>
-		public class ViewControllerCollection : IReadOnlyCollection<T>
+		public class ViewControllerCollection : IReadOnlyCollection<TController>
 		{
-			private readonly LinkedList<IPresentable<T>> _presentables;
+			private readonly LinkedList<IPresentable<TController>> _presentables;
 
-			internal ViewControllerCollection(LinkedList<IPresentable<T>> presentables)
+			internal ViewControllerCollection(LinkedList<IPresentable<TController>> presentables)
 			{
 				_presentables = presentables;
 			}
@@ -52,7 +52,7 @@ namespace UnityFx.Mvc
 			/// Gets top element of the stack.
 			/// </summary>
 			/// <exception cref="InvalidOperationException">Thrown if the collection is empty.</exception>
-			public T Peek()
+			public TController Peek()
 			{
 				if (_presentables.First is null)
 				{
@@ -65,7 +65,7 @@ namespace UnityFx.Mvc
 			/// <summary>
 			/// Attempts to get top controller of the collection.
 			/// </summary>
-			public bool TryPeek(out T controller)
+			public bool TryPeek(out TController controller)
 			{
 				controller = _presentables.Last?.Value.Controller;
 				return controller != null;
@@ -106,7 +106,7 @@ namespace UnityFx.Mvc
 			/// <summary>
 			/// Enumerates all controllers in the collection starting with the top (last) one.
 			/// </summary>
-			public IEnumerator<T> GetEnumerator()
+			public IEnumerator<TController> GetEnumerator()
 			{
 				var node = _presentables.First;
 
@@ -134,7 +134,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets an active controller (or <see langword="null"/>).
 		/// </summary>
-		public T ActiveController
+		public TController ActiveController
 		{
 			get
 			{
@@ -217,7 +217,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets top popup controller or <see langword="null"/>.
 		/// </summary>
-		protected IPresentResultOf<T> GetPresentResult(T controller)
+		protected IPresentResultOf<TController> GetPresentResult(TController controller)
 		{
 			foreach (var p in _presentables)
 			{
@@ -450,7 +450,7 @@ namespace UnityFx.Mvc
 			return result;
 		}
 
-		private void PresentInternal(IPresentable<T> presentable, IPresentable presentableParent, Transform transform)
+		private void PresentInternal(IPresentable<TController> presentable, IPresentable presentableParent, Transform transform)
 		{
 			var zIndex = 0;
 
@@ -482,7 +482,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		private IPresentable<T> CreatePresentable(IPresentable parent, Type controllerType, PresentOptions presentOptions, PresentArgs args)
+		private IPresentable<TController> CreatePresentable(IPresentable parent, Type controllerType, PresentOptions presentOptions, PresentArgs args)
 		{
 			Debug.Assert(controllerType != null);
 			Debug.Assert(!_disposed);
@@ -516,14 +516,14 @@ namespace UnityFx.Mvc
 
 			// https://docs.microsoft.com/en-us/dotnet/framework/reflection-and-codedom/how-to-examine-and-instantiate-generic-types-with-reflection
 			var presentResultType = typeof(PresentResult<,>).MakeGenericType(controllerType, resultType);
-			var c = (IPresentable<T>)Activator.CreateInstance(presentResultType, this, parent, controllerType, presentOptions, args);
+			var c = (IPresentable<TController>)Activator.CreateInstance(presentResultType, this, parent, controllerType, presentOptions, args);
 
 			AddPresentable(c);
 
 			return c;
 		}
 
-		private void AddPresentable(IPresentable<T> presentable)
+		private void AddPresentable(IPresentable<TController> presentable)
 		{
 			Debug.Assert(presentable != null);
 			Debug.Assert(!_disposed);
@@ -607,9 +607,9 @@ namespace UnityFx.Mvc
 				throw new ArgumentException($"Cannot instantiate abstract type {controllerType.Name}.", nameof(controllerType));
 			}
 
-			if (!typeof(T).IsAssignableFrom(controllerType))
+			if (!typeof(TController).IsAssignableFrom(controllerType))
 			{
-				throw new ArgumentException($"A view controller is expected to implement {typeof(T).Name}.", nameof(controllerType));
+				throw new ArgumentException($"A view controller is expected to implement {typeof(TController).Name}.", nameof(controllerType));
 			}
 		}
 
