@@ -276,7 +276,7 @@ namespace UnityFx.Mvc
 
 		public PresentOptions PresentOptions => _presentOptions;
 
-		public float Timer => _timer;
+		public float PresentTime => _timer;
 
 		public bool IsActive => _state == State.Active;
 

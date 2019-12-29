@@ -1,8 +1,7 @@
-﻿// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Net;
 
 namespace UnityFx.Mvc
 {
@@ -28,9 +27,9 @@ namespace UnityFx.Mvc
 		PresentOptions PresentOptions { get; }
 
 		/// <summary>
-		/// Gets time elapsed since the controller has been created (in seconds).
+		/// Gets time elapsed since the controller has been presented (in seconds).
 		/// </summary>
-		float Timer { get; }
+		float PresentTime { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the controller is active.

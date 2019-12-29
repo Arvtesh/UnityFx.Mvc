@@ -1,4 +1,4 @@
-﻿// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -279,34 +279,29 @@ namespace UnityFx.Mvc
 
 		#region IViewControllerEvents
 
-		/// <inheritdoc/>
 		void IViewControllerEvents.OnActivate()
 		{
 			Debug.Assert(!IsDismissed);
 			OnActivate();
 		}
 
-		/// <inheritdoc/>
 		void IViewControllerEvents.OnDeactivate()
 		{
 			Debug.Assert(!IsDismissed);
 			OnDeactivate();
 		}
 
-		/// <inheritdoc/>
 		void IViewControllerEvents.OnPresent()
 		{
 			Debug.Assert(!IsDismissed);
 			OnPresent();
 		}
 
-		/// <inheritdoc/>
 		void IViewControllerEvents.OnDismiss()
 		{
 			OnDismiss();
 		}
 
-		/// <inheritdoc/>
 		void IViewControllerEvents.OnUpdate(float frameTime)
 		{
 			Debug.Assert(!IsDismissed);
