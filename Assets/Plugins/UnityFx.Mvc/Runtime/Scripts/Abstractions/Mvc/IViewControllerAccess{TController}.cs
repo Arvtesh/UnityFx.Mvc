@@ -1,14 +1,14 @@
-// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Threading.Tasks;
 
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Result of a present operation. Can be used very much like <see cref="Task"/>.
+	/// Manages access to a controller of a specific type.
 	/// </summary>
+	/// <typeparam name="TController">Type of the controller.</typeparam>
 	/// <seealso cref="IViewController"/>
 	public interface IViewControllerAccess<out TController> where TController : IViewController
 	{

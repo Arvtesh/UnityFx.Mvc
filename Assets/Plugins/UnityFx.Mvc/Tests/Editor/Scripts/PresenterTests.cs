@@ -27,7 +27,7 @@ namespace UnityFx.Mvc
 			_go = new GameObject("PresenterTest");
 
 			_presenter = _go.AddComponent<Presenter>();
-			_presenter.Initialize(_serviceProvider, _viewFactory);
+			_presenter.Initialize(_serviceProvider, _viewFactory, new ViewControllerFactory(_serviceProvider));
 		}
 
 		[TearDown]

@@ -1,4 +1,4 @@
-// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -23,6 +23,7 @@ namespace UnityFx.Mvc
 
 		private IServiceProvider _serviceProvider;
 		private IViewFactory _viewFactory;
+		private IViewControllerFactory _controllerFactory;
 
 		private LinkedList<IPresentable<T>> _presentables = new LinkedList<IPresentable<T>>();
 		private ViewControllerCollection _controllers;
@@ -159,14 +160,35 @@ namespace UnityFx.Mvc
 		protected bool IsDisposed => _disposed;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="Presenter"/> class.
+		/// Initializes a new instance of the <see cref="Presenter{T}"/> class.
+		/// </summary>
+		/// <param name="serviceProvider">A <see cref="IServiceProvider"/> used to resolve controller dependencies.</param>
+		/// <seealso cref="Initialize(IServiceProvider, IViewFactory, IViewControllerFactory)"/>
+		public void Initialize(IServiceProvider serviceProvider)
+		{
+			if (serviceProvider is null)
+			{
+				throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			var viewFactory = (IViewFactory)serviceProvider.GetService(typeof(IViewFactory));
+			var viewControllerFactory = (IViewControllerFactory)(serviceProvider.GetService(typeof(IViewControllerFactory)) ?? new ViewControllerFactory(serviceProvider));
+
+			Initialize(serviceProvider, viewFactory, viewControllerFactory);
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Presenter{T}"/> class.
 		/// </summary>
 		/// <param name="serviceProvider">A <see cref="IServiceProvider"/> used to resolve controller dependencies.</param>
 		/// <param name="viewFactory">A <see cref="IViewFactory"/> that is used to create views.</param>
-		public void Initialize(IServiceProvider serviceProvider, IViewFactory viewFactory)
+		/// <param name="controllerFactory">A <see cref="IViewControllerFactory"/> used to create controller.</param>
+		/// <seealso cref="Initialize(IServiceProvider)"/>
+		public void Initialize(IServiceProvider serviceProvider, IViewFactory viewFactory, IViewControllerFactory controllerFactory)
 		{
 			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			_viewFactory = viewFactory ?? throw new ArgumentNullException(nameof(viewFactory));
+			_controllerFactory = controllerFactory ?? throw new ArgumentNullException(nameof(controllerFactory));
 			_controllers = new ViewControllerCollection(_presentables);
 		}
 
@@ -285,6 +307,10 @@ namespace UnityFx.Mvc
 
 		#region IPresenterInternal
 
+		IViewFactory IPresenterInternal.ViewFactory => _viewFactory;
+
+		IViewControllerFactory IPresenterInternal.ControllerFactory => _controllerFactory;
+		
 		IPresentResult IPresenterInternal.PresentAsync(IPresentable presentable, Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args)
 		{
 			return PresentInternal(presentable, controllerType, presentOptions, parent, args);

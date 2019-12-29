@@ -1,4 +1,4 @@
-// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -41,6 +41,7 @@ namespace UnityFx.Mvc
 		}
 
 		private readonly IPresenterInternal _presenter;
+		private readonly IViewControllerFactory _controllerFactory;
 		private readonly Type _controllerType;
 		private readonly PresentArgs _presentArgs;
 		private readonly PresentOptions _presentOptions;
@@ -50,13 +51,13 @@ namespace UnityFx.Mvc
 		private IServiceProvider _serviceProvider;
 		private IDisposable _scope;
 		private TController _controller;
+		private IViewControllerEvents _controllerEvents;
 		private IView _view;
 
 		private LinkedList<TimerData> _timers;
 		private float _timer;
 
 		private List<Exception> _exceptions;
-		private TaskCompletionSource<TController> _presentTcs;
 		private State _state;
 
 		#endregion
@@ -73,6 +74,7 @@ namespace UnityFx.Mvc
 			_presenter = presenter;
 			_parent = parent;
 			_serviceProvider = presenter.ServiceProvider;
+			_controllerFactory = presenter.ControllerFactory;
 			_controllerType = controllerType;
 			_presentArgs = args;
 			_presentOptions = presentOptions;
@@ -90,12 +92,7 @@ namespace UnityFx.Mvc
 			if (_state == State.Presented)
 			{
 				_state = State.Active;
-
-				if (_controller is IViewControllerEvents c)
-				{
-					c.OnActivate();
-				}
-
+				_controllerEvents?.OnActivate();
 				return true;
 			}
 
@@ -107,12 +104,7 @@ namespace UnityFx.Mvc
 			if (_state == State.Active)
 			{
 				_state = State.Presented;
-
-				if (_controller is IViewControllerEvents c)
-				{
-					c.OnDeactivate();
-				}
-
+				_controllerEvents?.OnDeactivate();
 				return true;
 			}
 
@@ -126,7 +118,7 @@ namespace UnityFx.Mvc
 
 			try
 			{
-				_view = await viewFactory.CreateViewAsync(_controllerType, index, _presentOptions, parent);
+				_view = await viewFactory.CreateAsync(_controllerType, index, _presentOptions, parent);
 
 				if (_state == State.Initialized)
 				{
@@ -135,30 +127,12 @@ namespace UnityFx.Mvc
 						throw new InvalidOperationException();
 					}
 
-					if (_serviceProvider.GetService(typeof(IViewControllerFactory)) is IViewControllerFactory controllerFactory)
-					{
-						_scope = controllerFactory.CreateControllerScope(ref _serviceProvider);
-						_controller = (TController)controllerFactory.CreateController(_controllerType, this, _presentArgs, _view);
-					}
-					else
-					{
-						_controller = (TController)ActivatorUtilities.CreateInstance(_serviceProvider, _controllerType, this, _presentArgs, _view);
-					}
-
-					if (_controller is null)
-					{
-						throw new InvalidOperationException();
-					}
-
+					_scope = _controllerFactory.CreateScope(ref _serviceProvider);
+					_controller = (TController)_controllerFactory.Create(_controllerType, this, _presentArgs, _view);
+					_controllerEvents = _controller as IViewControllerEvents;
+					_controllerEvents?.OnPresent();
 					_view.Disposed += OnDismissed;
-
-					if (_controller is IViewControllerEvents c)
-					{
-						c.OnPresent();
-					}
-
 					_state = State.Presented;
-					_presentTcs?.TrySetResult(_controller);
 				}
 				else
 				{
@@ -169,8 +143,6 @@ namespace UnityFx.Mvc
 			}
 			catch (Exception e)
 			{
-				_presentTcs?.TrySetException(e);
-
 				LogException(e);
 				DismissInternal(default, true);
 			}
@@ -296,24 +268,6 @@ namespace UnityFx.Mvc
 
 		Task IPresentResult.Task => Task;
 
-		////Task IPresentResult.PresentTask
-		////{
-		////	get
-		////	{
-		////		if (_presentTcs is null)
-		////		{
-		////			if (_state != State.Initialized)
-		////			{
-		////				return System.Threading.Tasks.Task.CompletedTask;
-		////			}
-
-		////			_presentTcs = new TaskCompletionSource<TController>();
-		////		}
-
-		////		return _presentTcs.Task;
-		////	}
-		////}
-
 		public TController Controller => _controller;
 
 		public TResult Result => Task.Result;
@@ -405,12 +359,7 @@ namespace UnityFx.Mvc
 				if (_state != State.Disposed)
 				{
 					_state = State.Disposed;
-
-					if (_controller is IDisposable d)
-					{
-						d.Dispose();
-					}
-
+					_controllerFactory.Release(_controller);
 					_view?.Dispose();
 					_scope?.Dispose();
 				}
@@ -445,21 +394,13 @@ namespace UnityFx.Mvc
 					if (_state == State.Presented)
 					{
 						_state = State.Active;
-
-						if (_controller is IViewControllerEvents c)
-						{
-							c.OnActivate();
-						}
+						_controllerEvents?.OnActivate();
 					}
 				}
 				else if (_state == State.Active)
 				{
 					_state = State.Presented;
-
-					if (_controller is IViewControllerEvents c)
-					{
-						c.OnDeactivate();
-					}
+					_controllerEvents?.OnDeactivate();
 				}
 			}
 			catch (Exception e)
@@ -470,16 +411,13 @@ namespace UnityFx.Mvc
 
 		private void UpdateController(float frameTime)
 		{
-			if (_controller is IViewControllerEvents c)
+			try
 			{
-				try
-				{
-					c.OnUpdate(frameTime);
-				}
-				catch (Exception e)
-				{
-					Debug.LogException(e);
-				}
+				_controllerEvents?.OnUpdate(frameTime);
+			}
+			catch (Exception e)
+			{
+				Debug.LogException(e);
 			}
 		}
 

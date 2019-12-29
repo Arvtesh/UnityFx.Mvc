@@ -1,4 +1,4 @@
-﻿// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -6,7 +6,7 @@ using System;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Defines event handlers for a presentable obejct.
+	/// Defines event handlers for a <see cref="IViewController"/> implementation.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
 	public interface IViewControllerEvents

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -10,6 +10,7 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <remarks>
 	/// As the name states, main responsibility of a view controller is managing its view.
+	/// Controllers are created via a <see cref="IViewControllerFactory"/> instance.
 	/// </remarks>
 	/// <seealso cref="IView"/>
 	/// <seealso cref="IPresenter"/>

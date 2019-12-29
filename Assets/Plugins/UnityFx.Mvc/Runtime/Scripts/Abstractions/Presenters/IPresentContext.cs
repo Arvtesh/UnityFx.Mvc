@@ -1,4 +1,4 @@
-// Copyright (c) Alexander Bogarsukov.
+// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -6,22 +6,51 @@ using System;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Context data for an <see cref="IViewController"/> instance. The class is a link between <see cref="IPresenter"/> and its controllers.
-	/// It is here for the sake of testability/explicit dependencies for <see cref="IViewController"/> implementations.
+	/// Context data for a <see cref="IViewController"/> instance. The class is a link between <see cref="IPresenter"/> and its controllers.
 	/// </summary>
+	/// <seealso cref="IPresentContext{TResult}"/>
 	/// <seealso cref="IViewController"/>
-	public interface IPresentContext : IViewControllerInfo, IPresenter, IServiceProvider
+	public interface IPresentContext : IPresenter, IServiceProvider
 	{
 		/// <summary>
-		/// Gets the controller view.
+		/// Gets unique identifier of the controller.
 		/// </summary>
-		IView View { get; }
+		int Id { get; }
+
+		/// <summary>
+		/// Gets the controller present arguments.
+		/// </summary>
+		/// <seealso cref="PresentOptions"/>
+		PresentArgs PresentArgs { get; }
+
+		/// <summary>
+		/// Gets the present flags used when instantiating the controller.
+		/// </summary>
+		/// <seealso cref="PresentArgs"/>
+		PresentOptions PresentOptions { get; }
+
+		/// <summary>
+		/// Gets time elapsed since the controller has been presented (in seconds).
+		/// </summary>
+		float PresentTime { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether the controller is active.
+		/// </summary>
+		/// <seealso cref="IsDismissed"/>
+		bool IsActive { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the controller is dismissed.
 		/// </summary>
 		/// <seealso cref="Dismiss"/>
+		/// <seealso cref="IsActive"/>
 		bool IsDismissed { get; }
+
+		/// <summary>
+		/// Gets the controller view.
+		/// </summary>
+		IView View { get; }
 
 		/// <summary>
 		/// Schedules a callback to be called in the specified <paramref name="timeout"/>.
