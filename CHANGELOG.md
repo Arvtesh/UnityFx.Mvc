@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 ## [0.2.0] - unreleased
 
 ### Added
+- Added support for generic commands.
 - Added view layers support (via `ViewControllerAttribute`).
 - Added `IViewControllerResult` interface to tag controllers that have a result value.
 - Added `IConfigurable` interfaces.
