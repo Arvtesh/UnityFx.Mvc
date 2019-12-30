@@ -6,16 +6,20 @@ using System;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Represents an object capable of command processing.
+	/// Extensions of <see cref="ICommandTarget"/>.
 	/// </summary>
-	/// <seealso cref="INotifyCommand"/>
-	public interface ICommandTarget
+	/// <seealso cref="ICommandTarget"/>
+	public static class ICommandTargetExtensions
 	{
 		/// <summary>
 		/// Invokes a command. An implementation might choose to ignore the command, in this case the method should return <see langword="false"/>.
 		/// </summary>
 		/// <param name="command">Command to invoke.</param>
+		/// <param name="args">Command arguments.</param>
 		/// <returns>Returns <see langword="true"/> if the command has been handled; <see langword="false"/> otherwise.</returns>
-		bool InvokeCommand<TCommand>(TCommand command);
+		public static bool InvokeCommand<TCommand, TArgs>(this ICommandTarget commandTarget, TCommand command, TArgs args)
+		{
+			return commandTarget.InvokeCommand(new CommandEventArgs<TCommand, TArgs>(command, args));
+		}
 	}
 }

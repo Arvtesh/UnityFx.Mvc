@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 Alexander Bogarsukov.
+﻿// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -118,17 +118,17 @@ namespace UnityFx.Mvc.Extensions
 
 		private void OnOk()
 		{
-			NotifyCommand(ViewController.Commands.Ok);
+			NotifyCommand(MessageBoxController.Commands.Ok);
 		}
 
 		private void OnCancel()
 		{
-			NotifyCommand(ViewController.Commands.Cancel);
+			NotifyCommand(MessageBoxController.Commands.Cancel);
 		}
 
 		private void OnClose()
 		{
-			NotifyCommand(ViewController.Commands.Close);
+			NotifyCommand(MessageBoxController.Commands.Close);
 		}
 
 		#endregion

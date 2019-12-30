@@ -17,7 +17,7 @@ namespace UnityFx.Mvc
 			_context.Schedule(OnTimer, 0.1f);
 		}
 
-		public bool InvokeCommand(string commandName, object args)
+		public bool InvokeCommand<TCommand>(TCommand command)
 		{
 			return false;
 		}

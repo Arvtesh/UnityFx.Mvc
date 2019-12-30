@@ -21,7 +21,7 @@ namespace UnityFx.Mvc
 
 		public void OnCommand()
 		{
-			Command?.Invoke(this, new CommandEventArgs("Dummy"));
+			Command?.Invoke(this, new CommandEventArgs());
 		}
 
 		public void Dispose()

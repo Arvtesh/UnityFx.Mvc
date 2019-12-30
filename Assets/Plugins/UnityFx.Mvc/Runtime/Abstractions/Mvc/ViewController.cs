@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 Alexander Bogarsukov.
+﻿// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -21,158 +21,6 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region interface
-
-		/// <summary>
-		/// Enumerates basic controller commands.
-		/// </summary>
-		public abstract class Commands
-		{
-			#region Common
-
-			/// <summary>
-			/// Name of the OK command.
-			/// </summary>
-			public const string Ok = "Ok";
-
-			/// <summary>
-			/// Name of the CANCEL command.
-			/// </summary>
-			public const string Cancel = "Cancel";
-
-			/// <summary>
-			/// Name of the APPLY command.
-			/// </summary>
-			public const string Apply = "Apply";
-
-			/// <summary>
-			/// Name of the EXIT command.
-			/// </summary>
-			public const string Exit = "Exit";
-
-			/// <summary>
-			/// Name of the HELP command.
-			/// </summary>
-			public const string Help = "Help";
-
-			/// <summary>
-			/// Name of the ABOUT command.
-			/// </summary>
-			public const string About = "About";
-
-			#endregion
-
-			#region Navigation
-
-			/// <summary>
-			/// Name of the BACK command.
-			/// </summary>
-			public const string Back = "Back";
-
-			/// <summary>
-			/// Name of the NEXT command.
-			/// </summary>
-			public const string Next = "Next";
-
-			/// <summary>
-			/// Name of the PREV command.
-			/// </summary>
-			public const string Prev = "Prev";
-
-			/// <summary>
-			/// Name of the HOME command.
-			/// </summary>
-			public const string Home = "Home";
-
-			/// <summary>
-			/// Name of the END command.
-			/// </summary>
-			public const string End = "End";
-
-			#endregion
-
-			#region File
-
-			/// <summary>
-			/// Name of the NEW command.
-			/// </summary>
-			public const string New = "New";
-
-			/// <summary>
-			/// Name of the OPEN command.
-			/// </summary>
-			public const string Open = "Open";
-
-			/// <summary>
-			/// Name of the CLOSE command.
-			/// </summary>
-			public const string Close = "Close";
-
-			/// <summary>
-			/// Name of the SAVE command.
-			/// </summary>
-			public const string Save = "Save";
-
-			#endregion
-
-			#region Editing
-
-			/// <summary>
-			/// Name of the ADD command.
-			/// </summary>
-			public const string Add = "Add";
-
-			/// <summary>
-			/// Name of the REMOVE command.
-			/// </summary>
-			public const string Remove = "Remove";
-
-			/// <summary>
-			/// Name of the EDIT command.
-			/// </summary>
-			public const string Edit = "Edit";
-
-			/// <summary>
-			/// Name of the COPY command.
-			/// </summary>
-			public const string Copy = "Copy";
-
-			/// <summary>
-			/// Name of the CUT command.
-			/// </summary>
-			public const string Cut = "Cut";
-
-			/// <summary>
-			/// Name of the PASTE command.
-			/// </summary>
-			public const string Paste = "Paste";
-
-			/// <summary>
-			/// Name of the INSERT command.
-			/// </summary>
-			public const string Insert = "Insert";
-
-			/// <summary>
-			/// Name of the DELETE command.
-			/// </summary>
-			public const string Delete = "Delete";
-
-			/// <summary>
-			/// Name of the DUPLICATE command.
-			/// </summary>
-			public const string Duplicate = "Duplicate";
-
-			/// <summary>
-			/// Name of the UNDO command.
-			/// </summary>
-			public const string Undo = "Undo";
-
-			/// <summary>
-			/// Name of the REDO command.
-			/// </summary>
-			public const string Redo = "Redo";
-
-			#endregion
-		}
 
 		/// <summary>
 		/// Gets the controller context.
@@ -221,7 +69,7 @@ namespace UnityFx.Mvc
 		/// Called to process a command.
 		/// </summary>
 		/// <returns>Returns <see langword="true"/> if the command has been handles; <see langword="false"/> otherwise.</returns>
-		protected virtual bool OnCommand(string commandName, object commandArgs)
+		protected virtual bool OnCommand<TCommand>(TCommand command)
 		{
 			return false;
 		}
@@ -313,32 +161,32 @@ namespace UnityFx.Mvc
 		#region ICommandTarget
 
 		/// <summary>
-		/// Invokes a command.
+		/// Invokes a command. An implementation might choose to ignore the command, in this case the method should return <see langword="false"/>.
 		/// </summary>
-		/// <param name="commandName">Name of the command to invoke.</param>
-		/// <param name="args">Command-specific arguments.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandName"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
-		/// <returns>Returns <see langword="true"/> if the command has been handles; <see langword="false"/> otherwise.</returns>
-		public bool InvokeCommand(string commandName, object args)
+		/// <param name="command">Command to invoke.</param>
+		/// <returns>Returns <see langword="true"/> if the command has been handled; <see langword="false"/> otherwise.</returns>
+		public bool InvokeCommand<TCommand>(TCommand command)
 		{
-			ThrowIfDismissed();
-
-			if (commandName is null)
+			if (command != null && !_context.IsDismissed)
 			{
-				throw new ArgumentNullException(nameof(commandName));
+				return OnCommand(command);
 			}
 
-			return OnCommand(commandName, args);
+			return false;
 		}
 
 		#endregion
 
 		#region implementation
 
-		private void OnCommand(object sender, CommandEventArgs e)
+		private void OnCommand(object sender, EventArgs e)
 		{
-			OnCommand(e.CommandName, e.CommandArguments);
+			Debug.Assert(sender == _context.View);
+
+			if (e != null && !_context.IsDismissed)
+			{
+				OnCommand(e);
+			}
 		}
 
 		#endregion

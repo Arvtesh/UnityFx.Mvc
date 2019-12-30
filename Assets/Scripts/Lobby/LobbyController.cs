@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityFx.Mvc;
@@ -16,13 +16,6 @@ public class LobbyController : ViewController<LobbyView>
 	#region interface
 
 	/// <summary>
-	/// Controller-specific commands.
-	/// </summary>
-	public abstract new class Commands : ViewController.Commands
-	{
-	}
-
-	/// <summary>
 	/// Initializes a new instance of the <see cref="LobbyController"/> class.
 	/// </summary>
 	public LobbyController(IPresentContext context)
@@ -37,10 +30,9 @@ public class LobbyController : ViewController<LobbyView>
 	#region ViewController
 
 	/// <inheritdoc/>
-	protected override bool OnCommand(string commandName, object commandArgs)
+	protected override bool OnCommand<TCommand>(TCommand command)
 	{
-		// TODO: Process view commands here. See list of commands in Commands.
-		return false;
+		return base.OnCommand(command);
 	}
 
 	#endregion

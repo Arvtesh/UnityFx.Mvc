@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 Alexander Bogarsukov.
+﻿// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -276,21 +276,9 @@ namespace UnityFx.Mvc
 
 		#region ICommandTarget
 
-		public bool InvokeCommand(string commandName, object args)
+		public bool InvokeCommand<TCommand>(TCommand command)
 		{
-			ThrowIfDisposed();
-
-			if (commandName is null)
-			{
-				throw new ArgumentNullException(nameof(commandName));
-			}
-
-			if (_state != State.Presented && _state != State.Active)
-			{
-				throw new InvalidOperationException();
-			}
-
-			return _controller.InvokeCommand(commandName, args);
+			return _controller.InvokeCommand(command);
 		}
 
 		#endregion

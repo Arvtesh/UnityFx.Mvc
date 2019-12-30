@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 Alexander Bogarsukov.
+﻿// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -25,11 +25,22 @@ namespace UnityFx.Mvc.Extensions
 		#region interface
 
 		/// <summary>
+		/// Enumerates controller-specific commands.
+		/// </summary>
+		public enum Commands
+		{
+			Ok,
+			Cancel,
+			Close
+		}
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="MessageBoxController"/> class.
 		/// </summary>
 		public MessageBoxController(IPresentContext<MessageBoxResult> context)
 		{
 			_context = context;
+			_context.View.Command += OnCommand;
 
 			if (context.PresentArgs is MessageBoxArgs args && context.View is IConfigurable<MessageBoxArgs> view)
 			{
@@ -49,24 +60,23 @@ namespace UnityFx.Mvc.Extensions
 		#region ICommandTarget
 
 		/// <inheritdoc/>
-		public bool InvokeCommand(string commandName, object args)
+		public bool InvokeCommand<TCommand>(TCommand command)
 		{
-			if (_context.IsDismissed || commandName is null)
+			if (command != null && !_context.IsDismissed)
 			{
-				return false;
-			}
+				if (CommandWrapper<Commands>.TryUnpack(command, out var cmd))
+				{
+					if (cmd == Commands.Ok)
+					{
+						_context.Dismiss(MessageBoxResult.Ok);
+					}
+					else
+					{
+						_context.Dismiss(MessageBoxResult.Cancel);
+					}
 
-			if (string.CompareOrdinal(commandName, ViewController.Commands.Ok) == 0)
-			{
-				_context.Dismiss(MessageBoxResult.Ok);
-				return true;
-			}
-
-			if (string.CompareOrdinal(commandName, ViewController.Commands.Cancel) == 0 ||
-				string.CompareOrdinal(commandName, ViewController.Commands.Close) == 0)
-			{
-				_context.Dismiss(MessageBoxResult.Cancel);
-				return true;
+					return true;
+				}
 			}
 
 			return false;
@@ -75,6 +85,12 @@ namespace UnityFx.Mvc.Extensions
 		#endregion
 
 		#region implementation
+
+		private void OnCommand(object sender, CommandEventArgs e)
+		{
+			InvokeCommand(e);
+		}
+
 		#endregion
 	}
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 Alexander Bogarsukov.
+﻿// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -378,17 +378,13 @@ namespace UnityFx.Mvc
 		#region ICommandTarget
 
 		/// <summary>
-		/// Invokes a command on the controllers presented.
+		/// Invokes a command. An implementation might choose to ignore the command, in this case the method should return <see langword="false"/>.
 		/// </summary>
-		/// <param name="commandName">Name of the command to invoke.</param>
-		/// <param name="args">Command-specific arguments.</param>
-		/// <exception cref="ObjectDisposedException">Thrown if the controller is disposed.</exception>
+		/// <param name="command">Command to invoke.</param>
 		/// <returns>Returns <see langword="true"/> if the command has been handled; <see langword="false"/> otherwise.</returns>
-		public bool InvokeCommand(string commandName, object args)
+		public bool InvokeCommand<TCommand>(TCommand command)
 		{
-			ThrowIfDisposed();
-
-			if (!string.IsNullOrEmpty(commandName))
+			if (command != null && !_disposed)
 			{
 				var node = _presentables.Last;
 
@@ -396,7 +392,7 @@ namespace UnityFx.Mvc
 				{
 					var p = node.Value;
 
-					if (p.InvokeCommand(commandName, args))
+					if (p.InvokeCommand(command))
 					{
 						return true;
 					}
@@ -408,7 +404,6 @@ namespace UnityFx.Mvc
 
 					node = node.Previous;
 				}
-
 			}
 
 			return false;

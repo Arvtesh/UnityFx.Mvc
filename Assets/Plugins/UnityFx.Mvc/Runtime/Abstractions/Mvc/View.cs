@@ -9,7 +9,7 @@ using UnityEngine;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Default <see cref="MonoBehaviour"/>-based view.
+	/// A <see cref="MonoBehaviour"/>-based view.
 	/// </summary>
 	/// <seealso cref="ViewController"/>
 	public class View : MonoBehaviour, IView
@@ -38,12 +38,27 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Raises <see cref="Command"/> event.
 		/// </summary>
-		/// <param name="commandId">Name of the command.</param>
-		/// <param name="args">Command arguments.</param>
+		/// <typeparam name="TCommand">Type of the command.</typeparam>
+		/// <param name="command">A generic command.</param>
+		/// <seealso cref="NotifyCommand{TCommand, TArgs}(TCommand, TArgs)"/>
 		/// <seealso cref="Command"/>
-		protected void NotifyCommand(string commandId, object args = null)
+		protected void NotifyCommand<TCommand>(TCommand command)
 		{
-			Command?.Invoke(this, new CommandEventArgs(commandId, args));
+			Command?.Invoke(this, new CommandEventArgs<TCommand>(command));
+		}
+
+		/// <summary>
+		/// Raises <see cref="Command"/> event.
+		/// </summary>
+		/// <typeparam name="TCommand">Type of the command.</typeparam>
+		/// <typeparam name="TArgs">Type of the <paramref name="command"/> arguments.</typeparam>
+		/// <param name="command">A generic command.</param>
+		/// <param name="args">Command arguments.</param>
+		/// <seealso cref="NotifyCommand{TCommand}(TCommand)"/>
+		/// <seealso cref="Command"/>
+		protected void NotifyCommand<TCommand, TArgs>(TCommand command, TArgs args)
+		{
+			Command?.Invoke(this, new CommandEventArgs<TCommand, TArgs>(command, args));
 		}
 
 		/// <summary>
@@ -67,6 +82,37 @@ namespace UnityFx.Mvc
 		/// <seealso cref="ThrowIfDisposed"/>
 		protected virtual void OnDispose()
 		{
+		}
+
+		/// <summary>
+		/// Gets name of a view prefab assigned to the controllers of the specified type.
+		/// </summary>
+		/// <param name="controllerType">Type of the controller.</param>
+		/// <returns>Prefab name.</returns>
+		public static string GetPrefabName(Type controllerType)
+		{
+			if (controllerType is null)
+			{
+				throw new ArgumentNullException(nameof(controllerType));
+			}
+
+			var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
+
+			if (attrs != null && attrs.Length > 0 && !string.IsNullOrEmpty(attrs[0].ViewPrefabName))
+			{
+				return attrs[0].ViewPrefabName;
+			}
+			else
+			{
+				var viewName = controllerType.Name;
+
+				if (viewName.EndsWith("Controller"))
+				{
+					viewName = viewName.Substring(0, viewName.Length - 10);
+				}
+
+				return viewName;
+			}
 		}
 
 		#endregion
@@ -110,7 +156,8 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Raised when a user issues a command.
 		/// </summary>
-		/// <seealso cref="NotifyCommand(string, object)"/>
+		/// <seealso cref="NotifyCommand{TCommand}(TCommand)"/>
+		/// <seealso cref="NotifyCommand{TCommand, TArgs}(TCommand, TArgs)"/>
 		public event EventHandler<CommandEventArgs> Command;
 
 		#endregion

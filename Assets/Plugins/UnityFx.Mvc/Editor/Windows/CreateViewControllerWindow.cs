@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Alexander Bogarsukov. All rights reserved.
+﻿// Copyright (C) 2019 Alexander Bogarsukov. All rights reserved.
 // See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -124,10 +124,11 @@ namespace UnityFx.Mvc
 				controllerText.AppendLine(indent + "	#region interface");
 				controllerText.AppendLine("");
 				controllerText.AppendLine(indent + "	/// <summary>");
-				controllerText.AppendLine(indent + "	/// Controller-specific commands.");
+				controllerText.AppendLine(indent + "	/// Enumerates controller-specific commands.");
 				controllerText.AppendLine(indent + "	/// </summary>");
-				controllerText.AppendFormat(indent + "	public abstract new class Commands : {0}.{1}" + Environment.NewLine, nameof(ViewController), nameof(ViewController.Commands));
+				controllerText.AppendLine(indent + "	public enum Commands");
 				controllerText.AppendLine(indent + "	{");
+				controllerText.AppendLine(indent + "		Close");
 				controllerText.AppendLine(indent + "	}");
 				controllerText.AppendLine("");
 				controllerText.AppendLine(indent + "	/// <summary>");
@@ -145,9 +146,19 @@ namespace UnityFx.Mvc
 				controllerText.AppendLine(indent + "	#region ViewController");
 				controllerText.AppendLine("");
 				controllerText.AppendLine(indent + "	/// <inheritdoc/>");
-				controllerText.AppendLine(indent + "	protected override bool OnCommand(string commandName, object commandArgs)");
+				controllerText.AppendLine(indent + "	protected override bool OnCommand<TCommand>(TCommand command)");
 				controllerText.AppendLine(indent + "	{");
 				controllerText.AppendLine(indent + "		// TODO: Process view commands here. See list of commands in Commands.");
+				controllerText.AppendLine(indent + "		if (CommandWrapper<Commands>.TryUnpack(command, out var cmd))");
+				controllerText.AppendLine(indent + "		{");
+				controllerText.AppendLine(indent + "			switch (cmd.Command)");
+				controllerText.AppendLine(indent + "			{");
+				controllerText.AppendLine(indent + "				case Commands.Close:");
+				controllerText.AppendLine(indent + "					Dismiss();");
+				controllerText.AppendLine(indent + "					return true;");
+				controllerText.AppendLine(indent + "			}");
+				controllerText.AppendLine(indent + "		}");
+				controllerText.AppendLine("");
 				controllerText.AppendLine(indent + "		return false;");
 				controllerText.AppendLine(indent + "	}");
 				controllerText.AppendLine("");
