@@ -9,7 +9,7 @@ namespace UnityFx.Mvc
 	/// Event arguments for an arbitraty action.
 	/// </summary>
 	/// <typeparam name="T">Type of the command arguments.</typeparam>
-	public class CommandEventArgs<TCommand, TArgs> : CommandEventArgs<TCommand>
+	public class CommandEventArgs<TCommand, TArgs> : CommandEventArgs<TCommand>, ICommandResultAccess<TArgs>
 	{
 		/// <summary>
 		/// Gets the command arguments.

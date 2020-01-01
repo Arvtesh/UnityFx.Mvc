@@ -64,7 +64,7 @@ namespace UnityFx.Mvc.Extensions
 		{
 			if (command != null && !_context.IsDismissed)
 			{
-				if (CommandWrapper<Commands>.TryUnpack(command, out var cmd))
+				if (CommandUtilities.TryUnpack(command, out Commands cmd))
 				{
 					if (cmd == Commands.Ok)
 					{

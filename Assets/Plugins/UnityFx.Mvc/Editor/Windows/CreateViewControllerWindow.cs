@@ -149,9 +149,9 @@ namespace UnityFx.Mvc
 				controllerText.AppendLine(indent + "	protected override bool OnCommand<TCommand>(TCommand command)");
 				controllerText.AppendLine(indent + "	{");
 				controllerText.AppendLine(indent + "		// TODO: Process view commands here. See list of commands in Commands.");
-				controllerText.AppendLine(indent + "		if (CommandWrapper<Commands>.TryUnpack(command, out var cmd))");
+				controllerText.AppendLine(indent + "		if (CommandUtilities.TryUnpack(command, out Commands cmd))");
 				controllerText.AppendLine(indent + "		{");
-				controllerText.AppendLine(indent + "			switch (cmd.Command)");
+				controllerText.AppendLine(indent + "			switch (cmd)");
 				controllerText.AppendLine(indent + "			{");
 				controllerText.AppendLine(indent + "				case Commands.Close:");
 				controllerText.AppendLine(indent + "					Dismiss();");
