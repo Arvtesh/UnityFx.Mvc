@@ -72,7 +72,7 @@ using UnityFx.Mvc;
 using UnityFx.Mvc.Extensions;
 ```
 
-
+#### Dependency injection
 
 ## Motivation
 The project was initially created to help author with his [Unity3d](https://unity3d.com) projects. Client .NET applications in general (and Unity applications specifically) do not have a standard structure or any kind of architecturing guidelines (like ASP.NET). This is an attempt to create a small yet effective and usable application framework suitable for Unity projects.
@@ -86,7 +86,11 @@ Please see the links below for extended information on the product:
 ## Useful links
 - [MVC in Wikipedia](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller).
 - [MVC in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/mvc/overview).
-- [Architectural pronciples](https://docs.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/architectural-principles).
+- [Dependency injection in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection).
+- [Routing in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/routing).
+- [Architectural pronciples in ASP.NET Core](https://docs.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/architectural-principles).
+- [Deeplinking in Wikipedia](https://en.wikipedia.org/wiki/Deep_linking).
+- [Deeplinking basics](https://www.appsflyer.com/resources/everything-marketer-needs-to-know-deep-linking/deep-linking-basics/).
 
 ## Software requirements
 - [Microsoft Visual Studio](https://www.visualstudio.com/vs/community/)
