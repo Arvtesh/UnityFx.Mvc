@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,6 +12,7 @@ namespace UnityFx.Mvc
 {
 	public class CreateViewControllerWindow : EditorWindow
 	{
+		private string _basePath;
 		private string _controllerName;
 		private string _namespace;
 		private string _controllerBaseClass = nameof(ViewController);
@@ -18,6 +20,8 @@ namespace UnityFx.Mvc
 		private bool _exclusive;
 		private bool _modal;
 		private bool _popup;
+
+		private Regex _classNamePattern = new Regex("^[_a-zA-Z][_a-zA-Z0-9]*$");
 
 		[MenuItem("Assets/Create/UnityFx/New ViewController...")]
 		public static void Init()
@@ -27,12 +31,17 @@ namespace UnityFx.Mvc
 
 		private void OnGUI()
 		{
-			var path = GetSelectedPath();
+			_basePath = GetSelectedPath();
 
-			if (!string.IsNullOrEmpty(path))
+			if (string.IsNullOrEmpty(_basePath))
 			{
-				_controllerName = Path.GetFileName(path);
+				EditorGUILayout.HelpBox("Invalid path. Please select an asset folder.", MessageType.Error);
+				return;
 			}
+
+			GUI.enabled = false;
+			EditorGUILayout.TextField("Base path", _basePath);
+			GUI.enabled = true;
 
 			_controllerName = EditorGUILayout.TextField("Controller Name", _controllerName);
 			_exclusive = EditorGUILayout.Toggle("Exclusive", _exclusive);
@@ -41,6 +50,11 @@ namespace UnityFx.Mvc
 			_namespace = EditorGUILayout.TextField("Namespace", _namespace);
 			_controllerBaseClass = EditorGUILayout.TextField("Controller Base Class", _controllerBaseClass);
 			_viewBaseClass = EditorGUILayout.TextField("View Base Class", _viewBaseClass);
+
+			if (string.IsNullOrWhiteSpace(_controllerName) || !_classNamePattern.IsMatch(_controllerName))
+			{
+				EditorGUILayout.HelpBox($"Invalid controller name. Controller names should match {_classNamePattern}.", MessageType.Error);
+			}
 
 			if (_exclusive)
 			{
@@ -65,7 +79,7 @@ namespace UnityFx.Mvc
 
 			if (GUILayout.Button("Create"))
 			{
-				CreateViewController(path);
+				CreateViewController(_basePath);
 			}
 		}
 
@@ -81,6 +95,13 @@ namespace UnityFx.Mvc
 			}
 			else
 			{
+				path = Path.Combine(Directory.GetCurrentDirectory(), Path.Combine(path, _controllerName));
+
+				if (!Directory.Exists(path))
+				{
+					Directory.CreateDirectory(path);
+				}
+
 				var indent = "	";
 				var controllerName = _controllerName + "Controller";
 				var controllerFileName = controllerName + ".cs";
