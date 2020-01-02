@@ -5,13 +5,17 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace UnityFx.Mvc
 {
+	using Debug = UnityEngine.Debug;
+
 	/// <summary>
 	/// Default <see cref="MonoBehaviour"/>-based presenter implementation.
 	/// </summary>
@@ -243,6 +247,18 @@ namespace UnityFx.Mvc
 			}
 		}
 
+#if ENABLE_IL2CPP
+
+		/// <summary>
+		/// Call this on AOT platforms to make sure all needed code exists in runtime.
+		/// </summary>
+		protected static void AotCodegenGuard<TResult>()
+		{
+			new PresentResult<TController, TResult>(null, null, typeof(TController), PresentOptions.None, PresentArgs.Default);
+		}
+
+#endif
+
 		#endregion
 
 		#region virtual interface
@@ -310,7 +326,7 @@ namespace UnityFx.Mvc
 		IViewFactory IPresenterInternal.ViewFactory => _viewFactory;
 
 		IViewControllerFactory IPresenterInternal.ControllerFactory => _controllerFactory;
-		
+
 		IPresentResult IPresenterInternal.PresentAsync(IPresentable presentable, Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args)
 		{
 			return PresentInternal(presentable, controllerType, presentOptions, parent, args);
@@ -607,6 +623,19 @@ namespace UnityFx.Mvc
 				throw new ArgumentException($"A view controller is expected to implement {typeof(TController).Name}.", nameof(controllerType));
 			}
 		}
+
+#if ENABLE_IL2CPP
+
+		[Preserve]
+		private static void AotCodegenHelper()
+		{
+			// NOTE: This method is needed for AOT compiler to generate code for PresentResult<,> specializations.
+			// It should never be executed, it's just here to mark specific type arguments as used.
+			new PresentResult<TController, object>(null, null, typeof(TController), PresentOptions.None, PresentArgs.Default);
+			new PresentResult<TController, int>(null, null, typeof(TController), PresentOptions.None, PresentArgs.Default);
+		}
+
+#endif
 
 		#endregion
 	}
