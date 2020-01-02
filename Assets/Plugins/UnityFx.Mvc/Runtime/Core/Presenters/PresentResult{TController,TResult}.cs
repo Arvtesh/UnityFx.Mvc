@@ -47,6 +47,7 @@ namespace UnityFx.Mvc
 		private readonly PresentOptions _presentOptions;
 		private readonly IPresentable _parent;
 		private readonly int _id;
+		private readonly string _deeplinkId;
 
 		private IServiceProvider _serviceProvider;
 		private IDisposable _scope;
@@ -79,6 +80,7 @@ namespace UnityFx.Mvc
 			_presentArgs = args;
 			_presentOptions = presentOptions;
 			_id = presenter.GetNextId();
+			_deeplinkId = GetDeeplinkId(controllerType);
 		}
 
 		#endregion
@@ -243,6 +245,8 @@ namespace UnityFx.Mvc
 		#region IViewControllerInfo
 
 		public int Id => _id;
+
+		public string DeeplinkId => _deeplinkId;
 
 		public PresentArgs PresentArgs => _presentArgs;
 
@@ -468,6 +472,18 @@ namespace UnityFx.Mvc
 			{
 				throw new ObjectDisposedException(GetType().Name);
 			}
+		}
+
+		private static string GetDeeplinkId(Type controllerType)
+		{
+			var deeplinkId = controllerType.Name;
+
+			if (deeplinkId.EndsWith("Controller"))
+			{
+				deeplinkId = deeplinkId.Substring(0, deeplinkId.Length - 10);
+			}
+
+			return deeplinkId;
 		}
 
 		#endregion

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 Alexander Bogarsukov.
+﻿// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -16,6 +16,11 @@ namespace UnityFx.Mvc
 		/// Gets unique identifier of the controller.
 		/// </summary>
 		int Id { get; }
+
+		/// <summary>
+		/// Gets the deepling identifier for this controller.
+		/// </summary>
+		string DeeplinkId { get; }
 
 		/// <summary>
 		/// Gets the controller present arguments.
