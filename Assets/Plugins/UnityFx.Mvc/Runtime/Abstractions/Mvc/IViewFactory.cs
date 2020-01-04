@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 Alexander Bogarsukov.
+﻿// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -17,10 +17,11 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Creates a view for a controller of the specified type.
 		/// </summary>
-		/// <param name="controllerType">Type of the view controller to create view for.</param>
+		/// <param name="prefabPath">Path to the view prefab asset.</param>
+		/// <param name="layer"></param>
 		/// <param name="zIndex">Z-order index.</param>
 		/// <param name="options">Present options.</param>
 		/// <param name="parent">Parent transform for the view (or <see langword="null"/>).</param>
-		Task<IView> CreateAsync(Type controllerType, int zIndex, PresentOptions options, Transform parent);
+		Task<IView> CreateAsync(string prefabPath, int layer, int zIndex, PresentOptions options, Transform parent);
 	}
 }

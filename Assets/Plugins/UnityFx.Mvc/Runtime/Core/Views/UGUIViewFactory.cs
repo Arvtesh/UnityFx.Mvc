@@ -81,14 +81,14 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets root <see cref="Transform"/> for a view of the specified controller.
 		/// </summary>
-		protected virtual Transform GetViewRoot(Type controllerType, ViewControllerAttribute attr)
+		protected virtual Transform GetViewRoot(int layer)
 		{
 			if (_viewRoots is null || _viewRoots.Length == 0)
 			{
 				return transform;
 			}
 
-			return _viewRoots[attr.ViewLayer];
+			return _viewRoots[layer];
 		}
 
 		/// <summary>
@@ -160,42 +160,44 @@ namespace UnityFx.Mvc
 
 		#region IViewFactory
 
-		public async Task<IView> CreateAsync(Type controllerType, int zIndex, PresentOptions options, Transform parent)
+		public async Task<IView> CreateAsync(string prefabPath, int layer, int zIndex, PresentOptions options, Transform parent)
 		{
 			ThrowIfDisposed();
 
-			if (controllerType is null)
+			if (prefabPath is null)
 			{
-				throw new ArgumentNullException(nameof(controllerType));
+				throw new ArgumentNullException(nameof(prefabPath));
+			}
+
+			if (string.IsNullOrWhiteSpace(prefabPath))
+			{
+				throw new ArgumentException("Invalid prefab name.", nameof(prefabPath));
 			}
 
 			ViewProxy viewProxy = null;
 
 			try
 			{
-				var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
-				var attr = attrs != null && attrs.Length > 0 ? attrs[0] : null;
 				var exclusive = (options & PresentOptions.Exclusive) != 0;
 				var modal = (options & PresentOptions.Modal) != 0;
-				var prefabName = GetPrefabName(controllerType, attr);
-				var viewRoot = GetViewRoot(controllerType, attr);
+				var viewRoot = GetViewRoot(layer);
 
-				viewProxy = CreateViewProxy(viewRoot, prefabName, zIndex, exclusive, modal);
+				viewProxy = CreateViewProxy(viewRoot, prefabPath, zIndex, exclusive, modal);
 
-				if (_viewPrefabCache.TryGetValue(prefabName, out var viewPrefab))
+				if (_viewPrefabCache.TryGetValue(prefabPath, out var viewPrefab))
 				{
 					return CreateView(viewPrefab, viewProxy, parent);
 				}
 				else
 				{
-					if (_viewPrefabCacheTasks.TryGetValue(prefabName, out var task))
+					if (_viewPrefabCacheTasks.TryGetValue(prefabPath, out var task))
 					{
 						viewPrefab = await task;
 					}
 					else
 					{
-						task = LoadViewPrefabAsync(prefabName);
-						_viewPrefabCacheTasks.Add(prefabName, task);
+						task = LoadViewPrefabAsync(prefabPath);
+						_viewPrefabCacheTasks.Add(prefabPath, task);
 
 						try
 						{
@@ -203,7 +205,7 @@ namespace UnityFx.Mvc
 						}
 						finally
 						{
-							_viewPrefabCacheTasks.Remove(prefabName);
+							_viewPrefabCacheTasks.Remove(prefabPath);
 						}
 					}
 
@@ -212,7 +214,7 @@ namespace UnityFx.Mvc
 						throw new OperationCanceledException();
 					}
 
-					_viewPrefabCache.Add(prefabName, viewPrefab);
+					_viewPrefabCache.Add(prefabPath, viewPrefab);
 					return CreateView(viewPrefab, viewProxy, parent);
 				}
 			}
@@ -340,9 +342,9 @@ namespace UnityFx.Mvc
 		{
 			Debug.Assert(controllerType != null);
 
-			if (attr != null && !string.IsNullOrEmpty(attr.ViewPrefabName))
+			if (attr != null && !string.IsNullOrEmpty(attr.PrefabPath))
 			{
-				return attr.ViewPrefabName;
+				return attr.PrefabPath;
 			}
 			else
 			{

@@ -47,6 +47,8 @@ namespace UnityFx.Mvc
 		private readonly PresentOptions _presentOptions;
 		private readonly IPresentable _parent;
 		private readonly int _id;
+		private readonly int _layer;
+		private readonly string _prefabPath;
 		private readonly string _deeplinkId;
 
 		private IServiceProvider _serviceProvider;
@@ -65,22 +67,22 @@ namespace UnityFx.Mvc
 
 		#region interface
 
-		public PresentResult(IPresenterInternal presenter, IPresentable parent, Type controllerType, PresentOptions presentOptions, PresentArgs args)
-			: base(parent)
+		public PresentResult(IPresenterInternal presenter, PresentResultArgs context)
 		{
 			Debug.Assert(presenter != null);
-			Debug.Assert(controllerType != null);
-			Debug.Assert(args != null);
+			Debug.Assert(context != null);
 
 			_presenter = presenter;
-			_parent = parent;
-			_serviceProvider = presenter.ServiceProvider;
-			_controllerFactory = presenter.ControllerFactory;
-			_controllerType = controllerType;
-			_presentArgs = args;
-			_presentOptions = presentOptions;
-			_id = presenter.GetNextId();
-			_deeplinkId = GetDeeplinkId(controllerType);
+			_id = context.Id;
+			_layer = context.Layer;
+			_parent = context.Parent;
+			_serviceProvider = context.ServiceProvider;
+			_controllerFactory = context.ControllerFactory;
+			_controllerType = context.ControllerType;
+			_presentArgs = context.PresentArgs;
+			_presentOptions = context.PresentOptions;
+			_deeplinkId = GetDeeplinkId(_controllerType);
+			_prefabPath = string.IsNullOrEmpty(context.PrefabPath) ? GetDefaultPrefabName(_controllerType) : context.PrefabPath;
 		}
 
 		#endregion
@@ -120,7 +122,7 @@ namespace UnityFx.Mvc
 
 			try
 			{
-				_view = await viewFactory.CreateAsync(_controllerType, index, _presentOptions, parent);
+				_view = await viewFactory.CreateAsync(_prefabPath, _layer, index, _presentOptions, parent);
 
 				if (_state == State.Initialized)
 				{
@@ -475,6 +477,18 @@ namespace UnityFx.Mvc
 		}
 
 		private static string GetDeeplinkId(Type controllerType)
+		{
+			var deeplinkId = controllerType.Name.ToLower();
+
+			if (deeplinkId.EndsWith("controller"))
+			{
+				deeplinkId = deeplinkId.Substring(0, deeplinkId.Length - 10);
+			}
+
+			return deeplinkId;
+		}
+
+		private static string GetDefaultPrefabName(Type controllerType)
 		{
 			var deeplinkId = controllerType.Name;
 

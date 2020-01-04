@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using UnityEngine;
 
@@ -82,37 +81,6 @@ namespace UnityFx.Mvc
 		/// <seealso cref="ThrowIfDisposed"/>
 		protected virtual void OnDispose()
 		{
-		}
-
-		/// <summary>
-		/// Gets name of a view prefab assigned to the controllers of the specified type.
-		/// </summary>
-		/// <param name="controllerType">Type of the controller.</param>
-		/// <returns>Prefab name.</returns>
-		public static string GetPrefabName(Type controllerType)
-		{
-			if (controllerType is null)
-			{
-				throw new ArgumentNullException(nameof(controllerType));
-			}
-
-			var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
-
-			if (attrs != null && attrs.Length > 0 && !string.IsNullOrEmpty(attrs[0].ViewPrefabName))
-			{
-				return attrs[0].ViewPrefabName;
-			}
-			else
-			{
-				var viewName = controllerType.Name;
-
-				if (viewName.EndsWith("Controller"))
-				{
-					viewName = viewName.Substring(0, viewName.Length - 10);
-				}
-
-				return viewName;
-			}
 		}
 
 		#endregion

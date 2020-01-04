@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using UnityEngine;
 
 namespace UnityFx.Mvc
 {
@@ -13,25 +12,18 @@ namespace UnityFx.Mvc
 	public sealed class ViewControllerAttribute : Attribute
 	{
 		/// <summary>
-		/// Gets or sets name of the view prefab.
-		/// </summary>
-		public string ViewPrefabName { get; set; }
-
-		/// <summary>
-		/// Gets or sets index of the view layer.
-		/// </summary>
-		public int ViewLayer { get; set; }
-
-		/// <summary>
-		/// Gets or sets present options.
+		/// Gets or sets default present options value.
 		/// </summary>
 		public PresentOptions PresentOptions { get; set; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="ViewControllerAttribute"/> class.
+		/// Gets or sets path to the view prefab. If this is not set, controller name is used as the prefab path (i.e. 'Help' for controller named 'HelpController').
 		/// </summary>
-		public ViewControllerAttribute()
-		{
-		}
+		public string PrefabPath { get; set; }
+
+		/// <summary>
+		/// Gets or sets layer index.
+		/// </summary>
+		public int Layer { get; set; }
 	}
 }

@@ -323,10 +323,6 @@ namespace UnityFx.Mvc
 
 		#region IPresenterInternal
 
-		IViewFactory IPresenterInternal.ViewFactory => _viewFactory;
-
-		IViewControllerFactory IPresenterInternal.ControllerFactory => _controllerFactory;
-
 		IPresentResult IPresenterInternal.PresentAsync(IPresentable presentable, Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args)
 		{
 			return PresentInternal(presentable, controllerType, presentOptions, parent, args);
@@ -373,11 +369,6 @@ namespace UnityFx.Mvc
 					p.DisposeUnsafe();
 				}
 			}
-		}
-
-		int IPresenterInternal.GetNextId()
-		{
-			return ++_idCounter;
 		}
 
 		#endregion
@@ -500,34 +491,46 @@ namespace UnityFx.Mvc
 
 			var resultType = typeof(int);
 			var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
+			var presentContext = new PresentResultArgs()
+			{
+				Id = ++_idCounter,
+				ServiceProvider = _serviceProvider,
+				ControllerFactory = _controllerFactory,
+				ViewFactory = _viewFactory,
+				ControllerType = controllerType,
+				Parent = parent,
+				PresentOptions = presentOptions,
+				PresentArgs = args ?? PresentArgs.Default
+			};
 
 			if (attrs != null && attrs.Length > 0)
 			{
 				var controllerAttr = attrs[0];
-				presentOptions |= controllerAttr.PresentOptions;
+
+				presentContext.PresentOptions |= controllerAttr.PresentOptions;
+				presentContext.Layer = controllerAttr.Layer;
+				presentContext.PrefabPath = controllerAttr.PrefabPath;
 			}
 
-			// Types inherited from ViewController<,> do not require ViewControllerAttribute.
+			// Types inherited from IViewControllerResult<> use specific result values.
 			if (typeof(IViewControllerResult<>).IsAssignableFrom(controllerType))
 			{
 				resultType = controllerType.GenericTypeArguments[0];
 			}
 
-			// Make sure args are valid.
-			if (args is null)
-			{
-				args = PresentArgs.Default;
-			}
-
 			// If parent is going to be dismissed, use its parent instead.
-			if ((presentOptions & PresentOptions.DismissCurrent) != 0)
+			if ((presentOptions & PresentOptions.DismissAll) != 0)
 			{
-				parent = parent?.Parent;
+				presentContext.Parent = null;
+			}
+			else if ((presentOptions & PresentOptions.DismissCurrent) != 0)
+			{
+				presentContext.Parent = parent?.Parent;
 			}
 
 			// https://docs.microsoft.com/en-us/dotnet/framework/reflection-and-codedom/how-to-examine-and-instantiate-generic-types-with-reflection
 			var presentResultType = typeof(PresentResult<,>).MakeGenericType(controllerType, resultType);
-			var c = (IPresentable<TController>)Activator.CreateInstance(presentResultType, this, parent, controllerType, presentOptions, args);
+			var c = (IPresentable<TController>)Activator.CreateInstance(presentResultType, this, presentContext);
 
 			AddPresentable(c);
 
