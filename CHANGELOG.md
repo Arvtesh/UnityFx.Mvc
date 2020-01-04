@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 - Renamed `IPresenter.PresentAsync` to `Present`. Added a group of `PresentAsync` extension methods returning `Task` instead of `IPresentResult`.
 - Renamed `IPresentResult.DismissTask` to `Task`.
 - Changed `Present`/`PresentAsync` arguments.
+- Changed `IViewFactory` and `IViewControllerFactory` interfaces.
+- `IView` now does not inherit `IComponent`.
 
 ### Removed
 - Removed `IPresentResult.PresentTask`.
