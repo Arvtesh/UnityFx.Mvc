@@ -1,8 +1,7 @@
-// Copyright (c) 2018-2020 Alexander Bogarsukov.
+﻿// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.ComponentModel;
 using UnityEngine;
 
 namespace UnityFx.Mvc
@@ -17,8 +16,13 @@ namespace UnityFx.Mvc
 	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IViewFactory"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller"/>
-	public interface IView : IComponent, INotifyCommand
+	public interface IView : INotifyCommand, IDisposable
 	{
+		/// <summary>
+		/// Raised when the view is disposed.
+		/// </summary>
+		event EventHandler Disposed;
+
 		/// <summary>
 		/// Gets the <see cref="Transform"/> this view is attached to.
 		/// </summary>

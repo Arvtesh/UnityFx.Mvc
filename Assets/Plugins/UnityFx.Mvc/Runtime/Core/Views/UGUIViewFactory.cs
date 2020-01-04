@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,7 +12,7 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// Default <see cref="MonoBehaviour"/>-based view factory.
 	/// </summary>
-	public partial class UGUIViewFactory : MonoBehaviour, IViewFactory, IContainer
+	public partial class UGUIViewFactory : MonoBehaviour, IViewFactory
 	{
 		#region data
 
@@ -27,7 +26,6 @@ namespace UnityFx.Mvc
 		private Dictionary<string, GameObject> _viewPrefabCache = new Dictionary<string, GameObject>();
 		private Dictionary<string, Task<GameObject>> _viewPrefabCacheTasks = new Dictionary<string, Task<GameObject>>();
 		private ViewCollection _views;
-		private ComponentCollection _components;
 		private bool _disposed;
 
 		#endregion
@@ -231,75 +229,6 @@ namespace UnityFx.Mvc
 
 		#endregion
 
-		#region IContainer
-
-		ComponentCollection IContainer.Components
-		{
-			get
-			{
-				ThrowIfDisposed();
-
-				if (_components is null)
-				{
-					_components = new ComponentCollection(Views.ToArray());
-				}
-
-				return _components;
-			}
-		}
-
-		void IContainer.Add(IComponent component)
-		{
-			ThrowIfDisposed();
-
-			if (component is null)
-			{
-				throw new ArgumentNullException(nameof(component));
-			}
-
-			AddInternal(component, null);
-		}
-
-		void IContainer.Add(IComponent component, string name)
-		{
-			ThrowIfDisposed();
-
-			if (component is null)
-			{
-				throw new ArgumentNullException(nameof(component));
-			}
-
-			AddInternal(component, name);
-		}
-
-		void IContainer.Remove(IComponent component)
-		{
-			if (component != null && !_disposed)
-			{
-				_components = null;
-
-				if (component.Site != null)
-				{
-					if (!ReferenceEquals(component.Site.Container, this))
-					{
-						return;
-					}
-
-					if (component.Site is ViewProxy p)
-					{
-						p.Container = null;
-						Destroy(p.gameObject);
-					}
-
-					component.Site = null;
-				}
-
-				UpdatePopupBackgrounds();
-			}
-		}
-
-		#endregion
-
 		#region IDisposable
 
 		public void Dispose()
@@ -307,7 +236,6 @@ namespace UnityFx.Mvc
 			if (!_disposed)
 			{
 				_disposed = true;
-				_components = null;
 				_viewPrefabCache = null;
 
 				OnDispose();
@@ -317,47 +245,6 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region implementation
-
-		private void AddInternal(IComponent component, string name)
-		{
-			Debug.Assert(component != null);
-
-			var view = component as IView;
-
-			if (view is null)
-			{
-				throw new ArgumentException("The component should implement IView.", nameof(component));
-			}
-
-			if (string.IsNullOrEmpty(name))
-			{
-				name = "View";
-			}
-
-			var viewProxy = CreateViewProxy(null, name, transform.childCount, false, false);
-			viewProxy.Component = component;
-		}
-
-		private string GetPrefabName(Type controllerType, ViewControllerAttribute attr)
-		{
-			Debug.Assert(controllerType != null);
-
-			if (attr != null && !string.IsNullOrEmpty(attr.PrefabPath))
-			{
-				return attr.PrefabPath;
-			}
-			else
-			{
-				var viewName = controllerType.Name;
-
-				if (viewName.EndsWith("Controller"))
-				{
-					viewName = viewName.Substring(0, viewName.Length - 10);
-				}
-
-				return viewName;
-			}
-		}
 
 		private IView CreateView(GameObject viewPrefab, ViewProxy viewProxy, Transform parent)
 		{
@@ -384,7 +271,7 @@ namespace UnityFx.Mvc
 				go.transform.SetParent(parent ?? viewProxy.transform);
 			}
 
-			viewProxy.Component = view;
+			viewProxy.View = view;
 			return view;
 		}
 
@@ -431,8 +318,6 @@ namespace UnityFx.Mvc
 
 			viewProxy.Modal = modal;
 			viewProxy.Exclusive = exclusive;
-			viewProxy.Container = this;
-			viewProxy.Name = viewName;
 
 			return viewProxy;
 		}
@@ -445,7 +330,7 @@ namespace UnityFx.Mvc
 			{
 				var c = transform.GetChild(i).GetComponent<ViewProxy>();
 
-				if (c && c.Container != null && c.Image)
+				if (c && c.Image)
 				{
 					if (modalFound)
 					{

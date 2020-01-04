@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,11 +11,11 @@ namespace UnityFx.Mvc
 	{
 		#region implementation
 
-		internal class ViewProxy : MonoBehaviour, ISite
+		internal class ViewProxy : MonoBehaviour
 		{
 			#region data
 
-			private IComponent _view;
+			private IView _view;
 
 			#endregion
 
@@ -27,17 +25,7 @@ namespace UnityFx.Mvc
 			public bool Exclusive { get; set; }
 			public bool Modal { get; set; }
 
-			internal void DestroyInternal()
-			{
-				_view.Site = null;
-				Destroy(gameObject);
-			}
-
-			#endregion
-
-			#region ISite
-
-			public IComponent Component
+			public IView View
 			{
 				get
 				{
@@ -49,14 +37,14 @@ namespace UnityFx.Mvc
 					{
 						if (_view != null)
 						{
-							_view.Site?.Container?.Remove(_view);
+							_view.Disposed -= OnViewDisposed;
 						}
 
 						_view = value;
 
 						if (_view != null)
 						{
-							_view.Site = this;
+							_view.Disposed += OnViewDisposed;
 
 							if (_view is MonoBehaviour b)
 							{
@@ -70,33 +58,30 @@ namespace UnityFx.Mvc
 				}
 			}
 
-			public IContainer Container { get; set; }
-			public bool DesignMode => false;
-			public string Name { get => name; set => name = value; }
-
 			#endregion
 
-			#region IServiceProvider
+			#region MonoBehaviour
 
-			public object GetService(Type serviceType)
+			private void OnDestroy()
 			{
-				if (serviceType == typeof(ISite))
+				if (_view is MonoBehaviour b && b.gameObject)
 				{
-					return this;
+					Destroy(b.gameObject);
 				}
-
-				if (Container is IServiceProvider sp)
-				{
-					return sp.GetService(serviceType);
-				}
-
-				return null;
 			}
-
 
 			#endregion
 
 			#region implementation
+
+			private void OnViewDisposed(object sender, EventArgs args)
+			{
+				if (gameObject)
+				{
+					Destroy(gameObject);
+				}
+			}
+
 			#endregion
 		}
 

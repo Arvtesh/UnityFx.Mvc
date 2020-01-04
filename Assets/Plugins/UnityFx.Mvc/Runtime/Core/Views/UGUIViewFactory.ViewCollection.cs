@@ -93,7 +93,7 @@ namespace UnityFx.Mvc
 							{
 								var proxy = viewRoot.GetChild(i).GetComponent<ViewProxy>();
 
-								if (proxy && proxy.Component == view)
+								if (proxy && proxy.View == view)
 								{
 									return true;
 								}
@@ -115,7 +115,7 @@ namespace UnityFx.Mvc
 					{
 						for (var i = 0; i < viewRoot.childCount; ++i)
 						{
-							array[arrayIndex + i] = viewRoot.GetChild(i).GetComponent<ViewProxy>()?.Component as IView;
+							array[arrayIndex + i] = viewRoot.GetChild(i).GetComponent<ViewProxy>()?.View;
 						}
 					}
 				}
@@ -136,7 +136,7 @@ namespace UnityFx.Mvc
 						for (var i = 0; i < viewRoot.childCount; ++i)
 						{
 							var proxy = viewRoot.GetChild(i).GetComponent<ViewProxy>();
-							yield return proxy?.Component as IView;
+							yield return proxy?.View;
 						}
 					}
 				}
@@ -144,19 +144,7 @@ namespace UnityFx.Mvc
 
 			IEnumerator IEnumerable.GetEnumerator()
 			{
-				var viewRoots = _factory.ViewRoots;
-
-				if (viewRoots != null)
-				{
-					foreach (var viewRoot in viewRoots)
-					{
-						for (var i = 0; i < viewRoot.childCount; ++i)
-						{
-							var proxy = viewRoot.GetChild(i).GetComponent<ViewProxy>();
-							yield return proxy?.Component;
-						}
-					}
-				}
+				return GetEnumerator();
 			}
 
 			#endregion

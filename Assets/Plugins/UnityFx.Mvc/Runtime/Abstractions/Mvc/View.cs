@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.ComponentModel;
 using UnityEngine;
 
 namespace UnityFx.Mvc
@@ -15,17 +14,11 @@ namespace UnityFx.Mvc
 	{
 		#region data
 
-		private ISite _site;
 		private bool _disposed;
 
 		#endregion
 
 		#region interface
-
-		/// <summary>
-		/// Gets a transform the <see cref="Site"/> is attached to (if any).
-		/// </summary>
-		protected Transform SiteTransform => (_site as UnityEngine.Component)?.transform;
 
 		/// <summary>
 		/// Gets a value indicating whether the view is disposed.
@@ -97,6 +90,13 @@ namespace UnityFx.Mvc
 		#region IView
 
 		/// <summary>
+		/// Represents the method that handles the dispose event of the view.
+		/// </summary>
+		/// <seealso cref="Dispose"/>
+		/// <seealso cref="OnDispose"/>
+		public event EventHandler Disposed;
+
+		/// <summary>
 		/// Gets the <see cref="Transform"/> this view is attached to.
 		/// </summary>
 		public Transform Transform => transform;
@@ -130,32 +130,6 @@ namespace UnityFx.Mvc
 
 		#endregion
 
-		#region IComponent
-
-		/// <summary>
-		/// Represents the method that handles the dispose event of a component.
-		/// </summary>
-		/// <seealso cref="Dispose"/>
-		/// <seealso cref="OnDispose"/>
-		public event EventHandler Disposed;
-
-		/// <summary>
-		/// Gets or sets the <see cref="ISite"/> associated with the <see cref="IComponent"/>.
-		/// </summary>
-		public ISite Site
-		{
-			get
-			{
-				return _site;
-			}
-			set
-			{
-				_site = value;
-			}
-		}
-
-		#endregion
-
 		#region IDisposable
 
 		/// <summary>
@@ -170,7 +144,6 @@ namespace UnityFx.Mvc
 			if (!_disposed)
 			{
 				_disposed = true;
-				_site?.Container?.Remove(this);
 
 				try
 				{
