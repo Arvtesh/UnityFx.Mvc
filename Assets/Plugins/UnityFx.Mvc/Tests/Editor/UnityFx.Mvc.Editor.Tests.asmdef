@@ -1,6 +1,7 @@
 {
     "name": "UnityFx.Mvc.Editor.Tests",
     "references": [
+        "UnityFx.Mvc.Abstractions",
         "UnityFx.Mvc"
     ],
     "optionalUnityReferences": [

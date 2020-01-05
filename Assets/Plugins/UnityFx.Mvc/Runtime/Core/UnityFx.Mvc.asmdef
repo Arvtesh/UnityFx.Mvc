@@ -1,0 +1,14 @@
+{
+    "name": "UnityFx.Mvc",
+    "references": [
+        "UnityFx.Mvc.Abstractions"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}
