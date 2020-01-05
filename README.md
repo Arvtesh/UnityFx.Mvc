@@ -63,7 +63,7 @@ Views are responsible for presenting content through the user interface. There s
 Controllers are the components that handle user interaction, work with the model. In an MVC application, the view only displays information; the controller handles and responds to user input and interaction.
 
 ### Service
-Services usually contian very specialized logic, that is shared between several controllers. Services may on may not depend on Model. Neither model not views should not depend on services. Examples of services: `IFileSystem`, `IAssetFactory`, `IAudioService`.
+Services usually contian very specialized logic, that is shared between several controllers. Services may on may not depend on Model. Neither model not views should depend on services. Examples of services: `IFileSystem`, `IAssetFactory`, `IAudioService`.
 
 ## Usage
 Install the package and import the namespace:
@@ -72,7 +72,61 @@ using UnityFx.Mvc;
 using UnityFx.Mvc.Extensions;
 ```
 
-#### Dependency injection
+### Presenters
+A presenter is an object capable of presenting view controllers. It should implement `IPresenter` interface. There are `MonoBehaviour`-based presenter implementations `Presenter` and `Presenter<TController>`. A typical scenario of presenter usage is:
+```csharp
+presenter.Present<SlpashController>();
+```
+The following code presents a message box and awaits its result:
+```csharp
+var result = await presenter.PresentAsync<MyMessageBoxController>();
+```
+There are a lot of overloads of the `Present` method accepting additional arguments. In any case it needs a controller type specified to do the work.
+
+### Controllers
+
+Controller is any class that implements `IViewController` interface. There are several default controller implementations, like `ViewController` and `ViewController<TView>`. In most cases users should inherit new controllers from one of these. A controller constructor usually accepts at least an argument of type `IPresentContext`, which provides access to the its context (including the view).
+
+```csharp
+public class SplashController : ViewController
+{
+	public SplashController(IPresentContext context)
+		: base(context)
+	{
+		context.Schedule(OnTimer, 5);
+	}
+
+	private void OnTimer(float t)
+	{
+		Dismiss();
+	}
+}
+```
+
+### Views
+
+View is a class that implements `IView` interface. There is a default `MonoBehaviour`-based view implementation (`View`). It is recommended to inherit user views from this class. View is supposed to manage presentation-related logic, and send user input to its controller. Please note, that there is no explicit reference to the controller. The preffered way of sending controller notifications is calling one of `NotifyCommand` overloads (which in turn raises `INotifyCommand.Command` event).
+
+```csharp
+public class MinimalView : View
+{
+	[SerializeField]
+	private Button _closeButton;
+
+	public void Configure(MinimalViewArgs args)
+	{
+		_closeButton.onClick.AddListener(OnCLose);
+	}
+
+	private OnClose()
+	{
+		NotifyCommand("close");
+	}
+}
+```
+
+### Dependency injection
+*UnityFx.Mvc* controllers request dependencies explicitly via constructors. The framework has built-in support for dependency injection (DI). DI makes apps easier to test and maintain. Services are added as a constructor parameter, and the runtime resolves the service from the service container (via `IServiceProvider`). Services are typically defined using interfaces.
 
 ## Motivation
 The project was initially created to help author with his [Unity3d](https://unity3d.com) projects. Client .NET applications in general (and Unity applications specifically) do not have a standard structure or any kind of architecturing guidelines (like ASP.NET). This is an attempt to create a small yet effective and usable application framework suitable for Unity projects.
