@@ -83,6 +83,8 @@ var result = await presenter.PresentAsync<MyMessageBoxController>();
 ```
 There are a lot of overloads of the `Present` method accepting additional arguments. In any case it needs a controller type specified to do the work.
 
+Presenter uses `IServiceProvider` instance to resolve controller dependencies. It also requires `IViewFactory` to create views for the controllers presented.
+
 ### Controllers
 
 Controller is any class that implements `IViewController` interface. There are several default controller implementations, like `ViewController` and `ViewController<TView>`. In most cases users should inherit new controllers from one of these. A controller constructor usually accepts at least an argument of type `IPresentContext`, which provides access to the its context (including the view).
