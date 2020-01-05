@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace UnityFx.Mvc
 {
@@ -18,7 +19,8 @@ namespace UnityFx.Mvc
 	/// controller context outside of actual controller. This class manages the controller created, provides its context
 	/// (via <see cref="IPresentContext"/> interface) and serves as a proxy between the controller and user.
 	/// </remarks>
-	internal class PresentResult<TController, TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TResult>, IPresentResultOf<TController, TResult>, IPresentResultOf<TController>, IPresentable<TController>, IEnumerator where TController : class, IViewController
+	[Preserve]
+	internal sealed class PresentResult<TController, TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TResult>, IPresentResultOf<TController, TResult>, IPresentResultOf<TController>, IPresentable<TController>, IEnumerator where TController : class, IViewController
 	{
 		#region data
 
@@ -87,7 +89,11 @@ namespace UnityFx.Mvc
 
 		#region IPresentable
 
+		public int Layer => _layer;
+
 		public IPresentable Parent => _parent;
+
+		public Type ControllerType => _controllerType;
 
 		public bool TryActivate()
 		{
@@ -147,6 +153,7 @@ namespace UnityFx.Mvc
 			{
 				LogException(e);
 				DismissInternal(default, true);
+				throw;
 			}
 		}
 
@@ -282,7 +289,12 @@ namespace UnityFx.Mvc
 
 		public bool InvokeCommand<TCommand>(TCommand command)
 		{
-			return _controller.InvokeCommand(command);
+			if (_state == State.Presented || _state == State.Active)
+			{
+				return _controller.InvokeCommand(command);
+			}
+
+			return false;
 		}
 
 		#endregion
@@ -379,38 +391,24 @@ namespace UnityFx.Mvc
 
 		private void UpdateActive(bool isTop)
 		{
-			try
+			if (isTop)
 			{
-				if (isTop)
+				if (_state == State.Presented)
 				{
-					if (_state == State.Presented)
-					{
-						_state = State.Active;
-						_controllerEvents?.OnActivate();
-					}
-				}
-				else if (_state == State.Active)
-				{
-					_state = State.Presented;
-					_controllerEvents?.OnDeactivate();
+					_state = State.Active;
+					_controllerEvents?.OnActivate();
 				}
 			}
-			catch (Exception e)
+			else if (_state == State.Active)
 			{
-				Debug.LogException(e);
+				_state = State.Presented;
+				_controllerEvents?.OnDeactivate();
 			}
 		}
 
 		private void UpdateController(float frameTime)
 		{
-			try
-			{
-				_controllerEvents?.OnUpdate(frameTime);
-			}
-			catch (Exception e)
-			{
-				Debug.LogException(e);
-			}
+			_controllerEvents?.OnUpdate(frameTime);
 		}
 
 		private void UpdateTimers(float frameTime)
@@ -427,16 +425,8 @@ namespace UnityFx.Mvc
 
 					if (timerData.Timer >= timerData.Timeout)
 					{
-						try
-						{
-							timerData.Callback(timerData.Timer);
-						}
-						catch (Exception e)
-						{
-							Debug.LogException(e);
-						}
-
 						_timers.Remove(node);
+						timerData.Callback(timerData.Timer);
 					}
 
 					node = node.Next;
@@ -446,8 +436,6 @@ namespace UnityFx.Mvc
 
 		private void LogException(Exception e)
 		{
-			Debug.LogException(e);
-
 			if (!Task.IsCompleted)
 			{
 				if (_exceptions == null)

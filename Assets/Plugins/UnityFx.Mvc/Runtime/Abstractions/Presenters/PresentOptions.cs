@@ -34,12 +34,17 @@ namespace UnityFx.Mvc
 		Modal = 4,
 
 		/// <summary>
+		/// Do not parent the controller to any other.
+		/// </summary>
+		Detach = 0x10,
+
+		/// <summary>
 		/// If set the caller presenter is dismissed.
 		/// </summary>
 		DismissCurrent = 0x1000,
 
 		/// <summary>
-		/// If set the caller presenter is dismissed.
+		/// If set all controllers are dismissed before presenting the new one.
 		/// </summary>
 		DismissAll = 0x2000
 	}

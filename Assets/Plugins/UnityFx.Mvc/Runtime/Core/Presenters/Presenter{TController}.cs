@@ -11,8 +11,6 @@ using UnityEngine.Scripting;
 
 namespace UnityFx.Mvc
 {
-	using Debug = UnityEngine.Debug;
-
 	/// <summary>
 	/// Default <see cref="MonoBehaviour"/>-based presenter implementation.
 	/// </summary>
@@ -261,6 +259,28 @@ namespace UnityFx.Mvc
 		#region virtual interface
 
 		/// <summary>
+		/// Called right before presenting a controller.
+		/// </summary>
+		protected virtual void OnPresent(Type controllerType, PresentOptions presentOptions, PresentArgs args)
+		{
+		}
+
+		/// <summary>
+		/// Called right after presenting a controller.
+		/// </summary>
+		protected virtual void OnPresented(Type controllerType)
+		{
+		}
+
+		/// <summary>
+		/// Called right before presenting a controller.
+		/// </summary>
+		protected virtual void OnPresentError(Type controllerType, Exception e)
+		{
+			Debug.LogException(e);
+		}
+
+		/// <summary>
 		/// Called on each frame. Default implementation does nothing.
 		/// </summary>
 		protected virtual void OnUpdate(float frameTime)
@@ -449,35 +469,36 @@ namespace UnityFx.Mvc
 			return result;
 		}
 
-		private void PresentInternal(IPresentable<TController> presentable, IPresentable presentableParent, Transform transform)
+		private async void PresentInternal(IPresentable<TController> presentable, IPresentable presentableParent, Transform transform)
 		{
-			var zIndex = 0;
+			var zIndex = GetZIndex(presentable);
 
-			foreach (var p in _presentables)
+			try
 			{
-				if (p == presentable)
+				OnPresent(presentable.ControllerType, presentable.PresentOptions, presentable.PresentArgs);
+
+				await presentable.PresentAsync(_viewFactory, zIndex, transform);
+
+				if ((presentable.PresentOptions & PresentOptions.DismissAll) != 0)
 				{
-					break;
-				}
-
-				++zIndex;
-			}
-
-			presentable.PresentAsync(_viewFactory, zIndex, transform);
-
-			if ((presentable.PresentOptions & PresentOptions.DismissAll) != 0)
-			{
-				foreach (var p in _presentables)
-				{
-					if (p != presentable)
+					foreach (var p in _presentables)
 					{
-						p.Dispose();
+						if (p != presentable)
+						{
+							p.Dispose();
+						}
 					}
 				}
+				else if ((presentable.PresentOptions & PresentOptions.DismissCurrent) != 0)
+				{
+					presentableParent?.Dispose();
+				}
+
+				OnPresented(presentable.ControllerType);
 			}
-			else if ((presentable.PresentOptions & PresentOptions.DismissCurrent) != 0)
+			catch (Exception e)
 			{
-				presentableParent?.Dispose();
+				OnPresentError(presentable.ControllerType, e);
 			}
 		}
 
@@ -516,7 +537,7 @@ namespace UnityFx.Mvc
 			}
 
 			// If parent is going to be dismissed, use its parent instead.
-			if ((presentOptions & PresentOptions.DismissAll) != 0)
+			if ((presentOptions & PresentOptions.DismissAll) != 0 || (presentOptions & PresentOptions.Detach) != 0)
 			{
 				presentContext.Parent = null;
 			}
@@ -596,6 +617,25 @@ namespace UnityFx.Mvc
 			{
 				--_busyCounter;
 			}
+		}
+
+		private int GetZIndex(IPresentable presentable)
+		{
+			var zIndex = 0;
+
+			foreach (var p in _presentables)
+			{
+				if (p == presentable)
+				{
+					break;
+				}
+				else if (p.Layer == presentable.Layer)
+				{
+					++zIndex;
+				}
+			}
+
+			return zIndex;
 		}
 
 		private void ThrowIfBusy()

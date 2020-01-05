@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 Alexander Bogarsukov.
+﻿// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -31,8 +31,11 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 	{
 		try
 		{
+			_ = _presenter.PresentAsync<AppController>();
+
 			await _presenter.PresentAsync<SplashController>();
-			await _presenter.PresentAsync<LobbyController>();
+
+			_ = _presenter.PresentAsync<LobbyController>();
 		}
 		catch (OperationCanceledException)
 		{
