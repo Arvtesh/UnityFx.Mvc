@@ -20,6 +20,7 @@ namespace UnityFx.Mvc
 		private bool _exclusive;
 		private bool _modal;
 		private bool _popup;
+		private bool _createArgs;
 
 		private Regex _classNamePattern = new Regex("^[_a-zA-Z][_a-zA-Z0-9]*$");
 
@@ -44,6 +45,7 @@ namespace UnityFx.Mvc
 			GUI.enabled = true;
 
 			_controllerName = EditorGUILayout.TextField("Controller Name", _controllerName);
+			_createArgs = EditorGUILayout.Toggle("Create PresentArgs", _createArgs);
 			_exclusive = EditorGUILayout.Toggle("Exclusive", _exclusive);
 			_popup = EditorGUILayout.Toggle("Popup", _popup);
 			_modal = EditorGUILayout.Toggle("Modal", _modal);
@@ -95,22 +97,29 @@ namespace UnityFx.Mvc
 			}
 			else
 			{
-				path = Path.Combine(Directory.GetCurrentDirectory(), Path.Combine(path, _controllerName));
+				path = Path.Combine(path, _controllerName);
 
-				if (!Directory.Exists(path))
+				var fullPath = Path.Combine(Directory.GetCurrentDirectory(), path);
+
+				if (!Directory.Exists(fullPath))
 				{
-					Directory.CreateDirectory(path);
+					Directory.CreateDirectory(fullPath);
 				}
 
 				var indent = "	";
 				var controllerName = _controllerName + "Controller";
 				var controllerFileName = controllerName + ".cs";
-				var controllerPath = Path.Combine(Directory.GetCurrentDirectory(), Path.Combine(path, controllerFileName));
+				var controllerPath = Path.Combine(fullPath, controllerFileName);
 				var controllerText = new StringBuilder();
+
+				var argsName = _controllerName + "Args";
+				var argsFileName = argsName + ".cs";
+				var argsPath = Path.Combine(fullPath, argsFileName);
+				var argsText = new StringBuilder();
 
 				var viewName = _controllerName + "View";
 				var viewFileName = viewName + ".cs";
-				var viewPath = Path.Combine(Directory.GetCurrentDirectory(), Path.Combine(path, viewFileName));
+				var viewPath = Path.Combine(fullPath, viewFileName);
 				var viewText = new StringBuilder();
 
 				var prefabPath = Path.Combine(path, _controllerName + ".prefab");
@@ -136,6 +145,12 @@ namespace UnityFx.Mvc
 				controllerText.AppendLine(indent + "/// " + controllerName);
 				controllerText.AppendLine(indent + "/// </summary>");
 				controllerText.AppendFormat(indent + "/// <seealso cref=\"{0}\"/>" + Environment.NewLine, viewName);
+
+				if (_createArgs)
+				{
+					controllerText.AppendFormat(indent + "/// <seealso cref=\"{0}\"/>" + Environment.NewLine, argsName);
+				}
+
 				controllerText.AppendFormat(indent + "[ViewController(PresentOptions = {0})]" + Environment.NewLine, GetPresentOptions(_exclusive, _popup, _modal));
 				controllerText.AppendFormat(indent + "public class {0} : {1}<{2}>" + Environment.NewLine, controllerName, _controllerBaseClass, viewName);
 				controllerText.AppendLine(indent + "{");
@@ -155,11 +170,30 @@ namespace UnityFx.Mvc
 				controllerText.AppendLine(indent + "	/// <summary>");
 				controllerText.AppendFormat(indent + "	/// Initializes a new instance of the <see cref=\"{0}\"/> class." + Environment.NewLine, controllerName);
 				controllerText.AppendLine(indent + "	/// </summary>");
-				controllerText.AppendFormat(indent + "	public {0}({1} context)" + Environment.NewLine, controllerName, nameof(IPresentContext));
+				controllerText.AppendFormat(indent + "	public {0}({1} context", controllerName, nameof(IPresentContext));
+
+				if (_createArgs)
+				{
+					controllerText.AppendFormat(", {0} args)" + Environment.NewLine, argsName);
+				}
+				else
+				{
+					controllerText.AppendLine(")");
+				}
+
 				controllerText.AppendLine(indent + "		: base(context)");
 				controllerText.AppendLine(indent + "	{");
 				controllerText.AppendLine(indent + "		// TODO: Initialize the controller view here. Add arguments to the Configure() as needed.");
-				controllerText.AppendLine(indent + "		View.Configure();");
+
+				if (_createArgs)
+				{
+					controllerText.AppendLine(indent + "		View.Configure(args);");
+				}
+				else
+				{
+					controllerText.AppendLine(indent + "		View.Configure();");
+				}
+
 				controllerText.AppendLine(indent + "	}");
 				controllerText.AppendLine("");
 				controllerText.AppendLine(indent + "	#endregion");
@@ -214,6 +248,12 @@ namespace UnityFx.Mvc
 				viewText.AppendFormat(indent + "/// View for the <see cref=\"{0}\"/>." + Environment.NewLine, controllerName);
 				viewText.AppendLine(indent + "/// </summary>");
 				viewText.AppendFormat(indent + "/// <seealso cref=\"{0}\"/>" + Environment.NewLine, controllerName);
+
+				if (_createArgs)
+				{
+					viewText.AppendFormat(indent + "/// <seealso cref=\"{0}\"/>" + Environment.NewLine, argsName);
+				}
+
 				viewText.AppendFormat(indent + "public class {0} : {1}" + Environment.NewLine, viewName, _viewBaseClass);
 				viewText.AppendLine(indent + "{");
 				viewText.AppendLine(indent + "	#region data");
@@ -231,7 +271,16 @@ namespace UnityFx.Mvc
 				viewText.AppendLine(indent + "	/// <summary>");
 				viewText.AppendLine(indent + "	/// Initializes the view. Called from the controller ctor." );
 				viewText.AppendLine(indent + "	/// </summary>");
-				viewText.AppendLine(indent + "	public void Configure()");
+
+				if (_createArgs)
+				{
+					viewText.AppendFormat(indent + "	public void Configure({0} args)" + Environment.NewLine, argsName);
+				}
+				else
+				{
+					viewText.AppendLine(indent + "	public void Configure()");
+				}
+
 				viewText.AppendLine(indent + "	{");
 				viewText.AppendLine(indent + "		// TODO: Setup the view. Add additional arguments as needed.");
 				viewText.AppendLine(indent + "	}");
@@ -251,6 +300,36 @@ namespace UnityFx.Mvc
 				}
 
 				File.WriteAllText(viewPath, viewText.ToString());
+
+				// Args source.
+				argsText.AppendLine("using System;");
+				argsText.AppendLine("using System.Collections.Generic;");
+				argsText.AppendLine("using UnityEngine;");
+				argsText.AppendLine("using UnityFx.Mvc;");
+				argsText.AppendLine("");
+
+				if (!string.IsNullOrEmpty(_namespace))
+				{
+					argsText.AppendLine("namespace " + _namespace);
+					argsText.AppendLine("{");
+				}
+
+				argsText.AppendLine(indent + "/// <summary>");
+				argsText.AppendFormat(indent + "/// Arguments for the <see cref=\"{0}\"/>." + Environment.NewLine, controllerName);
+				argsText.AppendLine(indent + "/// </summary>");
+				argsText.AppendFormat(indent + "/// <seealso cref=\"{0}\"/>" + Environment.NewLine, controllerName);
+				argsText.AppendFormat(indent + "/// <seealso cref=\"{0}\"/>" + Environment.NewLine, viewName);
+
+				argsText.AppendFormat(indent + "public class {0} : PresentArgs" + Environment.NewLine, argsName);
+				argsText.AppendLine(indent + "{");
+				argsText.AppendLine(indent + "}");
+
+				if (!string.IsNullOrEmpty(_namespace))
+				{
+					argsText.AppendLine("}");
+				}
+
+				File.WriteAllText(argsPath, argsText.ToString());
 				AssetDatabase.Refresh();
 
 				// Prefab.
