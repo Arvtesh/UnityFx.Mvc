@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.2.0] - unreleased
+## [0.2.0] - 2020.01.05
 
 ### Added
 - Added support for generic commands.
