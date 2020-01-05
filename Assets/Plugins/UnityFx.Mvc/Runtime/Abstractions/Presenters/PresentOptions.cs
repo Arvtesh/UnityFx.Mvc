@@ -19,7 +19,8 @@ namespace UnityFx.Mvc
 		None = 0,
 
 		/// <summary>
-		/// Marks the controller as exclusive. Exclusive controllers cover all other controllers below. Cannot be combined with <see cref="Popup"/>.
+		/// Marks the controller as exclusive. Exclusive controllers do not forward unprocessed commands to controllers below them is the stack
+		/// and it is assumed their views are full-screen. Cannot be combined with <see cref="Popup"/>.
 		/// </summary>
 		Exclusive = 1,
 
@@ -34,9 +35,9 @@ namespace UnityFx.Mvc
 		Modal = 4,
 
 		/// <summary>
-		/// Do not parent the controller to any other.
+		/// Parents the presented controller to the caller. Child controllers are dismissed with their parent controllers.
 		/// </summary>
-		Detach = 0x10,
+		Child = 0x10,
 
 		/// <summary>
 		/// If set the caller presenter is dismissed.

@@ -537,7 +537,11 @@ namespace UnityFx.Mvc
 			}
 
 			// If parent is going to be dismissed, use its parent instead.
-			if ((presentOptions & PresentOptions.DismissAll) != 0 || (presentOptions & PresentOptions.Detach) != 0)
+			if ((presentOptions & PresentOptions.Child) == 0)
+			{
+				presentContext.Parent = null;
+			}
+			else if ((presentOptions & PresentOptions.DismissAll) != 0)
 			{
 				presentContext.Parent = null;
 			}

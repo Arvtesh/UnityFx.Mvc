@@ -64,7 +64,7 @@ namespace UnityFx.Mvc
 
 			private void OnDestroy()
 			{
-				if (_view is MonoBehaviour b && b.gameObject)
+				if (_view is MonoBehaviour b && b && b.gameObject)
 				{
 					Destroy(b.gameObject);
 				}
