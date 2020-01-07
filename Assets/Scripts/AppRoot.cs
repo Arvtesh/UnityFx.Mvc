@@ -7,35 +7,22 @@ using UnityFx.Mvc;
 
 public class AppRoot : MonoBehaviour, IServiceProvider
 {
-	[SerializeField]
-	private Presenter _presenter;
-	[SerializeField]
-	private UGUIViewFactory _viewFactory;
+	private IPresenter _presenter;
 
 	private void Awake()
 	{
-		if (_presenter is null)
-		{
-			_presenter = gameObject.AddComponent<Presenter>();
-		}
-
-		if (_viewFactory is null)
-		{
-			_viewFactory = gameObject.AddComponent<UGUIViewFactory>();
-		}
-
-		_presenter.Initialize(this);
+		_presenter = PresenterFactory.CreatePresenter(this, gameObject);
 	}
 
 	private async void Start()
 	{
 		try
 		{
-			_ = _presenter.PresentAsync<AppController>();
+			_presenter.Present<AppController>();
 
 			await _presenter.PresentAsync<SplashController>();
 
-			_ = _presenter.PresentAsync<LobbyController>();
+			_presenter.Present<LobbyController>();
 		}
 		catch (OperationCanceledException)
 		{
@@ -49,11 +36,6 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 
 	public object GetService(Type serviceType)
 	{
-		if (serviceType == typeof(IViewFactory))
-		{
-			return _viewFactory;
-		}
-
 		if (serviceType == typeof(IPresenter))
 		{
 			return _presenter;

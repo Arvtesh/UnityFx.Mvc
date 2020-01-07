@@ -13,8 +13,8 @@ namespace UnityFx.Mvc
 		int Layer { get; }
 		bool IsActive { get; }
 		bool IsDismissed { get; }
+		IViewController Controller { get; }
 		IPresentable Parent { get; }
-		PresentOptions PresentOptions { get; }
 		PresentArgs PresentArgs { get; }
 		Type ControllerType { get; }
 		Task PresentAsync(IViewFactory viewFactory, int index, Transform parent);

@@ -20,7 +20,7 @@ namespace UnityFx.Mvc
 	/// (via <see cref="IPresentContext"/> interface) and serves as a proxy between the controller and user.
 	/// </remarks>
 	[Preserve]
-	internal sealed class PresentResult<TController, TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TResult>, IPresentResultOf<TController, TResult>, IPresentResultOf<TController>, IPresentable<TController>, IEnumerator where TController : class, IViewController
+	internal sealed class PresentResult<TController, TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TResult>, IPresentResultOf<TController, TResult>, IPresentResultOf<TController>, IPresentable, IEnumerator where TController : class, IViewController
 	{
 		#region data
 
@@ -92,6 +92,8 @@ namespace UnityFx.Mvc
 		public int Layer => _layer;
 
 		public IPresentable Parent => _parent;
+
+		IViewController IPresentable.Controller => _controller;
 
 		public Type ControllerType => _controllerType;
 

@@ -20,6 +20,11 @@ namespace UnityFx.Mvc
 		int Id { get; }
 
 		/// <summary>
+		/// Gets the controller present options.
+		/// </summary>
+		PresentOptions PresentOptions { get; }
+
+		/// <summary>
 		/// Gets a <see cref="System.Threading.Tasks.Task"/> instance that can be used to await the operation completion (i.e. until the controller is dismissed).
 		/// </summary>
 		Task Task { get; }

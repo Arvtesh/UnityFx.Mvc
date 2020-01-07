@@ -7,21 +7,21 @@ using UnityEngine;
 
 namespace UnityFx.Mvc
 {
-	[CustomEditor(typeof(PresenterBase), true)]
+	[CustomEditor(typeof(Presenter), true)]
 	public class PresenterEditor : Editor
 	{
-		private PresenterBase _presenter;
+		private Presenter _presenter;
 
 		private void OnEnable()
 		{
-			_presenter = (PresenterBase)target;
+			_presenter = (Presenter)target;
 		}
 
 		public override void OnInspectorGUI()
 		{
 			base.OnInspectorGUI();
 
-			var controllers = _presenter.GetControllers();
+			var controllers = _presenter.Controllers;
 
 			if (controllers != null && controllers.Count > 0)
 			{
