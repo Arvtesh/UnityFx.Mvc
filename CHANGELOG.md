@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 
 ## [0.3.0] - unreleased
 
+### Removed
+- Removed generic `Presenter<>` implementation.
+
+## [0.2.1] - 2020.01.09
+
+### Fixed
+- Fixed IL2CPP compile error in `Presenter<>`.
+- Fixed editor window to correctly detect selection in 2-column project window layout.
+
 ## [0.2.0] - 2020.01.05
 
 ### Added
