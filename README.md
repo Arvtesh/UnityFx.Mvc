@@ -39,7 +39,7 @@ Npm package is available at [npmjs.com](https://www.npmjs.com/package/com.unityf
     }
   ],
   "dependencies": {
-    "com.unityfx.mvc": "0.2.0"
+    "com.unityfx.mvc": "0.2.1"
   }
 }
 ```
@@ -87,7 +87,7 @@ Presenter uses `IServiceProvider` instance to resolve controller dependencies. I
 
 ### Controllers
 
-Controller is any class that implements `IViewController` interface. There are several default controller implementations, like `ViewController` and `ViewController<TView>`. In most cases users should inherit new controllers from one of these. A controller constructor usually accepts at least an argument of type `IPresentContext`, which provides access to the its context (including the view).
+Controller is any class that implements `IViewController` interface. There are several default controller implementations, like `ViewController` and `ViewController<TView>`. In most cases users should inherit new controllers from one of these. A controller constructor usually accepts at least an argument of type `IPresentContext`, which provides access to its context (including the view).
 
 ```csharp
 public class SplashController : ViewController
@@ -128,7 +128,7 @@ public class MinimalView : View
 ```
 
 ### Dependency injection
-*UnityFx.Mvc* controllers request dependencies explicitly via constructors. The framework has built-in support for dependency injection (DI). DI makes apps easier to test and maintain. Services are added as a constructor parameter, and the runtime resolves the service from the service container (via `IServiceProvider`). Services are typically defined using interfaces.
+*UnityFx.Mvc* controllers request dependencies explicitly via constructors. The framework has built-in support for dependency injection (DI). DI makes apps easier to test and maintain. Services are added as a constructor parameters, and the runtime resolves specific service from the service container (via `IServiceProvider`). Services are typically defined using interfaces.
 
 ## Motivation
 The project was initially created to help author with his [Unity3d](https://unity3d.com) projects. Client .NET applications in general (and Unity applications specifically) do not have a standard structure or any kind of architecturing guidelines (like ASP.NET). This is an attempt to create a small yet effective and usable application framework suitable for Unity projects.
