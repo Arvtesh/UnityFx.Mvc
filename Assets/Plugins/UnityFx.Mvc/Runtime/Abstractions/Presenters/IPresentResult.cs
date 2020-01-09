@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace UnityFx.Mvc
@@ -12,18 +11,8 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IPresenter"/>
-	public interface IPresentResult : ICommandTarget, IDisposable
+	public interface IPresentResult : IViewControllerInfo, ICommandTarget, IDisposable
 	{
-		/// <summary>
-		/// Gets unique identifier of the present operation.
-		/// </summary>
-		int Id { get; }
-
-		/// <summary>
-		/// Gets the controller present options.
-		/// </summary>
-		PresentOptions PresentOptions { get; }
-
 		/// <summary>
 		/// Gets a <see cref="System.Threading.Tasks.Task"/> instance that can be used to await the operation completion (i.e. until the controller is dismissed).
 		/// </summary>

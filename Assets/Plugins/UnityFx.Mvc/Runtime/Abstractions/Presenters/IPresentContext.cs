@@ -10,30 +10,8 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="IPresentContext{TResult}"/>
 	/// <seealso cref="IViewController"/>
-	public interface IPresentContext : IPresenter, IServiceProvider
+	public interface IPresentContext : IPresenter, IViewControllerInfo, IServiceProvider
 	{
-		/// <summary>
-		/// Gets unique identifier of the controller.
-		/// </summary>
-		int Id { get; }
-
-		/// <summary>
-		/// Gets the deepling identifier for this controller.
-		/// </summary>
-		string DeeplinkId { get; }
-
-		/// <summary>
-		/// Gets the controller present arguments.
-		/// </summary>
-		/// <seealso cref="PresentOptions"/>
-		PresentArgs PresentArgs { get; }
-
-		/// <summary>
-		/// Gets the present flags used when instantiating the controller.
-		/// </summary>
-		/// <seealso cref="PresentArgs"/>
-		PresentOptions PresentOptions { get; }
-
 		/// <summary>
 		/// Gets time elapsed since the controller has been presented (in seconds).
 		/// </summary>

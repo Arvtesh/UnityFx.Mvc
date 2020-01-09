@@ -15,7 +15,7 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <threadsafety static="true" instance="false"/>
 	/// <seealso cref="IViewController"/>
-	internal sealed partial class Presenter : MonoBehaviour, IPresenterInternal, IPresenter, ICommandTarget, IDisposable
+	internal sealed partial class Presenter : MonoBehaviour, IPresentService, IPresenterInternal
 	{
 		#region data
 
@@ -24,6 +24,7 @@ namespace UnityFx.Mvc
 		private IViewControllerFactory _controllerFactory;
 
 		private LinkedList<IPresentable> _presentables = new LinkedList<IPresentable>();
+		private Dictionary<IViewController, IPresentable> _controllerMap = new Dictionary<IViewController, IPresentable>();
 		private ViewControllerCollection _controllers;
 
 		private int _idCounter;
@@ -63,6 +64,11 @@ namespace UnityFx.Mvc
 
 				if (p.IsDismissed)
 				{
+					if (p.Controller != null)
+					{
+						_controllerMap.Remove(p.Controller);
+					}
+
 					_presentables.Remove(p);
 				}
 				else
@@ -88,7 +94,7 @@ namespace UnityFx.Mvc
 
 		void IPresenterInternal.Dismiss(IPresentable presentable)
 		{
-			// 1st pass: dismiss child nodes.
+			// 1) Dismiss child nodes.
 			var node = _presentables.Last;
 
 			while (node != null)
@@ -108,7 +114,7 @@ namespace UnityFx.Mvc
 				node = node.Previous;
 			}
 
-			// 2nd pass: dispose child nodes.
+			// 2) Dispose child nodes.
 			node = _presentables.Last;
 
 			while (node != null)
@@ -150,36 +156,16 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		public void DismissAllPopups()
+		public bool TryGetInfo(IViewController controller, out IViewControllerInfo info)
 		{
-			ThrowIfDisposed();
-
-			var node = _presentables.Last;
-
-			while (node != null)
+			if (_controllerMap.TryGetValue(controller, out var result))
 			{
-				var p = node.Value;
-
-				if ((p.PresentOptions & PresentOptions.Popup) != 0)
-				{
-					p.Dispose();
-				}
-
-				node = node.Previous;
-			}
-		}
-
-		public IPresentResult GetPresentResult(IViewController controller)
-		{
-			foreach (var p in _presentables)
-			{
-				if (p.Controller == controller)
-				{
-					return p;
-				}
+				info = result;
+				return true;
 			}
 
-			return null;
+			info = null;
+			return false;
 		}
 
 		#endregion
@@ -262,6 +248,8 @@ namespace UnityFx.Mvc
 			try
 			{
 				await presentable.PresentAsync(_viewFactory, zIndex, transform);
+
+				_controllerMap.Add(presentable.Controller, presentable);
 
 				if ((presentable.PresentOptions & PresentOptions.DismissAll) != 0)
 				{

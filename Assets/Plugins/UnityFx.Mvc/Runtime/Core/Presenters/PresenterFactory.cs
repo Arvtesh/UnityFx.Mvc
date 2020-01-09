@@ -17,7 +17,7 @@ namespace UnityFx.Mvc
 		/// <param name="serviceProvider">A <see cref="IServiceProvider"/> to use for dependency resolving.</param>
 		/// <param name="go">A <see cref="GameObject"/> to attach presenter to.</param>
 		/// <returns>Returns the presenter created.</returns>
-		public static IPresenter CreatePresenter(IServiceProvider serviceProvider, GameObject go)
+		public static IPresentService CreatePresenter(IServiceProvider serviceProvider, GameObject go)
 		{
 			if (serviceProvider is null)
 			{
@@ -29,12 +29,16 @@ namespace UnityFx.Mvc
 				throw new ArgumentNullException(nameof(go));
 			}
 
-			var presenter = go.AddComponent<Presenter>();
 			var viewFactory = serviceProvider.GetService(typeof(IViewFactory)) as IViewFactory;
 
 			if (viewFactory is null)
 			{
 				viewFactory = go.GetComponentInChildren<IViewFactory>();
+
+				if (viewFactory is null)
+				{
+					throw new InvalidOperationException($"No {typeof(IViewFactory).Name} instance registered. It should be accessible either via {nameof(serviceProvider)} or with {nameof(go.GetComponentInChildren)}().");
+				}
 			}
 
 			var controllerFactory = serviceProvider.GetService(typeof(IViewControllerFactory)) as IViewControllerFactory;
@@ -44,6 +48,7 @@ namespace UnityFx.Mvc
 				controllerFactory = new ViewControllerFactory(serviceProvider);
 			}
 
+			var presenter = go.AddComponent<Presenter>();
 			presenter.Initialize(serviceProvider, viewFactory, controllerFactory);
 			return presenter;
 		}
