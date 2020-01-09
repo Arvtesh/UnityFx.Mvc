@@ -675,8 +675,8 @@ namespace UnityFx.Mvc
 		{
 			// NOTE: This method is needed for AOT compiler to generate code for PresentResult<,> specializations.
 			// It should never be executed, it's just here to mark specific type arguments as used.
-			new PresentResult<TController, object>(null, null, typeof(TController), PresentOptions.None, PresentArgs.Default);
-			new PresentResult<TController, int>(null, null, typeof(TController), PresentOptions.None, PresentArgs.Default);
+			new PresentResult<TController, object>(null, null);
+			new PresentResult<TController, int>(null, null);
 		}
 
 #endif

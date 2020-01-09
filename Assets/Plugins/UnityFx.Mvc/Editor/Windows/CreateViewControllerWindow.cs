@@ -395,11 +395,11 @@ namespace UnityFx.Mvc
 
 		private static string GetSelectedPath()
 		{
-			var selection = Selection.activeObject;
+			var selection = Selection.assetGUIDs;
 
-			if (selection != null)
+			if (selection != null && selection.Length == 1)
 			{
-				var path = AssetDatabase.GetAssetPath(selection.GetInstanceID());
+				var path = AssetDatabase.GUIDToAssetPath(selection[0]);
 
 				if (!string.IsNullOrEmpty(path) && Directory.Exists(path))
 				{
