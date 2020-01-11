@@ -11,7 +11,7 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 
 	private void Awake()
 	{
-		_presenter = PresenterFactory.CreatePresenter(this, gameObject);
+		_presenter = new PresenterBuilder(this, gameObject).Build();
 	}
 
 	private async void Start()
