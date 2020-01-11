@@ -21,25 +21,61 @@ namespace UnityFx.Mvc
 		{
 			base.OnInspectorGUI();
 
+			EditorGUI.BeginDisabledGroup(true);
+			EditorGUILayout.ColorField("Popup Background", _viewFactory.PopupBackgroundColor);
+
+			var viewRoots = _viewFactory.ViewRoots;
+
+			if (viewRoots != null && viewRoots.Count > 0)
+			{
+				EditorGUILayout.LabelField("View Roots");
+				EditorGUI.indentLevel += 1;
+
+				for (var i = 0; i < viewRoots.Count; i++)
+				{
+					EditorGUILayout.ObjectField("#" + i.ToString(), viewRoots[i], typeof(Transform), true);
+				}
+
+				EditorGUI.indentLevel -= 1;
+			}
+
+			var prefabs = _viewFactory.Prefabs;
+
+			if (prefabs != null && prefabs.Count > 0)
+			{
+				var prefabId = 0;
+
+				EditorGUILayout.LabelField("View Prefabs");
+				EditorGUI.indentLevel += 1;
+
+				foreach (var prefab in prefabs)
+				{
+					EditorGUILayout.LabelField("#" + prefabId.ToString(), prefab);
+					prefabId++;
+				}
+
+				EditorGUI.indentLevel -= 1;
+			}
+
 			var views = _viewFactory.Views;
 
 			if (views != null && views.Count > 0)
 			{
 				var viewId = 0;
 
-				EditorGUI.BeginDisabledGroup(true);
 				EditorGUILayout.LabelField("Views");
 				EditorGUI.indentLevel += 1;
 
-				foreach (var view in _viewFactory.Views)
+				foreach (var view in views)
 				{
 					EditorGUILayout.ObjectField("#" + viewId.ToString(), view as View, typeof(View), true);
 					viewId++;
 				}
 
 				EditorGUI.indentLevel -= 1;
-				EditorGUI.EndDisabledGroup();
 			}
+
+			EditorGUI.EndDisabledGroup();
 		}
 	}
 }

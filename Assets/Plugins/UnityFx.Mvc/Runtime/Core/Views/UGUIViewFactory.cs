@@ -30,6 +30,21 @@ namespace UnityFx.Mvc
 		#region interface
 
 		/// <summary>
+		/// Gets popup background color.
+		/// </summary>
+		public Color PopupBackgroundColor => _popupBgColor;
+
+		/// <summary>
+		/// Gets a read-only collection of view root transforms.
+		/// </summary>
+		public IReadOnlyList<Transform> ViewRoots => _viewRoots;
+
+		/// <summary>
+		/// Gets a read-only collection of loaded view prefabs.
+		/// </summary>
+		public IReadOnlyCollection<string> Prefabs => _viewPrefabCache.Keys;
+
+		/// <summary>
 		/// Gets a read-only collection of views.
 		/// </summary>
 		public ViewCollection Views
@@ -44,11 +59,6 @@ namespace UnityFx.Mvc
 				return _views;
 			}
 		}
-
-		/// <summary>
-		/// Gets a read-only collection of view root transforms.
-		/// </summary>
-		public IReadOnlyList<Transform> ViewRoots => _viewRoots;
 
 		internal void SetPopupBackgrounColor(Color color)
 		{
