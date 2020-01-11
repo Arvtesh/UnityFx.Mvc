@@ -26,6 +26,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresenterBuilder"/> class.
 		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="serviceProvider"/> or <paramref name="go"/> is <see langword="null"/>.</exception>
 		public PresenterBuilder(IServiceProvider serviceProvider, GameObject go)
 		{
 			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));

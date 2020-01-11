@@ -11,10 +11,9 @@ using UnityEngine;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Default <see cref="MonoBehaviour"/>-based presenter implementation.
+	/// A <see cref="MonoBehaviour"/>-based presenter implementation.
 	/// </summary>
-	/// <threadsafety static="true" instance="false"/>
-	/// <seealso cref="IViewController"/>
+	/// <seealso cref="PresenterBuilder"/>
 	internal sealed partial class Presenter : MonoBehaviour, IPresentService, IPresenterInternal
 	{
 		#region data

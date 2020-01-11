@@ -7,11 +7,30 @@ using UnityFx.Mvc;
 
 public class AppRoot : MonoBehaviour, IServiceProvider
 {
+#pragma warning disable 0649
+
+	[SerializeField]
+	private GameObject[] _viewPrefabs;
+
+#pragma warning restore 0649
+
+	private IViewFactory _viewFactory;
 	private IPresenter _presenter;
 
 	private void Awake()
 	{
-		_presenter = new PresenterBuilder(this, gameObject).Build();
+		var viewFactoryBuilder = new UGUIViewFactoryBuilder(gameObject);
+
+		foreach (var prefab in _viewPrefabs)
+		{
+			viewFactoryBuilder.AddViewPrefab(prefab.name, prefab);
+		}
+
+		_viewFactory = viewFactoryBuilder.Build();
+
+		var presenterBuilder = new PresenterBuilder(this, gameObject);
+		presenterBuilder.UseViewFactory(_viewFactory);
+		_presenter = presenterBuilder.Build();
 	}
 
 	private async void Start()
