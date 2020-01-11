@@ -250,6 +250,7 @@ namespace UnityFx.Mvc
 
 				_controllerMap.Add(presentable.Controller, presentable);
 
+				// Dismiss the specified controllers if requested.
 				if ((presentable.PresentOptions & PresentOptions.DismissAll) != 0)
 				{
 					foreach (var p in _presentables)
@@ -263,6 +264,18 @@ namespace UnityFx.Mvc
 				else if ((presentable.PresentOptions & PresentOptions.DismissCurrent) != 0)
 				{
 					presentableParent?.Dispose();
+				}
+
+				// Dismiss controllers of the same type if requested.
+				if ((presentable.PresentOptions & PresentOptions.Singleton) != 0)
+				{
+					foreach (var p in _presentables)
+					{
+						if (p != presentable && p.ControllerType == presentable.ControllerType)
+						{
+							p.Dispose();
+						}
+					}
 				}
 			}
 			catch (Exception e)
