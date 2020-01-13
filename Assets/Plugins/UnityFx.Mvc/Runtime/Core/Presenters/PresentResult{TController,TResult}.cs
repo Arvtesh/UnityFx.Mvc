@@ -93,6 +93,8 @@ namespace UnityFx.Mvc
 
 		public int Layer => _layer;
 
+		public string PrefabPath => _prefabPath;
+
 		public IPresentable Parent => _parent;
 
 		IViewController IPresentable.Controller => _controller;
@@ -121,35 +123,20 @@ namespace UnityFx.Mvc
 			return false;
 		}
 
-		public async Task PresentAsync(IViewFactory viewFactory, int index, Transform parent)
+		public void CreateController(IView view)
 		{
-			Debug.Assert(viewFactory != null);
+			Debug.Assert(view != null);
 			Debug.Assert(_state == State.Initialized);
 
 			try
 			{
-				_view = await viewFactory.CreateAsync(_prefabPath, _layer, index, _presentOptions, parent);
-
-				if (_state == State.Initialized)
-				{
-					if (_view is null)
-					{
-						throw new InvalidOperationException();
-					}
-
-					_scope = _controllerFactory.CreateScope(ref _serviceProvider);
-					_controller = (TController)_controllerFactory.Create(_controllerType, this, _presentArgs, _view);
-					_controllerEvents = _controller as IViewControllerEvents;
-					_controllerEvents?.OnPresent();
-					_view.Disposed += OnDismissed;
-					_state = State.Presented;
-				}
-				else
-				{
-					// NOTE: The controller has been dismissed, just dispose the view.
-					Debug.Assert(_state == State.Dismissed || _state == State.Disposed);
-					_view?.Dispose();
-				}
+				_view = view;
+				_scope = _controllerFactory.CreateScope(ref _serviceProvider);
+				_controller = (TController)_controllerFactory.Create(_controllerType, this, _presentArgs, _view);
+				_controllerEvents = _controller as IViewControllerEvents;
+				_controllerEvents?.OnPresent();
+				_view.Disposed += OnDismissed;
+				_state = State.Presented;
 			}
 			catch (Exception e)
 			{
@@ -333,7 +320,7 @@ namespace UnityFx.Mvc
 
 		public void Dispose()
 		{
-			Dismiss(default, false);
+			Dismiss(default, _state == State.Initialized);
 		}
 
 		#endregion

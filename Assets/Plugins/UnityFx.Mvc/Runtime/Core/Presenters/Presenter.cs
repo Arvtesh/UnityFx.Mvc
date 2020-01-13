@@ -24,6 +24,7 @@ namespace UnityFx.Mvc
 
 		private LinkedList<IPresentable> _presentables = new LinkedList<IPresentable>();
 		private Dictionary<IViewController, IPresentable> _controllerMap = new Dictionary<IViewController, IPresentable>();
+		private List<PresentDelegate> _presentDelegates;
 		private ViewControllerCollection _controllers;
 
 		private int _idCounter;
@@ -44,6 +45,11 @@ namespace UnityFx.Mvc
 			_viewFactory = viewFactory;
 			_controllerFactory = controllerFactory;
 			_controllers = new ViewControllerCollection(_presentables);
+		}
+
+		internal void SetMiddleware(List<PresentDelegate> middleware)
+		{
+			_presentDelegates = middleware;
 		}
 
 		#endregion
@@ -246,11 +252,37 @@ namespace UnityFx.Mvc
 
 			try
 			{
-				await presentable.PresentAsync(_viewFactory, zIndex, transform);
+				// 1) Execute the middleware chain. Order is important here.
+				if (_presentDelegates != null)
+				{
+					foreach (var middleware in _presentDelegates)
+					{
+						await middleware(presentable);
+					}
+				}
+
+				// 2) Load the controller view.
+				var view = await _viewFactory.CreateAsync(presentable.PrefabPath, presentable.Layer, zIndex, presentable.PresentOptions, transform);
+
+				if (view is null)
+				{
+					throw new InvalidOperationException();
+				}
+
+				// 3) Create the controller (or dispose view if the controller is dismissed at this point).
+				if (presentable.IsDismissed)
+				{
+					view.Dispose();
+					throw new OperationCanceledException();
+				}
+				else
+				{
+					presentable.CreateController(view);
+				}
 
 				_controllerMap.Add(presentable.Controller, presentable);
 
-				// Dismiss the specified controllers if requested.
+				// 4) Dismiss the specified controllers if requested.
 				if ((presentable.PresentOptions & PresentOptions.DismissAll) != 0)
 				{
 					foreach (var p in _presentables)
@@ -266,7 +298,7 @@ namespace UnityFx.Mvc
 					presentableParent?.Dispose();
 				}
 
-				// Dismiss controllers of the same type if requested.
+				// 5) Dismiss controllers of the same type if requested (for singleton controllers only).
 				if ((presentable.PresentOptions & PresentOptions.Singleton) != 0)
 				{
 					foreach (var p in _presentables)

@@ -2,10 +2,17 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace UnityFx.Mvc
 {
+	/// <summary>
+	/// Present delegate that is called right before presenting a controller.
+	/// </summary>
+	public delegate Task PresentDelegate(IViewControllerInfo controllerInfo);
+
 	/// <summary>
 	/// Factory of <see cref="IPresenter"/> instances.
 	/// </summary>
@@ -16,6 +23,7 @@ namespace UnityFx.Mvc
 		private readonly IServiceProvider _serviceProvider;
 		private readonly GameObject _gameObject;
 
+		private List<PresentDelegate> _presentDelegates;
 		private IViewControllerFactory _viewControllerFactory;
 		private IViewFactory _viewFactory;
 
@@ -64,6 +72,26 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
+		/// Adds a <see cref="PresentDelegate"/> to controller middleware chain.
+		/// </summary>
+		/// <param name="presentDelegate">The middleware to add.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="presentDelegate"/> is <see langword="null"/>.</exception>
+		public void Use(PresentDelegate presentDelegate)
+		{
+			if (presentDelegate is null)
+			{
+				throw new ArgumentNullException(nameof(presentDelegate));
+			}
+
+			if (_presentDelegates is null)
+			{
+				_presentDelegates = new List<PresentDelegate>();
+			}
+
+			_presentDelegates.Add(presentDelegate);
+		}
+
+		/// <summary>
 		/// Creates a <see cref="MonoBehaviour"/>-based implementation of <see cref="IPresenter"/>.
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Thrown if presenter cannot be constructed (for instance, <see cref="IViewFactory"/> is not set and cannot be located).</exception>
@@ -96,6 +124,7 @@ namespace UnityFx.Mvc
 
 			var presenter = _gameObject.AddComponent<Presenter>();
 			presenter.Initialize(_serviceProvider, _viewFactory, _viewControllerFactory);
+			presenter.SetMiddleware(_presentDelegates);
 			return presenter;
 		}
 
