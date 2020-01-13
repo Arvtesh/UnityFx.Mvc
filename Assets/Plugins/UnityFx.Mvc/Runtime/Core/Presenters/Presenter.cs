@@ -144,6 +144,10 @@ namespace UnityFx.Mvc
 
 		#region IPresentService
 
+		public IServiceProvider ServiceProvider => _serviceProvider;
+
+		public IViewFactory ViewFactory => _viewFactory;
+
 		public IViewControllerCollection Controllers => _controllers;
 
 		public IViewController ActiveController

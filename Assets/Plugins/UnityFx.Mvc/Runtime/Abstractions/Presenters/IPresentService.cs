@@ -14,6 +14,16 @@ namespace UnityFx.Mvc
 	public interface IPresentService : IPresenter, ICommandTarget, IDisposable
 	{
 		/// <summary>
+		/// Gets the <see cref="IServiceProvider"/> that is used to resolve controller dependencies.
+		/// </summary>
+		IServiceProvider ServiceProvider { get; }
+
+		/// <summary>
+		/// Gets the <see cref="IViewFactory"/> attached.
+		/// </summary>
+		IViewFactory ViewFactory { get; }
+
+		/// <summary>
 		/// Gets a read-only stack of view controllers currently presented.
 		/// </summary>
 		/// <seealso cref="ActiveController"/>
