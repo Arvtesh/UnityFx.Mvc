@@ -309,6 +309,7 @@ namespace UnityFx.Mvc
 
 				presentContext.PresentOptions |= controllerAttr.PresentOptions;
 				presentContext.Layer = controllerAttr.Layer;
+				presentContext.Tag = controllerAttr.Tag;
 				presentContext.PrefabPath = controllerAttr.PrefabPath;
 			}
 

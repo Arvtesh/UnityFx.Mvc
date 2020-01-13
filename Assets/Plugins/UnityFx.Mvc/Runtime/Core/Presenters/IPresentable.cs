@@ -15,7 +15,6 @@ namespace UnityFx.Mvc
 		bool IsDismissed { get; }
 		IViewController Controller { get; }
 		IPresentable Parent { get; }
-		Type ControllerType { get; }
 		Task PresentAsync(IViewFactory viewFactory, int index, Transform parent);
 		void Update(float frameTime, bool isTop);
 		void DismissUnsafe();

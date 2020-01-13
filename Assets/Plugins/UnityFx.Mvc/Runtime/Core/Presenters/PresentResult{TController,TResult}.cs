@@ -48,6 +48,7 @@ namespace UnityFx.Mvc
 		private readonly IPresentable _parent;
 		private readonly int _id;
 		private readonly int _layer;
+		private readonly int _tag;
 		private readonly string _prefabPath;
 		private readonly string _deeplinkId;
 
@@ -74,6 +75,7 @@ namespace UnityFx.Mvc
 
 			_presenter = presenter;
 			_id = context.Id;
+			_tag = context.Tag;
 			_layer = context.Layer;
 			_parent = context.Parent;
 			_serviceProvider = context.ServiceProvider;
@@ -94,8 +96,6 @@ namespace UnityFx.Mvc
 		public IPresentable Parent => _parent;
 
 		IViewController IPresentable.Controller => _controller;
-
-		public Type ControllerType => _controllerType;
 
 		public bool TryActivate()
 		{
@@ -215,6 +215,10 @@ namespace UnityFx.Mvc
 
 		public IView View => _view;
 
+		public float PresentTime => _timer;
+
+		public bool IsActive => _state == State.Active;
+
 		public bool IsDismissed => _state == State.Dismissed || _state == State.Disposed;
 
 		public void Schedule(Action<float> timerCallback, float timeout)
@@ -257,13 +261,13 @@ namespace UnityFx.Mvc
 
 		public string DeeplinkId => _deeplinkId;
 
+		public int Tag => _tag;
+
+		public Type ControllerType => _controllerType;
+
 		public PresentArgs PresentArgs => _presentArgs;
 
 		public PresentOptions PresentOptions => _presentOptions;
-
-		public float PresentTime => _timer;
-
-		public bool IsActive => _state == State.Active;
 
 		#endregion
 

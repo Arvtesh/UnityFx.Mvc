@@ -26,6 +26,16 @@ namespace UnityFx.Mvc
 		string DeeplinkId { get; }
 
 		/// <summary>
+		/// Gets controller tag.
+		/// </summary>
+		int Tag { get; }
+
+		/// <summary>
+		/// Gets type of the controller.
+		/// </summary>
+		Type ControllerType { get; }
+
+		/// <summary>
 		/// Gets the controller present arguments.
 		/// </summary>
 		/// <seealso cref="PresentOptions"/>
