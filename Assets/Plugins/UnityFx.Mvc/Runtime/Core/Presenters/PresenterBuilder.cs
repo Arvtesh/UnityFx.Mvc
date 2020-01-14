@@ -9,11 +9,6 @@ using UnityEngine;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Present delegate that is called right before presenting a controller.
-	/// </summary>
-	public delegate Task PresentDelegate(IViewControllerInfo controllerInfo);
-
-	/// <summary>
 	/// Factory of <see cref="IPresenter"/> instances.
 	/// </summary>
 	public sealed class PresenterBuilder
@@ -23,6 +18,7 @@ namespace UnityFx.Mvc
 		private readonly IServiceProvider _serviceProvider;
 		private readonly GameObject _gameObject;
 
+		private Dictionary<string, object> _properties;
 		private List<PresentDelegate> _presentDelegates;
 		private IViewControllerFactory _viewControllerFactory;
 		private IViewFactory _viewFactory;
@@ -30,6 +26,27 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// Gets the <see cref="IServiceProvider"/> that provides access to the application's service container.
+		/// </summary>
+		public IServiceProvider ServiceProvider => _serviceProvider;
+
+		/// <summary>
+		/// Gets a key/value collection that can be used to share data between middleware.
+		/// </summary>
+		public IDictionary<string, object> Properties
+		{
+			get
+			{
+				if (_properties is null)
+				{
+					_properties = new Dictionary<string, object>();
+				}
+
+				return _properties;
+			}
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresenterBuilder"/> class.

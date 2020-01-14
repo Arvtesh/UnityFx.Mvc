@@ -10,7 +10,7 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="IPresentContext{TResult}"/>
 	/// <seealso cref="IViewController"/>
-	public interface IPresentContext : IPresenter, IViewControllerInfo, IServiceProvider
+	public interface IPresentContext : IViewControllerInfo, IPresenter, IServiceProvider
 	{
 		/// <summary>
 		/// Gets time elapsed since the controller has been presented (in seconds).
