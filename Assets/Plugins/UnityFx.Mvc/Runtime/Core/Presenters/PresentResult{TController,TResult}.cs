@@ -401,7 +401,10 @@ namespace UnityFx.Mvc
 
 		private void UpdateController(float frameTime)
 		{
-			_controllerEvents?.OnUpdate(frameTime);
+			if (_controller is IUpdateTarget ut)
+			{
+				ut.Update(frameTime);
+			}
 		}
 
 		private void UpdateTimers(float frameTime)

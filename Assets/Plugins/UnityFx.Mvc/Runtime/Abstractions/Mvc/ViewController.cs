@@ -10,7 +10,7 @@ namespace UnityFx.Mvc
 	/// Implementation of <see cref="IViewController"/>.
 	/// </summary>
 	/// <seealso cref="ViewController{TView}"/>
-	public abstract class ViewController : IViewController, IViewControllerEvents
+	public abstract class ViewController : IViewController, IViewControllerEvents, IUpdateTarget
 	{
 		#region data
 
@@ -148,7 +148,11 @@ namespace UnityFx.Mvc
 			OnDismiss();
 		}
 
-		void IViewControllerEvents.OnUpdate(float frameTime)
+		#endregion
+
+		#region IUpdateTarget
+
+		void IUpdateTarget.Update(float frameTime)
 		{
 			Debug.Assert(!IsDismissed);
 			OnUpdate(frameTime);
