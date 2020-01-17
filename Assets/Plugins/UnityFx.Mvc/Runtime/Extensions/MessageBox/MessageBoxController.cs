@@ -37,12 +37,12 @@ namespace UnityFx.Mvc.Extensions
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MessageBoxController"/> class.
 		/// </summary>
-		public MessageBoxController(IPresentContext<MessageBoxResult> context)
+		public MessageBoxController(IPresentContext<MessageBoxResult> context, MessageBoxArgs args)
 		{
 			_context = context;
 			_context.View.Command += OnCommand;
 
-			if (context.PresentArgs is MessageBoxArgs args && context.View is IConfigurable<MessageBoxArgs> view)
+			if (context.View is IConfigurable<MessageBoxArgs> view)
 			{
 				view.Configure(args);
 			}

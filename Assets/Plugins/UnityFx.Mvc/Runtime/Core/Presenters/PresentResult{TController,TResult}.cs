@@ -235,6 +235,12 @@ namespace UnityFx.Mvc
 			Dismiss(result, false);
 		}
 
+		public void Dismiss(Exception e)
+		{
+			LogException(e);
+			Dismiss(default, false);
+		}
+
 		public void Dismiss()
 		{
 			Dismiss(default, false);

@@ -43,11 +43,14 @@ namespace UnityFx.Mvc
 		void Schedule(Action<float> timerCallback, float timeout);
 
 		/// <summary>
+		/// Dismisses the controller with exception.
+		/// </summary>
+		/// <seealso cref="IsDismissed"/>
+		void Dismiss(Exception e);
+
+		/// <summary>
 		/// Dismisses the controller.
 		/// </summary>
-		/// <remarks>
-		/// This call also dismisses all controllers presented by the owner.
-		/// </remarks>
 		/// <seealso cref="IsDismissed"/>
 		void Dismiss();
 	}
