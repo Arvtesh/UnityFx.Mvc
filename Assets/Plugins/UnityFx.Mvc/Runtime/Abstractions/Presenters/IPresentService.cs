@@ -36,12 +36,13 @@ namespace UnityFx.Mvc
 		IViewController ActiveController { get; }
 
 		/// <summary>
-		/// Gets the information associated with the specified <paramref name="controller"/>.
+		/// Gets an information associated with the specified <paramref name="controller"/>.
 		/// </summary>
 		/// <param name="controller">The controller to query information for</param>
 		/// <param name="info">When this method returns, contains the value associated with the specified <paramref name="controller"/>, if the controller is found; otherwise, <see langword="null"/>. This parameter is passed uninitialized.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controller"/> is <see langword="null"/>.</exception>
 		/// <returns>Returns <see langword="true"/> if the <paramref name="controller"/> is presented and the info is available; <see langword="false"/> otherwise.</returns>
+		/// <seealso cref="IViewControllerInfo"/>
 		bool TryGetInfo(IViewController controller, out IViewControllerInfo info);
 	}
 }

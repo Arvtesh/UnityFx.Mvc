@@ -6,27 +6,28 @@ using System;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// A view controller information.
+	/// Defines view controller information shared between <see cref="IPresentResult"/> and <see cref="IPresentContext"/>.
+	/// All data and methods are usable before the corresponding controller is created.
 	/// </summary>
-	/// <remarks>
-	/// As the name states, main responsibility of a view controller is managing its view.
-	/// Controllers are created via a <see cref="IViewControllerFactory"/> instance.
-	/// </remarks>
 	/// <seealso cref="IViewController"/>
+	/// <seealso cref="IPresentResult"/>
+	/// <seealso cref="IPresentContext"/>
 	public interface IViewControllerInfo
 	{
 		/// <summary>
 		/// Gets unique identifier of the controller.
 		/// </summary>
+		/// <seealso cref="DeeplinkId"/>
 		int Id { get; }
 
 		/// <summary>
 		/// Gets the deepling identifier for this controller.
 		/// </summary>
+		/// <seealso cref="Id"/>
 		string DeeplinkId { get; }
 
 		/// <summary>
-		/// Gets controller tag.
+		/// Gets the controller tag. The meaning of this field is defined by user. Typically used to group controllers.
 		/// </summary>
 		int Tag { get; }
 
@@ -42,7 +43,7 @@ namespace UnityFx.Mvc
 		PresentArgs PresentArgs { get; }
 
 		/// <summary>
-		/// Gets the present flags used when instantiating the controller.
+		/// Gets the present flags to use the controller is created.
 		/// </summary>
 		/// <seealso cref="PresentArgs"/>
 		PresentOptions PresentOptions { get; }
