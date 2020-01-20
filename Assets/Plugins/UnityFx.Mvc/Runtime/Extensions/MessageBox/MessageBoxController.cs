@@ -9,6 +9,42 @@ namespace UnityFx.Mvc.Extensions
 	/// <summary>
 	/// Controller of a generic message box.
 	/// </summary>
+	/// <remarks>
+	/// Can work with any view that implements <see cref="IConfigurable{T}"/>. When the view
+	/// is closed by user, it is supposed to send one of the <see cref="Commands"/> commands
+	/// to the controller. Controller result values are enumerated in <see cref="MessageBoxResult"/>.
+	/// </remarks>
+	/// <example>
+	/// The following code sample demonstrates a custom UGUI view for a message box:
+	/// <code>
+	/// using UnityEngine;
+	/// using UnityEngine.UI;
+	/// using UnityFx.Mvc.Extensions;
+	///
+	/// public class InfoBoxView : View, IConfigurable<MessageBoxArgs>
+	/// {
+	///		[SerializeField]
+	///		private Text _text;
+	///		[SerializeField]
+	///		private Button _okButton;
+	///		
+	///		public void Configure(MessageBoxArgs args)
+	///		{
+	///			_text.text = args.Text;
+	///		}
+	///		
+	///		private void Awake()
+	///		{
+	///			_okButton?.onClick.AddListener(OnOk);
+	///		}
+	///		
+	///		private void OnOk()
+	///		{
+	///			NotifyCommand(MessageBoxController.Commands.Close);
+	///		}
+	/// }
+	/// </code>
+	/// </example>
 	/// <seealso cref="MessageBoxView"/>
 	/// <seealso cref="MessageBoxArgs"/>
 	/// <seealso cref="MessageBoxOptions"/>
