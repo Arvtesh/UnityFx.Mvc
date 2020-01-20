@@ -9,6 +9,9 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// Present delegate that is called right before presenting a controller.
 	/// </summary>
-	/// <see cref="IPresenter"/>
+	/// <param name="presenter">The presenter.</param>
+	/// <param name="controllerInfo">Information about the controller being presented.</param>
+	/// <seealso cref="IPresenter"/>
+	/// <seealso cref="IPresenterBuilder"/>
 	public delegate Task PresentDelegate(IPresentService presenter, IViewControllerInfo controllerInfo);
 }

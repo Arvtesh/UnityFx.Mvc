@@ -8,9 +8,43 @@ using UnityEngine;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// A builder of a <see cref="IPresenter"/> instance.
+	/// Defines a class that provides the mechanisms to configure a <see cref="IPresenter"/> instance.
 	/// </summary>
+	/// <remarks>
+	/// This interface defines fluent configuration API for <see cref="IPresenter"/>. It is designed to be
+	/// similar to ASP.NET <see href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.iapplicationbuilder"/>.
+	/// </remarks>
+	/// <example>
+	/// The following code demonstrates configuring the app presenter:
+	/// <code>
+	/// private void Configure(IPresenterBuilder presenterBuilder)
+	/// {
+	///		presenterBuilder
+	///			.UseViewFactory(_myViewFactory)
+	///			.UseViewControllerFactory(_myCustomControllerFactory)	// If not called, default controller factory is used.
+	///			.UsePresentDelegate((presenter, controllerInfo) =>
+	///				{
+	///					// Log the present operation.
+	///					Debug.Log($"Present {controllerInfo.ControllerType.Name}.");
+	///					return Task.CompletedTask;
+	///				})
+	///			.UsePresentDelegate((presenter, controllerInfo) =>
+	///				{
+	///					// Make sure that user has been authorized.
+	///					var userInfo = (UserInfo)presenter.ServiceProvider.GetService(typeof(UserInfo));
+	///					
+	///					if (!userInfo.IsAuthorized)
+	///					{
+	///						throw new InvalidOperationException();
+	///					}
+	/// 
+	///					return Task.CompletedTask;
+	///				});
+	/// }
+	/// </code>
+	/// </example>
 	/// <seealso cref="IPresenter"/>
+	/// <seealso href="https://en.wikipedia.org/wiki/Builder_pattern"/>
 	public interface IPresenterBuilder
 	{
 		/// <summary>
@@ -50,7 +84,7 @@ namespace UnityFx.Mvc
 		IPresenterBuilder UsePresentDelegate(PresentDelegate presentDelegate);
 
 		/// <summary>
-		/// Creates a <see cref="MonoBehaviour"/>-based implementation of <see cref="IPresenter"/>.
+		/// Creates a <see cref="MonoBehaviour"/>-based implementation of <see cref="IPresenter"/>. Can only be called once per builder instance.
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Thrown if presenter cannot be constructed (for instance, <see cref="IViewFactory"/> is not set and cannot be located).</exception>
 		IPresentService Build();

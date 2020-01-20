@@ -9,8 +9,10 @@ using UnityEngine;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Factory of UGUI-based <see cref="IViewFactory"/> instances.
+	/// BUilder of UGUI-based <see cref="IViewFactory"/> instances.
 	/// </summary>
+	/// <seealso cref="PresenterBuilder"/>
+	/// <seealso href="https://en.wikipedia.org/wiki/Builder_pattern"/>
 	public sealed class UGUIViewFactoryBuilder
 	{
 		#region data
@@ -42,7 +44,9 @@ namespace UnityFx.Mvc
 		/// <param name="prefabGo">The preloaded prefab.</param>
 		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="prefabPath"/> or <paramref name="prefabGo"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">Thrown is <paramref name="prefabPath"/> is invalid.</exception>
-		public void AddViewPrefab(string prefabPath, GameObject prefabGo)
+		/// <seealso cref="AddLayer(Transform)"/>
+		/// <seealso cref="Build"/>
+		public UGUIViewFactoryBuilder AddViewPrefab(string prefabPath, GameObject prefabGo)
 		{
 			if (prefabPath is null)
 			{
@@ -65,14 +69,18 @@ namespace UnityFx.Mvc
 			}
 
 			_viewPrefabs.Add(prefabPath, prefabGo);
+			return this;
 		}
 
 		/// <summary>
-		/// Adds a view root.
+		/// Adds a new view layer.
 		/// </summary>
 		/// <param name="transform">A <see cref="Transform"/> to use as a view root.</param>
 		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="transform"/> is <see langword="null"/>.</exception>
-		public void AddViewRoot(Transform transform)
+		/// <seealso cref="ViewControllerAttribute.Layer"/>
+		/// <seealso cref="AddViewPrefab(string, GameObject)"/>
+		/// <seealso cref="Build"/>
+		public UGUIViewFactoryBuilder AddLayer(Transform transform)
 		{
 			if (transform is null)
 			{
@@ -85,6 +93,7 @@ namespace UnityFx.Mvc
 			}
 
 			_viewRoots.Add(transform);
+			return this;
 		}
 
 		/// <summary>
@@ -93,7 +102,9 @@ namespace UnityFx.Mvc
 		/// <param name="loadPrefabDelegate">A delegate to load a prefab for the specified path.</param>
 		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="loadPrefabDelegate"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if the delegate is already set.</exception>
-		public void UseLoadDelegate(Func<string, Task<GameObject>> loadPrefabDelegate)
+		/// <seealso cref="UsePopupBackgoundColor(Color)"/>
+		/// <seealso cref="Build"/>
+		public UGUIViewFactoryBuilder UseLoadDelegate(Func<string, Task<GameObject>> loadPrefabDelegate)
 		{
 			if (_loadPrefabDelegate != null)
 			{
@@ -101,15 +112,19 @@ namespace UnityFx.Mvc
 			}
 
 			_loadPrefabDelegate = loadPrefabDelegate ?? throw new ArgumentNullException(nameof(loadPrefabDelegate));
+			return this;
 		}
 
 		/// <summary>
 		/// Sets background color to use for popup views.
 		/// </summary>
 		/// <param name="backgroundColor">The popup background color.</param>
-		public void UsePopupBackgoundColor(Color backgroundColor)
+		/// <seealso cref="UseLoadDelegate(Func{string, Task{GameObject}})"/>
+		/// <seealso cref="Build"/>
+		public UGUIViewFactoryBuilder UsePopupBackgoundColor(Color backgroundColor)
 		{
 			_popupBackgroundColor = backgroundColor;
+			return this;
 		}
 
 		/// <summary>
