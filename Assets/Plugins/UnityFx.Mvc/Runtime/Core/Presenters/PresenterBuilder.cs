@@ -9,9 +9,10 @@ using UnityEngine;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Factory of <see cref="IPresenter"/> instances.
+	/// Default implementation of <see cref="IPresenterBuilder"/>.
 	/// </summary>
-	public sealed class PresenterBuilder
+	/// <seealso cref="UGUIViewFactoryBuilder"/>
+	public sealed class PresenterBuilder : IPresenterBuilder
 	{
 		#region data
 
@@ -28,13 +29,23 @@ namespace UnityFx.Mvc
 		#region interface
 
 		/// <summary>
-		/// Gets the <see cref="IServiceProvider"/> that provides access to the application's service container.
+		/// Initializes a new instance of the <see cref="PresenterBuilder"/> class.
 		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="serviceProvider"/> or <paramref name="go"/> is <see langword="null"/>.</exception>
+		public PresenterBuilder(IServiceProvider serviceProvider, GameObject go)
+		{
+			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			_gameObject = go ?? throw new ArgumentNullException(nameof(go));
+		}
+
+		#endregion
+
+		#region IPresenterBuilder
+
+		/// <inheritdoc/>
 		public IServiceProvider ServiceProvider => _serviceProvider;
 
-		/// <summary>
-		/// Gets a key/value collection that can be used to share data between middleware.
-		/// </summary>
+		/// <inheritdoc/>
 		public IDictionary<string, object> Properties
 		{
 			get
@@ -48,22 +59,8 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PresenterBuilder"/> class.
-		/// </summary>
-		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="serviceProvider"/> or <paramref name="go"/> is <see langword="null"/>.</exception>
-		public PresenterBuilder(IServiceProvider serviceProvider, GameObject go)
-		{
-			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-			_gameObject = go ?? throw new ArgumentNullException(nameof(go));
-		}
-
-		/// <summary>
-		/// Sets a <see cref="IViewFactory"/> instace to use.
-		/// </summary>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="viewFactory"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Thrown if the view factory is already set.</exception>
-		public void UseViewFactory(IViewFactory viewFactory)
+		/// <inheritdoc/>
+		public IPresenterBuilder UseViewFactory(IViewFactory viewFactory)
 		{
 			if (_viewFactory != null)
 			{
@@ -71,14 +68,11 @@ namespace UnityFx.Mvc
 			}
 
 			_viewFactory = viewFactory ?? throw new ArgumentNullException(nameof(viewFactory));
+			return this;
 		}
 
-		/// <summary>
-		/// Sets a <see cref="IViewControllerFactory"/> instace to use.
-		/// </summary>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="viewControllerFactory"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Thrown if the view controller factory is already set.</exception>
-		public void UseViewControllerFactory(IViewControllerFactory viewControllerFactory)
+		/// <inheritdoc/>
+		public IPresenterBuilder UseViewControllerFactory(IViewControllerFactory viewControllerFactory)
 		{
 			if (_viewControllerFactory != null)
 			{
@@ -86,14 +80,11 @@ namespace UnityFx.Mvc
 			}
 
 			_viewControllerFactory = viewControllerFactory ?? throw new ArgumentNullException(nameof(viewControllerFactory));
+			return this;
 		}
 
-		/// <summary>
-		/// Adds a <see cref="PresentDelegate"/> to controller middleware chain.
-		/// </summary>
-		/// <param name="presentDelegate">The middleware to add.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="presentDelegate"/> is <see langword="null"/>.</exception>
-		public void Use(PresentDelegate presentDelegate)
+		/// <inheritdoc/>
+		public IPresenterBuilder UsePresentDelegate(PresentDelegate presentDelegate)
 		{
 			if (presentDelegate is null)
 			{
@@ -106,12 +97,10 @@ namespace UnityFx.Mvc
 			}
 
 			_presentDelegates.Add(presentDelegate);
+			return this;
 		}
 
-		/// <summary>
-		/// Creates a <see cref="MonoBehaviour"/>-based implementation of <see cref="IPresenter"/>.
-		/// </summary>
-		/// <exception cref="InvalidOperationException">Thrown if presenter cannot be constructed (for instance, <see cref="IViewFactory"/> is not set and cannot be located).</exception>
+		/// <inheritdoc/>
 		public IPresentService Build()
 		{
 			if (_viewFactory is null)
