@@ -206,8 +206,6 @@ namespace UnityFx.Mvc
 
 		public bool IsActive => _state == State.Active;
 
-		public bool IsDismissed => _state == State.Dismissed || _state == State.Disposed;
-
 		public void Schedule(Action<float> timerCallback, float timeout)
 		{
 			ThrowIfDisposed();
@@ -261,6 +259,8 @@ namespace UnityFx.Mvc
 		public PresentArgs PresentArgs => _presentArgs;
 
 		public PresentOptions PresentOptions => _presentOptions;
+
+		public bool IsDismissed => _state == State.Dismissed || _state == State.Disposed;
 
 		#endregion
 

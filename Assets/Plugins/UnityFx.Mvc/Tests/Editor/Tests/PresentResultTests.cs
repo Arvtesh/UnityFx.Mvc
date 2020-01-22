@@ -38,5 +38,17 @@ namespace UnityFx.Mvc
 			var presentResult = _presenter.Present<TagController>();
 			Assert.AreEqual(TagController.TagValue, presentResult.Tag);
 		}
+
+		[Test]
+		public void Dispose_DismissesController()
+		{
+			var presentResult = _presenter.Present<MinimalController>();
+
+			presentResult.Dispose();
+
+			Assert.True(presentResult.IsDismissed);
+			Assert.IsNull(_presenter.ActiveController);
+			Assert.IsEmpty(_presenter.Controllers);
+		}
 	}
 }

@@ -47,5 +47,10 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <seealso cref="PresentArgs"/>
 		PresentOptions PresentOptions { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether the controller is dismissed.
+		/// </summary>
+		bool IsDismissed { get; }
 	}
 }

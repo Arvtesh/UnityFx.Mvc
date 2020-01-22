@@ -20,15 +20,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets a value indicating whether the controller is active.
 		/// </summary>
-		/// <seealso cref="IsDismissed"/>
 		bool IsActive { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether the controller is dismissed.
-		/// </summary>
-		/// <seealso cref="Dismiss"/>
-		/// <seealso cref="IsActive"/>
-		bool IsDismissed { get; }
 
 		/// <summary>
 		/// Gets the controller view.
@@ -45,13 +37,13 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Dismisses the controller with exception.
 		/// </summary>
-		/// <seealso cref="IsDismissed"/>
+		/// <seealso cref="Dismiss"/>
 		void Dismiss(Exception e);
 
 		/// <summary>
 		/// Dismisses the controller.
 		/// </summary>
-		/// <seealso cref="IsDismissed"/>
+		/// <seealso cref="Dismiss(Exception)"/>
 		void Dismiss();
 	}
 }
