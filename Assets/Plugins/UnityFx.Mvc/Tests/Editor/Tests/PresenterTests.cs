@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Alexander Bogarsukov. All rights reserved.
+﻿// Copyright (C) 2019 Alexander Bogarsukov. All rights reserved.
 // See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -11,23 +11,21 @@ using NUnit.Framework;
 
 namespace UnityFx.Mvc
 {
-	[Category("Presenter"), TestOf(typeof(Presenter))]
+	[Category("Presenter"), TestOf(typeof(IPresentService))]
 	public class PresenterTests : IDisposable
 	{
 		private DefaultViewFactory _viewFactory;
 		private DefaultServiceProvider _serviceProvider;
 		private GameObject _go;
-		private Presenter _presenter;
+		private IPresentService _presenter;
 
 		[SetUp]
 		public void Init()
 		{
 			_serviceProvider = new DefaultServiceProvider();
 			_viewFactory = new DefaultViewFactory();
-			_go = new GameObject("PresenterTest");
-
-			_presenter = _go.AddComponent<Presenter>();
-			_presenter.Initialize(_serviceProvider, _viewFactory, new ViewControllerFactory(_serviceProvider));
+			_go = new GameObject("PresenterTests");
+			_presenter = new PresenterBuilder(_serviceProvider, _go).UseViewFactory(_viewFactory).Build();
 		}
 
 		[TearDown]
@@ -39,6 +37,8 @@ namespace UnityFx.Mvc
 		[Test]
 		public void InitialStateIsValid()
 		{
+			Assert.AreEqual(_serviceProvider, _presenter.ServiceProvider);
+			Assert.AreEqual(_viewFactory, _presenter.ViewFactory);
 			Assert.IsNull(_presenter.ActiveController);
 			Assert.IsEmpty(_presenter.Controllers);
 		}
@@ -50,9 +50,14 @@ namespace UnityFx.Mvc
 		}
 
 		[Test]
-		public void Present_ThrownOnInvalidControllerType()
+		public void Present_ThrownOnAbstractControllerType()
 		{
 			Assert.Throws<ArgumentException>(() => _presenter.Present(typeof(AbstractController)));
+		}
+
+		[Test]
+		public void Present_ThrownOnInvalidControllerType()
+		{
 			Assert.Throws<ArgumentException>(() => _presenter.Present(typeof(InvalidController)));
 		}
 
