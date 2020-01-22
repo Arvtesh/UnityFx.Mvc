@@ -10,7 +10,7 @@ namespace UnityFx.Mvc
 	/// Implementation of <see cref="IViewController"/>.
 	/// </summary>
 	/// <seealso cref="ViewController{TView}"/>
-	public abstract class ViewController : IViewController, IViewControllerEvents, IUpdateTarget
+	public abstract class ViewController : IViewController, IViewControllerEvents, ICommandTarget, IUpdateTarget
 	{
 		#region data
 

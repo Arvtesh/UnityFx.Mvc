@@ -50,7 +50,7 @@ namespace UnityFx.Mvc.Extensions
 	/// <seealso cref="MessageBoxOptions"/>
 	/// <seealso cref="MessageBoxResult"/>
 	[ViewController(PresentOptions = PresentOptions.Popup | PresentOptions.Modal)]
-	public class MessageBoxController : IViewController, IViewControllerResult<MessageBoxResult>
+	public class MessageBoxController : IViewController, IViewControllerResult<MessageBoxResult>, ICommandTarget
 	{
 		#region data
 

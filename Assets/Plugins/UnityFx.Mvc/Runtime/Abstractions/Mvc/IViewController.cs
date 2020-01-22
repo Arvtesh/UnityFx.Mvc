@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 Alexander Bogarsukov.
+﻿// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -18,7 +18,7 @@ namespace UnityFx.Mvc
 	/// <seealso cref="IViewControllerFactory"/>
 	/// <seealso cref="IViewControllerResult{TResult}"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller"/>
-	public interface IViewController : ICommandTarget
+	public interface IViewController
 	{
 		/// <summary>
 		/// Gets a view managed by the controller. Should never returns <see langword="null"/>.

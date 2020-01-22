@@ -18,7 +18,7 @@ namespace UnityFx.Mvc.Extensions
 	/// </remarks>
 	/// <seealso cref="LoadingArgs"/>
 	[ViewController(PresentOptions = PresentOptions.Exclusive)]
-	public class LoadingController : IViewController, IUpdateTarget
+	public class LoadingController : IViewController, ICommandTarget, IUpdateTarget
 	{
 		#region data
 
@@ -127,7 +127,6 @@ namespace UnityFx.Mvc.Extensions
 		}
 
 		#endregion
-
 
 		#region implementation
 

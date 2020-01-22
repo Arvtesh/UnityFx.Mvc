@@ -288,9 +288,9 @@ namespace UnityFx.Mvc
 
 		public bool InvokeCommand<TCommand>(TCommand command)
 		{
-			if (_state == State.Presented || _state == State.Active)
+			if ((_state == State.Presented || _state == State.Active) && _controller is ICommandTarget ct)
 			{
-				return _controller.InvokeCommand(command);
+				return ct.InvokeCommand(command);
 			}
 
 			return false;
