@@ -60,7 +60,23 @@ namespace UnityFx.Mvc
 
 			#region IReadOnlyCollection
 
-			public int Count => _presentables.Count;
+			public int Count
+			{
+				get
+				{
+					var count = 0;
+
+					foreach (var item in _presentables)
+					{
+						if (!item.IsDismissed)
+						{
+							++count;
+						}
+					}
+
+					return count;
+				}
+			}
 
 			#endregion
 

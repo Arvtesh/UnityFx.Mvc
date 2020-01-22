@@ -67,15 +67,20 @@ namespace UnityFx.Mvc
 			var presentResult = _presenter.Present<MinimalController>();
 
 			Assert.NotNull(presentResult);
+			Assert.False(presentResult.IsDismissed);
+			Assert.AreEqual(typeof(MinimalController), presentResult.ControllerType);
 		}
 
 		[Test]
-		public void PresentResult_CanBeDisposedRightAfterCreation()
+		public void Present_MaintainsTheOnlyInstanceOfSingletonController()
 		{
-			_presenter.Present<TimerController>().Dispose();
+			var presentResult = _presenter.Present<SingletonController>();
+			var presentResult2 = _presenter.Present<SingletonController>();
 
-			Assert.IsNull(_presenter.ActiveController);
-			Assert.IsEmpty(_presenter.Controllers);
+			Assert.True(presentResult.IsDismissed);
+			Assert.False(presentResult2.IsDismissed);
+			Assert.AreEqual(1, _presenter.Controllers.Count);
+			Assert.AreEqual(presentResult2.Controller, _presenter.Controllers.Peek());
 		}
 
 		[Test]
