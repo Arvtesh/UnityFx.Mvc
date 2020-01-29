@@ -4,6 +4,7 @@
 using System;
 using UnityEngine;
 using UnityFx.Mvc;
+using UnityFx.Mvc.Extensions;
 
 public class AppRoot : MonoBehaviour, IServiceProvider
 {
@@ -42,6 +43,7 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 			await _presenter.PresentAsync<SplashController>();
 
 			_presenter.Present<LobbyController>();
+			_presenter.PresentMessageBox(MessageBoxOptions.InfoOk, "Welcome to UnityFx.Mvc sample app. This window demonstrates a message box with OK button.", "Info Box");
 		}
 		catch (OperationCanceledException)
 		{
