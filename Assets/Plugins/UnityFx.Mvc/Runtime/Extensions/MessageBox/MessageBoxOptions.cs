@@ -39,9 +39,29 @@ namespace UnityFx.Mvc.Extensions
 		Info = 4,
 
 		/// <summary>
+		/// Info box style with OK button.
+		/// </summary>
+		InfoOk = Info | Ok,
+
+		/// <summary>
+		/// Info box style with OK and Cancel buttons.
+		/// </summary>
+		InfoOkCancel = Info | Ok | Cancel,
+
+		/// <summary>
 		/// Warning style.
 		/// </summary>
 		Warning = 8,
+
+		/// <summary>
+		/// Warning style with OK button.
+		/// </summary>
+		WarningOk = Warning | Ok,
+
+		/// <summary>
+		/// Warning style with OK and Cancel buttons.
+		/// </summary>
+		WarningOkCancel = Warning | Ok | Cancel,
 
 		/// <summary>
 		/// Error style.
@@ -49,8 +69,28 @@ namespace UnityFx.Mvc.Extensions
 		Error = 16,
 
 		/// <summary>
+		/// Error style with OK button.
+		/// </summary>
+		ErrorOk = Error | Ok,
+
+		/// <summary>
+		/// Error style with OK and Cancel buttons.
+		/// </summary>
+		ErrorOkCancel = Error | Ok | Cancel,
+
+		/// <summary>
 		/// Alert style.
 		/// </summary>
-		Alert = 32
+		Alert = 32,
+
+		/// <summary>
+		/// Alert style with OK button.
+		/// </summary>
+		AlertOk = Alert | Ok,
+
+		/// <summary>
+		/// Alert style with OK and Cancel buttons.
+		/// </summary>
+		AlertOkCancel = Alert | Ok | Cancel,
 	}
 }

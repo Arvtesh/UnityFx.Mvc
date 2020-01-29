@@ -15,7 +15,7 @@ namespace UnityFx.Mvc.Extensions
 	/// to the controller. Controller result values are enumerated in <see cref="MessageBoxResult"/>.
 	/// </remarks>
 	/// <example>
-	/// The following code sample demonstrates a custom UGUI view for a message box:
+	/// The following code sample demonstrates a custom UGUI view for the message box:
 	/// <code>
 	/// using UnityEngine;
 	/// using UnityEngine.UI;

@@ -13,7 +13,6 @@ namespace UnityFx.Mvc
 		int Layer { get; }
 		string PrefabPath { get; }
 		bool IsActive { get; }
-		bool IsDismissed { get; }
 		IViewController Controller { get; }
 		IPresentable Parent { get; }
 		void CreateController(IView view);
