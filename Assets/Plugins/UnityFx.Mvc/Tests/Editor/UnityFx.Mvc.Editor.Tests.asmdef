@@ -2,7 +2,8 @@
     "name": "UnityFx.Mvc.Editor.Tests",
     "references": [
         "UnityFx.Mvc.Abstractions",
-        "UnityFx.Mvc"
+        "UnityFx.Mvc",
+        "UnityFx.Mvc.Extensions"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"
