@@ -13,6 +13,11 @@ namespace UnityFx.Mvc
 	public interface IPresentService : IPresenter, ICommandTarget, IDisposable
 	{
 		/// <summary>
+		/// Raised when a present operation is completed.
+		/// </summary>
+		event EventHandler<PresentCompletedEventArgs> PresentCompleted;
+
+		/// <summary>
 		/// Gets the <see cref="IServiceProvider"/> that is used to resolve controller dependencies.
 		/// </summary>
 		IServiceProvider ServiceProvider { get; }

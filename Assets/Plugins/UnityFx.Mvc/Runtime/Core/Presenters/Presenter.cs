@@ -144,6 +144,8 @@ namespace UnityFx.Mvc
 
 		#region IPresentService
 
+		public event EventHandler<PresentCompletedEventArgs> PresentCompleted;
+
 		public IServiceProvider ServiceProvider => _serviceProvider;
 
 		public IViewFactory ViewFactory => _viewFactory;
@@ -266,11 +268,11 @@ namespace UnityFx.Mvc
 				}
 
 				// 2) Load the controller view.
-				var view = await _viewFactory.CreateAsync(presentable.PrefabPath, presentable.Layer, zIndex, presentable.PresentOptions, transform);
+				var view = await _viewFactory.CreateViewAsync(presentable.PrefabPath, presentable.Layer, zIndex, presentable.PresentOptions, transform);
 
 				if (view is null)
 				{
-					throw new InvalidOperationException();
+					throw new PresentException(presentable, "View is null.");
 				}
 
 				// 3) Create the controller (or dispose view if the controller is dismissed at this point).
@@ -285,6 +287,7 @@ namespace UnityFx.Mvc
 				}
 
 				_controllerMap.Add(presentable.Controller, presentable);
+				PresentCompleted?.Invoke(this, new PresentCompletedEventArgs(presentable));
 
 				// 4) Dismiss the specified controllers if requested.
 				if ((presentable.PresentOptions & PresentOptions.DismissAll) != 0)
@@ -316,7 +319,8 @@ namespace UnityFx.Mvc
 			}
 			catch (Exception e)
 			{
-				Debug.LogException(e);
+				presentable.Dispose();
+				PresentCompleted?.Invoke(this, new PresentCompletedEventArgs(presentable, e));
 			}
 		}
 
@@ -369,6 +373,7 @@ namespace UnityFx.Mvc
 				presentContext.Parent = parent?.Parent;
 			}
 
+			// Instantiate the presentable.
 			// https://docs.microsoft.com/en-us/dotnet/framework/reflection-and-codedom/how-to-examine-and-instantiate-generic-types-with-reflection
 			var presentResultType = typeof(PresentResult<,>).MakeGenericType(controllerType, resultType);
 			var c = (IPresentable)Activator.CreateInstance(presentResultType, this, presentContext);

@@ -132,7 +132,7 @@ namespace UnityFx.Mvc
 			{
 				_view = view;
 				_scope = _controllerFactory.CreateScope(ref _serviceProvider);
-				_controller = (TController)_controllerFactory.Create(_controllerType, this, _presentArgs, _view);
+				_controller = (TController)_controllerFactory.CreateViewController(_controllerType, this, _presentArgs, _view);
 				_controllerEvents = _controller as IViewControllerEvents;
 				_controllerEvents?.OnPresent();
 				_view.Disposed += OnDismissed;
@@ -362,7 +362,7 @@ namespace UnityFx.Mvc
 				if (_state != State.Disposed)
 				{
 					_state = State.Disposed;
-					_controllerFactory.Release(_controller);
+					_controllerFactory.ReleaseViewController(_controller);
 					_view?.Dispose();
 					_scope?.Dispose();
 				}

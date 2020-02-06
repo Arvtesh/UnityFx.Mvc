@@ -116,7 +116,7 @@ namespace UnityFx.Mvc
 
 		#region IViewFactory
 
-		public async Task<IView> CreateAsync(string prefabPath, int layer, int zIndex, PresentOptions options, Transform parent)
+		public async Task<IView> CreateViewAsync(string prefabPath, int layer, int zIndex, PresentOptions options, Transform parent)
 		{
 			ThrowIfDisposed();
 

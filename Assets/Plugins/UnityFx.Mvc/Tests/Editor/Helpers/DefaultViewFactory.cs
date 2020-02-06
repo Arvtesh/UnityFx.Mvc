@@ -10,7 +10,7 @@ namespace UnityFx.Mvc
 {
 	public class DefaultViewFactory : IViewFactory
 	{
-		public Task<IView> CreateAsync(string prefabPath, int layer, int zIndex, PresentOptions options, Transform parent)
+		public Task<IView> CreateViewAsync(string prefabPath, int layer, int zIndex, PresentOptions options, Transform parent)
 		{
 			switch (prefabPath)
 			{
