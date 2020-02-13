@@ -128,8 +128,7 @@ namespace UnityFx.Mvc
 				}
 			}
 
-			var presenter = _gameObject.AddComponent<Presenter>();
-			presenter.Initialize(_serviceProvider, _viewFactory, _viewControllerFactory);
+			var presenter = new Presenter(_serviceProvider, _viewFactory, _viewControllerFactory);
 			presenter.SetMiddleware(_presentDelegates);
 			return presenter;
 		}
