@@ -21,6 +21,7 @@ namespace UnityFx.Mvc
 		private readonly IServiceProvider _serviceProvider;
 		private readonly IViewFactory _viewFactory;
 		private readonly IViewControllerFactory _controllerFactory;
+		private readonly IPresenterEventProvider _eventProvider;
 		private readonly ViewControllerCollection _controllers;
 
 		private LinkedList<IPresentable> _presentables = new LinkedList<IPresentable>();
@@ -36,7 +37,7 @@ namespace UnityFx.Mvc
 
 		internal event EventHandler Disposed;
 
-		internal Presenter(IServiceProvider serviceProvider, IViewFactory viewFactory, IViewControllerFactory controllerFactory)
+		internal Presenter(IServiceProvider serviceProvider, IViewFactory viewFactory, IViewControllerFactory controllerFactory, IPresenterEventProvider eventProvider)
 		{
 			Debug.Assert(serviceProvider != null);
 			Debug.Assert(viewFactory != null);
@@ -45,7 +46,13 @@ namespace UnityFx.Mvc
 			_serviceProvider = serviceProvider;
 			_viewFactory = viewFactory;
 			_controllerFactory = controllerFactory;
+			_eventProvider = eventProvider;
 			_controllers = new ViewControllerCollection(_presentables);
+
+			if (_eventProvider != null)
+			{
+				_eventProvider.Update += Update;
+			}
 		}
 
 		internal void SetMiddleware(List<PresentDelegate> middleware)
@@ -227,6 +234,11 @@ namespace UnityFx.Mvc
 				_disposed = true;
 				DisposeInternal();
 				Disposed?.Invoke(this, EventArgs.Empty);
+
+				if (_eventProvider != null)
+				{
+					_eventProvider.Update -= Update;
+				}
 			}
 		}
 

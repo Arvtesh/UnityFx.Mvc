@@ -15,26 +15,6 @@ using PlayerLoopTypes = UnityEngine.PlayerLoop;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Enumerates presenter creation options.
-	/// </summary>
-	public enum PresenterBuilderOptions
-	{
-		/// <summary>
-		/// Default options.
-		/// </summary>
-		None,
-
-#if UNITY_2019_3_OR_NEWER
-
-		/// <summary>
-		/// Uses player loop to register update callback for presenter. Requires Unity 2019.3 or newer.
-		/// </summary>
-		UsePlayerLoop
-
-#endif
-	}
-
-	/// <summary>
 	/// Default implementation of <see cref="IPresenterBuilder"/>.
 	/// </summary>
 	/// <seealso cref="UGUIViewFactoryBuilder"/>
@@ -44,12 +24,16 @@ namespace UnityFx.Mvc
 
 		private readonly IServiceProvider _serviceProvider;
 		private readonly GameObject _gameObject;
-		private readonly PresenterBuilderOptions _options;
 
-		private Dictionary<string, object> _properties;
-		private List<PresentDelegate> _presentDelegates;
-		private IViewControllerFactory _viewControllerFactory;
 		private IViewFactory _viewFactory;
+		private IViewControllerFactory _viewControllerFactory;
+		private IPresenterEventProvider _eventProvider;
+		private List<PresentDelegate> _presentDelegates;
+		private Dictionary<string, object> _properties;
+#if UNITY_2019_3_OR_NEWER
+		private bool _usePlayerLoop;
+#endif
+
 		private Presenter _presenter;
 
 		#endregion
@@ -60,20 +44,10 @@ namespace UnityFx.Mvc
 		/// Initializes a new instance of the <see cref="PresenterBuilder"/> class.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="serviceProvider"/> is <see langword="null"/>.</exception>
-		public PresenterBuilder(IServiceProvider serviceProvider, GameObject gameObject, PresenterBuilderOptions options = PresenterBuilderOptions.None)
+		public PresenterBuilder(IServiceProvider serviceProvider, GameObject gameObject)
 		{
-#if !UNITY_2019_3_OR_NEWER
-
-			if (gameObject is null)
-			{
-				throw new ArgumentNullException(nameof(gameObject));
-			}
-
-#endif
-
 			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			_gameObject = gameObject;
-			_options = options;
 		}
 
 		#endregion
@@ -122,6 +96,45 @@ namespace UnityFx.Mvc
 		}
 
 		/// <inheritdoc/>
+		public IPresenterBuilder UseEventProvider(IPresenterEventProvider eventProvider)
+		{
+#if UNITY_2019_3_OR_NEWER
+
+			if (_eventProvider != null || _usePlayerLoop)
+			{
+				throw new InvalidOperationException();
+			}
+
+#else
+
+			if (_eventProvider != null)
+			{
+				throw new InvalidOperationException();
+			}
+
+#endif
+
+			_eventProvider = eventProvider ?? throw new ArgumentNullException(nameof(eventProvider));
+			return this;
+		}
+
+#if UNITY_2019_3_OR_NEWER
+
+		/// <inheritdoc/>
+		public IPresenterBuilder UsePlayerLoop()
+		{
+			if (_eventProvider != null || _usePlayerLoop)
+			{
+				throw new InvalidOperationException();
+			}
+
+			_usePlayerLoop = true;
+			return this;
+		}
+
+#endif
+
+		/// <inheritdoc/>
 		public IPresenterBuilder UsePresentDelegate(PresentDelegate presentDelegate)
 		{
 			if (presentDelegate is null)
@@ -168,23 +181,29 @@ namespace UnityFx.Mvc
 					}
 				}
 
-				_presenter = new Presenter(_serviceProvider, _viewFactory, _viewControllerFactory);
+				_presenter = new Presenter(_serviceProvider, _viewFactory, _viewControllerFactory, _eventProvider);
+
+				if (_eventProvider is null && _gameObject)
+				{
+					_gameObject.AddComponent<PresenterBehaviour>().Initialize(_presenter);
+				}
+				else
+				{
+					// NOTE: If _gameObject is null, presenter is not going to receive update events.
+					_presenter.Dispose();
+					_presenter = null;
+
+					throw new InvalidOperationException("No event source is set. Presenter requires update notifications in order to function properly.");
+				}
+
 				_presenter.SetMiddleware(_presentDelegates);
 
 #if UNITY_2019_3_OR_NEWER
 
-				if (_gameObject is null || _options == PresenterBuilderOptions.UsePlayerLoop)
+				if (_usePlayerLoop)
 				{
 					InitPlayerLoop(_presenter);
 				}
-				else
-				{
-					_gameObject.AddComponent<PresenterBehaviour>().Initialize(_presenter);
-				}
-
-#else
-
-				_gameObject.AddComponent<PresenterBehaviour>().Initialize(_presenter);
 
 #endif
 			}

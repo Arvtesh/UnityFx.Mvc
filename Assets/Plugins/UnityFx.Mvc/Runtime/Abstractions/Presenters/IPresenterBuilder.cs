@@ -58,22 +58,47 @@ namespace UnityFx.Mvc
 		IDictionary<string, object> Properties { get; }
 
 		/// <summary>
-		/// Sets a <see cref="IViewFactory"/> instace to use.
+		/// Sets a <see cref="IViewFactory"/> instace to use. The factory should be set before calling <see cref="Build"/>.
 		/// </summary>
+		/// <param name="viewFactory">A view factory to use.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="viewFactory"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Thrown if the view factory is already set.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if a view factory is already set.</exception>
 		/// <seealso cref="UseViewControllerFactory(IViewControllerFactory)"/>
+		/// <seealso cref="UseEventProvider(IPresenterEventProvider)"/>
 		/// <seealso cref="Build"/>
 		IPresenterBuilder UseViewFactory(IViewFactory viewFactory);
 
 		/// <summary>
-		/// Sets a <see cref="IViewControllerFactory"/> instace to use.
+		/// Sets a <see cref="IViewControllerFactory"/> instace to use. If not called, a default factory is used.
 		/// </summary>
+		/// <param name="viewControllerFactory">A view controller factory to use.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="viewControllerFactory"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Thrown if the view controller factory is already set.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if a view controller factory is already set.</exception>
 		/// <seealso cref="UseViewFactory(IViewFactory)"/>
+		/// <seealso cref="UseEventProvider(IPresenterEventProvider)"/>
 		/// <seealso cref="Build"/>
 		IPresenterBuilder UseViewControllerFactory(IViewControllerFactory viewControllerFactory);
+
+		/// <summary>
+		/// Sets an event provider instance to use. If not called, a default provider is used.
+		/// </summary>
+		/// <param name="eventProvider">An event source to use.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="eventProvider"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if an event provider is already set.</exception>
+		/// <seealso cref="Build"/>
+		IPresenterBuilder UseEventProvider(IPresenterEventProvider eventProvider);
+
+#if UNITY_2019_3_OR_NEWER
+
+		/// <summary>
+		/// Sets a <see cref="UnityEngine.LowLevel.PlayerLoop"/>-based event provider. Requires Unity 2019.3 or newer.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Thrown if an event provider is already set, either with this method or with <see cref="UseEventProvider(IPresenterEventProvider)"/>.</exception>
+		/// <seealso cref="UseEventProvider(IPresenterEventProvider)"/>
+		/// <seealso cref="Build"/>
+		IPresenterBuilder UsePlayerLoop();
+
+#endif
 
 		/// <summary>
 		/// Adds a <see cref="PresentDelegate"/> to presenter middleware chain.
@@ -84,9 +109,10 @@ namespace UnityFx.Mvc
 		IPresenterBuilder UsePresentDelegate(PresentDelegate presentDelegate);
 
 		/// <summary>
-		/// Creates a <see cref="MonoBehaviour"/>-based implementation of <see cref="IPresenter"/>. Can only be called once per builder instance.
+		/// Builds a <see cref="IPresenter"/> instance.
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Thrown if presenter cannot be constructed (for instance, <see cref="IViewFactory"/> is not set and cannot be located).</exception>
+		/// <seealso cref="UseViewFactory(IViewFactory)"/>
 		IPresentService Build();
 	}
 }
