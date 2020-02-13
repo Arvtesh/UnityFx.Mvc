@@ -64,7 +64,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="viewFactory"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if a view factory is already set.</exception>
 		/// <seealso cref="UseViewControllerFactory(IViewControllerFactory)"/>
-		/// <seealso cref="UseEventProvider(IPresenterEventProvider)"/>
+		/// <seealso cref="UseEventSource(IPresenterEventSource)"/>
 		/// <seealso cref="Build"/>
 		IPresenterBuilder UseViewFactory(IViewFactory viewFactory);
 
@@ -75,18 +75,18 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="viewControllerFactory"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if a view controller factory is already set.</exception>
 		/// <seealso cref="UseViewFactory(IViewFactory)"/>
-		/// <seealso cref="UseEventProvider(IPresenterEventProvider)"/>
+		/// <seealso cref="UseEventSource(IPresenterEventSource)"/>
 		/// <seealso cref="Build"/>
 		IPresenterBuilder UseViewControllerFactory(IViewControllerFactory viewControllerFactory);
 
 		/// <summary>
 		/// Sets an event provider instance to use. If not called, a default provider is used.
 		/// </summary>
-		/// <param name="eventProvider">An event source to use.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="eventProvider"/> is <see langword="null"/>.</exception>
+		/// <param name="eventSource">An event source to use.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="eventSource"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if an event provider is already set.</exception>
 		/// <seealso cref="Build"/>
-		IPresenterBuilder UseEventProvider(IPresenterEventProvider eventProvider);
+		IPresenterBuilder UseEventSource(IPresenterEventSource eventSource);
 
 #if UNITY_2019_3_OR_NEWER
 

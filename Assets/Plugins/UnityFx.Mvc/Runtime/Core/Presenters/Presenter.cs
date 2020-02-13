@@ -14,14 +14,14 @@ namespace UnityFx.Mvc
 	/// Implementation of <see cref="IPresentService"/>.
 	/// </summary>
 	/// <seealso cref="PresenterBuilder"/>
-	internal sealed partial class Presenter : IPresentService, IPresenterInternal
+	internal sealed partial class Presenter : IPresentService, IPresenterEvents, IPresenterInternal
 	{
 		#region data
 
 		private readonly IServiceProvider _serviceProvider;
 		private readonly IViewFactory _viewFactory;
 		private readonly IViewControllerFactory _controllerFactory;
-		private readonly IPresenterEventProvider _eventProvider;
+		private readonly IPresenterEventSource _eventSource;
 		private readonly ViewControllerCollection _controllers;
 
 		private LinkedList<IPresentable> _presentables = new LinkedList<IPresentable>();
@@ -35,9 +35,9 @@ namespace UnityFx.Mvc
 
 		#region interface
 
-		internal event EventHandler Disposed;
+		internal bool NeedEventSource => _eventSource is null;
 
-		internal Presenter(IServiceProvider serviceProvider, IViewFactory viewFactory, IViewControllerFactory controllerFactory, IPresenterEventProvider eventProvider)
+		internal Presenter(IServiceProvider serviceProvider, IViewFactory viewFactory, IViewControllerFactory controllerFactory, IPresenterEventSource eventSource)
 		{
 			Debug.Assert(serviceProvider != null);
 			Debug.Assert(viewFactory != null);
@@ -46,45 +46,15 @@ namespace UnityFx.Mvc
 			_serviceProvider = serviceProvider;
 			_viewFactory = viewFactory;
 			_controllerFactory = controllerFactory;
-			_eventProvider = eventProvider;
+			_eventSource = eventSource;
 			_controllers = new ViewControllerCollection(_presentables);
 
-			if (_eventProvider != null)
-			{
-				_eventProvider.Update += Update;
-			}
+			_eventSource?.AddPresenter(this);
 		}
 
 		internal void SetMiddleware(List<PresentDelegate> middleware)
 		{
 			_presentDelegates = middleware;
-		}
-
-		internal void Update()
-		{
-			var frameTime = Time.deltaTime;
-			var topPresentable = _presentables.Last?.Value;
-			var node = _presentables.First;
-
-			while (node != null)
-			{
-				var p = node.Value;
-				node = node.Next;
-
-				if (p.IsDismissed)
-				{
-					if (p.Controller != null)
-					{
-						_controllerMap.Remove(p.Controller);
-					}
-
-					_presentables.Remove(p);
-				}
-				else
-				{
-					p.Update(frameTime, p == topPresentable);
-				}
-			}
 		}
 
 		#endregion
@@ -189,6 +159,37 @@ namespace UnityFx.Mvc
 
 		#endregion
 
+		#region IPresenterEvents
+
+		public void Update()
+		{
+			var frameTime = Time.deltaTime;
+			var topPresentable = _presentables.Last?.Value;
+			var node = _presentables.First;
+
+			while (node != null)
+			{
+				var p = node.Value;
+				node = node.Next;
+
+				if (p.IsDismissed)
+				{
+					if (p.Controller != null)
+					{
+						_controllerMap.Remove(p.Controller);
+					}
+
+					_presentables.Remove(p);
+				}
+				else
+				{
+					p.Update(frameTime, p == topPresentable);
+				}
+			}
+		}
+
+		#endregion
+
 		#region ICommandTarget
 
 		/// <summary>
@@ -232,13 +233,9 @@ namespace UnityFx.Mvc
 			if (!_disposed)
 			{
 				_disposed = true;
-				DisposeInternal();
-				Disposed?.Invoke(this, EventArgs.Empty);
+				_eventSource?.RemovePresenter(this);
 
-				if (_eventProvider != null)
-				{
-					_eventProvider.Update -= Update;
-				}
+				DisposeInternal();
 			}
 		}
 

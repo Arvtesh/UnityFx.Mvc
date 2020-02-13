@@ -6,15 +6,21 @@ using System;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Provider of vents for <see cref="IPresenter"/>.
+	/// Provider of events for <see cref="IPresenter"/>.
 	/// </summary>
 	/// <seealso cref="IPresenter"/>
+	/// <seealso cref="IPresenterEvents"/>
 	/// <seealso cref="IPresenterBuilder"/>
-	public interface IPresenterEventProvider
+	public interface IPresenterEventSource
 	{
 		/// <summary>
-		/// Update event.
+		/// Adds a presenter events.
 		/// </summary>
-		event Action Update;
+		void AddPresenter(IPresenterEvents presenter);
+
+		/// <summary>
+		/// Removes a presenter events.
+		/// </summary>
+		void RemovePresenter(IPresenterEvents presenter);
 	}
 }

@@ -6,12 +6,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
-#if UNITY_2019_3_OR_NEWER
-using PlayerLoop = UnityEngine.LowLevel.PlayerLoop;
-using PlayerLoopSystem = UnityEngine.LowLevel.PlayerLoopSystem;
-using PlayerLoopTypes = UnityEngine.PlayerLoop;
-#endif
-
 namespace UnityFx.Mvc
 {
 	/// <summary>
@@ -27,12 +21,9 @@ namespace UnityFx.Mvc
 
 		private IViewFactory _viewFactory;
 		private IViewControllerFactory _viewControllerFactory;
-		private IPresenterEventProvider _eventProvider;
+		private IPresenterEventSource _eventSource;
 		private List<PresentDelegate> _presentDelegates;
 		private Dictionary<string, object> _properties;
-#if UNITY_2019_3_OR_NEWER
-		private bool _usePlayerLoop;
-#endif
 
 		private Presenter _presenter;
 
@@ -43,6 +34,8 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresenterBuilder"/> class.
 		/// </summary>
+		/// <param name="serviceProvider">A service provider to resolve controller dependencies.</param>
+		/// <param name="gameObject">A <see cref="GameObject"/> to attach presenter to. Can be <see langword="null"/>.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="serviceProvider"/> is <see langword="null"/>.</exception>
 		public PresenterBuilder(IServiceProvider serviceProvider, GameObject gameObject)
 		{
@@ -96,25 +89,14 @@ namespace UnityFx.Mvc
 		}
 
 		/// <inheritdoc/>
-		public IPresenterBuilder UseEventProvider(IPresenterEventProvider eventProvider)
+		public IPresenterBuilder UseEventSource(IPresenterEventSource eventSource)
 		{
-#if UNITY_2019_3_OR_NEWER
-
-			if (_eventProvider != null || _usePlayerLoop)
+			if (_eventSource != null)
 			{
 				throw new InvalidOperationException();
 			}
 
-#else
-
-			if (_eventProvider != null)
-			{
-				throw new InvalidOperationException();
-			}
-
-#endif
-
-			_eventProvider = eventProvider ?? throw new ArgumentNullException(nameof(eventProvider));
+			_eventSource = eventSource ?? throw new ArgumentNullException(nameof(eventSource));
 			return this;
 		}
 
@@ -123,12 +105,12 @@ namespace UnityFx.Mvc
 		/// <inheritdoc/>
 		public IPresenterBuilder UsePlayerLoop()
 		{
-			if (_eventProvider != null || _usePlayerLoop)
+			if (_eventSource != null)
 			{
 				throw new InvalidOperationException();
 			}
 
-			_usePlayerLoop = true;
+			_eventSource = new PlayerLoopEventSource();
 			return this;
 		}
 
@@ -156,6 +138,11 @@ namespace UnityFx.Mvc
 		{
 			if (_presenter is null)
 			{
+				if (_eventSource is null && _gameObject is null)
+				{
+					throw new InvalidOperationException("No event source is set. Presenter requires update notifications in order to function properly.");
+				}
+
 				if (_viewFactory is null)
 				{
 					_viewFactory = _serviceProvider.GetService(typeof(IViewFactory)) as IViewFactory;
@@ -181,31 +168,10 @@ namespace UnityFx.Mvc
 					}
 				}
 
-				_presenter = new Presenter(_serviceProvider, _viewFactory, _viewControllerFactory, _eventProvider);
-
-				if (_eventProvider is null && _gameObject)
-				{
-					_gameObject.AddComponent<PresenterBehaviour>().Initialize(_presenter);
-				}
-				else
-				{
-					// NOTE: If _gameObject is null, presenter is not going to receive update events.
-					_presenter.Dispose();
-					_presenter = null;
-
-					throw new InvalidOperationException("No event source is set. Presenter requires update notifications in order to function properly.");
-				}
-
+				_presenter = new Presenter(_serviceProvider, _viewFactory, _viewControllerFactory, _eventSource);
 				_presenter.SetMiddleware(_presentDelegates);
 
-#if UNITY_2019_3_OR_NEWER
-
-				if (_usePlayerLoop)
-				{
-					InitPlayerLoop(_presenter);
-				}
-
-#endif
+				_gameObject?.AddComponent<PresenterBehaviour>().Initialize(_presenter);
 			}
 
 			return _presenter;
@@ -214,86 +180,6 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region implementation
-
-#if UNITY_2019_3_OR_NEWER
-
-		private static void InitPlayerLoop(Presenter presenter)
-		{
-			var success = false;
-			var loop = PlayerLoop.GetCurrentPlayerLoop();
-			var presentSystem = new PlayerLoopSystem()
-			{
-				type = typeof(Presenter),
-				updateDelegate = presenter.Update
-			};
-
-			for (var i = 0; i < loop.subSystemList.Length; i++)
-			{
-				var system = loop.subSystemList[i];
-
-				if (system.type == typeof(PlayerLoopTypes.Update))
-				{
-					// Add new update system right at the start of the group.
-					var newSubSystems = new PlayerLoopSystem[system.subSystemList.Length + 1];
-					system.subSystemList.CopyTo(newSubSystems, 1);
-					system.subSystemList = newSubSystems;
-					system.subSystemList[0] = presentSystem;
-					loop.subSystemList[i] = system;
-					success = true;
-
-					break;
-				}
-			}
-
-			if (success)
-			{
-				presenter.Disposed += ReleasePlayerLoop;
-				PlayerLoop.SetPlayerLoop(loop);
-			}
-			else
-			{
-				throw new InvalidOperationException("PlayerLoop does not contain Update group.");
-			}
-		}
-
-		private static void ReleasePlayerLoop(object sender, EventArgs args)
-		{
-
-			var loop = PlayerLoop.GetCurrentPlayerLoop();
-
-			for (var i = 0; i < loop.subSystemList.Length; i++)
-			{
-				var system = loop.subSystemList[i];
-
-				if (system.type == typeof(PlayerLoopTypes.Update))
-				{
-					for (var j = 0; j < system.subSystemList.Length; j++)
-					{
-						if (system.subSystemList[j].type == typeof(Presenter) && system.updateDelegate?.Target == sender)
-						{
-							var newSubSystems = new PlayerLoopSystem[system.subSystemList.Length - 1];
-							var n = 0;
-
-							for (var k = 0; k < system.subSystemList.Length; k++)
-							{
-								if (k != j)
-								{
-									newSubSystems[n++] = system.subSystemList[k];
-								}
-							}
-
-							system.subSystemList = newSubSystems;
-							loop.subSystemList[i] = system;
-							PlayerLoop.SetPlayerLoop(loop);
-							break;
-						}
-					}
-				}
-			}
-		}
-
-#endif
-
 		#endregion
 	}
 }

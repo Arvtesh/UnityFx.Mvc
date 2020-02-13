@@ -20,7 +20,7 @@ namespace UnityFx.Mvc
 
 		internal void Initialize(Presenter presenter)
 		{
-			Debug.Assert(_presenter == null);
+			Debug.Assert(_presenter is null);
 			_presenter = presenter;
 		}
 
@@ -30,7 +30,10 @@ namespace UnityFx.Mvc
 
 		private void Update()
 		{
-			_presenter?.Update();
+			if (_presenter != null && _presenter.NeedEventSource)
+			{
+				_presenter.Update();
+			}
 		}
 
 		private void OnDestroy()
