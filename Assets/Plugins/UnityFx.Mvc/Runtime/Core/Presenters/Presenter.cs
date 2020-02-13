@@ -8,20 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-#if UNITY_2019_3_OR_NEWER
-using PlayerLoop = UnityEngine.LowLevel.PlayerLoop;
-using PlayerLoopSystem = UnityEngine.LowLevel.PlayerLoopSystem;
-using PlayerLoopTypes = UnityEngine.PlayerLoop;
-#else
-using PlayerLoop = UnityEngine.Experimental.LowLevel.PlayerLoop;
-using PlayerLoopSystem = UnityEngine.Experimental.LowLevel.PlayerLoopSystem;
-using PlayerLoopTypes = UnityEngine.Experimental.PlayerLoop;
-#endif
-
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// A <see cref="MonoBehaviour"/>-based presenter implementation.
+	/// Implementation of <see cref="IPresentService"/>.
 	/// </summary>
 	/// <seealso cref="PresenterBuilder"/>
 	internal sealed partial class Presenter : IPresentService, IPresenterInternal
@@ -44,6 +34,8 @@ namespace UnityFx.Mvc
 
 		#region interface
 
+		internal event EventHandler Disposed;
+
 		internal Presenter(IServiceProvider serviceProvider, IViewFactory viewFactory, IViewControllerFactory controllerFactory)
 		{
 			Debug.Assert(serviceProvider != null);
@@ -54,13 +46,38 @@ namespace UnityFx.Mvc
 			_viewFactory = viewFactory;
 			_controllerFactory = controllerFactory;
 			_controllers = new ViewControllerCollection(_presentables);
-
-			InitPlayerLoop();
 		}
 
 		internal void SetMiddleware(List<PresentDelegate> middleware)
 		{
 			_presentDelegates = middleware;
+		}
+
+		internal void Update()
+		{
+			var frameTime = Time.deltaTime;
+			var topPresentable = _presentables.Last?.Value;
+			var node = _presentables.First;
+
+			while (node != null)
+			{
+				var p = node.Value;
+				node = node.Next;
+
+				if (p.IsDismissed)
+				{
+					if (p.Controller != null)
+					{
+						_controllerMap.Remove(p.Controller);
+					}
+
+					_presentables.Remove(p);
+				}
+				else
+				{
+					p.Update(frameTime, p == topPresentable);
+				}
+			}
 		}
 
 		#endregion
@@ -208,41 +225,14 @@ namespace UnityFx.Mvc
 			if (!_disposed)
 			{
 				_disposed = true;
-				ReleasePlayerLoop();
 				DisposeInternal();
+				Disposed?.Invoke(this, EventArgs.Empty);
 			}
 		}
 
 		#endregion
 
 		#region implementation
-
-		private void OnUpdate()
-		{
-			var frameTime = Time.deltaTime;
-			var topPresentable = _presentables.Last?.Value;
-			var node = _presentables.First;
-
-			while (node != null)
-			{
-				var p = node.Value;
-				node = node.Next;
-
-				if (p.IsDismissed)
-				{
-					if (p.Controller != null)
-					{
-						_controllerMap.Remove(p.Controller);
-					}
-
-					_presentables.Remove(p);
-				}
-				else
-				{
-					p.Update(frameTime, p == topPresentable);
-				}
-			}
-		}
 
 		private IPresentResult PresentInternal(IPresentable presentable, Type controllerType, PresentOptions presentOptions, Transform transform, PresentArgs args)
 		{
@@ -434,86 +424,6 @@ namespace UnityFx.Mvc
 				var p = node.Value;
 				node = node.Previous;
 				p.DisposeUnsafe();
-			}
-		}
-
-		private void InitPlayerLoop()
-		{
-#if UNITY_2019_3_OR_NEWER
-			var loop = PlayerLoop.GetCurrentPlayerLoop();
-#else
-			var loop = PlayerLoop.GetDefaultPlayerLoop();
-#endif
-			var success = false;
-			var presentSystem = new PlayerLoopSystem()
-			{
-				type = typeof(Presenter),
-				updateDelegate = OnUpdate
-			};
-
-			for (var i = 0; i < loop.subSystemList.Length; i++)
-			{
-				var system = loop.subSystemList[i];
-
-				if (system.type == typeof(PlayerLoopTypes.Update))
-				{
-					// Add new update system right at the start of the group.
-					var newSubSystems = new PlayerLoopSystem[system.subSystemList.Length + 1];
-					system.subSystemList.CopyTo(newSubSystems, 1);
-					system.subSystemList = newSubSystems;
-					system.subSystemList[0] = presentSystem;
-					loop.subSystemList[i] = system;
-					success = true;
-
-					break;
-				}
-			}
-
-			if (success)
-			{
-				PlayerLoop.SetPlayerLoop(loop);
-			}
-			else
-			{
-				throw new InvalidOperationException("PlayerLoop does not contain Update group.");
-			}
-		}
-
-		private void ReleasePlayerLoop()
-		{
-#if UNITY_2019_3_OR_NEWER
-			var loop = PlayerLoop.GetCurrentPlayerLoop();
-#else
-			var loop = PlayerLoop.GetDefaultPlayerLoop();
-#endif
-			for (var i = 0; i < loop.subSystemList.Length; i++)
-			{
-				var system = loop.subSystemList[i];
-
-				if (system.type == typeof(PlayerLoopTypes.Update))
-				{
-					for (var j = 0; j < system.subSystemList.Length; j++)
-					{
-						if (system.subSystemList[j].type == typeof(Presenter))
-						{
-							var newSubSystems = new PlayerLoopSystem[system.subSystemList.Length - 1];
-							var n = 0;
-
-							for (var k = 0; k < system.subSystemList.Length; k++)
-							{
-								if (k != j)
-								{
-									newSubSystems[n++] = system.subSystemList[k];
-								}
-							}
-
-							system.subSystemList = newSubSystems;
-							loop.subSystemList[i] = system;
-							PlayerLoop.SetPlayerLoop(loop);
-							break;
-						}
-					}
-				}
 			}
 		}
 
