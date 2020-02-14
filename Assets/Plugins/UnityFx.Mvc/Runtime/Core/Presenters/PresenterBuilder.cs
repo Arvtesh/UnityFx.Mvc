@@ -9,7 +9,7 @@ using UnityEngine;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Default implementation of <see cref="IPresenterBuilder"/>.
+	/// Defines a class that provides the mechanisms to configure a presenter.
 	/// </summary>
 	/// <seealso cref="UGUIViewFactoryBuilder"/>
 	public sealed class PresenterBuilder : IPresenterBuilder

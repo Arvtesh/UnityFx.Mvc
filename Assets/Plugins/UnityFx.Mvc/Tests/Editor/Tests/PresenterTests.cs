@@ -31,7 +31,7 @@ namespace UnityFx.Mvc
 		[TearDown]
 		public void Dispose()
 		{
-			_presenter.Dispose();
+			GameObject.DestroyImmediate(_go);
 		}
 
 		[Test]

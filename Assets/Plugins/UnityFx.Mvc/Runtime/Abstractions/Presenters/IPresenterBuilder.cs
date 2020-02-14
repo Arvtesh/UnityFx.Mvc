@@ -8,7 +8,7 @@ using UnityEngine;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Defines a class that provides the mechanisms to configure a <see cref="IPresenter"/> instance.
+	/// Defines a class that provides the mechanisms to create and configure a presenter.
 	/// </summary>
 	/// <remarks>
 	/// This interface defines fluent configuration API for <see cref="IPresenter"/>. It is designed to be
