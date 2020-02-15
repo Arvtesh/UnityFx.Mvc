@@ -17,7 +17,6 @@ namespace UnityFx.Mvc
 		IPresentable Parent { get; }
 		void CreateController(IView view);
 		void Update(float frameTime, bool isTop);
-		void DismissUnsafe();
-		void DisposeUnsafe();
+		void DismissCancel();
 	}
 }

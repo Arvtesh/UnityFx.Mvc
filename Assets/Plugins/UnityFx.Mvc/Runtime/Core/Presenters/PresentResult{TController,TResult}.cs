@@ -141,7 +141,7 @@ namespace UnityFx.Mvc
 			catch (Exception e)
 			{
 				LogException(e);
-				DismissInternal(default, true);
+				Dispose(default, true);
 				throw;
 			}
 		}
@@ -158,42 +158,9 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		public void DismissUnsafe()
+		public void DismissCancel()
 		{
-			if (_state != State.Dismissed && _state != State.Disposed)
-			{
-				try
-				{
-					if (_controller is IViewControllerEvents c)
-					{
-						if (_state == State.Active)
-						{
-							c.OnDeactivate();
-							c.OnDismiss();
-						}
-						else if (_state == State.Presented)
-						{
-							c.OnDismiss();
-						}
-					}
-				}
-				catch (Exception e)
-				{
-					LogException(e);
-				}
-				finally
-				{
-					_state = State.Dismissed;
-				}
-			}
-		}
-
-		public void DisposeUnsafe()
-		{
-			if (_state != State.Disposed)
-			{
-				DismissInternal(default, true);
-			}
+			Dismiss(default, true);
 		}
 
 		#endregion
@@ -236,12 +203,12 @@ namespace UnityFx.Mvc
 		public void Dismiss(Exception e)
 		{
 			LogException(e);
-			Dismiss(default, false);
+			Dismiss(default, e is OperationCanceledException);
 		}
 
 		public void Dismiss()
 		{
-			Dismiss(default, false);
+			Dismiss(default, _state == State.Initialized);
 		}
 
 		#endregion
@@ -339,23 +306,24 @@ namespace UnityFx.Mvc
 			{
 				if (_state == State.Dismissed)
 				{
-					DismissInternal(result, cancelled);
+					Dispose(result, cancelled);
 				}
 				else
 				{
 					try
 					{
-						_presenter.Dismiss(this);
+						DismissSelf();
+						DismissChildren();
 					}
 					finally
 					{
-						DismissInternal(result, cancelled);
+						Dispose(result, cancelled);
 					}
 				}
 			}
 		}
 
-		private void DismissInternal(TResult result, bool cancelled)
+		private void Dispose(TResult result, bool cancelled)
 		{
 			try
 			{
@@ -385,6 +353,52 @@ namespace UnityFx.Mvc
 				{
 					TrySetResult(result);
 				}
+			}
+		}
+
+		private void DismissSelf()
+		{
+			try
+			{
+				if (_controller is IViewControllerEvents c)
+				{
+					if (_state == State.Active)
+					{
+						c.OnDeactivate();
+						c.OnDismiss();
+					}
+					else if (_state == State.Presented)
+					{
+						c.OnDismiss();
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				LogException(e);
+			}
+			finally
+			{
+				_state = State.Dismissed;
+			}
+		}
+
+		private void DismissChildren()
+		{
+			try
+			{
+				foreach (var child in _presenter.GetChildren(this))
+				{
+					child.DismissCancel();
+				}
+			}
+			catch (Exception e)
+			{
+				LogException(e);
+			}
+			finally
+			{
+				_state = State.Dismissed;
 			}
 		}
 

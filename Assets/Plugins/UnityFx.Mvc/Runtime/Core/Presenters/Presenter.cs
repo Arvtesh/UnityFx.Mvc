@@ -61,52 +61,26 @@ namespace UnityFx.Mvc
 
 		#region IPresenterInternal
 
+		IEnumerable<IPresentable> IPresenterInternal.GetChildren(IPresentable presentable)
+		{
+			var node = _presentables.Find(presentable)?.Next;
+
+			while (node != null)
+			{
+				var p = node.Value;
+
+				if (p.Parent == presentable)
+				{
+					yield return p;
+				}
+
+				node = node.Next;
+			}
+		}
+
 		IPresentResult IPresenterInternal.PresentAsync(IPresentable presentable, Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args)
 		{
 			return PresentInternal(presentable, controllerType, presentOptions, parent, args);
-		}
-
-		void IPresenterInternal.Dismiss(IPresentable presentable)
-		{
-			// 1) Dismiss child nodes.
-			var node = _presentables.Last;
-
-			while (node != null)
-			{
-				var p = node.Value;
-
-				if (p.IsChildOf(presentable))
-				{
-					p.DismissUnsafe();
-				}
-
-				if (p == presentable)
-				{
-					break;
-				}
-
-				node = node.Previous;
-			}
-
-			// 2) Dispose child nodes.
-			node = _presentables.Last;
-
-			while (node != null)
-			{
-				var p = node.Value;
-
-				if (p == presentable)
-				{
-					break;
-				}
-
-				node = node.Previous;
-
-				if (p.IsChildOf(presentable))
-				{
-					p.DisposeUnsafe();
-				}
-			}
 		}
 
 		#endregion
@@ -416,23 +390,12 @@ namespace UnityFx.Mvc
 
 		private void DisposeInternal()
 		{
-			// 1st pass: dismiss child nodes.
 			var node = _presentables.Last;
 
 			while (node != null)
 			{
-				node.Value.DismissUnsafe();
+				node.Value.DismissCancel();
 				node = node.Previous;
-			}
-
-			// 2nd pass: dispose child nodes.
-			node = _presentables.Last;
-
-			while (node != null)
-			{
-				var p = node.Value;
-				node = node.Previous;
-				p.DisposeUnsafe();
 			}
 		}
 
