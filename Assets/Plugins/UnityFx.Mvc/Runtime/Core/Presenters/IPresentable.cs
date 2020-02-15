@@ -18,5 +18,6 @@ namespace UnityFx.Mvc
 		void CreateController(IView view);
 		void Update(float frameTime, bool isTop);
 		void DismissCancel();
+		void Dismiss(Exception e);
 	}
 }

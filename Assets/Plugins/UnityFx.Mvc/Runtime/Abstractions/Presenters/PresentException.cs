@@ -56,10 +56,10 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentException"/> class.
 		/// </summary>
-		public PresentException(IPresentInfo controllerInfo)
-			: base(GetMessage(controllerInfo, null))
+		public PresentException(IPresentInfo presentInfo)
+			: base(GetMessage(presentInfo, null))
 		{
-			_controllerType = controllerInfo.ControllerType;
+			_controllerType = presentInfo.ControllerType;
 		}
 
 		/// <summary>

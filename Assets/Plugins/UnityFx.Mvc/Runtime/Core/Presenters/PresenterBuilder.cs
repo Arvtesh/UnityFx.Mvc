@@ -23,6 +23,7 @@ namespace UnityFx.Mvc
 		private IViewControllerFactory _viewControllerFactory;
 		private IPresenterEventSource _eventSource;
 		private List<PresentDelegate> _presentDelegates;
+		private Action<Exception> _errorDelegate;
 		private Dictionary<string, object> _properties;
 
 		private Presenter _presenter;
@@ -133,6 +134,17 @@ namespace UnityFx.Mvc
 			return this;
 		}
 
+		public IPresenterBuilder UseErrorDelegate(Action<Exception> errorDelegate)
+		{
+			if (errorDelegate is null)
+			{
+				throw new ArgumentNullException(nameof(errorDelegate));
+			}
+
+			_errorDelegate += errorDelegate;
+			return this;
+		}
+
 		/// <inheritdoc/>
 		public IPresentService Build()
 		{
@@ -170,6 +182,7 @@ namespace UnityFx.Mvc
 
 				_presenter = new Presenter(_serviceProvider, _viewFactory, _viewControllerFactory, _eventSource);
 				_presenter.SetMiddleware(_presentDelegates);
+				_presenter.SetErrorHandler(_errorDelegate);
 
 				_gameObject?.AddComponent<PresenterBehaviour>().Initialize(_presenter);
 			}

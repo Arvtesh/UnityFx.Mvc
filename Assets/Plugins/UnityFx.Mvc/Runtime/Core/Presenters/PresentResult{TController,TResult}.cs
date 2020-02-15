@@ -353,6 +353,8 @@ namespace UnityFx.Mvc
 				{
 					TrySetResult(result);
 				}
+
+				_presenter.PresentCompleted(this, Task.Exception, cancelled);
 			}
 		}
 
@@ -462,6 +464,8 @@ namespace UnityFx.Mvc
 				{
 					_exceptions.Add(e);
 				}
+
+				_presenter.ReportError(e);
 			}
 		}
 

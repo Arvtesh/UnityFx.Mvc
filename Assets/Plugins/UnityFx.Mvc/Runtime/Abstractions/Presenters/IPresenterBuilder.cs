@@ -80,21 +80,21 @@ namespace UnityFx.Mvc
 		IPresenterBuilder UseViewControllerFactory(IViewControllerFactory viewControllerFactory);
 
 		/// <summary>
-		/// Sets an event provider instance to use. If not called, a default provider is used.
+		/// Sets an event source instance to use. If not called, a default provider is used.
 		/// </summary>
 		/// <param name="eventSource">An event source to use.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="eventSource"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Thrown if an event provider is already set.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if an event source is already set.</exception>
 		/// <seealso cref="Build"/>
 		IPresenterBuilder UseEventSource(IPresenterEventSource eventSource);
 
 #if UNITY_2019_3_OR_NEWER
 
 		/// <summary>
-		/// Sets a <see cref="UnityEngine.LowLevel.PlayerLoop"/>-based event provider. Requires Unity 2019.3 or newer.
+		/// Sets a <see cref="UnityEngine.LowLevel.PlayerLoop"/>-based event source. Requires Unity 2019.3 or newer.
 		/// </summary>
-		/// <exception cref="InvalidOperationException">Thrown if an event provider is already set, either with this method or with <see cref="UseEventProvider(IPresenterEventProvider)"/>.</exception>
-		/// <seealso cref="UseEventProvider(IPresenterEventProvider)"/>
+		/// <exception cref="InvalidOperationException">Thrown if an event source is already set, either with this method or with <see cref="UseEventSource(IPresenterEventSource)"/>.</exception>
+		/// <seealso cref="UseEventSource(IPresenterEventSource)"/>
 		/// <seealso cref="Build"/>
 		IPresenterBuilder UsePlayerLoop();
 
@@ -105,8 +105,18 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="presentDelegate">The middleware to add.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="presentDelegate"/> is <see langword="null"/>.</exception>
+		/// <seealso cref="UseErrorDelegate(Action{Exception})"/>
 		/// <seealso cref="Build"/>
 		IPresenterBuilder UsePresentDelegate(PresentDelegate presentDelegate);
+
+		/// <summary>
+		/// Adds an error handler.
+		/// </summary>
+		/// <param name="errorDelegate">The delegate to be called on errors.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="errorDelegate"/> is <see langword="null"/>.</exception>
+		/// <seealso cref="UsePresentDelegate(PresentDelegate)"/>
+		/// <seealso cref="Build"/>
+		IPresenterBuilder UseErrorDelegate(Action<Exception> errorDelegate);
 
 		/// <summary>
 		/// Builds a <see cref="IPresenter"/> instance.

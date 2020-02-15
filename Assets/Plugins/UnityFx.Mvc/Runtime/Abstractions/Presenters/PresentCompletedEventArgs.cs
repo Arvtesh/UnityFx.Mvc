@@ -12,26 +12,17 @@ namespace UnityFx.Mvc
 	public class PresentCompletedEventArgs : AsyncCompletedEventArgs
 	{
 		/// <summary>
-		/// Gets the controller.
+		/// Gets the present info.
 		/// </summary>
-		public IPresentInfo ControllerInfo { get; }
+		public IPresentInfo PresentInfo { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentCompletedEventArgs"/> class.
 		/// </summary>
-		public PresentCompletedEventArgs(IPresentInfo controllerInfo)
-			: base(null, false, controllerInfo)
+		public PresentCompletedEventArgs(IPresentInfo controllerInfo, Exception error, bool cancelled)
+			: base(error, cancelled || error is OperationCanceledException, controllerInfo)
 		{
-			ControllerInfo = controllerInfo;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PresentCompletedEventArgs"/> class.
-		/// </summary>
-		public PresentCompletedEventArgs(IPresentInfo controllerInfo, Exception error)
-			: base(error, error is OperationCanceledException, controllerInfo)
-		{
-			ControllerInfo = controllerInfo;
+			PresentInfo = controllerInfo;
 		}
 	}
 }

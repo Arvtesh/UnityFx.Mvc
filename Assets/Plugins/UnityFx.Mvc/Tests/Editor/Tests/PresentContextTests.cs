@@ -12,7 +12,7 @@ using NUnit.Framework;
 namespace UnityFx.Mvc
 {
 	[Category("PresentContext"), TestOf(typeof(IPresentContext))]
-	public class PresentContexttTests : IDisposable
+	public class PresentContextTests : IDisposable
 	{
 		private DefaultViewFactory _viewFactory;
 		private DefaultServiceProvider _serviceProvider;

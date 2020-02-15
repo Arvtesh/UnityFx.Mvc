@@ -27,6 +27,7 @@ namespace UnityFx.Mvc
 		private LinkedList<IPresentable> _presentables = new LinkedList<IPresentable>();
 		private Dictionary<IViewController, IPresentable> _controllerMap = new Dictionary<IViewController, IPresentable>();
 		private List<PresentDelegate> _presentDelegates;
+		private Action<Exception> _errorDelegate;
 
 		private int _idCounter;
 		private bool _disposed;
@@ -57,6 +58,11 @@ namespace UnityFx.Mvc
 			_presentDelegates = middleware;
 		}
 
+		internal void SetErrorHandler(Action<Exception> errorDelegate)
+		{
+			_errorDelegate = errorDelegate;
+		}
+
 		#endregion
 
 		#region IPresenterInternal
@@ -81,6 +87,22 @@ namespace UnityFx.Mvc
 		IPresentResult IPresenterInternal.PresentAsync(IPresentable presentable, Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args)
 		{
 			return PresentInternal(presentable, controllerType, presentOptions, parent, args);
+		}
+
+		void IPresenterInternal.PresentCompleted(IPresentable presentable, Exception e, bool cancelled)
+		{
+			if (!_disposed)
+			{
+				PresentCompleted?.Invoke(this, new PresentCompletedEventArgs(presentable, e, cancelled));
+			}
+		}
+
+		void IPresenterInternal.ReportError(Exception e)
+		{
+			if (!_disposed)
+			{
+				_errorDelegate?.Invoke(e);
+			}
 		}
 
 		#endregion
@@ -209,7 +231,7 @@ namespace UnityFx.Mvc
 				_disposed = true;
 				_eventSource?.RemovePresenter(this);
 
-				DisposeInternal();
+				DismissPresentables();
 			}
 		}
 
@@ -262,7 +284,6 @@ namespace UnityFx.Mvc
 				}
 
 				_controllerMap.Add(presentable.Controller, presentable);
-				PresentCompleted?.Invoke(this, new PresentCompletedEventArgs(presentable));
 
 				// 4) Dismiss the specified controllers if requested.
 				if ((presentable.PresentOptions & PresentOptions.DismissAll) != 0)
@@ -271,13 +292,13 @@ namespace UnityFx.Mvc
 					{
 						if (p != presentable)
 						{
-							p.Dispose();
+							p.DismissCancel();
 						}
 					}
 				}
 				else if ((presentable.PresentOptions & PresentOptions.DismissCurrent) != 0)
 				{
-					presentableParent?.Dispose();
+					presentableParent?.DismissCancel();
 				}
 
 				// 5) Dismiss controllers of the same type if requested (for singleton controllers only).
@@ -287,15 +308,14 @@ namespace UnityFx.Mvc
 					{
 						if (p != presentable && p.ControllerType == presentable.ControllerType)
 						{
-							p.Dispose();
+							p.DismissCancel();
 						}
 					}
 				}
 			}
 			catch (Exception e)
 			{
-				presentable.Dispose();
-				PresentCompleted?.Invoke(this, new PresentCompletedEventArgs(presentable, e));
+				presentable.Dismiss(e);
 			}
 		}
 
@@ -388,7 +408,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		private void DisposeInternal()
+		private void DismissPresentables()
 		{
 			var node = _presentables.Last;
 
