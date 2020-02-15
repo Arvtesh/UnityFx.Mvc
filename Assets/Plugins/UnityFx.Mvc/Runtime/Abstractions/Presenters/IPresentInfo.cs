@@ -6,13 +6,13 @@ using System;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Defines view controller information shared between <see cref="IPresentResult"/> and <see cref="IPresentContext"/>.
+	/// Defines present information shared between <see cref="IPresentResult"/> and <see cref="IPresentContext"/>.
 	/// All data and methods are usable before the corresponding controller is created.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IPresentResult"/>
 	/// <seealso cref="IPresentContext"/>
-	public interface IViewControllerInfo
+	public interface IPresentInfo
 	{
 		/// <summary>
 		/// Gets unique identifier of the controller.
@@ -43,14 +43,9 @@ namespace UnityFx.Mvc
 		PresentArgs PresentArgs { get; }
 
 		/// <summary>
-		/// Gets the present flags to use the controller is created.
+		/// Gets the present flags to use when the controller is created.
 		/// </summary>
 		/// <seealso cref="PresentArgs"/>
 		PresentOptions PresentOptions { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether the controller is dismissed.
-		/// </summary>
-		bool IsDismissed { get; }
 	}
 }

@@ -136,7 +136,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		public bool TryGetInfo(IViewController controller, out IViewControllerInfo info)
+		public bool TryGetInfo(IViewController controller, out IPresentInfo info)
 		{
 			if (_controllerMap.TryGetValue(controller, out var result))
 			{

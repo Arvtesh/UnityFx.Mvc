@@ -10,7 +10,7 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="IPresentContext{TResult}"/>
 	/// <seealso cref="IViewController"/>
-	public interface IPresentContext : IViewControllerInfo, IPresenter, IServiceProvider
+	public interface IPresentContext : IPresentInfo, IPresenter, IServiceProvider
 	{
 		/// <summary>
 		/// Gets time elapsed since the controller has been presented (in seconds).
@@ -21,6 +21,13 @@ namespace UnityFx.Mvc
 		/// Gets a value indicating whether the controller is active.
 		/// </summary>
 		bool IsActive { get; }
+
+		/// <summary>
+		/// Gets a value indicating whether the controller is dismissed.
+		/// </summary>
+		/// <seealso cref="Dismiss()"/>
+		/// <seealso cref="Dismiss(Exception)"/>
+		bool IsDismissed { get; }
 
 		/// <summary>
 		/// Gets the controller view.
@@ -37,12 +44,14 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Dismisses the controller with exception.
 		/// </summary>
-		/// <seealso cref="Dismiss"/>
+		/// <seealso cref="IsDismissed"/>
+		/// <seealso cref="Dismiss()"/>
 		void Dismiss(Exception e);
 
 		/// <summary>
 		/// Dismisses the controller.
 		/// </summary>
+		/// <seealso cref="IsDismissed"/>
 		/// <seealso cref="Dismiss(Exception)"/>
 		void Dismiss();
 	}

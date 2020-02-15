@@ -14,12 +14,12 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets the controller.
 		/// </summary>
-		public IViewControllerInfo ControllerInfo { get; }
+		public IPresentInfo ControllerInfo { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentCompletedEventArgs"/> class.
 		/// </summary>
-		public PresentCompletedEventArgs(IViewControllerInfo controllerInfo)
+		public PresentCompletedEventArgs(IPresentInfo controllerInfo)
 			: base(null, false, controllerInfo)
 		{
 			ControllerInfo = controllerInfo;
@@ -28,7 +28,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentCompletedEventArgs"/> class.
 		/// </summary>
-		public PresentCompletedEventArgs(IViewControllerInfo controllerInfo, Exception error)
+		public PresentCompletedEventArgs(IPresentInfo controllerInfo, Exception error)
 			: base(error, error is OperationCanceledException, controllerInfo)
 		{
 			ControllerInfo = controllerInfo;

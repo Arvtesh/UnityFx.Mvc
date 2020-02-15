@@ -11,8 +11,13 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IPresenter"/>
-	public interface IPresentResult : IViewControllerInfo, ICommandTarget, IDisposable
+	public interface IPresentResult : IPresentInfo, ICommandTarget, IDisposable
 	{
+		/// <summary>
+		/// Gets a value indicating whether the controller is dismissed.
+		/// </summary>
+		bool IsDismissed { get; }
+
 		/// <summary>
 		/// Gets a <see cref="System.Threading.Tasks.Task"/> instance that can be used to await the operation completion (i.e. until the controller is dismissed).
 		/// </summary>
