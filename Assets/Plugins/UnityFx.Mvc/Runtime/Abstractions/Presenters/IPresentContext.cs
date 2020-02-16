@@ -13,7 +13,7 @@ namespace UnityFx.Mvc
 	public interface IPresentContext : IPresentInfo, IPresenter, IServiceProvider
 	{
 		/// <summary>
-		/// Gets time elapsed since the controller has been presented (in seconds).
+		/// Gets time elapsed since the controller has been created (in seconds).
 		/// </summary>
 		float PresentTime { get; }
 

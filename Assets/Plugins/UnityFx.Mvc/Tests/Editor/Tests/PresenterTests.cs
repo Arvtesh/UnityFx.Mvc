@@ -44,19 +44,19 @@ namespace UnityFx.Mvc
 		}
 
 		[Test]
-		public void Present_ThrownOnNullControllerType()
+		public void Present_ThrowsOnNullControllerType()
 		{
 			Assert.Throws<ArgumentNullException>(() => _presenter.Present(null));
 		}
 
 		[Test]
-		public void Present_ThrownOnAbstractControllerType()
+		public void Present_ThrowsOnAbstractControllerType()
 		{
 			Assert.Throws<ArgumentException>(() => _presenter.Present(typeof(AbstractController)));
 		}
 
 		[Test]
-		public void Present_ThrownOnInvalidControllerType()
+		public void Present_ThrowsOnInvalidControllerType()
 		{
 			Assert.Throws<ArgumentException>(() => _presenter.Present(typeof(InvalidController)));
 		}

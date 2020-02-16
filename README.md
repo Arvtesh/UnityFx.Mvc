@@ -39,7 +39,7 @@ Npm package is available at [npmjs.com](https://www.npmjs.com/package/com.unityf
     }
   ],
   "dependencies": {
-    "com.unityfx.mvc": "0.2.1"
+    "com.unityfx.mvc": "0.3.0"
   }
 }
 ```
@@ -109,6 +109,22 @@ else
 	// Handle CANCEL
 }
 ```
+
+Result  of a present operation can also be used in a coroutine:
+```csharp
+var presentResult = presenter.Present<MyMessageBoxController>();
+yield return presentResult;
+
+if (presentResult.Result == MessageBoxResult.Ok)
+{
+	// Handle OK
+}
+else
+{
+	// Handle CANCEL
+}
+```
+
 There are a lot of overloads of the `Present` method accepting additional arguments. In any case it needs a controller type to do the work.
 
 ### Controllers
