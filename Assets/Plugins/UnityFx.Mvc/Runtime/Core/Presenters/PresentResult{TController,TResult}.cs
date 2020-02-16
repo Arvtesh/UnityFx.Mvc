@@ -99,51 +99,18 @@ namespace UnityFx.Mvc
 
 		IViewController IPresentable.Controller => _controller;
 
-		public bool TryActivate()
-		{
-			if (_state == State.Presented)
-			{
-				_state = State.Active;
-				_controllerEvents?.OnActivate();
-				return true;
-			}
-
-			return false;
-		}
-
-		public bool TryDeactivate()
-		{
-			if (_state == State.Active)
-			{
-				_state = State.Presented;
-				_controllerEvents?.OnDeactivate();
-				return true;
-			}
-
-			return false;
-		}
-
 		public void CreateController(IView view)
 		{
 			Debug.Assert(view != null);
 			Debug.Assert(_state == State.Initialized);
 
-			try
-			{
-				_view = view;
-				_scope = _controllerFactory.CreateScope(ref _serviceProvider);
-				_controller = (TController)_controllerFactory.CreateViewController(_controllerType, this, _presentArgs, _view);
-				_controllerEvents = _controller as IViewControllerEvents;
-				_controllerEvents?.OnPresent();
-				_view.Disposed += OnDismissed;
-				_state = State.Presented;
-			}
-			catch (Exception e)
-			{
-				LogException(e);
-				Dispose(default, true);
-				throw;
-			}
+			_view = view;
+			_scope = _controllerFactory.CreateScope(ref _serviceProvider);
+			_controller = (TController)_controllerFactory.CreateViewController(_controllerType, this, _presentArgs, _view);
+			_controllerEvents = _controller as IViewControllerEvents;
+			_controllerEvents?.OnPresent();
+			_view.Disposed += OnDismissed;
+			_state = State.Presented;
 		}
 
 		public void Update(float frameTime, bool isTop)
@@ -325,37 +292,39 @@ namespace UnityFx.Mvc
 
 		private void Dispose(TResult result, bool cancelled)
 		{
-			try
+			if (_state != State.Disposed)
 			{
-				if (_state != State.Disposed)
+				_state = State.Disposed;
+
+				try
 				{
-					_state = State.Disposed;
 					_controllerFactory.ReleaseViewController(_controller);
 					_view?.Dispose();
 					_scope?.Dispose();
 				}
-			}
-			catch (Exception e)
-			{
-				LogException(e);
-			}
-			finally
-			{
-				if (_exceptions != null)
+				catch (Exception e)
 				{
-					TrySetException(_exceptions);
+					LogException(e);
 				}
-				else if (cancelled)
+				finally
 				{
-					TrySetCanceled();
-				}
-				else
-				{
-					TrySetResult(result);
-				}
+					if (_exceptions != null)
+					{
+						TrySetException(_exceptions);
+					}
+					else if (cancelled)
+					{
+						TrySetCanceled();
+					}
+					else
+					{
+						TrySetResult(result);
+					}
 
-				_presenter.PresentCompleted(this, Task.Exception, cancelled);
+					_presenter.PresentCompleted(this, Task.Exception, cancelled);
+				}
 			}
+			
 		}
 
 		private void DismissSelf()

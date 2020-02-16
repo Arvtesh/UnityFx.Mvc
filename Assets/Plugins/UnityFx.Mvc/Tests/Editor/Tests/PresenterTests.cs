@@ -72,6 +72,65 @@ namespace UnityFx.Mvc
 		}
 
 		[Test]
+		public void Present_Calls_OnPresent()
+		{
+			var presentResult = _presenter.Present<EventsController>();
+
+			Assert.NotNull(presentResult.Controller);
+			Assert.AreEqual(1, presentResult.Controller.PresentCallId);
+		}
+
+		[Test]
+		public void Present_Calls_OnDismiss()
+		{
+			var presentResult = _presenter.Present<EventsController>();
+			presentResult.Dispose();
+
+			Assert.NotNull(presentResult.Controller);
+			Assert.AreEqual(2, presentResult.Controller.DismissCallId);
+		}
+
+		[Test]
+		public void Present_FailsIf_ControllerCtorThrows()
+		{
+			var presentResult = _presenter.Present<ErrorEventsController>(new PresentArgs<int>());
+
+			Assert.IsEmpty(_presenter.Controllers);
+			Assert.NotNull(presentResult);
+			Assert.Null(presentResult.Controller);
+			Assert.True(presentResult.IsDismissed);
+			Assert.True(presentResult.Task.IsFaulted);
+			Assert.NotNull(presentResult.Task.Exception);
+		}
+
+		[Test]
+		public void Present_FailsIf_OnPresentThrows()
+		{
+			var presentResult = _presenter.Present<ErrorEventsController>(new PresentArgs<int>(1));
+
+			Assert.IsEmpty(_presenter.Controllers);
+			Assert.NotNull(presentResult);
+			Assert.NotNull(presentResult.Controller);
+			Assert.True(presentResult.IsDismissed);
+			Assert.True(presentResult.Task.IsFaulted);
+			Assert.NotNull(presentResult.Task.Exception);
+		}
+
+		[Test]
+		public void Present_FailsIf_OnDismissThrows()
+		{
+			var presentResult = _presenter.Present<ErrorEventsController>(new PresentArgs<int>(4));
+			presentResult.Dispose();
+
+			Assert.IsEmpty(_presenter.Controllers);
+			Assert.NotNull(presentResult);
+			Assert.NotNull(presentResult.Controller);
+			Assert.True(presentResult.IsDismissed);
+			Assert.True(presentResult.Task.IsFaulted);
+			Assert.NotNull(presentResult.Task.Exception);
+		}
+
+		[Test]
 		public void Present_MaintainsTheOnlyInstanceOfSingletonController()
 		{
 			var presentResult = _presenter.Present<SingletonController>();
