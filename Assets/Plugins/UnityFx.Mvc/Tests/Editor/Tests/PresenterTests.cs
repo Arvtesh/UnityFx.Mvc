@@ -93,7 +93,7 @@ namespace UnityFx.Mvc
 		[Test]
 		public void Present_FailsIf_ControllerCtorThrows()
 		{
-			var presentResult = _presenter.Present<ErrorEventsController>(new PresentArgs<int>());
+			var presentResult = _presenter.Present<ErrorEventsController>(new PresentArgs<ControllerEvents>(ControllerEvents.Ctor));
 
 			Assert.IsEmpty(_presenter.Controllers);
 			Assert.NotNull(presentResult);
@@ -106,7 +106,7 @@ namespace UnityFx.Mvc
 		[Test]
 		public void Present_FailsIf_OnPresentThrows()
 		{
-			var presentResult = _presenter.Present<ErrorEventsController>(new PresentArgs<int>(1));
+			var presentResult = _presenter.Present<ErrorEventsController>(new PresentArgs<ControllerEvents>(ControllerEvents.Present));
 
 			Assert.IsEmpty(_presenter.Controllers);
 			Assert.NotNull(presentResult);
@@ -119,7 +119,7 @@ namespace UnityFx.Mvc
 		[Test]
 		public void Present_FailsIf_OnDismissThrows()
 		{
-			var presentResult = _presenter.Present<ErrorEventsController>(new PresentArgs<int>(4));
+			var presentResult = _presenter.Present<ErrorEventsController>(new PresentArgs<ControllerEvents>(ControllerEvents.Dismiss));
 			presentResult.Dispose();
 
 			Assert.IsEmpty(_presenter.Controllers);

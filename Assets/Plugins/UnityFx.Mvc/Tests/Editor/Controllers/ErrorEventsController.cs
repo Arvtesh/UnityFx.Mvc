@@ -7,16 +7,16 @@ namespace UnityFx.Mvc
 {
 	public class ErrorEventsController : IViewController, IViewControllerEvents
 	{
-		private readonly int _errorId;
+		private readonly ControllerEvents _event;
 
 		public IView View { get; }
 
-		public ErrorEventsController(IView view, PresentArgs<int> args)
+		public ErrorEventsController(IView view, PresentArgs<ControllerEvents> args)
 		{
 			View = view;
-			_errorId = args.Value;
+			_event = args.Value;
 
-			if (_errorId == 0)
+			if (_event == ControllerEvents.Ctor)
 			{
 				throw new InvalidOperationException();
 			}
@@ -24,7 +24,7 @@ namespace UnityFx.Mvc
 
 		void IViewControllerEvents.OnPresent()
 		{
-			if (_errorId == 1)
+			if (_event == ControllerEvents.Present)
 			{
 				throw new InvalidOperationException();
 			}
@@ -32,7 +32,7 @@ namespace UnityFx.Mvc
 
 		void IViewControllerEvents.OnDismiss()
 		{
-			if (_errorId == 4)
+			if (_event == ControllerEvents.Dismiss)
 			{
 				throw new InvalidOperationException();
 			}
@@ -40,7 +40,7 @@ namespace UnityFx.Mvc
 
 		void IViewControllerEvents.OnActivate()
 		{
-			if (_errorId == 2)
+			if (_event == ControllerEvents.Activate)
 			{
 				throw new InvalidOperationException();
 			}
@@ -48,7 +48,7 @@ namespace UnityFx.Mvc
 
 		void IViewControllerEvents.OnDeactivate()
 		{
-			if (_errorId == 3)
+			if (_event == ControllerEvents.Deactivate)
 			{
 				throw new InvalidOperationException();
 			}

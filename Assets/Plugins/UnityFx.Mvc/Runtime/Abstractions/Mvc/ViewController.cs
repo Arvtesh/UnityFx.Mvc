@@ -7,7 +7,7 @@ using UnityEngine;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Implementation of <see cref="IViewController"/>.
+	/// Default implementation of <see cref="IViewController"/>.
 	/// </summary>
 	/// <seealso cref="ViewController{TView}"/>
 	public abstract class ViewController : IViewController, IViewControllerEvents, ICommandTarget, IUpdateTarget
@@ -39,7 +39,11 @@ namespace UnityFx.Mvc
 		protected ViewController(IPresentContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
-			_context.View.Command += OnCommand;
+
+			if (_context.View is INotifyCommand nc)
+			{
+				nc.Command += OnCommand;
+			}
 		}
 
 		/// <summary>
