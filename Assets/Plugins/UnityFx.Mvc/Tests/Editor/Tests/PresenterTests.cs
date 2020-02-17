@@ -135,6 +135,7 @@ namespace UnityFx.Mvc
 		public void Present_FailsIf_OnPresentThrows()
 		{
 			var presentResult = _presenter.Present<EventsController>(new PresentArgs<ControllerEvents>(ControllerEvents.Present));
+			_updateLoop.Update();
 
 			Assert.IsEmpty(_presenter.Controllers);
 			Assert.NotNull(presentResult);

@@ -99,6 +99,41 @@ namespace UnityFx.Mvc
 
 		IViewController IPresentable.Controller => _controller;
 
+		public bool TryActivate()
+		{
+			if (_state == State.Presented)
+			{
+				try
+				{
+					_controllerEvents?.OnActivate();
+					_state = State.Active;
+					return true;
+				}
+				catch (Exception e)
+				{
+					_presenter.ReportError(e);
+				}
+			}
+
+			return false;
+		}
+
+		public void Deactivate()
+		{
+			if (_state == State.Active)
+			{
+				try
+				{
+					_state = State.Presented;
+					_controllerEvents?.OnDeactivate();
+				}
+				catch (Exception e)
+				{
+					_presenter.ReportError(e);
+				}
+			}
+		}
+
 		public void CreateController(IView view)
 		{
 			Debug.Assert(view != null);
@@ -113,7 +148,7 @@ namespace UnityFx.Mvc
 			_state = State.Presented;
 		}
 
-		public void Update(float frameTime, bool isTop)
+		public void Update(float frameTime)
 		{
 			if (_state == State.Active || _state == State.Presented)
 			{
@@ -121,9 +156,32 @@ namespace UnityFx.Mvc
 
 				try
 				{
-					UpdateActive(isTop);
-					UpdateController(frameTime);
-					UpdateTimers(frameTime);
+					// Call controller update handler (if any).
+					if (_controller is IUpdateTarget ut)
+					{
+						ut.Update(frameTime);
+					}
+
+					// Call timer updates (if any).
+					if (_timers != null)
+					{
+						var node = _timers.First;
+
+						while (node != null)
+						{
+							var timerData = node.Value;
+							timerData.Timer += frameTime;
+							node.Value = timerData;
+
+							if (timerData.Timer >= timerData.Timeout)
+							{
+								_timers.Remove(node);
+								timerData.Callback(timerData.Timer);
+							}
+
+							node = node.Next;
+						}
+					}
 				}
 				catch (Exception e)
 				{
@@ -403,37 +461,6 @@ namespace UnityFx.Mvc
 			{
 				_state = State.Presented;
 				_controllerEvents?.OnDeactivate();
-			}
-		}
-
-		private void UpdateController(float frameTime)
-		{
-			if (_controller is IUpdateTarget ut)
-			{
-				ut.Update(frameTime);
-			}
-		}
-
-		private void UpdateTimers(float frameTime)
-		{
-			if (_timers != null)
-			{
-				var node = _timers.First;
-
-				while (node != null)
-				{
-					var timerData = node.Value;
-					timerData.Timer += frameTime;
-					node.Value = timerData;
-
-					if (timerData.Timer >= timerData.Timeout)
-					{
-						_timers.Remove(node);
-						timerData.Callback(timerData.Timer);
-					}
-
-					node = node.Next;
-				}
 			}
 		}
 
