@@ -119,9 +119,17 @@ namespace UnityFx.Mvc
 			{
 				_timer += frameTime;
 
-				UpdateActive(isTop);
-				UpdateController(frameTime);
-				UpdateTimers(frameTime);
+				try
+				{
+					UpdateActive(isTop);
+					UpdateController(frameTime);
+					UpdateTimers(frameTime);
+				}
+				catch (Exception e)
+				{
+					// NOTE: Do not forward the exception further, just report.
+					_presenter.ReportError(e);
+				}
 			}
 		}
 
@@ -335,7 +343,15 @@ namespace UnityFx.Mvc
 				{
 					if (_state == State.Active)
 					{
-						c.OnDeactivate();
+						try
+						{
+							c.OnDeactivate();
+						}
+						catch (Exception e)
+						{
+							_presenter.ReportError(e);
+						}
+
 						c.OnDismiss();
 					}
 					else if (_state == State.Presented)
@@ -379,8 +395,8 @@ namespace UnityFx.Mvc
 			{
 				if (_state == State.Presented)
 				{
-					_state = State.Active;
 					_controllerEvents?.OnActivate();
+					_state = State.Active;
 				}
 			}
 			else if (_state == State.Active)

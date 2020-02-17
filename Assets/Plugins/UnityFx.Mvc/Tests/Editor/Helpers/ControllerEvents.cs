@@ -9,6 +9,7 @@ namespace UnityFx.Mvc
 {
 	public enum ControllerEvents
 	{
+		None,
 		Ctor,
 		Present,
 		Dismiss,

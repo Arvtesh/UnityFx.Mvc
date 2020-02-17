@@ -7,6 +7,8 @@ namespace UnityFx.Mvc
 {
 	public class EventsController : IViewController, IViewControllerEvents
 	{
+		private readonly IPresentContext _context;
+		private readonly ControllerEvents _throwOnEvent;
 		private int _callId;
 
 		public int PresentCallId { get; private set; }
@@ -14,31 +16,61 @@ namespace UnityFx.Mvc
 		public int DeactivateCallId { get; private set; }
 		public int DismissCallId { get; private set; }
 
-		public IView View { get; }
+		public IView View => _context.View;
 
-		public EventsController(IView view)
+		public EventsController(IPresentContext context)
 		{
-			View = view;
+			_context = context;
+
+			if (context.PresentArgs is PresentArgs<ControllerEvents> pa)
+			{
+				_throwOnEvent = pa.Value;
+			}
+
+			if (_throwOnEvent == ControllerEvents.Ctor)
+			{
+				throw new InvalidOperationException();
+			}
 		}
 
 		void IViewControllerEvents.OnPresent()
 		{
 			PresentCallId = ++_callId;
+
+			if (_throwOnEvent == ControllerEvents.Present)
+			{
+				throw new InvalidOperationException();
+			}
 		}
 
 		void IViewControllerEvents.OnDismiss()
 		{
 			DismissCallId = ++_callId;
+
+			if (_throwOnEvent == ControllerEvents.Dismiss)
+			{
+				throw new InvalidOperationException();
+			}
 		}
 
 		void IViewControllerEvents.OnActivate()
 		{
 			ActivateCallId = ++_callId;
+
+			if (_throwOnEvent == ControllerEvents.Activate)
+			{
+				throw new InvalidOperationException();
+			}
 		}
 
 		void IViewControllerEvents.OnDeactivate()
 		{
 			DeactivateCallId = ++_callId;
+
+			if (_throwOnEvent == ControllerEvents.Deactivate)
+			{
+				throw new InvalidOperationException();
+			}
 		}
 	}
 }

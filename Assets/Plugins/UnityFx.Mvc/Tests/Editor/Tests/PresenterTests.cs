@@ -16,6 +16,7 @@ namespace UnityFx.Mvc
 	{
 		private DefaultViewFactory _viewFactory;
 		private DefaultServiceProvider _serviceProvider;
+		private ManualUpdateLoop _updateLoop;
 		private GameObject _go;
 		private IPresentService _presenter;
 
@@ -24,8 +25,13 @@ namespace UnityFx.Mvc
 		{
 			_serviceProvider = new DefaultServiceProvider();
 			_viewFactory = new DefaultViewFactory();
+			_updateLoop = new ManualUpdateLoop();
 			_go = new GameObject("PresenterTests");
-			_presenter = new PresenterBuilder(_serviceProvider, _go).UseViewFactory(_viewFactory).Build();
+
+			_presenter = new PresenterBuilder(_serviceProvider, _go)
+				.UseViewFactory(_viewFactory)
+				.UseEventSource(_updateLoop)
+				.Build();
 		}
 
 		[TearDown]
@@ -91,13 +97,35 @@ namespace UnityFx.Mvc
 		}
 
 		[Test]
+		public void Present_Calls_OnActivate()
+		{
+			var presentResult = _presenter.Present<EventsController>();
+			_updateLoop.Update();
+
+			Assert.NotNull(presentResult.Controller);
+			Assert.AreEqual(2, presentResult.Controller.ActivateCallId);
+		}
+
+		[Test]
+		public void Present_Calls_OnDeactivate()
+		{
+			var presentResult = _presenter.Present<EventsController>();
+			_updateLoop.Update();
+			presentResult.Dispose();
+
+			Assert.NotNull(presentResult.Controller);
+			Assert.AreEqual(3, presentResult.Controller.DeactivateCallId);
+		}
+
+		[Test]
 		public void Present_FailsIf_ControllerCtorThrows()
 		{
-			var presentResult = _presenter.Present<ErrorEventsController>(new PresentArgs<ControllerEvents>(ControllerEvents.Ctor));
+			var presentResult = _presenter.Present<EventsController>(new PresentArgs<ControllerEvents>(ControllerEvents.Ctor));
 
 			Assert.IsEmpty(_presenter.Controllers);
 			Assert.NotNull(presentResult);
 			Assert.Null(presentResult.Controller);
+
 			Assert.True(presentResult.IsDismissed);
 			Assert.True(presentResult.Task.IsFaulted);
 			Assert.NotNull(presentResult.Task.Exception);
@@ -106,11 +134,15 @@ namespace UnityFx.Mvc
 		[Test]
 		public void Present_FailsIf_OnPresentThrows()
 		{
-			var presentResult = _presenter.Present<ErrorEventsController>(new PresentArgs<ControllerEvents>(ControllerEvents.Present));
+			var presentResult = _presenter.Present<EventsController>(new PresentArgs<ControllerEvents>(ControllerEvents.Present));
 
 			Assert.IsEmpty(_presenter.Controllers);
 			Assert.NotNull(presentResult);
-			Assert.NotNull(presentResult.Controller);
+
+			Assert.AreEqual(0, presentResult.Controller.ActivateCallId);
+			Assert.AreEqual(0, presentResult.Controller.DeactivateCallId);
+			Assert.AreEqual(0, presentResult.Controller.DismissCallId);
+
 			Assert.True(presentResult.IsDismissed);
 			Assert.True(presentResult.Task.IsFaulted);
 			Assert.NotNull(presentResult.Task.Exception);
@@ -119,15 +151,49 @@ namespace UnityFx.Mvc
 		[Test]
 		public void Present_FailsIf_OnDismissThrows()
 		{
-			var presentResult = _presenter.Present<ErrorEventsController>(new PresentArgs<ControllerEvents>(ControllerEvents.Dismiss));
+			var presentResult = _presenter.Present<EventsController>(new PresentArgs<ControllerEvents>(ControllerEvents.Dismiss));
 			presentResult.Dispose();
 
 			Assert.IsEmpty(_presenter.Controllers);
 			Assert.NotNull(presentResult);
-			Assert.NotNull(presentResult.Controller);
+
 			Assert.True(presentResult.IsDismissed);
 			Assert.True(presentResult.Task.IsFaulted);
 			Assert.NotNull(presentResult.Task.Exception);
+		}
+
+		[Test]
+		public void Present_DoesNotFailIf_OnActivateThrows()
+		{
+			var presentResult = _presenter.Present<EventsController>(new PresentArgs<ControllerEvents>(ControllerEvents.Activate));
+			_updateLoop.Update();
+			presentResult.Dispose();
+
+			Assert.AreEqual(1, presentResult.Controller.PresentCallId);
+			Assert.AreEqual(2, presentResult.Controller.ActivateCallId);
+			Assert.AreEqual(0, presentResult.Controller.DeactivateCallId);
+			Assert.AreEqual(3, presentResult.Controller.DismissCallId);
+
+			Assert.True(presentResult.IsDismissed);
+			Assert.False(presentResult.Task.IsFaulted);
+			Assert.Null(presentResult.Task.Exception);
+		}
+
+		[Test]
+		public void Present_DoesNotFailIf_OnDeactivateThrows()
+		{
+			var presentResult = _presenter.Present<EventsController>(new PresentArgs<ControllerEvents>(ControllerEvents.Deactivate));
+			_updateLoop.Update();
+			presentResult.Dispose();
+
+			Assert.AreEqual(1, presentResult.Controller.PresentCallId);
+			Assert.AreEqual(2, presentResult.Controller.ActivateCallId);
+			Assert.AreEqual(3, presentResult.Controller.DeactivateCallId);
+			Assert.AreEqual(4, presentResult.Controller.DismissCallId);
+
+			Assert.True(presentResult.IsDismissed);
+			Assert.False(presentResult.Task.IsFaulted);
+			Assert.Null(presentResult.Task.Exception);
 		}
 
 		[Test]
