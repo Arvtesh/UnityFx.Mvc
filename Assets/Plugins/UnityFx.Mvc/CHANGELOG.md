@@ -3,6 +3,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.3.0] - 2020.02.20
+
+### Added
+- Improved `Present` error handling ([#2](https://github.com/Arvtesh/UnityFx.Mvc/issues/2)).
+- Added support for singleton controllers ([#4](https://github.com/Arvtesh/UnityFx.Mvc/issues/4)).
+- Added support for controller tags ([#5](https://github.com/Arvtesh/UnityFx.Mvc/issues/5)).
+- Added middleware support ([#7](https://github.com/Arvtesh/UnityFx.Mvc/issues/7)).
+- Added default MessageBox implementation ([#9](https://github.com/Arvtesh/UnityFx.Mvc/issues/9)).
+- Added support for PlayerLoop-based presenters ([#10](https://github.com/Arvtesh/UnityFx.Mvc/issues/10)).
+- Added `PresenterBuilder` and `UGUIViewFactoryBuilder` as builder for new `IPresenter` and `IViewFactory` instances.
+- Added `IPresentService` interface.
+
+### Changed
+- Made `IPresenter` and `IViewFactory` implementations internal to `UnityFx.Mvc` assembly ([#6](https://github.com/Arvtesh/UnityFx.Mvc/issues/6)). They are created via specialied builder classes.
+
+### Removed
+- Removed generic `Presenter<>` implementation.
+
 ## [0.2.1] - 2020.01.09
 
 ### Fixed
