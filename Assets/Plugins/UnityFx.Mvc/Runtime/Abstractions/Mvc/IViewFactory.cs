@@ -22,6 +22,6 @@ namespace UnityFx.Mvc
 		/// <param name="zIndex">Z-order index.</param>
 		/// <param name="options">Present options.</param>
 		/// <param name="parent">Parent transform for the view (or <see langword="null"/>).</param>
-		Task<IView> CreateAsync(string prefabPath, int layer, int zIndex, PresentOptions options, Transform parent);
+		Task<IView> CreateViewAsync(string prefabPath, int layer, int zIndex, PresentOptions options, Transform parent);
 	}
 }

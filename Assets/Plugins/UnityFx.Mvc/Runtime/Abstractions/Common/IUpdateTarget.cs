@@ -2,13 +2,17 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-using UnityEngine;
 
 namespace UnityFx.Mvc
 {
-	internal interface IPresentable<out T> : IPresentable, IPresentResultOf<T> where T : IViewController
+	/// <summary>
+	/// A target for UPDATE notifications.
+	/// </summary>
+	public interface IUpdateTarget
 	{
+		/// <summary>
+		/// Called on each frame.
+		/// </summary>
+		void Update(float frameTime);
 	}
 }

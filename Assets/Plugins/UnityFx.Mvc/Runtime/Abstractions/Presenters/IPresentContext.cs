@@ -10,46 +10,23 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="IPresentContext{TResult}"/>
 	/// <seealso cref="IViewController"/>
-	public interface IPresentContext : IPresenter, IServiceProvider
+	public interface IPresentContext : IPresentInfo, IPresenter, IServiceProvider
 	{
 		/// <summary>
-		/// Gets unique identifier of the controller.
-		/// </summary>
-		int Id { get; }
-
-		/// <summary>
-		/// Gets the deepling identifier for this controller.
-		/// </summary>
-		string DeeplinkId { get; }
-
-		/// <summary>
-		/// Gets the controller present arguments.
-		/// </summary>
-		/// <seealso cref="PresentOptions"/>
-		PresentArgs PresentArgs { get; }
-
-		/// <summary>
-		/// Gets the present flags used when instantiating the controller.
-		/// </summary>
-		/// <seealso cref="PresentArgs"/>
-		PresentOptions PresentOptions { get; }
-
-		/// <summary>
-		/// Gets time elapsed since the controller has been presented (in seconds).
+		/// Gets time elapsed since the controller has been created (in seconds).
 		/// </summary>
 		float PresentTime { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the controller is active.
 		/// </summary>
-		/// <seealso cref="IsDismissed"/>
 		bool IsActive { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the controller is dismissed.
 		/// </summary>
-		/// <seealso cref="Dismiss"/>
-		/// <seealso cref="IsActive"/>
+		/// <seealso cref="Dismiss()"/>
+		/// <seealso cref="Dismiss(Exception)"/>
 		bool IsDismissed { get; }
 
 		/// <summary>
@@ -65,12 +42,17 @@ namespace UnityFx.Mvc
 		void Schedule(Action<float> timerCallback, float timeout);
 
 		/// <summary>
+		/// Dismisses the controller with exception.
+		/// </summary>
+		/// <seealso cref="IsDismissed"/>
+		/// <seealso cref="Dismiss()"/>
+		void Dismiss(Exception e);
+
+		/// <summary>
 		/// Dismisses the controller.
 		/// </summary>
-		/// <remarks>
-		/// This call also dismisses all controllers presented by the owner.
-		/// </remarks>
 		/// <seealso cref="IsDismissed"/>
+		/// <seealso cref="Dismiss(Exception)"/>
 		void Dismiss();
 	}
 }

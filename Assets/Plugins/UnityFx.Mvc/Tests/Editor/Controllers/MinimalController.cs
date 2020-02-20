@@ -13,10 +13,5 @@ namespace UnityFx.Mvc
 		{
 			View = view;
 		}
-
-		public bool InvokeCommand<TCommand>(TCommand command)
-		{
-			return false;
-		}
 	}
 }

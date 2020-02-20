@@ -4,38 +4,46 @@
 using System;
 using UnityEngine;
 using UnityFx.Mvc;
+using UnityFx.Mvc.Extensions;
 
 public class AppRoot : MonoBehaviour, IServiceProvider
 {
+#pragma warning disable 0649
+
 	[SerializeField]
-	private Presenter _presenter;
-	[SerializeField]
-	private UGUIViewFactory _viewFactory;
+	private GameObject[] _viewPrefabs;
+
+#pragma warning restore 0649
+
+	private IViewFactory _viewFactory;
+	private IPresenter _presenter;
 
 	private void Awake()
 	{
-		if (_presenter is null)
+		var viewFactoryBuilder = new UGUIViewFactoryBuilder(gameObject);
+
+		foreach (var prefab in _viewPrefabs)
 		{
-			_presenter = gameObject.AddComponent<Presenter>();
+			viewFactoryBuilder.AddViewPrefab(prefab.name, prefab);
 		}
 
-		if (_viewFactory is null)
-		{
-			_viewFactory = gameObject.AddComponent<UGUIViewFactory>();
-		}
+		_viewFactory = viewFactoryBuilder.Build();
 
-		_presenter.Initialize(this);
+		var presenterBuilder = new PresenterBuilder(this, gameObject);
+		presenterBuilder.UseViewFactory(_viewFactory);
+		_presenter = presenterBuilder.Build();
 	}
 
 	private async void Start()
 	{
 		try
 		{
-			_ = _presenter.PresentAsync<AppController>();
+			_presenter.Present<AppController>();
 
 			await _presenter.PresentAsync<SplashController>();
 
-			_ = _presenter.PresentAsync<LobbyController>();
+			_presenter.Present<LobbyController>();
+			_presenter.PresentMessageBox(MessageBoxOptions.InfoOk, "Welcome to UnityFx.Mvc sample app. This window demonstrates a message box with OK button.", "Info Box");
 		}
 		catch (OperationCanceledException)
 		{
@@ -49,11 +57,6 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 
 	public object GetService(Type serviceType)
 	{
-		if (serviceType == typeof(IViewFactory))
-		{
-			return _viewFactory;
-		}
-
 		if (serviceType == typeof(IPresenter))
 		{
 			return _presenter;

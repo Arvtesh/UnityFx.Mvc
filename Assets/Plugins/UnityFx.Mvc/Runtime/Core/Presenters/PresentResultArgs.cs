@@ -14,6 +14,7 @@ namespace UnityFx.Mvc
 
 		public int Id;
 		public int Layer;
+		public int Tag;
 		public string PrefabPath;
 		
 		public IPresentable Parent;

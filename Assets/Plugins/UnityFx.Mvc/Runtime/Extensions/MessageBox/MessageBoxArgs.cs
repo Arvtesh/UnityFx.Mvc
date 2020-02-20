@@ -1,34 +1,46 @@
-// Copyright (c) 2018-2020 Alexander Bogarsukov.
+﻿// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using UnityEngine;
 
 namespace UnityFx.Mvc.Extensions
 {
 	/// <summary>
-	/// A <see cref="MessageBoxController"/> present arguments.
+	/// Arguments of a generic message box.
 	/// </summary>
+	/// <seealso cref="MessageBoxController"/>
 	public class MessageBoxArgs : PresentArgs
 	{
 		/// <summary>
 		/// Gets message box title text.
 		/// </summary>
+		/// <seealso cref="Text"/>
+		/// <seealso cref="OkText"/>
+		/// <seealso cref="CancelText"/>
 		public string Title { get; }
 
 		/// <summary>
 		/// Gets message box text.
 		/// </summary>
+		/// <seealso cref="Title"/>
+		/// <seealso cref="OkText"/>
+		/// <seealso cref="CancelText"/>
 		public string Text { get; }
 
 		/// <summary>
 		/// Gets OK button text.
 		/// </summary>
+		/// <seealso cref="CancelText"/>
+		/// <seealso cref="Title"/>
+		/// <seealso cref="Text"/>
 		public string OkText { get; }
 
 		/// <summary>
 		/// Gets CANCEL button text.
 		/// </summary>
+		/// <seealso cref="OkText"/>
+		/// <seealso cref="Title"/>
+		/// <seealso cref="Text"/>
 		public string CancelText { get; }
 
 		/// <summary>

@@ -17,11 +17,6 @@ namespace UnityFx.Mvc
 			_context.Schedule(OnTimer, 0.1f);
 		}
 
-		public bool InvokeCommand<TCommand>(TCommand command)
-		{
-			return false;
-		}
-
 		private void OnTimer(float time)
 		{
 			_context.Dismiss();
