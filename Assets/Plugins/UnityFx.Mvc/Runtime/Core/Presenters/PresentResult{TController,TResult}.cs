@@ -20,7 +20,7 @@ namespace UnityFx.Mvc
 	/// (via <see cref="IPresentContext"/> interface) and serves as a proxy between the controller and user.
 	/// </remarks>
 	[Preserve]
-	internal sealed class PresentResult<TController, TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TResult>, IPresentResultOf<TController, TResult>, IPresentResultOf<TController>, IPresentable<TController>, IEnumerator where TController : class, IViewController
+	internal sealed class PresentResult<TController, TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TResult>, IPresentResultOf<TController, TResult>, IPresentResultOf<TController>, IPresentable, IEnumerator where TController : class, IViewController
 	{
 		#region data
 
@@ -48,6 +48,7 @@ namespace UnityFx.Mvc
 		private readonly IPresentable _parent;
 		private readonly int _id;
 		private readonly int _layer;
+		private readonly int _tag;
 		private readonly string _prefabPath;
 		private readonly string _deeplinkId;
 
@@ -74,6 +75,7 @@ namespace UnityFx.Mvc
 
 			_presenter = presenter;
 			_id = context.Id;
+			_tag = context.Tag;
 			_layer = context.Layer;
 			_parent = context.Parent;
 			_serviceProvider = context.ServiceProvider;
@@ -91,120 +93,107 @@ namespace UnityFx.Mvc
 
 		public int Layer => _layer;
 
+		public string PrefabPath => _prefabPath;
+
 		public IPresentable Parent => _parent;
 
-		public Type ControllerType => _controllerType;
+		IViewController IPresentable.Controller => _controller;
 
 		public bool TryActivate()
 		{
 			if (_state == State.Presented)
 			{
-				_state = State.Active;
-				_controllerEvents?.OnActivate();
-				return true;
+				try
+				{
+					_controllerEvents?.OnActivate();
+					_state = State.Active;
+					return true;
+				}
+				catch (Exception e)
+				{
+					_presenter.ReportError(e);
+				}
 			}
 
 			return false;
 		}
 
-		public bool TryDeactivate()
+		public void Deactivate()
 		{
 			if (_state == State.Active)
 			{
-				_state = State.Presented;
-				_controllerEvents?.OnDeactivate();
-				return true;
+				try
+				{
+					_state = State.Presented;
+					_controllerEvents?.OnDeactivate();
+				}
+				catch (Exception e)
+				{
+					_presenter.ReportError(e);
+				}
 			}
-
-			return false;
 		}
 
-		public async Task PresentAsync(IViewFactory viewFactory, int index, Transform parent)
+		public void CreateController(IView view)
 		{
-			Debug.Assert(viewFactory != null);
+			Debug.Assert(view != null);
 			Debug.Assert(_state == State.Initialized);
 
-			try
-			{
-				_view = await viewFactory.CreateAsync(_prefabPath, _layer, index, _presentOptions, parent);
-
-				if (_state == State.Initialized)
-				{
-					if (_view is null)
-					{
-						throw new InvalidOperationException();
-					}
-
-					_scope = _controllerFactory.CreateScope(ref _serviceProvider);
-					_controller = (TController)_controllerFactory.Create(_controllerType, this, _presentArgs, _view);
-					_controllerEvents = _controller as IViewControllerEvents;
-					_controllerEvents?.OnPresent();
-					_view.Disposed += OnDismissed;
-					_state = State.Presented;
-				}
-				else
-				{
-					// NOTE: The controller has been dismissed, just dispose the view.
-					Debug.Assert(_state == State.Dismissed || _state == State.Disposed);
-					_view?.Dispose();
-				}
-			}
-			catch (Exception e)
-			{
-				LogException(e);
-				DismissInternal(default, true);
-				throw;
-			}
+			_view = view;
+			_scope = _controllerFactory.CreateScope(ref _serviceProvider);
+			_controller = (TController)_controllerFactory.CreateViewController(_controllerType, this, _presentArgs, _view);
+			_controllerEvents = _controller as IViewControllerEvents;
+			_controllerEvents?.OnPresent();
+			_view.Disposed += OnDismissed;
+			_state = State.Presented;
 		}
 
-		public void Update(float frameTime, bool isTop)
+		public void Update(float frameTime)
 		{
 			if (_state == State.Active || _state == State.Presented)
 			{
 				_timer += frameTime;
 
-				UpdateActive(isTop);
-				UpdateController(frameTime);
-				UpdateTimers(frameTime);
-			}
-		}
-
-		public void DismissUnsafe()
-		{
-			if (_state != State.Dismissed && _state != State.Disposed)
-			{
 				try
 				{
-					if (_controller is IViewControllerEvents c)
+					// Call controller update handler (if any).
+					if (_controller is IUpdateTarget ut)
 					{
-						if (_state == State.Active)
+						ut.Update(frameTime);
+					}
+
+					// Call timer updates (if any).
+					if (_timers != null)
+					{
+						var node = _timers.First;
+
+						while (node != null)
 						{
-							c.OnDeactivate();
-							c.OnDismiss();
-						}
-						else if (_state == State.Presented)
-						{
-							c.OnDismiss();
+							var timerData = node.Value;
+							timerData.Timer += frameTime;
+							node.Value = timerData;
+
+							if (timerData.Timer >= timerData.Timeout)
+							{
+								_timers.Remove(node);
+								timerData.Callback(timerData.Timer);
+							}
+
+							node = node.Next;
 						}
 					}
 				}
 				catch (Exception e)
 				{
-					LogException(e);
-				}
-				finally
-				{
-					_state = State.Dismissed;
+					// NOTE: Do not forward the exception further, just report.
+					_presenter.ReportError(e);
 				}
 			}
 		}
 
-		public void DisposeUnsafe()
+		public void DismissCancel()
 		{
-			if (_state != State.Disposed)
-			{
-				DismissInternal(default, true);
-			}
+			Dismiss(default, true);
 		}
 
 		#endregion
@@ -213,7 +202,9 @@ namespace UnityFx.Mvc
 
 		public IView View => _view;
 
-		public bool IsDismissed => _state == State.Dismissed || _state == State.Disposed;
+		public float PresentTime => _timer;
+
+		public bool IsActive => _state == State.Active;
 
 		public void Schedule(Action<float> timerCallback, float timeout)
 		{
@@ -242,9 +233,15 @@ namespace UnityFx.Mvc
 			Dismiss(result, false);
 		}
 
+		public void Dismiss(Exception e)
+		{
+			LogException(e);
+			Dismiss(default, e is OperationCanceledException);
+		}
+
 		public void Dismiss()
 		{
-			Dismiss(default, false);
+			Dismiss(default, _state == State.Initialized);
 		}
 
 		#endregion
@@ -255,13 +252,15 @@ namespace UnityFx.Mvc
 
 		public string DeeplinkId => _deeplinkId;
 
+		public int Tag => _tag;
+
+		public Type ControllerType => _controllerType;
+
 		public PresentArgs PresentArgs => _presentArgs;
 
 		public PresentOptions PresentOptions => _presentOptions;
 
-		public float PresentTime => _timer;
-
-		public bool IsActive => _state == State.Active;
+		public bool IsDismissed => _state == State.Dismissed || _state == State.Disposed;
 
 		#endregion
 
@@ -289,9 +288,9 @@ namespace UnityFx.Mvc
 
 		public bool InvokeCommand<TCommand>(TCommand command)
 		{
-			if (_state == State.Presented || _state == State.Active)
+			if ((_state == State.Presented || _state == State.Active) && _controller is ICommandTarget ct)
 			{
-				return _controller.InvokeCommand(command);
+				return ct.InvokeCommand(command);
 			}
 
 			return false;
@@ -327,7 +326,7 @@ namespace UnityFx.Mvc
 
 		public void Dispose()
 		{
-			Dismiss(default, false);
+			Dismiss(default, _state == State.Initialized);
 		}
 
 		#endregion
@@ -340,32 +339,83 @@ namespace UnityFx.Mvc
 			{
 				if (_state == State.Dismissed)
 				{
-					DismissInternal(result, cancelled);
+					Dispose(result, cancelled);
 				}
 				else
 				{
 					try
 					{
-						_presenter.Dismiss(this);
+						DismissSelf();
+						DismissChildren();
 					}
 					finally
 					{
-						DismissInternal(result, cancelled);
+						Dispose(result, cancelled);
 					}
 				}
 			}
 		}
 
-		private void DismissInternal(TResult result, bool cancelled)
+		private void Dispose(TResult result, bool cancelled)
+		{
+			if (_state != State.Disposed)
+			{
+				_state = State.Disposed;
+
+				try
+				{
+					_controllerFactory.ReleaseViewController(_controller);
+					_view?.Dispose();
+					_scope?.Dispose();
+				}
+				catch (Exception e)
+				{
+					LogException(e);
+				}
+				finally
+				{
+					if (_exceptions != null)
+					{
+						TrySetException(_exceptions);
+					}
+					else if (cancelled)
+					{
+						TrySetCanceled();
+					}
+					else
+					{
+						TrySetResult(result);
+					}
+
+					_presenter.PresentCompleted(this, Task.Exception, cancelled);
+				}
+			}
+			
+		}
+
+		private void DismissSelf()
 		{
 			try
 			{
-				if (_state != State.Disposed)
+				if (_controller is IViewControllerEvents c)
 				{
-					_state = State.Disposed;
-					_controllerFactory.Release(_controller);
-					_view?.Dispose();
-					_scope?.Dispose();
+					if (_state == State.Active)
+					{
+						try
+						{
+							c.OnDeactivate();
+						}
+						catch (Exception e)
+						{
+							_presenter.ReportError(e);
+						}
+
+						c.OnDismiss();
+					}
+					else if (_state == State.Presented)
+					{
+						c.OnDismiss();
+					}
 				}
 			}
 			catch (Exception e)
@@ -374,18 +424,26 @@ namespace UnityFx.Mvc
 			}
 			finally
 			{
-				if (_exceptions != null)
+				_state = State.Dismissed;
+			}
+		}
+
+		private void DismissChildren()
+		{
+			try
+			{
+				foreach (var child in _presenter.GetChildren(this))
 				{
-					TrySetException(_exceptions);
+					child.DismissCancel();
 				}
-				else if (cancelled)
-				{
-					TrySetCanceled();
-				}
-				else
-				{
-					TrySetResult(result);
-				}
+			}
+			catch (Exception e)
+			{
+				LogException(e);
+			}
+			finally
+			{
+				_state = State.Dismissed;
 			}
 		}
 
@@ -395,42 +453,14 @@ namespace UnityFx.Mvc
 			{
 				if (_state == State.Presented)
 				{
-					_state = State.Active;
 					_controllerEvents?.OnActivate();
+					_state = State.Active;
 				}
 			}
 			else if (_state == State.Active)
 			{
 				_state = State.Presented;
 				_controllerEvents?.OnDeactivate();
-			}
-		}
-
-		private void UpdateController(float frameTime)
-		{
-			_controllerEvents?.OnUpdate(frameTime);
-		}
-
-		private void UpdateTimers(float frameTime)
-		{
-			if (_timers != null)
-			{
-				var node = _timers.First;
-
-				while (node != null)
-				{
-					var timerData = node.Value;
-					timerData.Timer += frameTime;
-					node.Value = timerData;
-
-					if (timerData.Timer >= timerData.Timeout)
-					{
-						_timers.Remove(node);
-						timerData.Callback(timerData.Timer);
-					}
-
-					node = node.Next;
-				}
 			}
 		}
 
@@ -446,6 +476,8 @@ namespace UnityFx.Mvc
 				{
 					_exceptions.Add(e);
 				}
+
+				_presenter.ReportError(e);
 			}
 		}
 

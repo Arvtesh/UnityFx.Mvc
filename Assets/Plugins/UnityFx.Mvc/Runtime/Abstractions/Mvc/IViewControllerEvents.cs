@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 Alexander Bogarsukov.
+﻿// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -11,11 +11,6 @@ namespace UnityFx.Mvc
 	/// <seealso cref="IViewController"/>
 	public interface IViewControllerEvents
 	{
-		/// <summary>
-		/// Called on each frame.
-		/// </summary>
-		void OnUpdate(float frameTime);
-
 		/// <summary>
 		/// Called when the object is presented.
 		/// </summary>

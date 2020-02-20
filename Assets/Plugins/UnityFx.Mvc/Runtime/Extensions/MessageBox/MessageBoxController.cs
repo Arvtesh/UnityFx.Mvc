@@ -9,12 +9,48 @@ namespace UnityFx.Mvc.Extensions
 	/// <summary>
 	/// Controller of a generic message box.
 	/// </summary>
+	/// <remarks>
+	/// Can work with any view that implements <see cref="IConfigurable{T}"/>. When the view
+	/// is closed by user, it is supposed to send one of the <see cref="Commands"/> commands
+	/// to the controller. Controller result values are enumerated in <see cref="MessageBoxResult"/>.
+	/// </remarks>
+	/// <example>
+	/// The following code sample demonstrates a custom UGUI view for the message box:
+	/// <code>
+	/// using UnityEngine;
+	/// using UnityEngine.UI;
+	/// using UnityFx.Mvc.Extensions;
+	///
+	/// public class InfoBoxView : View, IConfigurable<MessageBoxArgs>
+	/// {
+	///		[SerializeField]
+	///		private Text _text;
+	///		[SerializeField]
+	///		private Button _okButton;
+	///		
+	///		public void Configure(MessageBoxArgs args)
+	///		{
+	///			_text.text = args.Text;
+	///		}
+	///		
+	///		private void Awake()
+	///		{
+	///			_okButton?.onClick.AddListener(OnOk);
+	///		}
+	///		
+	///		private void OnOk()
+	///		{
+	///			NotifyCommand(MessageBoxController.Commands.Close);
+	///		}
+	/// }
+	/// </code>
+	/// </example>
 	/// <seealso cref="MessageBoxView"/>
 	/// <seealso cref="MessageBoxArgs"/>
 	/// <seealso cref="MessageBoxOptions"/>
 	/// <seealso cref="MessageBoxResult"/>
 	[ViewController(PresentOptions = PresentOptions.Popup | PresentOptions.Modal)]
-	public class MessageBoxController : IViewController, IViewControllerResult<MessageBoxResult>
+	public class MessageBoxController : IViewController, IViewControllerResult<MessageBoxResult>, ICommandTarget
 	{
 		#region data
 
@@ -37,14 +73,18 @@ namespace UnityFx.Mvc.Extensions
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MessageBoxController"/> class.
 		/// </summary>
-		public MessageBoxController(IPresentContext<MessageBoxResult> context)
+		public MessageBoxController(IPresentContext<MessageBoxResult> context, MessageBoxArgs args)
 		{
 			_context = context;
-			_context.View.Command += OnCommand;
 
-			if (context.PresentArgs is MessageBoxArgs args && context.View is IConfigurable<MessageBoxArgs> view)
+			if (context.View is INotifyCommand nc)
 			{
-				view.Configure(args);
+				nc.Command += OnCommand;
+			}
+
+			if (context.View is IConfigurable<MessageBoxArgs> c)
+			{
+				c.Configure(args);
 			}
 		}
 

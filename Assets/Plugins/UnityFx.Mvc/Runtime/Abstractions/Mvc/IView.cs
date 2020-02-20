@@ -11,12 +11,12 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <remarks>
 	/// In the Model-View-Controller (MVC) pattern, the view handles the app's data presentation and user interaction.
-	/// A view is a <see cref="GameObject"/>. Views are created via <see cref="IViewFactory"/> instance.
+	/// Views are created via <see cref="IViewFactory"/> instance.
 	/// </remarks>
 	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IViewFactory"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller"/>
-	public interface IView : INotifyCommand, IDisposable
+	public interface IView : IDisposable
 	{
 		/// <summary>
 		/// Raised when the view is disposed.

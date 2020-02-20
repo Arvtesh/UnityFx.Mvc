@@ -10,21 +10,18 @@ using UnityEngine.UI;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Default <see cref="MonoBehaviour"/>-based view factory.
+	/// An UGUI-based view factory.
 	/// </summary>
-	public partial class UGUIViewFactory : MonoBehaviour, IViewFactory
+	/// <seealso cref="UGUIViewFactoryBuilder"/>
+	internal sealed partial class UGUIViewFactory : MonoBehaviour, IViewFactory
 	{
 		#region data
 
-		[SerializeField]
-		private Color _popupBgColor = new Color(0, 0, 0, 0.5f);
-		[SerializeField]
-		private Transform[] _viewRoots;
-		[SerializeField]
-		private GameObject[] _viewPrefabs;
-
-		private Dictionary<string, GameObject> _viewPrefabCache = new Dictionary<string, GameObject>();
-		private Dictionary<string, Task<GameObject>> _viewPrefabCacheTasks = new Dictionary<string, Task<GameObject>>();
+		private Dictionary<string, GameObject> _viewPrefabCache;
+		private Dictionary<string, Task<GameObject>> _viewPrefabCacheTasks;
+		private IReadOnlyList<Transform> _viewRoots;
+		private Func<string, Task<GameObject>> _loadPrefabDelegate;
+		private Color _popupBgColor;
 		private ViewCollection _views;
 		private bool _disposed;
 
@@ -33,19 +30,19 @@ namespace UnityFx.Mvc
 		#region interface
 
 		/// <summary>
-		/// Gets background color of the popup views.
+		/// Gets popup background color.
 		/// </summary>
-		public Color PopupBackgroundColor { get => _popupBgColor; set => _popupBgColor = value; }
+		public Color PopupBackgroundColor => _popupBgColor;
 
 		/// <summary>
-		/// Gets or sets list of preloaded view prefabs.
+		/// Gets a read-only collection of view root transforms.
 		/// </summary>
-		public GameObject[] ViewPrefabs { get => _viewPrefabs; set => _viewPrefabs = value; }
+		public IReadOnlyList<Transform> ViewRoots => _viewRoots;
 
 		/// <summary>
-		/// Gets or sets list of preloaded view prefabs.
+		/// Gets a read-only collection of loaded view prefabs.
 		/// </summary>
-		public Transform[] ViewRoots { get => _viewRoots; set => _viewRoots = value; }
+		public IReadOnlyCollection<string> Prefabs => _viewPrefabCache.Keys;
 
 		/// <summary>
 		/// Gets a read-only collection of views.
@@ -63,91 +60,52 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		/// <summary>
-		/// Gets a value indicating whether the instance is disposed.
-		/// </summary>
-		protected bool IsDisposed => _disposed;
-
-		/// <summary>
-		/// Clears the prefabs cache.
-		/// </summary>
-		protected void ClearPrefabCache()
+		internal void SetPopupBackgrounColor(Color color)
 		{
-			_viewPrefabCache?.Clear();
+			_popupBgColor = color;
 		}
 
-		/// <summary>
-		/// Gets root <see cref="Transform"/> for a view of the specified controller.
-		/// </summary>
-		protected virtual Transform GetViewRoot(int layer)
+		internal void SetLoadPrefabDelegate(Func<string, Task<GameObject>> prefabDelegate)
 		{
-			if (_viewRoots is null || _viewRoots.Length == 0)
-			{
-				return transform;
-			}
-
-			return _viewRoots[layer];
+			_loadPrefabDelegate = prefabDelegate;
 		}
 
-		/// <summary>
-		/// Loads view prefab with the specified name. Default implementation searches the prefab in <see cref="ViewPrefabs"/> array, returns <see langword="null"/> on any error.
-		/// Overide to implement own mechanism of loading views.
-		/// </summary>
-		protected virtual Task<GameObject> LoadViewPrefabAsync(string prefabName)
+		internal void SetViewPrefabs(Dictionary<string, GameObject> prefabs)
 		{
-			if (_viewPrefabs != null && !string.IsNullOrEmpty(prefabName))
+			_viewPrefabCache = prefabs ?? new Dictionary<string, GameObject>();
+		}
+
+		internal void SetViewRoots(IReadOnlyList<Transform> viewRoots)
+		{
+			if (viewRoots is null || viewRoots.Count == 0)
 			{
-				foreach (var go in _viewPrefabs)
+				var canvases = GetComponentsInChildren<Canvas>();
+
+				if (canvases != null && canvases.Length > 0)
 				{
-					if (string.CompareOrdinal(go.name, prefabName) == 0)
+					var transforms = new Transform[canvases.Length];
+
+					for (var i = 0; i < transforms.Length; i++)
 					{
-						return Task.FromResult(go);
+						transforms[i] = canvases[i].transform;
 					}
+
+					_viewRoots = transforms;
+				}
+				else
+				{
+					_viewRoots = new Transform[1] { transform };
 				}
 			}
-
-			return Task.FromResult(default(GameObject));
-		}
-
-		/// <summary>
-		/// Throws an <see cref="ObjectDisposedException"/> if the controller is disposed.
-		/// </summary>
-		/// <seealso cref="Dispose"/>
-		protected void ThrowIfDisposed()
-		{
-			if (_disposed)
+			else
 			{
-				throw new ObjectDisposedException(GetType().Name);
+				_viewRoots = viewRoots;
 			}
-		}
-
-		/// <summary>
-		/// Called when the view is disposed.
-		/// </summary>
-		/// <seealso cref="ThrowIfDisposed"/>
-		protected virtual void OnDispose()
-		{
 		}
 
 		#endregion
 
 		#region MonoBehaviour
-
-#if UNITY_EDITOR
-
-		protected virtual void Reset()
-		{
-			var cs = GetComponentsInChildren<Canvas>();
-
-			_viewRoots = new Transform[cs.Length];
-
-			for (var i = 0; i < cs.Length; i++)
-			{
-				_viewRoots[i] = cs[i].transform;
-			}
-		}
-
-#endif
 
 		private void OnDestroy()
 		{
@@ -158,7 +116,7 @@ namespace UnityFx.Mvc
 
 		#region IViewFactory
 
-		public async Task<IView> CreateAsync(string prefabPath, int layer, int zIndex, PresentOptions options, Transform parent)
+		public async Task<IView> CreateViewAsync(string prefabPath, int layer, int zIndex, PresentOptions options, Transform parent)
 		{
 			ThrowIfDisposed();
 
@@ -169,7 +127,7 @@ namespace UnityFx.Mvc
 
 			if (string.IsNullOrWhiteSpace(prefabPath))
 			{
-				throw new ArgumentException("Invalid prefab name.", nameof(prefabPath));
+				throw new ArgumentException("Invalid prefab path.", nameof(prefabPath));
 			}
 
 			ViewProxy viewProxy = null;
@@ -178,7 +136,7 @@ namespace UnityFx.Mvc
 			{
 				var exclusive = (options & PresentOptions.Exclusive) != 0;
 				var modal = (options & PresentOptions.Modal) != 0;
-				var viewRoot = GetViewRoot(layer);
+				var viewRoot = _viewRoots[layer];
 
 				viewProxy = CreateViewProxy(viewRoot, prefabPath, zIndex, exclusive, modal);
 
@@ -188,13 +146,19 @@ namespace UnityFx.Mvc
 				}
 				else
 				{
-					if (_viewPrefabCacheTasks.TryGetValue(prefabPath, out var task))
+					if (_viewPrefabCacheTasks != null && _viewPrefabCacheTasks.TryGetValue(prefabPath, out var task))
 					{
 						viewPrefab = await task;
 					}
-					else
+					else if (_loadPrefabDelegate != null)
 					{
-						task = LoadViewPrefabAsync(prefabPath);
+						task = _loadPrefabDelegate(prefabPath);
+
+						if (_viewPrefabCacheTasks is null)
+						{
+							_viewPrefabCacheTasks = new Dictionary<string, Task<GameObject>>();
+						}
+
 						_viewPrefabCacheTasks.Add(prefabPath, task);
 
 						try
@@ -205,6 +169,11 @@ namespace UnityFx.Mvc
 						{
 							_viewPrefabCacheTasks.Remove(prefabPath);
 						}
+					}
+					else
+					{
+						// TODO: Use a dedicated exception type.
+						throw new KeyNotFoundException();
 					}
 
 					if (_disposed)
@@ -237,8 +206,6 @@ namespace UnityFx.Mvc
 			{
 				_disposed = true;
 				_viewPrefabCache = null;
-
-				OnDispose();
 			}
 		}
 
@@ -345,11 +312,11 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		private void ThrowIfInvalidPrefab(GameObject prefabGo)
+		private void ThrowIfDisposed()
 		{
-			if (!prefabGo)
+			if (_disposed)
 			{
-				throw new OperationCanceledException();
+				throw new ObjectDisposedException(GetType().Name);
 			}
 		}
 

@@ -8,10 +8,5 @@ namespace UnityFx.Mvc
 	public abstract class AbstractController : IViewController
 	{
 		public IView View => null;
-
-		public bool InvokeCommand<TCommand>(TCommand command)
-		{
-			return false;
-		}
 	}
 }

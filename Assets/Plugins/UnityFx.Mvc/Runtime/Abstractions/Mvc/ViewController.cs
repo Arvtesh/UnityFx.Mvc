@@ -2,17 +2,15 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
+using UnityEngine;
 
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Implementation of <see cref="IViewController"/>.
+	/// Default implementation of <see cref="IViewController"/>.
 	/// </summary>
 	/// <seealso cref="ViewController{TView}"/>
-	public abstract class ViewController : IViewController, IViewControllerEvents
+	public abstract class ViewController : IViewController, IViewControllerEvents, ICommandTarget, IUpdateTarget
 	{
 		#region data
 
@@ -41,7 +39,11 @@ namespace UnityFx.Mvc
 		protected ViewController(IPresentContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
-			_context.View.Command += OnCommand;
+
+			if (_context.View is INotifyCommand nc)
+			{
+				nc.Command += OnCommand;
+			}
 		}
 
 		/// <summary>
@@ -150,7 +152,11 @@ namespace UnityFx.Mvc
 			OnDismiss();
 		}
 
-		void IViewControllerEvents.OnUpdate(float frameTime)
+		#endregion
+
+		#region IUpdateTarget
+
+		void IUpdateTarget.Update(float frameTime)
 		{
 			Debug.Assert(!IsDismissed);
 			OnUpdate(frameTime);

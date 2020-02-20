@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 Alexander Bogarsukov.
+﻿// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -13,16 +13,15 @@ namespace UnityFx.Mvc
 	public interface IViewControllerCollection : IReadOnlyCollection<IViewController>
 	{
 		/// <summary>
-		/// Gets top element of the stack.
+		/// Attempts to get top element of the collection.
 		/// </summary>
-		/// <exception cref="InvalidOperationException">Thrown if the collection is empty.</exception>
-		IViewController Peek();
+		/// <param name="result">Top element of the collection.</param>
+		/// <returns>Returns <see langword="true"/> if the collection contains at least one element; <see langword="false"/> otherwise.</returns>
+		bool TryPeek(out IViewController result);
 
 		/// <summary>
-		/// Attempts to gets top element of the stack.
+		/// Checks if a controller of the specified type is presented.
 		/// </summary>
-		/// <param name="result">Top element of the stack.</param>
-		/// <returns>Returns <see langword="true"/> if the operation succeeds; <see langword="false"/> otherwise.</returns>
-		bool TryPeek(out IViewController result);
+		bool Contains(Type controllerType);
 	}
 }

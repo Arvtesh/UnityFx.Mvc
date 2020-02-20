@@ -11,15 +11,15 @@ namespace UnityFx.Mvc
 	internal interface IPresentable : IPresentResult
 	{
 		int Layer { get; }
+		string PrefabPath { get; }
 		bool IsActive { get; }
-		bool IsDismissed { get; }
+		IViewController Controller { get; }
 		IPresentable Parent { get; }
-		PresentOptions PresentOptions { get; }
-		PresentArgs PresentArgs { get; }
-		Type ControllerType { get; }
-		Task PresentAsync(IViewFactory viewFactory, int index, Transform parent);
-		void Update(float frameTime, bool isTop);
-		void DismissUnsafe();
-		void DisposeUnsafe();
+		bool TryActivate();
+		void Deactivate();
+		void CreateController(IView view);
+		void Update(float frameTime);
+		void DismissCancel();
+		void Dismiss(Exception e);
 	}
 }

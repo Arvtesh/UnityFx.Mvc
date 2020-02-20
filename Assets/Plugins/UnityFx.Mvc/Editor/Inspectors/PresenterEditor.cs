@@ -7,27 +7,38 @@ using UnityEngine;
 
 namespace UnityFx.Mvc
 {
-	[CustomEditor(typeof(PresenterBase), true)]
+	[CustomEditor(typeof(PresenterBehaviour), true)]
 	public class PresenterEditor : Editor
 	{
-		private PresenterBase _presenter;
+		private IPresentService _presenter;
 
 		private void OnEnable()
 		{
-			_presenter = (PresenterBase)target;
+			_presenter = ((PresenterBehaviour)target).Presenter;
 		}
 
 		public override void OnInspectorGUI()
 		{
 			base.OnInspectorGUI();
 
-			var controllers = _presenter.GetControllers();
+			EditorGUI.BeginDisabledGroup(true);
+
+			if (_presenter.ServiceProvider is UnityEngine.Object o)
+			{
+				EditorGUILayout.ObjectField("Service Provider", o, typeof(UnityEngine.Object), true);
+			}
+
+			if (_presenter.ViewFactory is UnityEngine.Object o2)
+			{
+				EditorGUILayout.ObjectField("View Factory", o2, typeof(UnityEngine.Object), true);
+			}
+
+			var controllers = _presenter.Controllers;
 
 			if (controllers != null && controllers.Count > 0)
 			{
 				var controllerId = 0;
 
-				EditorGUI.BeginDisabledGroup(true);
 				EditorGUILayout.LabelField("Controllers");
 				EditorGUI.indentLevel += 1;
 
@@ -38,8 +49,9 @@ namespace UnityFx.Mvc
 				}
 
 				EditorGUI.indentLevel -= 1;
-				EditorGUI.EndDisabledGroup();
 			}
+
+			EditorGUI.EndDisabledGroup();
 		}
 	}
 }

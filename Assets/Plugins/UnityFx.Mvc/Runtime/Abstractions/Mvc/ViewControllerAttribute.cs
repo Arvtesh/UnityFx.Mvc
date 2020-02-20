@@ -22,6 +22,11 @@ namespace UnityFx.Mvc
 		public string PrefabPath { get; set; }
 
 		/// <summary>
+		/// Gets or sets controller tag.
+		/// </summary>
+		public int Tag { get; set; }
+
+		/// <summary>
 		/// Gets or sets layer index.
 		/// </summary>
 		public int Layer { get; set; }
