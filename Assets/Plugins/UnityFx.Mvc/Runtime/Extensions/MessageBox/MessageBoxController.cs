@@ -76,11 +76,15 @@ namespace UnityFx.Mvc.Extensions
 		public MessageBoxController(IPresentContext<MessageBoxResult> context, MessageBoxArgs args)
 		{
 			_context = context;
-			_context.View.Command += OnCommand;
 
-			if (context.View is IConfigurable<MessageBoxArgs> view)
+			if (context.View is INotifyCommand nc)
 			{
-				view.Configure(args);
+				nc.Command += OnCommand;
+			}
+
+			if (context.View is IConfigurable<MessageBoxArgs> c)
+			{
+				c.Configure(args);
 			}
 		}
 

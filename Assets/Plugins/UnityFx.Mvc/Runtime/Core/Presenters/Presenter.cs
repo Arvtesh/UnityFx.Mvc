@@ -28,6 +28,7 @@ namespace UnityFx.Mvc
 		private Dictionary<IViewController, IPresentable> _controllerMap = new Dictionary<IViewController, IPresentable>();
 		private List<PresentDelegate> _presentDelegates;
 		private Action<Exception> _errorDelegate;
+		private IPresentable _lastActive;
 
 		private int _idCounter;
 		private bool _disposed;
@@ -117,20 +118,7 @@ namespace UnityFx.Mvc
 
 		public IViewControllerCollection Controllers => _controllers;
 
-		public IViewController ActiveController
-		{
-			get
-			{
-				var p = _presentables.Last?.Value;
-
-				if (p != null && p.IsActive)
-				{
-					return p.Controller;
-				}
-
-				return default;
-			}
-		}
+		public IViewController ActiveController => _lastActive?.Controller;
 
 		public bool TryGetInfo(IViewController controller, out IPresentInfo info)
 		{
@@ -160,9 +148,10 @@ namespace UnityFx.Mvc
 		public void Update()
 		{
 			var frameTime = Time.deltaTime;
-			var topPresentable = _presentables.Last?.Value;
 			var node = _presentables.First;
+			var newActive = default(IPresentable);
 
+			// 1) Remove dismissed controllers & find active.
 			while (node != null)
 			{
 				var p = node.Value;
@@ -179,8 +168,24 @@ namespace UnityFx.Mvc
 				}
 				else
 				{
-					p.Update(frameTime, p == topPresentable);
+					newActive = p;
 				}
+			}
+
+			// 2) Activate/deactivate.
+			if (newActive != _lastActive && newActive != null && newActive.TryActivate())
+			{
+				_lastActive?.Deactivate();
+				_lastActive = newActive;
+			}
+
+			// 3) Update presentables.
+			node = _presentables.First;
+
+			while (node != null)
+			{
+				node.Value.Update(frameTime);
+				node = node.Next;
 			}
 		}
 

@@ -15,8 +15,10 @@ namespace UnityFx.Mvc
 		bool IsActive { get; }
 		IViewController Controller { get; }
 		IPresentable Parent { get; }
+		bool TryActivate();
+		void Deactivate();
 		void CreateController(IView view);
-		void Update(float frameTime, bool isTop);
+		void Update(float frameTime);
 		void DismissCancel();
 		void Dismiss(Exception e);
 	}
