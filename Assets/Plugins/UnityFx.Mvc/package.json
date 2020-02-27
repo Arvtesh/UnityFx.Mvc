@@ -1,7 +1,7 @@
 {
     "name": "com.unityfx.mvc",
     "version": "0.3.0",
-    "displayName": "MVC(S) framework for Unity.",
+    "displayName": "MVC(S) framework for Unity",
     "description": "",
     "unity": "2018.4",
     "keywords": [
