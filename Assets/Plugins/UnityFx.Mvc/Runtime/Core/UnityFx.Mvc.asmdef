@@ -1,7 +1,8 @@
 {
     "name": "UnityFx.Mvc",
     "references": [
-        "UnityFx.Mvc.Abstractions"
+        "UnityFx.Mvc.Abstractions",
+        "UnityFx.Mvc.Commands"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
