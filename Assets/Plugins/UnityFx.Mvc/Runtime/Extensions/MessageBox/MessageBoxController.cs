@@ -50,7 +50,7 @@ namespace UnityFx.Mvc.Extensions
 	/// <seealso cref="MessageBoxOptions"/>
 	/// <seealso cref="MessageBoxResult"/>
 	[ViewController(PresentOptions = PresentOptions.Popup | PresentOptions.Modal)]
-	public class MessageBoxController : IViewController, IViewControllerResult<MessageBoxResult>, ICommandTarget
+	public class MessageBoxController : IViewController, IViewControllerResult<MessageBoxResult>, ICommandTarget<MessageBoxCommands>, ICommandTarget
 	{
 		#region data
 
@@ -59,16 +59,6 @@ namespace UnityFx.Mvc.Extensions
 		#endregion
 
 		#region interface
-
-		/// <summary>
-		/// Enumerates controller-specific commands.
-		/// </summary>
-		public enum Commands
-		{
-			Ok,
-			Cancel,
-			Close
-		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MessageBoxController"/> class.
@@ -100,23 +90,31 @@ namespace UnityFx.Mvc.Extensions
 		#region ICommandTarget
 
 		/// <inheritdoc/>
-		public bool InvokeCommand(Command command, Variant args)
+		public bool InvokeCommand(MessageBoxCommands command, Variant args)
 		{
 			if (!_context.IsDismissed)
 			{
-				if (command.TryUnpack(out Commands cmd))
+				if (command == MessageBoxCommands.Ok)
 				{
-					if (cmd == Commands.Ok)
-					{
-						_context.Dismiss(MessageBoxResult.Ok);
-					}
-					else
-					{
-						_context.Dismiss(MessageBoxResult.Cancel);
-					}
-
-					return true;
+					_context.Dismiss(MessageBoxResult.Ok);
 				}
+				else
+				{
+					_context.Dismiss(MessageBoxResult.Cancel);
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+
+		/// <inheritdoc/>
+		public bool InvokeCommand(Command command, Variant args)
+		{
+			if (command.TryUnpack(out MessageBoxCommands cmd))
+			{
+				return InvokeCommand(cmd, args);
 			}
 
 			return false;

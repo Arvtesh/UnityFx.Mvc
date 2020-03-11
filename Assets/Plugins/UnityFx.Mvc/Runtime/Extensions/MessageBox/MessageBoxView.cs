@@ -118,17 +118,17 @@ namespace UnityFx.Mvc.Extensions
 
 		private void OnOk()
 		{
-			NotifyCommand(MessageBoxController.Commands.Ok);
+			NotifyCommand(MessageBoxCommands.Ok);
 		}
 
 		private void OnCancel()
 		{
-			NotifyCommand(MessageBoxController.Commands.Cancel);
+			NotifyCommand(MessageBoxCommands.Cancel);
 		}
 
 		private void OnClose()
 		{
-			NotifyCommand(MessageBoxController.Commands.Close);
+			NotifyCommand(MessageBoxCommands.Close);
 		}
 
 		#endregion

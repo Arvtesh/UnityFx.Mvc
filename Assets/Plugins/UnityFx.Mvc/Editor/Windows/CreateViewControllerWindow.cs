@@ -21,6 +21,7 @@ namespace UnityFx.Mvc
 		private bool _modal;
 		private bool _popup;
 		private bool _createArgs;
+		private bool _createCommands;
 
 		private Regex _classNamePattern = new Regex("^[_a-zA-Z][_a-zA-Z0-9]*$");
 
@@ -46,6 +47,7 @@ namespace UnityFx.Mvc
 
 			_controllerName = EditorGUILayout.TextField("Controller Name", _controllerName);
 			_createArgs = EditorGUILayout.Toggle("Create PresentArgs", _createArgs);
+			_createCommands = EditorGUILayout.Toggle("Create commands enumeration", _createCommands);
 			_exclusive = EditorGUILayout.Toggle("Exclusive", _exclusive);
 			_popup = EditorGUILayout.Toggle("Popup", _popup);
 			_modal = EditorGUILayout.Toggle("Modal", _modal);
@@ -117,6 +119,11 @@ namespace UnityFx.Mvc
 				var argsPath = Path.Combine(fullPath, argsFileName);
 				var argsText = new StringBuilder();
 
+				var commandsName = _controllerName + "Commands";
+				var commandsFileName = commandsName + ".cs";
+				var commandsPath = Path.Combine(fullPath, commandsFileName);
+				var commandsText = new StringBuilder();
+
 				var viewName = _controllerName + "View";
 				var viewFileName = viewName + ".cs";
 				var viewPath = Path.Combine(fullPath, viewFileName);
@@ -151,21 +158,24 @@ namespace UnityFx.Mvc
 					controllerText.AppendFormat(indent + "/// <seealso cref=\"{0}\"/>" + Environment.NewLine, argsName);
 				}
 
+				if (_createCommands)
+				{
+					controllerText.AppendFormat(indent + "/// <seealso cref=\"{0}\"/>" + Environment.NewLine, commandsName);
+				}
+
 				controllerText.AppendFormat(indent + "[ViewController(PresentOptions = {0})]" + Environment.NewLine, GetPresentOptions(_exclusive, _popup, _modal));
-				controllerText.AppendFormat(indent + "public class {0} : {1}<{2}>" + Environment.NewLine, controllerName, _controllerBaseClass, viewName);
+				controllerText.AppendFormat(indent + "public class {0} : {1}<{2}>", controllerName, _controllerBaseClass, viewName);
+
+				if (_createCommands)
+				{
+					controllerText.AppendFormat(", ICommandTarget<{0}>" + Environment.NewLine, commandsName);
+				}
+
 				controllerText.AppendLine(indent + "{");
 				controllerText.AppendLine(indent + "	#region data");
 				controllerText.AppendLine(indent + "	#endregion");
 				controllerText.AppendLine("");
 				controllerText.AppendLine(indent + "	#region interface");
-				controllerText.AppendLine("");
-				controllerText.AppendLine(indent + "	/// <summary>");
-				controllerText.AppendLine(indent + "	/// Enumerates controller-specific commands.");
-				controllerText.AppendLine(indent + "	/// </summary>");
-				controllerText.AppendLine(indent + "	public enum Commands");
-				controllerText.AppendLine(indent + "	{");
-				controllerText.AppendLine(indent + "		Close");
-				controllerText.AppendLine(indent + "	}");
 				controllerText.AppendLine("");
 				controllerText.AppendLine(indent + "	/// <summary>");
 				controllerText.AppendFormat(indent + "	/// Initializes a new instance of the <see cref=\"{0}\"/> class." + Environment.NewLine, controllerName);
@@ -203,22 +213,48 @@ namespace UnityFx.Mvc
 				controllerText.AppendLine(indent + "	/// <inheritdoc/>");
 				controllerText.AppendLine(indent + "	protected override bool OnCommand(Command command, Variant args)");
 				controllerText.AppendLine(indent + "	{");
-				controllerText.AppendLine(indent + "		// TODO: Process view commands here. See list of commands in Commands.");
-				controllerText.AppendLine(indent + "		if (command.TryUnpack(out Commands cmd))");
-				controllerText.AppendLine(indent + "		{");
-				controllerText.AppendLine(indent + "			switch (cmd)");
-				controllerText.AppendLine(indent + "			{");
-				controllerText.AppendLine(indent + "				case Commands.Close:");
-				controllerText.AppendLine(indent + "					Dismiss();");
-				controllerText.AppendLine(indent + "					return true;");
-				controllerText.AppendLine(indent + "			}");
-				controllerText.AppendLine(indent + "		}");
-				controllerText.AppendLine("");
+
+				if (_createCommands)
+				{
+					controllerText.AppendLine(indent + $"		if (command.TryUnpack(out {commandsName} cmd))");
+					controllerText.AppendLine(indent + "		{");
+					controllerText.AppendLine(indent + "			return InvokeCommand(cmd, args);");
+					controllerText.AppendLine(indent + "		}");
+					controllerText.AppendLine("");
+				}
+				else
+				{
+					controllerText.AppendLine(indent + "		// TODO: Process controller-specific commands here.");
+				}
+
 				controllerText.AppendLine(indent + "		return false;");
 				controllerText.AppendLine(indent + "	}");
 				controllerText.AppendLine("");
 				controllerText.AppendLine(indent + "	#endregion");
 				controllerText.AppendLine("");
+
+				if (_createCommands)
+				{
+					controllerText.AppendLine(indent + "	#region ICommandTarget");
+					controllerText.AppendLine("");
+					controllerText.AppendLine(indent + "	/// <inheritdoc/>");
+					controllerText.AppendLine(indent + $"	public bool InvokeCommand({commandsName} command, Variant args)");
+					controllerText.AppendLine(indent + "	{");
+					controllerText.AppendLine(indent + "		// TODO: Process constroller-specific commands here.");
+					controllerText.AppendLine(indent + "		switch (command)");
+					controllerText.AppendLine(indent + "		{");
+					controllerText.AppendLine(indent + $"			case {commandsName}.Close:");
+					controllerText.AppendLine(indent + "				Dismiss();");
+					controllerText.AppendLine(indent + "				return true;");
+					controllerText.AppendLine(indent + "		}");
+					controllerText.AppendLine("");
+					controllerText.AppendLine(indent + "		return false;");
+					controllerText.AppendLine(indent + "	}");
+					controllerText.AppendLine("");
+					controllerText.AppendLine(indent + "	#endregion");
+					controllerText.AppendLine("");
+				}
+
 				controllerText.AppendLine(indent + "	#region implementation");
 				controllerText.AppendLine(indent + "	#endregion");
 				controllerText.AppendLine(indent + "}");
@@ -252,6 +288,11 @@ namespace UnityFx.Mvc
 				if (_createArgs)
 				{
 					viewText.AppendFormat(indent + "/// <seealso cref=\"{0}\"/>" + Environment.NewLine, argsName);
+				}
+
+				if (_createCommands)
+				{
+					viewText.AppendFormat(indent + "/// <seealso cref=\"{0}\"/>" + Environment.NewLine, commandsName);
 				}
 
 				viewText.AppendFormat(indent + "public class {0} : {1}" + Environment.NewLine, viewName, _viewBaseClass);
@@ -302,34 +343,68 @@ namespace UnityFx.Mvc
 				File.WriteAllText(viewPath, viewText.ToString());
 
 				// Args source.
-				argsText.AppendLine("using System;");
-				argsText.AppendLine("using System.Collections.Generic;");
-				argsText.AppendLine("using UnityEngine;");
-				argsText.AppendLine("using UnityFx.Mvc;");
-				argsText.AppendLine("");
-
-				if (!string.IsNullOrEmpty(_namespace))
+				if (_createArgs)
 				{
-					argsText.AppendLine("namespace " + _namespace);
-					argsText.AppendLine("{");
+					argsText.AppendLine("using System;");
+					argsText.AppendLine("using UnityEngine;");
+					argsText.AppendLine("using UnityFx.Mvc;");
+					argsText.AppendLine("");
+
+					if (!string.IsNullOrEmpty(_namespace))
+					{
+						argsText.AppendLine("namespace " + _namespace);
+						argsText.AppendLine("{");
+					}
+
+					argsText.AppendLine(indent + "/// <summary>");
+					argsText.AppendFormat(indent + "/// Arguments for the <see cref=\"{0}\"/>." + Environment.NewLine, controllerName);
+					argsText.AppendLine(indent + "/// </summary>");
+					argsText.AppendFormat(indent + "/// <seealso cref=\"{0}\"/>" + Environment.NewLine, controllerName);
+					argsText.AppendFormat(indent + "/// <seealso cref=\"{0}\"/>" + Environment.NewLine, viewName);
+
+					argsText.AppendFormat(indent + "public class {0} : PresentArgs" + Environment.NewLine, argsName);
+					argsText.AppendLine(indent + "{");
+					argsText.AppendLine(indent + "}");
+
+					if (!string.IsNullOrEmpty(_namespace))
+					{
+						argsText.AppendLine("}");
+					}
+
+					File.WriteAllText(argsPath, argsText.ToString());
 				}
 
-				argsText.AppendLine(indent + "/// <summary>");
-				argsText.AppendFormat(indent + "/// Arguments for the <see cref=\"{0}\"/>." + Environment.NewLine, controllerName);
-				argsText.AppendLine(indent + "/// </summary>");
-				argsText.AppendFormat(indent + "/// <seealso cref=\"{0}\"/>" + Environment.NewLine, controllerName);
-				argsText.AppendFormat(indent + "/// <seealso cref=\"{0}\"/>" + Environment.NewLine, viewName);
-
-				argsText.AppendFormat(indent + "public class {0} : PresentArgs" + Environment.NewLine, argsName);
-				argsText.AppendLine(indent + "{");
-				argsText.AppendLine(indent + "}");
-
-				if (!string.IsNullOrEmpty(_namespace))
+				// Commands source.
+				if (_createCommands)
 				{
-					argsText.AppendLine("}");
+					commandsText.AppendLine("using System;");
+					commandsText.AppendLine("");
+
+					if (!string.IsNullOrEmpty(_namespace))
+					{
+						commandsText.AppendLine("namespace " + _namespace);
+						commandsText.AppendLine("{");
+					}
+
+					commandsText.AppendLine(indent + "	/// <summary>");
+					commandsText.AppendLine(indent + $"	/// Enumerates <see cref=\"{controllerName}\"/>-specific commands.");
+					commandsText.AppendLine(indent + "	/// </summary>");
+					commandsText.AppendLine(indent + $"	/// <seealso cref=\"{controllerName}\"/>");
+					commandsText.AppendLine(indent + $"	/// <seealso cref=\"{viewName}\"/>");
+					commandsText.AppendLine(indent + $"	public enum {commandsName}");
+					commandsText.AppendLine(indent + "	{");
+					commandsText.AppendLine(indent + "		Close");
+					commandsText.AppendLine(indent + "	}");
+					commandsText.AppendLine("");
+
+					if (!string.IsNullOrEmpty(_namespace))
+					{
+						commandsText.AppendLine("}");
+					}
+
+					File.WriteAllText(commandsPath, commandsText.ToString());
 				}
 
-				File.WriteAllText(argsPath, argsText.ToString());
 				AssetDatabase.Refresh();
 
 				// Prefab.
