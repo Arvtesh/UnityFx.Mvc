@@ -201,10 +201,10 @@ namespace UnityFx.Mvc
 				controllerText.AppendLine(indent + "	#region ViewController");
 				controllerText.AppendLine("");
 				controllerText.AppendLine(indent + "	/// <inheritdoc/>");
-				controllerText.AppendLine(indent + "	protected override bool OnCommand<TCommand>(TCommand command)");
+				controllerText.AppendLine(indent + "	protected override bool OnCommand(Command command, Variant args)");
 				controllerText.AppendLine(indent + "	{");
 				controllerText.AppendLine(indent + "		// TODO: Process view commands here. See list of commands in Commands.");
-				controllerText.AppendLine(indent + "		if (CommandUtilities.TryUnpack(command, out Commands cmd))");
+				controllerText.AppendLine(indent + "		if (command.TryConvert(out Commands cmd))");
 				controllerText.AppendLine(indent + "		{");
 				controllerText.AppendLine(indent + "			switch (cmd)");
 				controllerText.AppendLine(indent + "			{");

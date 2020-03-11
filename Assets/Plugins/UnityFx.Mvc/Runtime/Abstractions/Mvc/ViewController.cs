@@ -71,7 +71,7 @@ namespace UnityFx.Mvc
 		/// Called to process a command.
 		/// </summary>
 		/// <returns>Returns <see langword="true"/> if the command has been handles; <see langword="false"/> otherwise.</returns>
-		protected virtual bool OnCommand<TCommand>(TCommand command)
+		protected virtual bool OnCommand(Command command, Variant args)
 		{
 			return false;
 		}
@@ -171,11 +171,11 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="command">Command to invoke.</param>
 		/// <returns>Returns <see langword="true"/> if the command has been handled; <see langword="false"/> otherwise.</returns>
-		public bool InvokeCommand<TCommand>(TCommand command)
+		public bool InvokeCommand(Command command, Variant args)
 		{
-			if (command != null && !_context.IsDismissed)
+			if (!command.IsNull && !_context.IsDismissed)
 			{
-				return OnCommand(command);
+				return OnCommand(command, args);
 			}
 
 			return false;
@@ -185,13 +185,13 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private void OnCommand(object sender, EventArgs e)
+		private void OnCommand(object sender, CommandEventArgs e)
 		{
 			Debug.Assert(sender == _context.View);
 
 			if (e != null && !_context.IsDismissed)
 			{
-				OnCommand(e);
+				OnCommand(e.Command, e.Args);
 			}
 		}
 

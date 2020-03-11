@@ -30,9 +30,9 @@ public class AppController : ViewController<AppView>
 	#region ViewController
 
 	/// <inheritdoc/>
-	protected override bool OnCommand<TCommand>(TCommand command)
+	protected override bool OnCommand(Command command, Variant args)
 	{
-		return base.OnCommand(command);
+		return base.OnCommand(command, args);
 	}
 
 	#endregion

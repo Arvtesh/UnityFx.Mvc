@@ -36,7 +36,8 @@ namespace UnityFx.Mvc
 		/// <seealso cref="Command"/>
 		protected void NotifyCommand<TCommand>(TCommand command)
 		{
-			Command?.Invoke(this, new CommandEventArgs<TCommand>(command));
+			var cmd = Mvc.Command.FromType(command);
+			Command?.Invoke(this, new CommandEventArgs(cmd, new Variant()));
 		}
 
 		/// <summary>
@@ -50,7 +51,9 @@ namespace UnityFx.Mvc
 		/// <seealso cref="Command"/>
 		protected void NotifyCommand<TCommand, TArgs>(TCommand command, TArgs args)
 		{
-			Command?.Invoke(this, new CommandEventArgs<TCommand, TArgs>(command, args));
+			var cmd = Mvc.Command.FromType(command);
+			var v = new Variant(args);
+			Command?.Invoke(this, new CommandEventArgs(cmd, v));
 		}
 
 		/// <summary>

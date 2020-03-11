@@ -10,5 +10,30 @@ namespace UnityFx.Mvc
 	/// </summary>
 	public class CommandEventArgs : EventArgs
 	{
+		/// <summary>
+		/// The command.
+		/// </summary>
+		public readonly Command Command;
+
+		/// <summary>
+		/// The command arguments.
+		/// </summary>
+		public readonly Variant Args;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CommandEventArgs"/> class.
+		/// </summary>
+		public CommandEventArgs()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CommandEventArgs"/> class.
+		/// </summary>
+		public CommandEventArgs(Command command, Variant args)
+		{
+			Command = command;
+			Args = args;
+		}
 	}
 }

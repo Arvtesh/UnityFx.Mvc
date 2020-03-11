@@ -50,11 +50,18 @@ namespace UnityFx.Mvc
 		[FieldOffset(_ptrSize)]
 		private readonly DateTime _dateTime;
 		[FieldOffset(_ptrSize)]
+		private readonly string _string;
+		[FieldOffset(_ptrSize)]
 		private readonly object _object;
 
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// Gets a value indicating whether the instance is null.
+		/// </summary>
+		public bool IsNull => _typeCode == TypeCode.Empty;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Variant"/> struct.
@@ -193,7 +200,7 @@ namespace UnityFx.Mvc
 			: this()
 		{
 			_typeCode = TypeCode.String;
-			_object = value;
+			_string = value;
 		}
 
 		/// <summary>
@@ -205,6 +212,58 @@ namespace UnityFx.Mvc
 			_typeCode = TypeCode.Object;
 			_object = value;
 		}
+
+		/// <summary>
+		/// Explicit cast to <see cref="object"/>.
+		/// </summary>
+		public object ToObject()
+		{
+			switch (_typeCode)
+			{
+				case TypeCode.Boolean:
+					return _bool;
+				case TypeCode.Byte:
+					return _byte;
+				case TypeCode.Char:
+					return _char;
+				case TypeCode.DateTime:
+					return _dateTime;
+				case TypeCode.Double:
+					return _double;
+				case TypeCode.Int16:
+					return _short;
+				case TypeCode.Int32:
+					return _int;
+				case TypeCode.Int64:
+					return _long;
+				case TypeCode.Object:
+					return _object;
+				case TypeCode.SByte:
+					return _sbyte;
+				case TypeCode.Single:
+					return _float;
+				case TypeCode.String:
+					return _string;
+				case TypeCode.UInt16:
+					return _ushort;
+				case TypeCode.UInt32:
+					return _uint;
+				case TypeCode.UInt64:
+					return _ulong;
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Cast to a generic type.
+		/// </summary>
+		public T ToType<T>() => (T)ToType(typeof(T), CultureInfo.CurrentCulture);
+
+		/// <summary>
+		/// Cast to a generic type.
+		/// </summary>
+		public T ToType<T>(IFormatProvider provider) => (T)ToType(typeof(T), provider);
 
 		/// <summary>
 		/// Implicit convertion from <see cref="bool"/>.
@@ -355,6 +414,7 @@ namespace UnityFx.Mvc
 
 		#region IEquatable
 
+		/// <inheritdoc/>
 		public bool Equals(Variant other)
 		{
 			return _typeCode == other._typeCode && _long == other._long;
@@ -364,6 +424,7 @@ namespace UnityFx.Mvc
 
 		#region IComparable
 
+		/// <inheritdoc/>
 		public int CompareTo(Variant other)
 		{
 			throw new NotImplementedException();
@@ -373,8 +434,14 @@ namespace UnityFx.Mvc
 
 		#region IFormattable
 
+		/// <inheritdoc/>
 		public string ToString(string format, IFormatProvider formatProvider)
 		{
+			if (_typeCode == TypeCode.String)
+			{
+				return _string;
+			}
+
 			switch (_typeCode)
 			{
 				case TypeCode.Boolean:
@@ -405,7 +472,7 @@ namespace UnityFx.Mvc
 					return _ulong.ToString(format, formatProvider);
 			}
 
-			if (_typeCode == TypeCode.Object || _typeCode == TypeCode.String)
+			if (_typeCode == TypeCode.Object)
 			{
 				if (_object is IFormattable f)
 				{
@@ -424,17 +491,22 @@ namespace UnityFx.Mvc
 
 		#region IConvertible
 
+		/// <inheritdoc/>
 		public TypeCode GetTypeCode()
 		{
 			return _typeCode;
 		}
 
+		/// <inheritdoc/>
 		public bool ToBoolean(IFormatProvider provider)
 		{
+			if (_typeCode == TypeCode.Boolean)
+			{
+				return _bool;
+			}
+
 			switch (_typeCode)
 			{
-				case TypeCode.Boolean:
-					return _bool;
 				case TypeCode.Byte:
 					return Convert.ToBoolean(_byte);
 				case TypeCode.Char:
@@ -468,14 +540,18 @@ namespace UnityFx.Mvc
 			throw new InvalidCastException();
 		}
 
+		/// <inheritdoc/>
 		public byte ToByte(IFormatProvider provider)
 		{
+			if (_typeCode == TypeCode.Byte)
+			{
+				return _byte;
+			}
+
 			switch (_typeCode)
 			{
 				case TypeCode.Boolean:
 					return Convert.ToByte(_bool);
-				case TypeCode.Byte:
-					return _byte;
 				case TypeCode.Char:
 					return Convert.ToByte(_char);
 				case TypeCode.DateTime:
@@ -507,16 +583,20 @@ namespace UnityFx.Mvc
 			throw new InvalidCastException();
 		}
 
+		/// <inheritdoc/>
 		public char ToChar(IFormatProvider provider)
 		{
+			if (_typeCode == TypeCode.Char)
+			{
+				return _char;
+			}
+
 			switch (_typeCode)
 			{
 				case TypeCode.Boolean:
 					return Convert.ToChar(_bool);
 				case TypeCode.Byte:
 					return Convert.ToChar(_byte);
-				case TypeCode.Char:
-					return _char;
 				case TypeCode.DateTime:
 					return Convert.ToChar(_dateTime);
 				case TypeCode.Double:
@@ -546,8 +626,14 @@ namespace UnityFx.Mvc
 			throw new InvalidCastException();
 		}
 
+		/// <inheritdoc/>
 		public DateTime ToDateTime(IFormatProvider provider)
 		{
+			if (_typeCode == TypeCode.DateTime)
+			{
+				return _dateTime;
+			}
+
 			switch (_typeCode)
 			{
 				case TypeCode.Boolean:
@@ -556,8 +642,6 @@ namespace UnityFx.Mvc
 					return Convert.ToDateTime(_byte);
 				case TypeCode.Char:
 					return Convert.ToDateTime(_char);
-				case TypeCode.DateTime:
-					return _dateTime;
 				case TypeCode.Double:
 					return Convert.ToDateTime(_double);
 				case TypeCode.Int16:
@@ -585,6 +669,7 @@ namespace UnityFx.Mvc
 			throw new InvalidCastException();
 		}
 
+		/// <inheritdoc/>
 		public decimal ToDecimal(IFormatProvider provider)
 		{
 			switch (_typeCode)
@@ -624,8 +709,14 @@ namespace UnityFx.Mvc
 			throw new InvalidCastException();
 		}
 
+		/// <inheritdoc/>
 		public double ToDouble(IFormatProvider provider)
 		{
+			if (_typeCode == TypeCode.Double)
+			{
+				return _double;
+			}
+
 			switch (_typeCode)
 			{
 				case TypeCode.Boolean:
@@ -636,8 +727,6 @@ namespace UnityFx.Mvc
 					return Convert.ToDouble(_char);
 				case TypeCode.DateTime:
 					return Convert.ToDouble(_dateTime);
-				case TypeCode.Double:
-					return _double;
 				case TypeCode.Int16:
 					return Convert.ToDouble(_short);
 				case TypeCode.Int32:
@@ -663,8 +752,14 @@ namespace UnityFx.Mvc
 			throw new InvalidCastException();
 		}
 
+		/// <inheritdoc/>
 		public short ToInt16(IFormatProvider provider)
 		{
+			if (_typeCode == TypeCode.Int16)
+			{
+				return _short;
+			}
+
 			switch (_typeCode)
 			{
 				case TypeCode.Boolean:
@@ -677,8 +772,6 @@ namespace UnityFx.Mvc
 					return Convert.ToInt16(_dateTime);
 				case TypeCode.Double:
 					return Convert.ToInt16(_double);
-				case TypeCode.Int16:
-					return _short;
 				case TypeCode.Int32:
 					return Convert.ToInt16(_int);
 				case TypeCode.Int64:
@@ -702,8 +795,14 @@ namespace UnityFx.Mvc
 			throw new InvalidCastException();
 		}
 
+		/// <inheritdoc/>
 		public int ToInt32(IFormatProvider provider)
 		{
+			if (_typeCode == TypeCode.Int32)
+			{
+				return _int;
+			}
+
 			switch (_typeCode)
 			{
 				case TypeCode.Boolean:
@@ -718,8 +817,6 @@ namespace UnityFx.Mvc
 					return Convert.ToInt32(_double);
 				case TypeCode.Int16:
 					return Convert.ToInt32(_short);
-				case TypeCode.Int32:
-					return _int;
 				case TypeCode.Int64:
 					return Convert.ToInt32(_long);
 				case TypeCode.Object:
@@ -741,8 +838,14 @@ namespace UnityFx.Mvc
 			throw new InvalidCastException();
 		}
 
+		/// <inheritdoc/>
 		public long ToInt64(IFormatProvider provider)
 		{
+			if (_typeCode == TypeCode.Int64)
+			{
+				return _long;
+			}
+
 			switch (_typeCode)
 			{
 				case TypeCode.Boolean:
@@ -759,8 +862,6 @@ namespace UnityFx.Mvc
 					return Convert.ToInt64(_short);
 				case TypeCode.Int32:
 					return Convert.ToInt64(_int);
-				case TypeCode.Int64:
-					return _long;
 				case TypeCode.Object:
 					return Convert.ToInt64(_object, provider);
 				case TypeCode.SByte:
@@ -780,8 +881,14 @@ namespace UnityFx.Mvc
 			throw new InvalidCastException();
 		}
 
+		/// <inheritdoc/>
 		public sbyte ToSByte(IFormatProvider provider)
 		{
+			if (_typeCode == TypeCode.SByte)
+			{
+				return _sbyte;
+			}
+
 			switch (_typeCode)
 			{
 				case TypeCode.Boolean:
@@ -802,8 +909,6 @@ namespace UnityFx.Mvc
 					return Convert.ToSByte(_long);
 				case TypeCode.Object:
 					return Convert.ToSByte(_object, provider);
-				case TypeCode.SByte:
-					return _sbyte;
 				case TypeCode.Single:
 					return Convert.ToSByte(_float);
 				case TypeCode.String:
@@ -819,8 +924,14 @@ namespace UnityFx.Mvc
 			throw new InvalidCastException();
 		}
 
+		/// <inheritdoc/>
 		public float ToSingle(IFormatProvider provider)
 		{
+			if (_typeCode == TypeCode.Single)
+			{
+				return _float;
+			}
+
 			switch (_typeCode)
 			{
 				case TypeCode.Boolean:
@@ -843,8 +954,6 @@ namespace UnityFx.Mvc
 					return Convert.ToSingle(_object, provider);
 				case TypeCode.SByte:
 					return Convert.ToSingle(_sbyte);
-				case TypeCode.Single:
-					return _float;
 				case TypeCode.String:
 					return Convert.ToSingle(_object, provider);
 				case TypeCode.UInt16:
@@ -858,8 +967,14 @@ namespace UnityFx.Mvc
 			throw new InvalidCastException();
 		}
 
+		/// <inheritdoc/>
 		public string ToString(IFormatProvider provider)
 		{
+			if (_typeCode == TypeCode.String)
+			{
+				return _string;
+			}
+
 			switch (_typeCode)
 			{
 				case TypeCode.Boolean:
@@ -884,8 +999,6 @@ namespace UnityFx.Mvc
 					return Convert.ToString(_sbyte, provider);
 				case TypeCode.Single:
 					return Convert.ToString(_float, provider);
-				case TypeCode.String:
-					return (string)_object;
 				case TypeCode.UInt16:
 					return Convert.ToString(_ushort, provider);
 				case TypeCode.UInt32:
@@ -897,26 +1010,14 @@ namespace UnityFx.Mvc
 			throw new InvalidCastException();
 		}
 
-		public object ToType(Type conversionType, IFormatProvider provider)
-		{
-			if (_typeCode == TypeCode.Object)
-			{
-				if (_object != null && conversionType == _object.GetType())
-				{
-					return _object;
-				}
-			}
-
-			if (_typeCode == TypeCode.String && conversionType == typeof(string))
-			{
-				return _object;
-			}
-
-			throw new InvalidCastException();
-		}
-
+		/// <inheritdoc/>
 		public ushort ToUInt16(IFormatProvider provider)
 		{
+			if (_typeCode == TypeCode.UInt16)
+			{
+				return _ushort;
+			}
+
 			switch (_typeCode)
 			{
 				case TypeCode.Boolean:
@@ -943,8 +1044,6 @@ namespace UnityFx.Mvc
 					return Convert.ToUInt16(_float);
 				case TypeCode.String:
 					return Convert.ToUInt16(_object, provider);
-				case TypeCode.UInt16:
-					return _ushort;
 				case TypeCode.UInt32:
 					return Convert.ToUInt16(_uint);
 				case TypeCode.UInt64:
@@ -954,8 +1053,14 @@ namespace UnityFx.Mvc
 			throw new InvalidCastException();
 		}
 
+		/// <inheritdoc/>
 		public uint ToUInt32(IFormatProvider provider)
 		{
+			if (_typeCode == TypeCode.UInt32)
+			{
+				return _uint;
+			}
+
 			switch (_typeCode)
 			{
 				case TypeCode.Boolean:
@@ -984,8 +1089,6 @@ namespace UnityFx.Mvc
 					return Convert.ToUInt32(_object, provider);
 				case TypeCode.UInt16:
 					return Convert.ToUInt32(_ushort);
-				case TypeCode.UInt32:
-					return _uint;
 				case TypeCode.UInt64:
 					return Convert.ToUInt32(_ulong);
 			}
@@ -993,8 +1096,14 @@ namespace UnityFx.Mvc
 			throw new InvalidCastException();
 		}
 
+		/// <inheritdoc/>
 		public ulong ToUInt64(IFormatProvider provider)
 		{
+			if (_typeCode == TypeCode.UInt64)
+			{
+				return _ulong;
+			}
+
 			switch (_typeCode)
 			{
 				case TypeCode.Boolean:
@@ -1025,8 +1134,102 @@ namespace UnityFx.Mvc
 					return Convert.ToUInt64(_ushort);
 				case TypeCode.UInt32:
 					return Convert.ToUInt64(_uint);
-				case TypeCode.UInt64:
-					return _ulong;
+			}
+
+			throw new InvalidCastException();
+		}
+
+		/// <inheritdoc/>
+		public object ToType(Type conversionType, IFormatProvider provider)
+		{
+			if (conversionType == typeof(bool))
+			{
+				return ToBoolean(provider);
+			}
+
+			if (conversionType == typeof(char))
+			{
+				return ToChar(provider);
+			}
+
+			if (conversionType == typeof(byte))
+			{
+				return ToByte(provider);
+			}
+
+			if (conversionType == typeof(sbyte))
+			{
+				return ToSByte(provider);
+			}
+
+			if (conversionType == typeof(short))
+			{
+				return ToInt16(provider);
+			}
+
+			if (conversionType == typeof(ushort))
+			{
+				return ToUInt16(provider);
+			}
+
+			if (conversionType == typeof(int))
+			{
+				return ToInt32(provider);
+			}
+
+			if (conversionType == typeof(uint))
+			{
+				return ToUInt32(provider);
+			}
+
+			if (conversionType == typeof(long))
+			{
+				return ToInt64(provider);
+			}
+
+			if (conversionType == typeof(ulong))
+			{
+				return ToUInt64(provider);
+			}
+
+			if (conversionType == typeof(float))
+			{
+				return ToSingle(provider);
+			}
+
+			if (conversionType == typeof(double))
+			{
+				return ToDouble(provider);
+			}
+
+			if (conversionType == typeof(decimal))
+			{
+				return ToDecimal(provider);
+			}
+
+			if (conversionType == typeof(string))
+			{
+				return ToString(provider);
+			}
+
+			if (conversionType == typeof(DateTime))
+			{
+				return ToDateTime(provider);
+			}
+
+			if (_typeCode == TypeCode.Object)
+			{
+				if (_object != null)
+				{
+					if (conversionType.IsAssignableFrom(_object.GetType()))
+					{
+						return _object;
+					}
+					else if (_object is IConvertible c)
+					{
+						return c.ToType(conversionType, provider);
+					}
+				}
 			}
 
 			throw new InvalidCastException();
@@ -1036,8 +1239,14 @@ namespace UnityFx.Mvc
 
 		#region Object
 
+		/// <inheritdoc/>
 		public override string ToString()
 		{
+			if (_typeCode == TypeCode.String)
+			{
+				return _string;
+			}
+
 			switch (_typeCode)
 			{
 				case TypeCode.Boolean:
@@ -1066,14 +1275,8 @@ namespace UnityFx.Mvc
 					return _uint.ToString();
 				case TypeCode.UInt64:
 					return _ulong.ToString();
-			}
-
-			if (_typeCode == TypeCode.Object || _typeCode == TypeCode.String)
-			{
-				if (_object != null)
-				{
+				case TypeCode.Object:
 					return _object.ToString();
-				}
 			}
 
 			return $"{GetType().Name}({_typeCode})";

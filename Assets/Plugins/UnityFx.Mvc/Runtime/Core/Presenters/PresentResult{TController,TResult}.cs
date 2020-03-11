@@ -286,11 +286,11 @@ namespace UnityFx.Mvc
 
 		#region ICommandTarget
 
-		public bool InvokeCommand<TCommand>(TCommand command)
+		public bool InvokeCommand(Command command, Variant args)
 		{
 			if ((_state == State.Presented || _state == State.Active) && _controller is ICommandTarget ct)
 			{
-				return ct.InvokeCommand(command);
+				return ct.InvokeCommand(command, args);
 			}
 
 			return false;

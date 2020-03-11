@@ -198,9 +198,9 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="command">Command to invoke.</param>
 		/// <returns>Returns <see langword="true"/> if the command has been handled; <see langword="false"/> otherwise.</returns>
-		public bool InvokeCommand<TCommand>(TCommand command)
+		public bool InvokeCommand(Command command, Variant args)
 		{
-			if (command != null && !_disposed)
+			if (!command.IsNull && !_disposed)
 			{
 				var node = _presentables.Last;
 
@@ -208,7 +208,7 @@ namespace UnityFx.Mvc
 				{
 					var p = node.Value;
 
-					if (p.InvokeCommand(command))
+					if (p.InvokeCommand(command, args))
 					{
 						return true;
 					}

@@ -17,9 +17,20 @@ namespace UnityFx.Mvc
 		/// <param name="command">Command to invoke.</param>
 		/// <param name="args">Command arguments.</param>
 		/// <returns>Returns <see langword="true"/> if the command has been handled; <see langword="false"/> otherwise.</returns>
-		public static bool InvokeCommand<TCommand, TArgs>(this ICommandTarget commandTarget, TCommand command, TArgs args)
+		public static bool InvokeCommand<TCommand>(this ICommandTarget commandTarget, TCommand command)
 		{
-			return commandTarget.InvokeCommand(new CommandEventArgs<TCommand, TArgs>(command, args));
+			return commandTarget.InvokeCommand(Command.FromType(command), new Variant());
+		}
+
+		/// <summary>
+		/// Invokes a command. An implementation might choose to ignore the command, in this case the method should return <see langword="false"/>.
+		/// </summary>
+		/// <param name="command">Command to invoke.</param>
+		/// <param name="args">Command arguments.</param>
+		/// <returns>Returns <see langword="true"/> if the command has been handled; <see langword="false"/> otherwise.</returns>
+		public static bool InvokeCommand<TCommand>(this ICommandTarget commandTarget, TCommand command, object args)
+		{
+			return commandTarget.InvokeCommand(Command.FromType(command), new Variant(args));
 		}
 	}
 }

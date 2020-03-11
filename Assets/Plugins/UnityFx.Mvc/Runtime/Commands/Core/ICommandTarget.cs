@@ -16,6 +16,6 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="command">Command to invoke.</param>
 		/// <returns>Returns <see langword="true"/> if the command has been handled; <see langword="false"/> otherwise.</returns>
-		bool InvokeCommand<TCommand>(TCommand command);
+		bool InvokeCommand(Command command, Variant args);
 	}
 }

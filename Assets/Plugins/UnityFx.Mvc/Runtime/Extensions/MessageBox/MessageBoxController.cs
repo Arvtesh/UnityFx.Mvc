@@ -100,11 +100,11 @@ namespace UnityFx.Mvc.Extensions
 		#region ICommandTarget
 
 		/// <inheritdoc/>
-		public bool InvokeCommand<TCommand>(TCommand command)
+		public bool InvokeCommand(Command command, Variant args)
 		{
-			if (command != null && !_context.IsDismissed)
+			if (!_context.IsDismissed)
 			{
-				if (CommandUtilities.TryUnpack(command, out Commands cmd))
+				if (command.TryConvert(out Commands cmd))
 				{
 					if (cmd == Commands.Ok)
 					{
@@ -128,7 +128,7 @@ namespace UnityFx.Mvc.Extensions
 
 		private void OnCommand(object sender, CommandEventArgs e)
 		{
-			InvokeCommand(e);
+			InvokeCommand(e.Command, e.Args);
 		}
 
 		#endregion
