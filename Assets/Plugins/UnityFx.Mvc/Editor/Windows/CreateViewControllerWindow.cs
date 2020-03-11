@@ -204,7 +204,7 @@ namespace UnityFx.Mvc
 				controllerText.AppendLine(indent + "	protected override bool OnCommand(Command command, Variant args)");
 				controllerText.AppendLine(indent + "	{");
 				controllerText.AppendLine(indent + "		// TODO: Process view commands here. See list of commands in Commands.");
-				controllerText.AppendLine(indent + "		if (command.TryConvert(out Commands cmd))");
+				controllerText.AppendLine(indent + "		if (command.TryUnpack(out Commands cmd))");
 				controllerText.AppendLine(indent + "		{");
 				controllerText.AppendLine(indent + "			switch (cmd)");
 				controllerText.AppendLine(indent + "			{");

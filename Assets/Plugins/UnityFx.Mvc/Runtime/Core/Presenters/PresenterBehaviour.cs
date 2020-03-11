@@ -41,6 +41,12 @@ namespace UnityFx.Mvc
 			_presenter?.Dispose();
 		}
 
+		private void OnApplicationQuit()
+		{
+			// NOTE: Do not dispose presenter when the app is being shout down.
+			_presenter = null;
+		}
+
 		#endregion
 	}
 }

@@ -65,7 +65,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		public unsafe bool TryConvert<T>(out T value) where T : unmanaged, Enum
+		public unsafe bool TryUnpack<T>(out T value) where T : unmanaged, Enum
 		{
 			if (_commandType != null && _commandType.IsEnum)
 			{
@@ -92,7 +92,7 @@ namespace UnityFx.Mvc
 
 		public TCommand ToEnum<TCommand>() where TCommand : unmanaged, Enum
 		{
-			if (TryConvert<TCommand>(out var result))
+			if (TryUnpack<TCommand>(out var result))
 			{
 				return result;
 			}
