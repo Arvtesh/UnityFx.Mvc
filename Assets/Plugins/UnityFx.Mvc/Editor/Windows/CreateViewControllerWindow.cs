@@ -216,7 +216,7 @@ namespace UnityFx.Mvc
 
 				if (_createCommands)
 				{
-					controllerText.AppendLine(indent + $"		if (command.TryUnpack(out {commandsName} cmd))");
+					controllerText.AppendLine(indent + $"		if (command.TryUnpackEnum(out {commandsName} cmd))");
 					controllerText.AppendLine(indent + "		{");
 					controllerText.AppendLine(indent + "			return InvokeCommand(cmd, args);");
 					controllerText.AppendLine(indent + "		}");

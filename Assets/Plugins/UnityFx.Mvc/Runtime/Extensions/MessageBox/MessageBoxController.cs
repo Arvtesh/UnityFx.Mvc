@@ -112,7 +112,7 @@ namespace UnityFx.Mvc.Extensions
 		/// <inheritdoc/>
 		public bool InvokeCommand(Command command, Variant args)
 		{
-			if (command.TryUnpack(out MessageBoxCommands cmd))
+			if (command.TryUnpackEnum(out MessageBoxCommands cmd))
 			{
 				return InvokeCommand(cmd, args);
 			}

@@ -65,9 +65,9 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		public unsafe bool TryUnpack<T>(out T value) where T : unmanaged, Enum
+		public unsafe bool TryUnpackEnum<T>(out T value) where T : unmanaged, Enum
 		{
-			if (_commandType != null && _commandType.IsEnum)
+			if (_commandType == typeof(T))
 			{
 				fixed (int* p = &_commandId)
 				{
@@ -80,19 +80,43 @@ namespace UnityFx.Mvc
 			return false;
 		}
 
-		public int ToInt()
+		public bool TryUnpackString(out string value)
 		{
-			if (_commandType != typeof(int))
+			if (_commandType == typeof(string))
 			{
-				throw new InvalidCastException();
+				value = (string)_command;
+				return true;
 			}
 
-			return _commandId;
+			value = default;
+			return false;
+		}
+
+		public bool TryUnpackInt(out int value)
+		{
+			if (_commandType == typeof(int))
+			{
+				value = _commandId;
+				return true;
+			}
+
+			value = default;
+			return false;
+		}
+
+		public int ToInt()
+		{
+			if (TryUnpackInt(out var result))
+			{
+				return result;
+			}
+
+			throw new InvalidCastException();
 		}
 
 		public TCommand ToEnum<TCommand>() where TCommand : unmanaged, Enum
 		{
-			if (TryUnpack<TCommand>(out var result))
+			if (TryUnpackEnum(out TCommand result))
 			{
 				return result;
 			}
@@ -129,23 +153,28 @@ namespace UnityFx.Mvc
 			return new Command(n);
 		}
 
+		/// <summary>
+		/// Implicit convertion from <see cref="int"/>.
+		/// </summary>
+		public static implicit operator Command(int value) => new Command(value);
+
+		/// <summary>
+		/// Implicit convertion from <see cref="string"/>.
+		/// </summary>
+		public static implicit operator Command(string value) => new Command(value);
+
 		#endregion
 
 		#region IEquatable
 
 		public bool Equals(Command other)
 		{
-			if (_commandType != other._commandType)
+			if (_commandType != other._commandType || _commandType is null)
 			{
 				return false;
 			}
 
-			if (_commandType == typeof(string))
-			{
-				return string.CompareOrdinal((string)_command, (string)other._command) == 0;
-			}
-
-			if (_commandType == typeof(int))
+			if (_commandType == typeof(int) || _commandType.IsEnum)
 			{
 				return _commandId == other._commandId;
 			}
