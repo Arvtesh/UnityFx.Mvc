@@ -28,9 +28,9 @@ namespace UnityFx.Mvc
 		/// <param name="command">Command to invoke.</param>
 		/// <param name="args">Command arguments.</param>
 		/// <returns>Returns <see langword="true"/> if the command has been handled; <see langword="false"/> otherwise.</returns>
-		public static bool InvokeCommand<TCommand>(this ICommandTarget commandTarget, TCommand command, object args)
+		public static bool InvokeCommand<TCommand>(this ICommandTarget commandTarget, TCommand command, Variant args)
 		{
-			return commandTarget.InvokeCommand(Command.FromType(command), new Variant(args));
+			return commandTarget.InvokeCommand(Command.FromType(command), args);
 		}
 	}
 }

@@ -31,43 +31,58 @@ namespace UnityFx.Mvc
 
 		#region interface
 
+		/// <summary>
+		/// Gets a value indicating whether the instance is an null command.
+		/// </summary>
 		public bool IsNull => _commandType is null;
 
+		/// <summary>
+		/// Gets a value indicating whether the command instance wraps an enumeration.
+		/// </summary>
 		public bool IsEnum => _commandType != null && _commandType.IsEnum;
 
+		/// <summary>
+		/// Gets a value indicating whether the command instance wraps a string.
+		/// </summary>
 		public bool IsString => _commandType != null && _commandType == typeof(string);
 
+		/// <summary>
+		/// Gets a value indicating whether the command instance wraps an integer.
+		/// </summary>
 		public bool IsInt => _commandType != null && _commandType == typeof(int);
 
+		/// <summary>
+		/// Gets the command underlying type.
+		/// </summary>
 		public Type Type => _commandType;
 
-		public Command(Type commandType, int commandId)
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Command"/> struct.
+		/// </summary>
+		private Command(Type commandType, int commandId)
 			: this()
 		{
 			_commandType = commandType;
 			_commandId = commandId;
 		}
 
-		public Command(int commandId)
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Command"/> struct.
+		/// </summary>
+		private Command(Type commandType, object cmd)
 			: this()
 		{
-			_commandType = typeof(int);
-			_commandId = commandId;
+			_commandType = commandType;
+			_command = cmd;
 		}
 
-		public Command(object cmd)
-			: this()
-		{
-			if (cmd != null)
-			{
-				_commandType = cmd.GetType();
-				_command = cmd;
-			}
-		}
-
+		/// <summary>
+		/// Attempts to unpack the underlying enumeration value.
+		/// </summary>
 		public unsafe bool TryUnpackEnum<T>(out T value) where T : unmanaged, Enum
 		{
-			if (_commandType == typeof(T))
+			// TODO: Use .netstandard 2.1 unsafe helpers when available in Unity.
+			if (_commandType == typeof(T) && sizeof(T) == sizeof(int))
 			{
 				fixed (int* p = &_commandId)
 				{
@@ -80,6 +95,9 @@ namespace UnityFx.Mvc
 			return false;
 		}
 
+		/// <summary>
+		/// Attempts to unpack the underlying string value.
+		/// </summary>
 		public bool TryUnpackString(out string value)
 		{
 			if (_commandType == typeof(string))
@@ -92,6 +110,9 @@ namespace UnityFx.Mvc
 			return false;
 		}
 
+		/// <summary>
+		/// Attempts to unpack the underlying integer value.
+		/// </summary>
 		public bool TryUnpackInt(out int value)
 		{
 			if (_commandType == typeof(int))
@@ -104,16 +125,53 @@ namespace UnityFx.Mvc
 			return false;
 		}
 
-		public int ToInt()
+		/// <summary>
+		/// Unpacks the underlying command.
+		/// </summary>
+		public object ToObject()
 		{
-			if (TryUnpackInt(out var result))
+			if (_commandType is null)
 			{
-				return result;
+				return null;
 			}
 
-			throw new InvalidCastException();
+			if (_commandType.IsEnum)
+			{
+				return Enum.ToObject(_commandType, _commandId);
+			}
+
+			if (_commandType.IsPrimitive)
+			{
+				if (_commandType == typeof(int))
+				{
+					return _commandId;
+				}
+			}
+
+			return _command;
 		}
 
+		/// <summary>
+		/// Unpacks the underlying integer value.
+		/// </summary>
+		public int ToInt()
+		{
+			if (_commandType is null)
+			{
+				return 0;
+			}
+
+			if (_commandType.IsEnum || _commandType == typeof(int))
+			{
+				return _commandId;
+			}
+
+			return default;
+		}
+
+		/// <summary>
+		/// Unpacks the underlying enumeration value.
+		/// </summary>
 		public TCommand ToEnum<TCommand>() where TCommand : unmanaged, Enum
 		{
 			if (TryUnpackEnum(out TCommand result))
@@ -121,9 +179,12 @@ namespace UnityFx.Mvc
 				return result;
 			}
 
-			throw new InvalidCastException();
+			return default;
 		}
 
+		/// <summary>
+		/// Constructs a new <see cref="Command"/> instance from a generic type.
+		/// </summary>
 		public static Command FromType<TCommand>(TCommand cmd)
 		{
 			if (typeof(TCommand).IsEnum)
@@ -132,41 +193,51 @@ namespace UnityFx.Mvc
 			}
 			else if (typeof(TCommand) == typeof(int))
 			{
-				return new Command(cmd.GetHashCode());
+				return new Command(typeof(int), cmd.GetHashCode());
 			}
 
-			return new Command(cmd);
+			return new Command(typeof(TCommand), cmd);
 		}
 
+		/// <summary>
+		/// Constructs a new <see cref="Command"/> instance from an enumeration.
+		/// </summary>
 		public static Command FromEnum<TCommand>(TCommand cmd) where TCommand : struct, Enum
 		{
 			return new Command(typeof(TCommand), cmd.GetHashCode());
 		}
 
+		/// <summary>
+		/// Constructs a new <see cref="Command"/> instance from string.
+		/// </summary>
 		public static Command FromString(string s)
 		{
-			return new Command(s);
+			return new Command(typeof(string), s);
 		}
 
+		/// <summary>
+		/// Constructs a new <see cref="Command"/> instance from integer.
+		/// </summary>
 		public static Command FromInt(int n)
 		{
-			return new Command(n);
+			return new Command(typeof(int), n);
 		}
 
 		/// <summary>
 		/// Implicit convertion from <see cref="int"/>.
 		/// </summary>
-		public static implicit operator Command(int value) => new Command(value);
+		public static implicit operator Command(int value) => new Command(typeof(int), value);
 
 		/// <summary>
 		/// Implicit convertion from <see cref="string"/>.
 		/// </summary>
-		public static implicit operator Command(string value) => new Command(value);
+		public static implicit operator Command(string value) => new Command(typeof(string), value);
 
 		#endregion
 
 		#region IEquatable
 
+		/// <inheritdoc/>
 		public bool Equals(Command other)
 		{
 			if (_commandType != other._commandType || _commandType is null)
@@ -179,13 +250,19 @@ namespace UnityFx.Mvc
 				return _commandId == other._commandId;
 			}
 
-			return _command.Equals(other._command);
+			if (_command != null)
+			{
+				return _command.Equals(other._command);
+			}
+
+			return other._command == null;
 		}
 
 		#endregion
 
 		#region Object
 
+		/// <inheritdoc/>
 		public override string ToString()
 		{
 			if (_commandType is null)
@@ -195,7 +272,7 @@ namespace UnityFx.Mvc
 
 			if (_commandType == typeof(string))
 			{
-				return _command.ToString();
+				return _command?.ToString() ?? string.Empty;
 			}
 
 			if (_commandType.IsEnum)
