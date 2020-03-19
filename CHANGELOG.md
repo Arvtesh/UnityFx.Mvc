@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 
 ## [0.4.0] - unreleased
 
+### Added
+
+## [0.3.1] - 2020.03.19
+
+### Added
+- Added ability for `UGUIViewFactoryBuilder` to add multiple prefabs in a single call ([#13](https://github.com/Arvtesh/UnityFx.Mvc/issues/13)).
+
+### Fixed
+- Fixed coimpile error on Unity 2019.3+ ([#14](https://github.com/Arvtesh/UnityFx.Mvc/issues/14)).
+
 ## [0.3.0] - 2020.02.20
 
 ### Added
