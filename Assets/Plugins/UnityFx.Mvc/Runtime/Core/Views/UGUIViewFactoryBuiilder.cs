@@ -9,7 +9,7 @@ using UnityEngine;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// BUilder of UGUI-based <see cref="IViewFactory"/> instances.
+	/// Builder of UGUI-based <see cref="IViewFactory"/> instances.
 	/// </summary>
 	/// <seealso cref="PresenterBuilder"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/Builder_pattern"/>
@@ -45,6 +45,8 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="prefabPath"/> or <paramref name="prefabGo"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">Thrown is <paramref name="prefabPath"/> is invalid.</exception>
 		/// <seealso cref="AddLayer(Transform)"/>
+		/// <seealso cref="AddViewPrefabs(GameObject[])"/>
+		/// <seealso cref="AddViewPrefabs(string, GameObject[])"/>
 		/// <seealso cref="Build"/>
 		public UGUIViewFactoryBuilder AddViewPrefab(string prefabPath, GameObject prefabGo)
 		{
@@ -69,6 +71,76 @@ namespace UnityFx.Mvc
 			}
 
 			_viewPrefabs.Add(prefabPath, prefabGo);
+			return this;
+		}
+
+		/// <summary>
+		/// Adds preloaded view prefabs.
+		/// </summary>
+		/// <param name="prefabs">The preloaded prefabs.</param>
+		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="prefabPath"/> or <paramref name="prefabGo"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if any of the prefabs is <see langword="null"/>.</exception>
+		/// <seealso cref="AddLayer(Transform)"/>
+		/// <seealso cref="AddViewPrefab(string, GameObject)"/>
+		/// <seealso cref="AddViewPrefabs(string, GameObject[])"/>
+		/// <seealso cref="Build"/>
+		public UGUIViewFactoryBuilder AddViewPrefabs(params GameObject[] prefabs)
+		{
+			return AddViewPrefabs(null, prefabs);
+		}
+
+		/// <summary>
+		/// Adds preloaded view prefabs.
+		/// </summary>
+		/// <param name="pathPrefix">A prefix string to add to the prefab names.</param>
+		/// <param name="prefabs">The preloaded prefabs.</param>
+		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="prefabPath"/> or <paramref name="prefabGo"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if any of the prefabs is <see langword="null"/>.</exception>
+		/// <seealso cref="AddLayer(Transform)"/>
+		/// <seealso cref="AddViewPrefab(string, GameObject)"/>
+		/// <seealso cref="AddViewPrefabs(GameObject[])"/>
+		/// <seealso cref="Build"/>
+		public UGUIViewFactoryBuilder AddViewPrefabs(string pathPrefix, params GameObject[] prefabs)
+		{
+			if (prefabs is null)
+			{
+				throw new ArgumentNullException(nameof(prefabs));
+			}
+
+			if (_viewPrefabs is null)
+			{
+				_viewPrefabs = new Dictionary<string, GameObject>();
+			}
+
+			if (string.IsNullOrEmpty(pathPrefix))
+			{
+				foreach (var go in prefabs)
+				{
+					if (go)
+					{
+						_viewPrefabs.Add(go.name, go);
+					}
+					else
+					{
+						throw new ArgumentException("Prefab is null.", nameof(prefabs));
+					}
+				}
+			}
+			else
+			{
+				foreach (var go in prefabs)
+				{
+					if (go)
+					{
+						_viewPrefabs.Add(pathPrefix + go.name, go);
+					}
+					else
+					{
+						throw new ArgumentException("Prefab is null.", nameof(prefabs));
+					}
+				}
+			}
+
 			return this;
 		}
 
