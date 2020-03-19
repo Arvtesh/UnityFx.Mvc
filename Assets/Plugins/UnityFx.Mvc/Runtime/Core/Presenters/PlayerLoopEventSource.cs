@@ -22,7 +22,7 @@ namespace UnityFx.Mvc
 
 		#region IPresenterEventSource
 
-		public void SetPresenter(IPresenterEvents presenter)
+		public void AddPresenter(IPresenterEvents presenter)
 		{
 			var success = false;
 			var loop = PlayerLoop.GetCurrentPlayerLoop();
