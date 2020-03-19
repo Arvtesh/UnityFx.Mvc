@@ -39,7 +39,7 @@ Npm package is available at [npmjs.com](https://www.npmjs.com/package/com.unityf
     }
   ],
   "dependencies": {
-    "com.unityfx.mvc": "0.3.0"
+    "com.unityfx.mvc": "0.3.1"
   }
 }
 ```
