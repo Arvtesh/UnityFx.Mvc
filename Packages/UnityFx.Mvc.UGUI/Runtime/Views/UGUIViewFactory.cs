@@ -127,10 +127,10 @@ namespace UnityFx.Mvc
 
 			if (string.IsNullOrWhiteSpace(prefabPath))
 			{
-				throw new ArgumentException("Invalid prefab path.", nameof(prefabPath));
+				throw new ArgumentException(Messages.Format_InvalidPrefabPath(), nameof(prefabPath));
 			}
 
-			ViewProxy viewProxy = null;
+			UGUIViewProxy viewProxy = null;
 
 			try
 			{
@@ -172,8 +172,7 @@ namespace UnityFx.Mvc
 					}
 					else
 					{
-						// TODO: Use a dedicated exception type.
-						throw new KeyNotFoundException();
+						throw new InvalidOperationException(Messages.Format_PrefabCannotBeLoaded(prefabPath));
 					}
 
 					if (_disposed)
@@ -213,7 +212,7 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private IView CreateView(GameObject viewPrefab, ViewProxy viewProxy, Transform parent)
+		private IView CreateView(GameObject viewPrefab, UGUIViewProxy viewProxy, Transform parent)
 		{
 			Debug.Assert(viewProxy);
 
@@ -242,12 +241,12 @@ namespace UnityFx.Mvc
 			return view;
 		}
 
-		private ViewProxy CreateViewProxy(Transform viewRoot, string viewName, int zIndex, bool exclusive, bool modal)
+		private UGUIViewProxy CreateViewProxy(Transform viewRoot, string viewName, int zIndex, bool exclusive, bool modal)
 		{
 			Debug.Assert(viewName != null);
 
 			var go = new GameObject(viewName);
-			var viewProxy = go.AddComponent<ViewProxy>();
+			var viewProxy = go.AddComponent<UGUIViewProxy>();
 
 			go.transform.SetParent(viewRoot, false);
 
@@ -295,7 +294,7 @@ namespace UnityFx.Mvc
 
 			for (var i = transform.childCount - 1; i >= 0; --i)
 			{
-				var c = transform.GetChild(i).GetComponent<ViewProxy>();
+				var c = transform.GetChild(i).GetComponent<UGUIViewProxy>();
 
 				if (c && c.Image)
 				{

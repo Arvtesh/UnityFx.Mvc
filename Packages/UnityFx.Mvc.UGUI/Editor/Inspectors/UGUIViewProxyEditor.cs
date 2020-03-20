@@ -7,14 +7,14 @@ using UnityEngine;
 
 namespace UnityFx.Mvc
 {
-	[CustomEditor(typeof(UGUIViewFactory.ViewProxy), true)]
+	[CustomEditor(typeof(UGUIViewProxy), true)]
 	public class UGUIViewProxyEditor : Editor
 	{
-		private UGUIViewFactory.ViewProxy _viewProxy;
+		private UGUIViewProxy _viewProxy;
 
 		private void OnEnable()
 		{
-			_viewProxy = (UGUIViewFactory.ViewProxy)target;
+			_viewProxy = (UGUIViewProxy)target;
 		}
 
 		public override void OnInspectorGUI()

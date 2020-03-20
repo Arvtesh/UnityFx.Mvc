@@ -88,7 +88,7 @@ namespace UnityFx.Mvc
 						{
 							for (var i = 0; i < viewRoot.childCount; ++i)
 							{
-								var proxy = viewRoot.GetChild(i).GetComponent<ViewProxy>();
+								var proxy = viewRoot.GetChild(i).GetComponent<UGUIViewProxy>();
 
 								if (proxy && proxy.View == view)
 								{
@@ -112,7 +112,7 @@ namespace UnityFx.Mvc
 					{
 						for (var i = 0; i < viewRoot.childCount; ++i)
 						{
-							array[arrayIndex + i] = viewRoot.GetChild(i).GetComponent<ViewProxy>()?.View;
+							array[arrayIndex + i] = viewRoot.GetChild(i).GetComponent<UGUIViewProxy>()?.View;
 						}
 					}
 				}
@@ -132,7 +132,7 @@ namespace UnityFx.Mvc
 					{
 						for (var i = 0; i < viewRoot.childCount; ++i)
 						{
-							var proxy = viewRoot.GetChild(i).GetComponent<ViewProxy>();
+							var proxy = viewRoot.GetChild(i).GetComponent<UGUIViewProxy>();
 							yield return proxy?.View;
 						}
 					}

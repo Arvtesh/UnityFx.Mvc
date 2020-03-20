@@ -57,7 +57,7 @@ namespace UnityFx.Mvc
 
 			if (string.IsNullOrWhiteSpace(prefabPath))
 			{
-				throw new ArgumentException("Invalid prefab path (name).", nameof(prefabPath));
+				throw new ArgumentException(Messages.Format_InvalidPrefabPath(), nameof(prefabPath));
 			}
 
 			if (prefabGo is null)
@@ -122,7 +122,7 @@ namespace UnityFx.Mvc
 					}
 					else
 					{
-						throw new ArgumentException("Prefab is null.", nameof(prefabs));
+						throw new ArgumentException(Messages.Format_PrefabIsNull(), nameof(prefabs));
 					}
 				}
 			}
@@ -136,7 +136,7 @@ namespace UnityFx.Mvc
 					}
 					else
 					{
-						throw new ArgumentException("Prefab is null.", nameof(prefabs));
+						throw new ArgumentException(Messages.Format_PrefabIsNull(), nameof(prefabs));
 					}
 				}
 			}
