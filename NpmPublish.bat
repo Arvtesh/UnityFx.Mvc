@@ -1,2 +1,3 @@
-xcopy CHANGELOG.md Assets\Plugins\UnityFx.Mvc\CHANGELOG.md /Y
-npm publish Assets\Plugins\UnityFx.Mvc
+npm publish Packages\UnityFx.Mvc
+npm publish Packages\UnityFx.Mvc.UGUI
+npm publish Packages\UnityFx.Mvc.Design
