@@ -8,8 +8,8 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("UnityFx.Mvc")]
-[assembly: AssemblyDescription("MVC(S) framework for Unity.")]
+[assembly: AssemblyTitle("UnityFx.Mvc.UGUI")]
+[assembly: AssemblyDescription("MVC(S) UGUI tools.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("UnityFx.Mvc")]
@@ -33,5 +33,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
 // Editor assembly should access core internals.
-[assembly: InternalsVisibleTo("UnityFx.Mvc.Editor")]
-[assembly: InternalsVisibleTo("UnityFx.Mvc.Editor.Tests")]
+[assembly: InternalsVisibleTo("UnityFx.Mvc.UGUI.Editor")]

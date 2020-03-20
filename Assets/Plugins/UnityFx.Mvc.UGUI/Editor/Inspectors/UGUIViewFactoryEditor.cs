@@ -8,7 +8,7 @@ using UnityEngine;
 namespace UnityFx.Mvc
 {
 	[CustomEditor(typeof(UGUIViewFactory))]
-	public class ViewFactoryEditor : Editor
+	public class UGUIViewFactoryEditor : Editor
 	{
 		private UGUIViewFactory _viewFactory;
 
