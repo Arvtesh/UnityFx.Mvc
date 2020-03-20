@@ -34,4 +34,3 @@ using System.Runtime.InteropServices;
 
 // Editor assembly should access core internals.
 [assembly: InternalsVisibleTo("UnityFx.Mvc.Editor")]
-[assembly: InternalsVisibleTo("UnityFx.Mvc.Editor.Tests")]
