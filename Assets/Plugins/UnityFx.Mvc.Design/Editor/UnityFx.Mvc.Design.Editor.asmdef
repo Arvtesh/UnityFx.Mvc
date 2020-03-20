@@ -1,0 +1,18 @@
+{
+    "name": "UnityFx.Mvc.Design.Editor",
+    "references": [
+        "UnityFx.Mvc.Commands",
+        "UnityFx.Mvc.Abstractions"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
