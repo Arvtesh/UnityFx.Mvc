@@ -20,18 +20,13 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 
 	private void Awake()
 	{
-		var viewFactoryBuilder = new UGUIViewFactoryBuilder(gameObject);
+		_viewFactory = new UGUIViewFactoryBuilder(gameObject)
+			.AddViewPrefabs(_viewPrefabs)
+			.Build();
 
-		foreach (var prefab in _viewPrefabs)
-		{
-			viewFactoryBuilder.AddViewPrefab(prefab.name, prefab);
-		}
-
-		_viewFactory = viewFactoryBuilder.Build();
-
-		var presenterBuilder = new PresenterBuilder(this, gameObject);
-		presenterBuilder.UseViewFactory(_viewFactory);
-		_presenter = presenterBuilder.Build();
+		_presenter = new PresenterBuilder(this, gameObject)
+			.UseViewFactory(_viewFactory)
+			.Build();
 	}
 
 	private async void Start()

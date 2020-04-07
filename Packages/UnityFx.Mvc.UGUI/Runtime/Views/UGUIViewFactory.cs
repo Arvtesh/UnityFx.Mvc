@@ -103,6 +103,14 @@ namespace UnityFx.Mvc
 			}
 		}
 
+		internal void OnDestroyView(UGUIViewProxy view)
+		{
+			if (view)
+			{
+				UpdateViewStack(view.transform.parent);
+			}
+		}
+
 		#endregion
 
 		#region MonoBehaviour
@@ -224,7 +232,7 @@ namespace UnityFx.Mvc
 				go = Instantiate(viewPrefab, parent ?? viewProxy.transform, false);
 				view = go.GetComponent<IView>();
 
-				if (view == null)
+				if (view is null)
 				{
 					view = go.AddComponent<View>();
 				}
@@ -237,7 +245,10 @@ namespace UnityFx.Mvc
 				go.transform.SetParent(parent ?? viewProxy.transform);
 			}
 
+			viewProxy.Factory = this;
 			viewProxy.View = view;
+
+			UpdateViewStack(go.transform.parent);
 			return view;
 		}
 
@@ -288,24 +299,32 @@ namespace UnityFx.Mvc
 			return viewProxy;
 		}
 
-		private void UpdatePopupBackgrounds()
+		private void UpdateViewStack(Transform parent)
 		{
-			var modalFound = false;
-
-			for (var i = transform.childCount - 1; i >= 0; --i)
+			if (parent)
 			{
-				var c = transform.GetChild(i).GetComponent<UGUIViewProxy>();
+				var modalFound = false;
 
-				if (c && c.Image)
+				for (var i = parent.childCount - 1; i >= 0; --i)
 				{
-					if (modalFound)
+					var t = parent.GetChild(i);
+
+					if (t)
 					{
-						c.Image.enabled = false;
-					}
-					else
-					{
-						modalFound = c.Modal;
-						c.Image.enabled = modalFound;
+						var c = t.GetComponent<UGUIViewProxy>();
+
+						if (c && c.Image)
+						{
+							if (modalFound)
+							{
+								c.Image.enabled = false;
+							}
+							else
+							{
+								modalFound = c.Modal;
+								c.Image.enabled = modalFound;
+							}
+						}
 					}
 				}
 			}

@@ -17,6 +17,7 @@ namespace UnityFx.Mvc
 
 		#region interface
 
+		internal UGUIViewFactory Factory { get; set; }
 		public Image Image { get; set; }
 		public bool Exclusive { get; set; }
 		public bool Modal { get; set; }
@@ -60,8 +61,9 @@ namespace UnityFx.Mvc
 
 		private void OnDestroy()
 		{
-			if (_view is MonoBehaviour b && b && b.gameObject)
+			if (_view is MonoBehaviour b && b)
 			{
+				Factory?.OnDestroyView(this);
 				Destroy(b.gameObject);
 			}
 		}
