@@ -249,8 +249,6 @@ public class MyController : ViewController
 #### Controller commands
 A controller is expected to receive input via implementing `ICommandTarget` interface. `ViewController`-based controllers just override `OnCommand` method.
 
-A generic command is any data, that is passed to a command target. There is `CommandUtilities` statis class that contain command-related helpers.
-
 ```csharp
 public class MyController : ViewController
 {
@@ -265,14 +263,14 @@ public class MyController : ViewController
 	{
 	}
 
-	protected override bool OnCommand<TCommand>(TCommand command)
+	protected override bool OnCommand(Command command, Variant args)
 	{
 		// A command can be anything. It is the controller responsibility
 		// to filter only commands it can process.
 		if (command != null && !IsDismissed)
 		{
 			// In this case we use enumeration as a list of possible commands.
-			if (CommandUtilities.TryUnpack(command, out Commands cmd))
+			if (command.TryUnpackEnum(out Commands cmd))
 			{
 				if (cmd == Commands.MyCommand1)
 				{
