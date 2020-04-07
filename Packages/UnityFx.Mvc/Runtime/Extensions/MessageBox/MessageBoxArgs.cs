@@ -9,40 +9,8 @@ namespace UnityFx.Mvc.Extensions
 	/// Arguments of a generic message box.
 	/// </summary>
 	/// <seealso cref="MessageBoxController"/>
-	public class MessageBoxArgs : PresentArgs
+	public class MessageBoxArgs : DialogArgs
 	{
-		/// <summary>
-		/// Gets message box title text.
-		/// </summary>
-		/// <seealso cref="Text"/>
-		/// <seealso cref="OkText"/>
-		/// <seealso cref="CancelText"/>
-		public string Title { get; }
-
-		/// <summary>
-		/// Gets message box text.
-		/// </summary>
-		/// <seealso cref="Title"/>
-		/// <seealso cref="OkText"/>
-		/// <seealso cref="CancelText"/>
-		public string Text { get; }
-
-		/// <summary>
-		/// Gets OK button text.
-		/// </summary>
-		/// <seealso cref="CancelText"/>
-		/// <seealso cref="Title"/>
-		/// <seealso cref="Text"/>
-		public string OkText { get; }
-
-		/// <summary>
-		/// Gets CANCEL button text.
-		/// </summary>
-		/// <seealso cref="OkText"/>
-		/// <seealso cref="Title"/>
-		/// <seealso cref="Text"/>
-		public string CancelText { get; }
-
 		/// <summary>
 		/// Gets the message box options.
 		/// </summary>
@@ -52,8 +20,8 @@ namespace UnityFx.Mvc.Extensions
 		/// Initializes a new instance of the <see cref="MessageBoxArgs"/> class.
 		/// </summary>
 		public MessageBoxArgs(MessageBoxOptions options, string text)
+			: base(text)
 		{
-			Text = text;
 			Options = options;
 		}
 
@@ -61,9 +29,8 @@ namespace UnityFx.Mvc.Extensions
 		/// Initializes a new instance of the <see cref="MessageBoxArgs"/> class.
 		/// </summary>
 		public MessageBoxArgs(MessageBoxOptions options, string text, string title)
+			: base(text, title)
 		{
-			Text = text;
-			Title = title;
 			Options = options;
 		}
 
@@ -71,11 +38,8 @@ namespace UnityFx.Mvc.Extensions
 		/// Initializes a new instance of the <see cref="MessageBoxArgs"/> class.
 		/// </summary>
 		public MessageBoxArgs(MessageBoxOptions options, string text, string title, string okText, string cancelText)
+			: base(text, title, okText, cancelText)
 		{
-			Text = text;
-			Title = title;
-			OkText = okText;
-			CancelText = cancelText;
 			Options = options;
 		}
 	}

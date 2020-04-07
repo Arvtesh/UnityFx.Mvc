@@ -11,7 +11,7 @@ namespace UnityFx.Mvc.Extensions
 	/// </summary>
 	/// <remarks>
 	/// Can work with any view that implements <see cref="IConfigurable{T}"/>. When the view
-	/// is closed by user, it is supposed to send one of the <see cref="Commands"/> commands
+	/// is closed by user, it is supposed to send one of the <see cref="MessageBoxCommands"/> commands
 	/// to the controller. Controller result values are enumerated in <see cref="MessageBoxResult"/>.
 	/// </remarks>
 	/// <example>
@@ -45,45 +45,37 @@ namespace UnityFx.Mvc.Extensions
 	/// }
 	/// </code>
 	/// </example>
-	/// <seealso cref="MessageBoxView"/>
 	/// <seealso cref="MessageBoxArgs"/>
 	/// <seealso cref="MessageBoxOptions"/>
 	/// <seealso cref="MessageBoxResult"/>
 	[ViewController(PresentOptions = PresentOptions.Popup | PresentOptions.Modal)]
-	public class MessageBoxController : IViewController, IViewControllerResult<MessageBoxResult>, ICommandTarget<MessageBoxCommands>, ICommandTarget
+	public class MessageBoxController : DialogController<MessageBoxResult, MessageBoxArgs>, ICommandTarget<MessageBoxCommands>
 	{
-		#region data
-
-		private readonly IPresentContext<MessageBoxResult> _context;
-
-		#endregion
-
 		#region interface
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MessageBoxController"/> class.
 		/// </summary>
 		public MessageBoxController(IPresentContext<MessageBoxResult> context, MessageBoxArgs args)
+			: base(context, args)
 		{
-			_context = context;
-
-			if (context.View is INotifyCommand nc)
-			{
-				nc.Command += OnCommand;
-			}
-
-			if (context.View is IConfigurable<MessageBoxArgs> c)
-			{
-				c.Configure(args);
-			}
 		}
 
 		#endregion
 
-		#region IViewController
+		#region DialogController
 
 		/// <inheritdoc/>
-		public IView View => _context.View;
+		protected override bool OnCommand(Command command, Variant args)
+		{
+			if (command.TryUnpackEnum(out MessageBoxCommands cmd))
+			{
+				OnCommand(cmd);
+				return true;
+			}
+
+			return base.OnCommand(command, args);
+		}
 
 		#endregion
 
@@ -92,29 +84,10 @@ namespace UnityFx.Mvc.Extensions
 		/// <inheritdoc/>
 		public bool InvokeCommand(MessageBoxCommands command, Variant args)
 		{
-			if (!_context.IsDismissed)
+			if (!IsDismissed)
 			{
-				if (command == MessageBoxCommands.Ok)
-				{
-					_context.Dismiss(MessageBoxResult.Ok);
-				}
-				else
-				{
-					_context.Dismiss(MessageBoxResult.Cancel);
-				}
-
+				OnCommand(command);
 				return true;
-			}
-
-			return false;
-		}
-
-		/// <inheritdoc/>
-		public bool InvokeCommand(Command command, Variant args)
-		{
-			if (command.TryUnpackEnum(out MessageBoxCommands cmd))
-			{
-				return InvokeCommand(cmd, args);
 			}
 
 			return false;
@@ -124,9 +97,16 @@ namespace UnityFx.Mvc.Extensions
 
 		#region implementation
 
-		private void OnCommand(object sender, CommandEventArgs e)
+		private void OnCommand(MessageBoxCommands command)
 		{
-			InvokeCommand(e.Command, e.Args);
+			if (command == MessageBoxCommands.Ok)
+			{
+				Dismiss(MessageBoxResult.Ok);
+			}
+			else
+			{
+				Dismiss(MessageBoxResult.Cancel);
+			}
 		}
 
 		#endregion
