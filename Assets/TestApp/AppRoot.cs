@@ -11,7 +11,7 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 #pragma warning disable 0649
 
 	[SerializeField]
-	private GameObject[] _viewPrefabs;
+	private UGUIViewFactoryConfig _viewConfig;
 
 #pragma warning restore 0649
 
@@ -21,7 +21,7 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 	private void Awake()
 	{
 		_viewFactory = new UGUIViewFactoryBuilder(gameObject)
-			.AddViewPrefabs(_viewPrefabs)
+			.UseConfig(_viewConfig)
 			.Build();
 
 		_presenter = new PresenterBuilder(this, gameObject)

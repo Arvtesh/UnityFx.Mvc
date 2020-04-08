@@ -83,10 +83,28 @@ namespace UnityFx.Mvc
 		/// <seealso cref="AddLayer(Transform)"/>
 		/// <seealso cref="AddViewPrefab(string, GameObject)"/>
 		/// <seealso cref="AddViewPrefabs(string, GameObject[])"/>
+		/// <seealso cref="AddViewPrefabs(string, IEnumerable{GameObject})"/>
 		/// <seealso cref="Build"/>
 		public UGUIViewFactoryBuilder AddViewPrefabs(params GameObject[] prefabs)
 		{
-			return AddViewPrefabs(null, prefabs);
+			return AddViewPrefabs(null, (IEnumerable<GameObject>)prefabs);
+		}
+
+		/// <summary>
+		/// Adds preloaded view prefabs.
+		/// </summary>
+		/// <param name="pathPrefix">A prefix string to add to the prefab names.</param>
+		/// <param name="prefabs">The preloaded prefabs.</param>
+		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="prefabPath"/> or <paramref name="prefabGo"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if any of the prefabs is <see langword="null"/>.</exception>
+		/// <seealso cref="AddLayer(Transform)"/>
+		/// <seealso cref="AddViewPrefab(string, GameObject)"/>
+		/// <seealso cref="AddViewPrefabs(GameObject[])"/>
+		/// <seealso cref="AddViewPrefabs(string, IEnumerable{GameObject})"/>
+		/// <seealso cref="Build"/>
+		public UGUIViewFactoryBuilder AddViewPrefabs(string pathPrefix, params GameObject[] prefabs)
+		{
+			return AddViewPrefabs(pathPrefix, (IEnumerable<GameObject>)prefabs);
 		}
 
 		/// <summary>
@@ -100,7 +118,7 @@ namespace UnityFx.Mvc
 		/// <seealso cref="AddViewPrefab(string, GameObject)"/>
 		/// <seealso cref="AddViewPrefabs(GameObject[])"/>
 		/// <seealso cref="Build"/>
-		public UGUIViewFactoryBuilder AddViewPrefabs(string pathPrefix, params GameObject[] prefabs)
+		public UGUIViewFactoryBuilder AddViewPrefabs(string pathPrefix, IEnumerable<GameObject> prefabs)
 		{
 			if (prefabs is null)
 			{
@@ -166,6 +184,26 @@ namespace UnityFx.Mvc
 
 			_viewRoots.Add(transform);
 			return this;
+		}
+
+		/// <summary>
+		/// Applies the specififed configuration.
+		/// </summary>
+		/// <param name="config">The configuration asset.</param>
+		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="config"/> is <see langword="null"/>.</exception>
+		/// <seealso cref="UsePopupBackgoundColor(Color)"/>
+		/// <seealso cref="AddViewPrefabs(string, IEnumerable{GameObject})"/>
+		/// <seealso cref="Build"/>
+		public UGUIViewFactoryBuilder UseConfig(UGUIViewFactoryConfig config)
+		{
+			if (config is null)
+			{
+				throw new ArgumentNullException(nameof(config));
+			}
+
+			_popupBackgroundColor = config.PopupBackgroundColor;
+
+			return AddViewPrefabs(config.PrefabPathPrefix, config.ViewPrefabs);
 		}
 
 		/// <summary>

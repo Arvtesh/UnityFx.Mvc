@@ -17,10 +17,14 @@ namespace UnityFx.Mvc
 
 		#region interface
 
-		internal UGUIViewFactory Factory { get; set; }
-		public Image Image { get; set; }
-		public bool Exclusive { get; set; }
-		public bool Modal { get; set; }
+		[NonSerialized]
+		internal UGUIViewFactory Factory;
+		[NonSerialized]
+		internal Image Image;
+		[NonSerialized]
+		internal bool Exclusive;
+		[NonSerialized]
+		internal bool Modal;
 
 		public IView View
 		{

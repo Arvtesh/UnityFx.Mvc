@@ -17,16 +17,26 @@ namespace UnityFx.Mvc
 	{
 		#region data
 
+#pragma warning disable 0649
+
 		[SerializeField]
 		private Color _popupBackgroundColor = new Color(0, 0, 0, 0.5f);
 		[SerializeField]
+		private string _prefabPathPrefix;
+		[SerializeField]
 		private List<GameObject> _viewPrefabs;
+
+#pragma warning restore 0649
 
 		#endregion
 
 		#region interface
 
-		public IReadOnlyList<GameObject> ViewPrefabs => _viewPrefabs;
+		public Color PopupBackgroundColor => _popupBackgroundColor;
+
+		public string PrefabPathPrefix => _prefabPathPrefix;
+
+		public IList<GameObject> ViewPrefabs => _viewPrefabs;
 
 		#endregion
 	}

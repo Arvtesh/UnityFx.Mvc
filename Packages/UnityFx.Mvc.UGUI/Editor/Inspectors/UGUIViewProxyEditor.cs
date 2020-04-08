@@ -23,6 +23,7 @@ namespace UnityFx.Mvc
 
 			EditorGUI.BeginDisabledGroup(true);
 
+			EditorGUILayout.ObjectField("Factory", _viewProxy.Factory, typeof(MonoBehaviour), true);
 			EditorGUILayout.ObjectField("View", _viewProxy.View as Component, typeof(Component), true);
 			EditorGUILayout.Toggle("Modal", _viewProxy.Modal);
 			EditorGUILayout.Toggle("Exclusive", _viewProxy.Exclusive);
