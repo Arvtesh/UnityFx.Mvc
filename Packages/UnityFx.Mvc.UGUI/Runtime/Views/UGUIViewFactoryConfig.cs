@@ -21,10 +21,10 @@ namespace UnityFx.Mvc
 
 		[SerializeField]
 		private Color _popupBackgroundColor = new Color(0, 0, 0, 0.5f);
-		[SerializeField]
-		private string _prefabPathPrefix;
-		[SerializeField]
-		private List<GameObject> _viewPrefabs;
+		[SerializeField, HideInInspector]
+		private List<PrefabGroup> _prefabGroups;
+		[SerializeField, HideInInspector]
+		private List<PrefabDesc> _prefabs;
 
 #pragma warning restore 0649
 
@@ -32,11 +32,25 @@ namespace UnityFx.Mvc
 
 		#region interface
 
-		public Color PopupBackgroundColor => _popupBackgroundColor;
+		[Serializable]
+		public struct PrefabGroup
+		{
+			public string PathPrefix;
+			public string Folder;
+		}
 
-		public string PrefabPathPrefix => _prefabPathPrefix;
+		[Serializable]
+		public struct PrefabDesc
+		{
+			public string Path;
+			public GameObject Prefab;
+		}
 
-		public IList<GameObject> ViewPrefabs => _viewPrefabs;
+		public Color PopupBackgroundColor { get => _popupBackgroundColor; set => _popupBackgroundColor = value; }
+
+		public IList<PrefabGroup> PrefabGroups => _prefabGroups;
+
+		public IList<PrefabDesc> Prefabs => _prefabs;
 
 		#endregion
 	}

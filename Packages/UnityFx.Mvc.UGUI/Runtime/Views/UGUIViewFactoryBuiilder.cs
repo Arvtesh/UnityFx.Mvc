@@ -203,7 +203,12 @@ namespace UnityFx.Mvc
 
 			_popupBackgroundColor = config.PopupBackgroundColor;
 
-			return AddViewPrefabs(config.PrefabPathPrefix, config.ViewPrefabs);
+			foreach (var item in config.Prefabs)
+			{
+				AddViewPrefab(item.Path, item.Prefab);
+			}
+
+			return this;
 		}
 
 		/// <summary>
