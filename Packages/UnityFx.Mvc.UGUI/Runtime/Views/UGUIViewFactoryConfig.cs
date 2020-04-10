@@ -12,7 +12,7 @@ namespace UnityFx.Mvc
 	/// Configuration of UGUI-based <see cref="IViewFactory"/> implementations.
 	/// </summary>
 	/// <seealso cref="UGUIViewFactoryBuilder"/>
-	[CreateAssetMenu(fileName = "MvcConfig", menuName = "UnityFx/Mvc/MVC Config (UGUI)")]
+	[CreateAssetMenu(fileName = "UiConfig", menuName = "UnityFx/Mvc/UGUI Config")]
 	public sealed class UGUIViewFactoryConfig : ScriptableObject
 	{
 		#region data
@@ -22,9 +22,16 @@ namespace UnityFx.Mvc
 		[SerializeField]
 		private Color _popupBackgroundColor = new Color(0, 0, 0, 0.5f);
 		[SerializeField, HideInInspector]
+		private List<PrefabDesc> _prefabs;
+
+#if UNITY_EDITOR
+
+		[SerializeField, HideInInspector]
 		private List<PrefabGroup> _prefabGroups;
 		[SerializeField, HideInInspector]
-		private List<PrefabDesc> _prefabs;
+		private List<PrefabDesc> _customPrefabs;
+
+#endif
 
 #pragma warning restore 0649
 
@@ -32,12 +39,58 @@ namespace UnityFx.Mvc
 
 		#region interface
 
+#if UNITY_EDITOR
+
 		[Serializable]
-		public struct PrefabGroup
+		internal struct PrefabGroup
 		{
 			public string PathPrefix;
 			public string Folder;
 		}
+
+		internal IReadOnlyCollection<PrefabGroup> PrefabGroups => _prefabGroups;
+
+		internal IReadOnlyList<PrefabDesc> CustomPrefabs => _customPrefabs;
+
+		internal void AddPrefab(PrefabDesc prefab)
+		{
+			_prefabs.Add(prefab);
+		}
+
+		internal bool AddPrefab(string pathPrefix, GameObject prefab)
+		{
+			if (prefab)
+			{
+				var path = prefab.name;
+
+				if (string.IsNullOrWhiteSpace(path))
+				{
+					path = prefab.GetInstanceID().ToString();
+				}
+
+				if (!string.IsNullOrWhiteSpace(pathPrefix))
+				{
+					path = pathPrefix + '/' + path;
+				}
+
+				_prefabs.Add(new PrefabDesc()
+				{
+					Path = path,
+					Prefab = prefab
+				});
+
+				return true;
+			}
+
+			return false;
+		}
+
+		internal void ClearPrefabs()
+		{
+			_prefabs.Clear();
+		}
+
+#endif
 
 		[Serializable]
 		public struct PrefabDesc
@@ -46,11 +99,9 @@ namespace UnityFx.Mvc
 			public GameObject Prefab;
 		}
 
-		public Color PopupBackgroundColor { get => _popupBackgroundColor; set => _popupBackgroundColor = value; }
+		public Color PopupBackgroundColor => _popupBackgroundColor;
 
-		public IList<PrefabGroup> PrefabGroups => _prefabGroups;
-
-		public IList<PrefabDesc> Prefabs => _prefabs;
+		public IReadOnlyList<PrefabDesc> Prefabs => _prefabs;
 
 		#endregion
 	}

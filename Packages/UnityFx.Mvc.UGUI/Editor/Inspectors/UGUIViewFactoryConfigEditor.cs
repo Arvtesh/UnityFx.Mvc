@@ -14,15 +14,32 @@ namespace UnityFx.Mvc
 	public class UGUIViewFactoryConfigEditor : Editor
 	{
 		private UGUIViewFactoryConfig _config;
+		private SerializedProperty _bgColor;
+		private SerializedProperty _prefabs;
+		private ReorderableList _prefabsList;
+
+		private SerializedProperty _customPrefabs;
+		private ReorderableList _customPrefabsList;
 		private SerializedProperty _prefabsGroups;
 		private ReorderableList _prefabsGroupsList;
-		private bool _prefabsOpened;
+		private bool _controlsOpened;
 
 		private void OnEnable()
 		{
 			_config = (UGUIViewFactoryConfig)target;
+			_bgColor = serializedObject.FindProperty("_popupBackgroundColor");
 
 			// https://blog.terresquall.com/2020/03/creating-reorderable-lists-in-the-unity-inspector/
+			_prefabs = serializedObject.FindProperty("_prefabs");
+			_prefabsList = new ReorderableList(serializedObject, _prefabs, true, true, true, true);
+			_prefabsList.drawElementCallback += OnDrawPrefab;
+			_prefabsList.drawHeaderCallback += OnDrawPrefabHeader;
+
+			_customPrefabs = serializedObject.FindProperty("_customPrefabs");
+			_customPrefabsList = new ReorderableList(serializedObject, _customPrefabs, true, true, true, true);
+			_customPrefabsList.drawElementCallback += OnDrawCustomPrefab;
+			_customPrefabsList.drawHeaderCallback += OnDrawCustomPrefabHeader;
+
 			_prefabsGroups = serializedObject.FindProperty("_prefabGroups");
 			_prefabsGroupsList = new ReorderableList(serializedObject, _prefabsGroups, true, true, true, true);
 			_prefabsGroupsList.drawElementCallback += OnDrawPrefabGroup;
@@ -31,72 +48,110 @@ namespace UnityFx.Mvc
 
 		public override void OnInspectorGUI()
 		{
-			base.OnInspectorGUI();
-
-			EditorGUILayout.Space();
-
-			_prefabsGroupsList.DoLayoutList();
-
-			if (GUILayout.Button("Clear Prefabs"))
+			EditorGUI.BeginDisabledGroup(Application.isPlaying);
 			{
-				_config.Prefabs.Clear();
+				base.OnInspectorGUI();
+
+				EditorGUILayout.Space();
+				_prefabsList.DoLayoutList();
 			}
+			EditorGUI.EndDisabledGroup();
 
-			if (GUILayout.Button("Reset Prefabs"))
+			if (!Application.isPlaying)
 			{
-				_config.Prefabs.Clear();
+				EditorGUILayout.Space();
 
-				foreach (var prefabGroup in _config.PrefabGroups)
+				_controlsOpened = EditorGUILayout.BeginFoldoutHeaderGroup(_controlsOpened, "Prefab controls");
+
+				if (_controlsOpened)
 				{
-					var pathPrefix = Application.dataPath;
-					pathPrefix = pathPrefix.Substring(0, pathPrefix.Length - 6);
+					EditorGUILayout.HelpBox("Use these controls to quickly manage content of Prefabs. Pressing Reset Prefabs button recursively searches for UGUI prefabs in folders specified at Prefab Groups. Content of Custom Prefabs is added as is afterwards.", MessageType.Info);
 
-					var fullPath = Path.Combine(pathPrefix, prefabGroup.Folder);
-					var prefabPaths = Directory.GetFiles(fullPath, "*.prefab", SearchOption.AllDirectories);
+					_customPrefabsList.DoLayoutList();
+					_prefabsGroupsList.DoLayoutList();
 
-					foreach (var prefabPath in prefabPaths)
+					if (GUILayout.Button("Clear Prefabs"))
 					{
-						var localPath = prefabPath.Replace(pathPrefix, string.Empty);
-						var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(localPath);
+						_config.ClearPrefabs();
+					}
 
-						if (prefab && prefab.GetComponent<IView>() != null)
+					if (GUILayout.Button("Reset Prefabs"))
+					{
+						_config.ClearPrefabs();
+
+						if (_config.PrefabGroups.Count == 0)
 						{
-							_config.Prefabs.Add(new UGUIViewFactoryConfig.PrefabDesc()
+							var configPath = AssetDatabase.GetAssetPath(target);
+
+							if (!string.IsNullOrEmpty(configPath))
 							{
-								Path = string.IsNullOrEmpty(prefabGroup.PathPrefix) ? prefab.name : prefabGroup.PathPrefix + '/' + prefab.name,
-								Prefab = prefab
-							});
+								configPath = Path.GetDirectoryName(configPath);
+								AddPrefabsFroGroup(configPath, null);
+							}
+						}
+						else
+						{
+							foreach (var prefabGroup in _config.PrefabGroups)
+							{
+								AddPrefabsFroGroup(prefabGroup.Folder, prefabGroup.PathPrefix);
+							}
+						}
+
+						foreach (var prefabDesc in _config.CustomPrefabs)
+						{
+							_config.AddPrefab(prefabDesc);
 						}
 					}
 				}
+
+				EditorGUILayout.EndFoldoutHeaderGroup();
 			}
-
-			EditorGUI.BeginDisabledGroup(true);
-
-			_prefabsOpened = EditorGUILayout.Foldout(_prefabsOpened, "Prefabs", true);
-
-			if (_prefabsOpened)
-			{
-				EditorGUI.indentLevel += 1;
-
-				if (_config.Prefabs == null || _config.Prefabs.Count == 0)
-				{
-					EditorGUILayout.LabelField("Empty");
-				}
-				else
-				{
-					foreach (var prefabDesc in _config.Prefabs)
-					{
-						EditorGUILayout.ObjectField(prefabDesc.Path, prefabDesc.Prefab, typeof(GameObject), false);
-					}
-				}
-
-				EditorGUI.indentLevel -= 1;
-			}
-
-			EditorGUI.EndDisabledGroup();
 
 			serializedObject.ApplyModifiedProperties();
+		}
+
+		private void AddPrefabsFroGroup(string folder, string prefix)
+		{
+			var pathPrefix = Application.dataPath;
+			pathPrefix = pathPrefix.Substring(0, pathPrefix.Length - 6);
+
+			var fullPath = Path.Combine(pathPrefix, folder);
+
+			if (Directory.Exists(fullPath))
+			{
+				var prefabPaths = Directory.GetFiles(fullPath, "*.prefab", SearchOption.AllDirectories);
+
+				foreach (var prefabPath in prefabPaths)
+				{
+					var localPath = prefabPath.Replace(pathPrefix, string.Empty);
+					var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(localPath);
+
+					if (prefab && prefab.GetComponent<IView>() != null)
+					{
+						_config.AddPrefab(prefix, prefab);
+					}
+				}
+			}
+		}
+
+		private void DrawPrefab(SerializedProperty item, Rect rect, bool isActive, bool isFocused)
+		{
+			const int cx1 = 40;
+			const int cx2 = 50;
+
+			var cx = rect.width / 2;
+
+			EditorGUI.LabelField(new Rect(rect.x, rect.y, cx1, EditorGUIUtility.singleLineHeight), "Path");
+			EditorGUI.PropertyField(
+				new Rect(rect.x + cx1, rect.y + 1, cx - cx1, EditorGUIUtility.singleLineHeight),
+				item.FindPropertyRelative("Path"),
+				GUIContent.none);
+
+			EditorGUI.LabelField(new Rect(rect.x + cx + 5, rect.y, cx2, EditorGUIUtility.singleLineHeight), "Prefab");
+			EditorGUI.PropertyField(
+				new Rect(rect.x + cx + cx2, rect.y + 1, rect.width - cx - cx2, EditorGUIUtility.singleLineHeight),
+				item.FindPropertyRelative("Prefab"),
+				GUIContent.none);
 		}
 
 		private void OnDrawPrefabGroup(Rect rect, int index, bool isActive, bool isFocused)
@@ -136,9 +191,33 @@ namespace UnityFx.Mvc
 			}
 		}
 
+		private void OnDrawPrefab(Rect rect, int index, bool isActive, bool isFocused)
+		{
+			var item = _prefabsList.serializedProperty.GetArrayElementAtIndex(index);
+
+			DrawPrefab(item, rect, isActive, isFocused);
+		}
+
+		private void OnDrawCustomPrefab(Rect rect, int index, bool isActive, bool isFocused)
+		{
+			var item = _customPrefabsList.serializedProperty.GetArrayElementAtIndex(index);
+
+			DrawPrefab(item, rect, isActive, isFocused);
+		}
+
 		private void OnDrawPrefabGroupHeader(Rect rect)
 		{
 			EditorGUI.LabelField(rect, "Prefab Groups");
+		}
+
+		private void OnDrawPrefabHeader(Rect rect)
+		{
+			EditorGUI.LabelField(rect, "Prefabs");
+		}
+
+		private void OnDrawCustomPrefabHeader(Rect rect)
+		{
+			EditorGUI.LabelField(rect, "Custom Prefabs");
 		}
 	}
 }
