@@ -5,7 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 
 ## [0.4.0] - unreleased
 
+Commands refactoring, project structural changes and UGUI configuration assets.
+
 ### Added
+- Added dialog-related helpers ([#12](https://github.com/Arvtesh/UnityFx.Mvc/issues/12)).
+- Added UGUI configuration asset.
+
+### Changed
+- Moved UGUI-relaed code to standalone package ([#15](https://github.com/Arvtesh/UnityFx.Mvc/issues/15)).
+- Changed commands system no avoid generic methods ([#11](https://github.com/Arvtesh/UnityFx.Mvc/issues/11)).
+- Upgraded project to Unity 2019.3 ([#16](https://github.com/Arvtesh/UnityFx.Mvc/issues/16)).
 
 ## [0.3.1] - 2020.03.19
 
