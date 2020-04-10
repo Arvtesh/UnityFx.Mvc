@@ -66,9 +66,10 @@ namespace UnityFx.Mvc
 				if (_controlsOpened)
 				{
 					EditorGUILayout.HelpBox("Use these controls to quickly manage content of Prefabs. Pressing Reset Prefabs button recursively searches for UGUI prefabs in folders specified at Prefab Groups. Content of Custom Prefabs is added as is afterwards.", MessageType.Info);
+					EditorGUILayout.Space();
 
-					_customPrefabsList.DoLayoutList();
 					_prefabsGroupsList.DoLayoutList();
+					_customPrefabsList.DoLayoutList();
 
 					if (GUILayout.Button("Clear Prefabs"))
 					{
