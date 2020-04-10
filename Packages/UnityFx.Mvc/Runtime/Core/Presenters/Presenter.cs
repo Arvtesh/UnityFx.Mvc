@@ -354,7 +354,7 @@ namespace UnityFx.Mvc
 			}
 
 			// Types inherited from IViewControllerResult<> use specific result values.
-			if (IsAssignableToGenericType(controllerType, typeof(IViewControllerResult<>), out var t))
+			if (MvcUtilities.IsAssignableToGenericType(controllerType, typeof(IViewControllerResult<>), out var t))
 			{
 				resultType = t.GenericTypeArguments[0];
 			}
@@ -449,37 +449,6 @@ namespace UnityFx.Mvc
 			{
 				throw new ObjectDisposedException(GetType().Name);
 			}
-		}
-
-		private static bool IsAssignableToGenericType(Type givenType, Type genericType, out Type closedGenericType)
-		{
-			// NOTE: See https://stackoverflow.com/questions/5461295/using-isassignablefrom-with-open-generic-types for details.
-			var interfaceTypes = givenType.GetInterfaces();
-
-			foreach (var it in interfaceTypes)
-			{
-				if (it.IsGenericType && it.GetGenericTypeDefinition() == genericType)
-				{
-					closedGenericType = it;
-					return true;
-				}
-			}
-
-			if (givenType.IsGenericType && givenType.GetGenericTypeDefinition() == genericType)
-			{
-				closedGenericType = givenType;
-				return true;
-			}
-
-			var baseType = givenType.BaseType;
-
-			if (baseType == null)
-			{
-				closedGenericType = null;
-				return false;
-			}
-
-			return IsAssignableToGenericType(baseType, genericType, out closedGenericType);
 		}
 
 		private static void ThrowIfInvalidControllerType(Type controllerType)

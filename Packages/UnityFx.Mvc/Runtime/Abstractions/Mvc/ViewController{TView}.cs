@@ -12,7 +12,7 @@ namespace UnityFx.Mvc
 	/// Note that minimal controller implementation should implement <see cref="IViewController"/>.
 	/// </summary>
 	/// <seealso cref="ViewController"/>
-	public abstract class ViewController<TView> : ViewController where TView : class, IView
+	public abstract class ViewController<TView> : ViewController, IViewControllerView<TView> where TView : class, IView
 	{
 		#region data
 		#endregion

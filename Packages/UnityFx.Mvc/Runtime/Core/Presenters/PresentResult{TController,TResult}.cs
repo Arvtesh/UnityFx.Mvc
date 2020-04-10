@@ -83,8 +83,8 @@ namespace UnityFx.Mvc
 			_controllerType = context.ControllerType;
 			_presentArgs = context.PresentArgs;
 			_presentOptions = context.PresentOptions;
-			_deeplinkId = GetDeeplinkId(_controllerType);
-			_prefabPath = string.IsNullOrEmpty(context.PrefabPath) ? GetDefaultPrefabName(_controllerType) : context.PrefabPath;
+			_deeplinkId = MvcUtilities.GetControllerDeeplinkId(_controllerType);
+			_prefabPath = string.IsNullOrEmpty(context.PrefabPath) ? MvcUtilities.GetControllerName(_controllerType) : context.PrefabPath;
 		}
 
 		#endregion
@@ -492,30 +492,6 @@ namespace UnityFx.Mvc
 			{
 				throw new ObjectDisposedException(GetType().Name);
 			}
-		}
-
-		private static string GetDeeplinkId(Type controllerType)
-		{
-			var deeplinkId = controllerType.Name.ToLower();
-
-			if (deeplinkId.EndsWith("controller"))
-			{
-				deeplinkId = deeplinkId.Substring(0, deeplinkId.Length - 10);
-			}
-
-			return deeplinkId;
-		}
-
-		private static string GetDefaultPrefabName(Type controllerType)
-		{
-			var deeplinkId = controllerType.Name;
-
-			if (deeplinkId.EndsWith("Controller"))
-			{
-				deeplinkId = deeplinkId.Substring(0, deeplinkId.Length - 10);
-			}
-
-			return deeplinkId;
 		}
 
 		#endregion
