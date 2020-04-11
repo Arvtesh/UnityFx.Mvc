@@ -21,6 +21,7 @@ namespace UnityFx.Mvc
 		private readonly IServiceProvider _serviceProvider;
 		private readonly IViewFactory _viewFactory;
 		private readonly IViewControllerFactory _controllerFactory;
+		private readonly IViewControllerBindings _controllerBindings;
 		private readonly IPresenterEventSource _eventSource;
 		private readonly ViewControllerCollection _controllers;
 
@@ -39,15 +40,17 @@ namespace UnityFx.Mvc
 
 		internal bool NeedEventSource => _eventSource is null;
 
-		internal Presenter(IServiceProvider serviceProvider, IViewFactory viewFactory, IViewControllerFactory controllerFactory, IPresenterEventSource eventSource)
+		internal Presenter(IServiceProvider serviceProvider, IViewFactory viewFactory, IViewControllerFactory controllerFactory, IViewControllerBindings controllerBindings, IPresenterEventSource eventSource)
 		{
 			Debug.Assert(serviceProvider != null);
 			Debug.Assert(viewFactory != null);
 			Debug.Assert(controllerFactory != null);
+			Debug.Assert(controllerBindings != null);
 
 			_serviceProvider = serviceProvider;
 			_viewFactory = viewFactory;
 			_controllerFactory = controllerFactory;
+			_controllerBindings = controllerBindings;
 			_eventSource = eventSource;
 			_controllers = new ViewControllerCollection(_presentables);
 
@@ -339,6 +342,7 @@ namespace UnityFx.Mvc
 				ViewFactory = _viewFactory,
 				ControllerType = controllerType,
 				Parent = parent,
+				PrefabPath = _controllerBindings.GetViewPath(controllerType),
 				PresentOptions = presentOptions,
 				PresentArgs = args ?? PresentArgs.Default
 			};
@@ -350,7 +354,6 @@ namespace UnityFx.Mvc
 				presentContext.PresentOptions |= controllerAttr.PresentOptions;
 				presentContext.Layer = controllerAttr.Layer;
 				presentContext.Tag = controllerAttr.Tag;
-				presentContext.PrefabPath = controllerAttr.PrefabPath;
 			}
 
 			// Types inherited from IViewControllerResult<> use specific result values.

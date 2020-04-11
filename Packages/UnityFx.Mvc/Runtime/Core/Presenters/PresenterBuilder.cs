@@ -21,6 +21,7 @@ namespace UnityFx.Mvc
 
 		private IViewFactory _viewFactory;
 		private IViewControllerFactory _viewControllerFactory;
+		private IViewControllerBindings _viewControllerBindings;
 		private IPresenterEventSource _eventSource;
 		private List<PresentDelegate> _presentDelegates;
 		private Action<Exception> _errorDelegate;
@@ -86,6 +87,18 @@ namespace UnityFx.Mvc
 			}
 
 			_viewControllerFactory = viewControllerFactory ?? throw new ArgumentNullException(nameof(viewControllerFactory));
+			return this;
+		}
+
+		// <inheritdoc/>
+		public IPresenterBuilder UseViewControllerBindings(IViewControllerBindings viewControllerBindings)
+		{
+			if (_viewControllerBindings != null)
+			{
+				throw new InvalidOperationException();
+			}
+
+			_viewControllerBindings = viewControllerBindings ?? throw new ArgumentNullException(nameof(viewControllerBindings));
 			return this;
 		}
 
@@ -180,7 +193,17 @@ namespace UnityFx.Mvc
 					}
 				}
 
-				_presenter = new Presenter(_serviceProvider, _viewFactory, _viewControllerFactory, _eventSource);
+				if (_viewControllerBindings is null)
+				{
+					_viewControllerBindings = _serviceProvider.GetService(typeof(IViewControllerBindings)) as IViewControllerBindings;
+
+					if (_viewControllerBindings is null)
+					{
+						_viewControllerBindings = new ViewControllerBindings();
+					}
+				}
+
+				_presenter = new Presenter(_serviceProvider, _viewFactory, _viewControllerFactory, _viewControllerBindings, _eventSource);
 				_presenter.SetMiddleware(_presentDelegates);
 				_presenter.SetErrorHandler(_errorDelegate);
 

@@ -64,6 +64,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="viewFactory"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if a view factory is already set.</exception>
 		/// <seealso cref="UseViewControllerFactory(IViewControllerFactory)"/>
+		/// <seealso cref="UseViewControllerBindings(IViewControllerBindings)"/>
 		/// <seealso cref="UseEventSource(IPresenterEventSource)"/>
 		/// <seealso cref="Build"/>
 		IPresenterBuilder UseViewFactory(IViewFactory viewFactory);
@@ -74,10 +75,21 @@ namespace UnityFx.Mvc
 		/// <param name="viewControllerFactory">A view controller factory to use.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="viewControllerFactory"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if a view controller factory is already set.</exception>
+		/// <seealso cref="UseViewControllerBindings(IViewControllerBindings)"/>
 		/// <seealso cref="UseViewFactory(IViewFactory)"/>
-		/// <seealso cref="UseEventSource(IPresenterEventSource)"/>
 		/// <seealso cref="Build"/>
 		IPresenterBuilder UseViewControllerFactory(IViewControllerFactory viewControllerFactory);
+
+		/// <summary>
+		/// Sets a <see cref="IViewControllerBindings"/> instace to use. If not called, a default factory is used.
+		/// </summary>
+		/// <param name="viewControllerBindings">A view/controller bindings to use.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="viewControllerBindings"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if a view controller binding is already set.</exception>
+		/// <seealso cref="UseViewControllerFactory(IViewControllerFactory)"/>
+		/// <seealso cref="UseViewFactory(IViewFactory)"/>
+		/// <seealso cref="Build"/>
+		IPresenterBuilder UseViewControllerBindings(IViewControllerBindings viewControllerBindings);
 
 		/// <summary>
 		/// Sets an event source instance to use. If not called, a default provider is used.
@@ -85,6 +97,7 @@ namespace UnityFx.Mvc
 		/// <param name="eventSource">An event source to use.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="eventSource"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if an event source is already set.</exception>
+		/// <seealso cref="UseViewFactory(IViewFactory)"/>
 		/// <seealso cref="Build"/>
 		IPresenterBuilder UseEventSource(IPresenterEventSource eventSource);
 

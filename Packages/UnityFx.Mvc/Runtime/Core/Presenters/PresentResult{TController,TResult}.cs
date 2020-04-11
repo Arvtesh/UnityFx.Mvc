@@ -84,7 +84,7 @@ namespace UnityFx.Mvc
 			_presentArgs = context.PresentArgs;
 			_presentOptions = context.PresentOptions;
 			_deeplinkId = MvcUtilities.GetControllerDeeplinkId(_controllerType);
-			_prefabPath = string.IsNullOrEmpty(context.PrefabPath) ? MvcUtilities.GetControllerName(_controllerType) : context.PrefabPath;
+			_prefabPath = context.PrefabPath;
 		}
 
 		#endregion
