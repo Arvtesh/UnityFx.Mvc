@@ -13,6 +13,7 @@ namespace UnityFx.Mvc
 		public event EventHandler Disposed;
 		public event EventHandler<CommandEventArgs> Command;
 
+		public string ResourceId => null;
 		public Transform Transform => null;
 		public bool Enabled { get; set; } = true;
 

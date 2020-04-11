@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using UnityEngine;
 
 namespace UnityFx.Mvc
 {
@@ -10,6 +11,28 @@ namespace UnityFx.Mvc
 	/// </summary>
 	public static class MvcUtilities
 	{
+		/// <summary>
+		/// TODO
+		/// </summary>
+		public static TView InstantiateViewPrefab<TView>(GameObject prefab, Transform parent, string resourceId) where TView : View
+		{
+			if (prefab is null)
+			{
+				throw new ArgumentNullException(nameof(prefab));
+			}
+
+			var go = GameObject.Instantiate(prefab, parent, false);
+			var view = go.GetComponent<TView>();
+
+			if (view is null)
+			{
+				view = go.AddComponent<TView>();
+			}
+
+			view.SetResourceId(resourceId);
+			return view;
+		}
+
 		/// <summary>
 		/// TODO
 		/// </summary>

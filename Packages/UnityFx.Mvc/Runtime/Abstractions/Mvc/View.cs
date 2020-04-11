@@ -14,11 +14,20 @@ namespace UnityFx.Mvc
 	{
 		#region data
 
+		private string _resourceId;
 		private bool _disposed;
 
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// Sets value of <see cref="ResourceId"/>.
+		/// </summary>
+		internal void SetResourceId(string resourceId)
+		{
+			_resourceId = resourceId;
+		}
 
 		/// <summary>
 		/// Gets a value indicating whether the view is disposed.
@@ -98,6 +107,11 @@ namespace UnityFx.Mvc
 		/// <seealso cref="Dispose"/>
 		/// <seealso cref="OnDispose"/>
 		public event EventHandler Disposed;
+
+		/// <summary>
+		/// Gets identifier of a resource (asset) this view is loaded from.
+		/// </summary>
+		public string ResourceId => _resourceId;
 
 		/// <summary>
 		/// Gets the <see cref="Transform"/> this view is attached to.

@@ -11,7 +11,7 @@ namespace UnityFx.Mvc.Extensions
 	/// View for the <see cref="MessageBoxController"/>.
 	/// </summary>
 	/// <seealso cref="MessageBoxController"/>
-	public class UGUIMessageBoxView : View, IConfigurable<MessageBoxArgs>
+	public class UGUIMessageBoxView : UGUIView, IConfigurable<MessageBoxArgs>
 	{
 		#region data
 

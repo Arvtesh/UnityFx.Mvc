@@ -150,7 +150,7 @@ namespace UnityFx.Mvc
 
 				if (_viewPrefabCache.TryGetValue(prefabPath, out var viewPrefab))
 				{
-					return CreateView(viewPrefab, viewProxy, parent);
+					return CreateView(prefabPath, viewPrefab, viewProxy, parent);
 				}
 				else
 				{
@@ -189,7 +189,7 @@ namespace UnityFx.Mvc
 					}
 
 					_viewPrefabCache.Add(prefabPath, viewPrefab);
-					return CreateView(viewPrefab, viewProxy, parent);
+					return CreateView(prefabPath, viewPrefab, viewProxy, parent);
 				}
 			}
 			catch
@@ -220,32 +220,26 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private IView CreateView(GameObject viewPrefab, UGUIViewProxy viewProxy, Transform parent)
+		private IView CreateView(string prefabPath, GameObject prefab, UGUIViewProxy viewProxy, Transform parent)
 		{
 			Debug.Assert(viewProxy);
 
 			GameObject go;
-			IView view;
+			UGUIView view;
 
-			if (viewPrefab)
+			if (prefab)
 			{
-				go = Instantiate(viewPrefab, parent ?? viewProxy.transform, false);
-				view = go.GetComponent<IView>();
-
-				if (view is null)
-				{
-					view = go.AddComponent<View>();
-				}
+				view = MvcUtilities.InstantiateViewPrefab<UGUIView>(prefab, parent ?? viewProxy.transform, prefabPath);
+				go = view.gameObject;
 			}
 			else
 			{
 				go = new GameObject(viewProxy.name);
-				view = go.AddComponent<View>();
+				view = go.AddComponent<UGUIView>();
 
 				go.transform.SetParent(parent ?? viewProxy.transform);
 			}
 
-			viewProxy.Factory = this;
 			viewProxy.View = view;
 
 			UpdateViewStack(go.transform.parent);
@@ -293,6 +287,7 @@ namespace UnityFx.Mvc
 				rt.offsetMax = Vector2.zero;
 			}
 
+			viewProxy.Factory = this;
 			viewProxy.Modal = modal;
 			viewProxy.Exclusive = exclusive;
 

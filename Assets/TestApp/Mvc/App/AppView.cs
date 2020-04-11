@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,7 +8,7 @@ using UnityFx.Mvc;
 /// View for the <see cref="AppController"/>.
 /// </summary>
 /// <seealso cref="AppController"/>
-public class AppView : View
+public class AppView : UGUIView
 {
 	#region data
 

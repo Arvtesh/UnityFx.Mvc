@@ -20,6 +20,8 @@ namespace UnityFx.Mvc
 		[NonSerialized]
 		internal UGUIViewFactory Factory;
 		[NonSerialized]
+		internal GameObject Prefab;
+		[NonSerialized]
 		internal Image Image;
 		[NonSerialized]
 		internal bool Exclusive;
