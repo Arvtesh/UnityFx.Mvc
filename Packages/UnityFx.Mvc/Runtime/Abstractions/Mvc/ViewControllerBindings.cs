@@ -21,22 +21,11 @@ namespace UnityFx.Mvc
 		#region IViewControllerBindings
 
 		/// <inheritdoc/>
-		public virtual string GetViewPath(Type controllerType)
+		public virtual string GetViewResourceId(Type controllerType)
 		{
 			if (controllerType is null)
 			{
 				throw new ArgumentNullException(nameof(controllerType));
-			}
-
-			if (controllerType.IsDefined(typeof(ViewControllerAttribute), false))
-			{
-				var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
-				var prefabPath = attrs[0].PrefabPath;
-
-				if (!string.IsNullOrWhiteSpace(prefabPath))
-				{
-					return prefabPath;
-				}
 			}
 
 			return MvcUtilities.GetControllerName(controllerType);

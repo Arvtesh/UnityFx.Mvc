@@ -17,11 +17,11 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Creates a view for a controller of the specified type.
 		/// </summary>
-		/// <param name="prefabPath">Path to the view prefab asset.</param>
+		/// <param name="resourceId">Resource identifier of the view prefab.</param>
 		/// <param name="layer"></param>
 		/// <param name="zIndex">Z-order index.</param>
 		/// <param name="options">Present options.</param>
 		/// <param name="parent">Parent transform for the view (or <see langword="null"/>).</param>
-		Task<IView> CreateViewAsync(string prefabPath, int layer, int zIndex, PresentOptions options, Transform parent);
+		Task<IView> CreateViewAsync(string resourceId, int layer, int zIndex, PresentOptions options, Transform parent);
 	}
 }

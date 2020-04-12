@@ -40,29 +40,29 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Adds a preloaded view prefab.
 		/// </summary>
-		/// <param name="prefabPath">A path to assosiate the <paramref name="prefabGo"/> with.</param>
-		/// <param name="prefabGo">The preloaded prefab.</param>
-		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="prefabPath"/> or <paramref name="prefabGo"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown is <paramref name="prefabPath"/> is invalid.</exception>
+		/// <param name="resourceId">A path to assosiate the <paramref name="prefab"/> with.</param>
+		/// <param name="prefab">The preloaded prefab.</param>
+		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="resourceId"/> or <paramref name="prefab"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown is <paramref name="resourceId"/> is invalid.</exception>
 		/// <seealso cref="AddLayer(Transform)"/>
 		/// <seealso cref="AddViewPrefabs(GameObject[])"/>
 		/// <seealso cref="AddViewPrefabs(string, GameObject[])"/>
 		/// <seealso cref="Build"/>
-		public UGUIViewFactoryBuilder AddViewPrefab(string prefabPath, GameObject prefabGo)
+		public UGUIViewFactoryBuilder AddViewPrefab(string resourceId, GameObject prefab)
 		{
-			if (prefabPath is null)
+			if (resourceId is null)
 			{
-				throw new ArgumentNullException(nameof(prefabPath));
+				throw new ArgumentNullException(nameof(resourceId));
 			}
 
-			if (string.IsNullOrWhiteSpace(prefabPath))
+			if (string.IsNullOrWhiteSpace(resourceId))
 			{
-				throw new ArgumentException(Messages.Format_InvalidPrefabPath(), nameof(prefabPath));
+				throw new ArgumentException(Messages.Format_InvalidPrefabPath(), nameof(resourceId));
 			}
 
-			if (prefabGo is null)
+			if (prefab is null)
 			{
-				throw new ArgumentNullException(nameof(prefabGo));
+				throw new ArgumentNullException(nameof(prefab));
 			}
 
 			if (_viewPrefabs is null)
@@ -70,7 +70,7 @@ namespace UnityFx.Mvc
 				_viewPrefabs = new Dictionary<string, GameObject>();
 			}
 
-			_viewPrefabs.Add(prefabPath, prefabGo);
+			_viewPrefabs.Add(resourceId, prefab);
 			return this;
 		}
 
@@ -93,7 +93,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Adds preloaded view prefabs.
 		/// </summary>
-		/// <param name="pathPrefix">A prefix string to add to the prefab names.</param>
+		/// <param name="namePrefix">A prefix string to add to the prefab names.</param>
 		/// <param name="prefabs">The preloaded prefabs.</param>
 		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="prefabPath"/> or <paramref name="prefabGo"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">Thrown if any of the prefabs is <see langword="null"/>.</exception>
@@ -102,15 +102,15 @@ namespace UnityFx.Mvc
 		/// <seealso cref="AddViewPrefabs(GameObject[])"/>
 		/// <seealso cref="AddViewPrefabs(string, IEnumerable{GameObject})"/>
 		/// <seealso cref="Build"/>
-		public UGUIViewFactoryBuilder AddViewPrefabs(string pathPrefix, params GameObject[] prefabs)
+		public UGUIViewFactoryBuilder AddViewPrefabs(string namePrefix, params GameObject[] prefabs)
 		{
-			return AddViewPrefabs(pathPrefix, (IEnumerable<GameObject>)prefabs);
+			return AddViewPrefabs(namePrefix, (IEnumerable<GameObject>)prefabs);
 		}
 
 		/// <summary>
 		/// Adds preloaded view prefabs.
 		/// </summary>
-		/// <param name="pathPrefix">A prefix string to add to the prefab names.</param>
+		/// <param name="namePrefix">A prefix string to add to the prefab names.</param>
 		/// <param name="prefabs">The preloaded prefabs.</param>
 		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="prefabPath"/> or <paramref name="prefabGo"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">Thrown if any of the prefabs is <see langword="null"/>.</exception>
@@ -118,7 +118,7 @@ namespace UnityFx.Mvc
 		/// <seealso cref="AddViewPrefab(string, GameObject)"/>
 		/// <seealso cref="AddViewPrefabs(GameObject[])"/>
 		/// <seealso cref="Build"/>
-		public UGUIViewFactoryBuilder AddViewPrefabs(string pathPrefix, IEnumerable<GameObject> prefabs)
+		public UGUIViewFactoryBuilder AddViewPrefabs(string namePrefix, IEnumerable<GameObject> prefabs)
 		{
 			if (prefabs is null)
 			{
@@ -130,7 +130,7 @@ namespace UnityFx.Mvc
 				_viewPrefabs = new Dictionary<string, GameObject>();
 			}
 
-			if (string.IsNullOrEmpty(pathPrefix))
+			if (string.IsNullOrEmpty(namePrefix))
 			{
 				foreach (var go in prefabs)
 				{
@@ -150,7 +150,7 @@ namespace UnityFx.Mvc
 				{
 					if (go)
 					{
-						_viewPrefabs.Add(pathPrefix + go.name, go);
+						_viewPrefabs.Add(namePrefix + go.name, go);
 					}
 					else
 					{
@@ -194,7 +194,30 @@ namespace UnityFx.Mvc
 		/// <seealso cref="UsePopupBackgoundColor(Color)"/>
 		/// <seealso cref="AddViewPrefabs(string, IEnumerable{GameObject})"/>
 		/// <seealso cref="Build"/>
-		public UGUIViewFactoryBuilder UseConfig(UGUIViewFactoryConfig config)
+		public UGUIViewFactoryBuilder UseConfig(MvcConfig config)
+		{
+			if (config is null)
+			{
+				throw new ArgumentNullException(nameof(config));
+			}
+
+			foreach (var item in config.Prefabs)
+			{
+				AddViewPrefab(item.Key, item.Value);
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Applies the specififed configuration.
+		/// </summary>
+		/// <param name="config">The configuration asset.</param>
+		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="config"/> is <see langword="null"/>.</exception>
+		/// <seealso cref="UsePopupBackgoundColor(Color)"/>
+		/// <seealso cref="AddViewPrefabs(string, IEnumerable{GameObject})"/>
+		/// <seealso cref="Build"/>
+		public UGUIViewFactoryBuilder UseConfig(UGUIMvcConfig config)
 		{
 			if (config is null)
 			{
@@ -205,7 +228,7 @@ namespace UnityFx.Mvc
 
 			foreach (var item in config.Prefabs)
 			{
-				AddViewPrefab(item.Path, item.Prefab);
+				AddViewPrefab(item.Key, item.Value);
 			}
 
 			return this;

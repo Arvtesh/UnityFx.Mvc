@@ -17,11 +17,6 @@ namespace UnityFx.Mvc
 		public PresentOptions PresentOptions { get; set; }
 
 		/// <summary>
-		/// Gets or sets path to the view prefab. If this is not set, controller name is used as the prefab path (i.e. 'Help' for controller named 'HelpController').
-		/// </summary>
-		public string PrefabPath { get; set; }
-
-		/// <summary>
 		/// Gets or sets controller tag.
 		/// </summary>
 		public int Tag { get; set; }

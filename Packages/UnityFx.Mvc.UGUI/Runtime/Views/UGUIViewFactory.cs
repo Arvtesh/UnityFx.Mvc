@@ -42,7 +42,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets a read-only collection of loaded view prefabs.
 		/// </summary>
-		public IReadOnlyCollection<string> Prefabs => _viewPrefabCache.Keys;
+		public IReadOnlyDictionary<string, GameObject> Prefabs => _viewPrefabCache;
 
 		/// <summary>
 		/// Gets a read-only collection of views.
@@ -124,18 +124,18 @@ namespace UnityFx.Mvc
 
 		#region IViewFactory
 
-		public async Task<IView> CreateViewAsync(string prefabPath, int layer, int zIndex, PresentOptions options, Transform parent)
+		public async Task<IView> CreateViewAsync(string resourceId, int layer, int zIndex, PresentOptions options, Transform parent)
 		{
 			ThrowIfDisposed();
 
-			if (prefabPath is null)
+			if (resourceId is null)
 			{
-				throw new ArgumentNullException(nameof(prefabPath));
+				throw new ArgumentNullException(nameof(resourceId));
 			}
 
-			if (string.IsNullOrWhiteSpace(prefabPath))
+			if (string.IsNullOrWhiteSpace(resourceId))
 			{
-				throw new ArgumentException(Messages.Format_InvalidPrefabPath(), nameof(prefabPath));
+				throw new ArgumentException(Messages.Format_InvalidPrefabPath(), nameof(resourceId));
 			}
 
 			UGUIViewProxy viewProxy = null;
@@ -146,28 +146,28 @@ namespace UnityFx.Mvc
 				var modal = (options & PresentOptions.Modal) != 0;
 				var viewRoot = _viewRoots[layer];
 
-				viewProxy = CreateViewProxy(viewRoot, prefabPath, zIndex, exclusive, modal);
+				viewProxy = CreateViewProxy(viewRoot, resourceId, zIndex, exclusive, modal);
 
-				if (_viewPrefabCache.TryGetValue(prefabPath, out var viewPrefab))
+				if (_viewPrefabCache.TryGetValue(resourceId, out var viewPrefab))
 				{
-					return CreateView(prefabPath, viewPrefab, viewProxy, parent);
+					return CreateView(resourceId, viewPrefab, viewProxy, parent);
 				}
 				else
 				{
-					if (_viewPrefabCacheTasks != null && _viewPrefabCacheTasks.TryGetValue(prefabPath, out var task))
+					if (_viewPrefabCacheTasks != null && _viewPrefabCacheTasks.TryGetValue(resourceId, out var task))
 					{
 						viewPrefab = await task;
 					}
 					else if (_loadPrefabDelegate != null)
 					{
-						task = _loadPrefabDelegate(prefabPath);
+						task = _loadPrefabDelegate(resourceId);
 
 						if (_viewPrefabCacheTasks is null)
 						{
 							_viewPrefabCacheTasks = new Dictionary<string, Task<GameObject>>();
 						}
 
-						_viewPrefabCacheTasks.Add(prefabPath, task);
+						_viewPrefabCacheTasks.Add(resourceId, task);
 
 						try
 						{
@@ -175,12 +175,12 @@ namespace UnityFx.Mvc
 						}
 						finally
 						{
-							_viewPrefabCacheTasks.Remove(prefabPath);
+							_viewPrefabCacheTasks.Remove(resourceId);
 						}
 					}
 					else
 					{
-						throw new InvalidOperationException(Messages.Format_PrefabCannotBeLoaded(prefabPath));
+						throw new InvalidOperationException(Messages.Format_PrefabCannotBeLoaded(resourceId));
 					}
 
 					if (_disposed)
@@ -188,8 +188,8 @@ namespace UnityFx.Mvc
 						throw new OperationCanceledException();
 					}
 
-					_viewPrefabCache.Add(prefabPath, viewPrefab);
-					return CreateView(prefabPath, viewPrefab, viewProxy, parent);
+					_viewPrefabCache.Add(resourceId, viewPrefab);
+					return CreateView(resourceId, viewPrefab, viewProxy, parent);
 				}
 			}
 			catch
@@ -220,7 +220,7 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private IView CreateView(string prefabPath, GameObject prefab, UGUIViewProxy viewProxy, Transform parent)
+		private IView CreateView(string resourceId, GameObject prefab, UGUIViewProxy viewProxy, Transform parent)
 		{
 			Debug.Assert(viewProxy);
 
@@ -229,7 +229,7 @@ namespace UnityFx.Mvc
 
 			if (prefab)
 			{
-				view = MvcUtilities.InstantiateViewPrefab<UGUIView>(prefab, parent ?? viewProxy.transform, prefabPath);
+				view = MvcUtilities.InstantiateViewPrefab<UGUIView>(prefab, parent ?? viewProxy.transform, resourceId);
 				go = view.gameObject;
 			}
 			else

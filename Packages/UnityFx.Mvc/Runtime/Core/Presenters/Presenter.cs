@@ -342,7 +342,7 @@ namespace UnityFx.Mvc
 				ViewFactory = _viewFactory,
 				ControllerType = controllerType,
 				Parent = parent,
-				PrefabPath = _controllerBindings.GetViewPath(controllerType),
+				PrefabPath = _controllerBindings.GetViewResourceId(controllerType),
 				PresentOptions = presentOptions,
 				PresentArgs = args ?? PresentArgs.Default
 			};

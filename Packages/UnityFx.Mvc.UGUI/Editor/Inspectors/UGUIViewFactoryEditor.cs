@@ -50,7 +50,7 @@ namespace UnityFx.Mvc
 
 				foreach (var prefab in prefabs)
 				{
-					EditorGUILayout.LabelField("#" + prefabId.ToString(), prefab);
+					EditorGUILayout.LabelField("#" + prefabId.ToString(), prefab.Key);
 					prefabId++;
 				}
 

@@ -15,6 +15,6 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets view binding for the controller specified.
 		/// </summary>
-		string GetViewPath(Type controllerType);
+		string GetViewResourceId(Type controllerType);
 	}
 }
