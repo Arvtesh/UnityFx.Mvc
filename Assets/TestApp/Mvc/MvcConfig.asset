@@ -10,22 +10,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 978088f2d6d2f7e42ba5b119ebf0d301, type: 3}
-  m_Name: UiConfig
+  m_Name: MvcConfig
   m_EditorClassIdentifier: 
+  _viewControllers:
+  - ControllerScriptPath: Assets/TestApp/Mvc/App/AppController.cs
+    ViewScriptPath: Assets/TestApp/Mvc/App/AppView.cs
+    ViewResourceId: AppController
+    ViewPrefab: {fileID: 2865599842196110682, guid: 03caa09d8ee99b241a82254be16bc57e,
+      type: 3}
+  - ControllerScriptPath: Assets/TestApp/Mvc/Lobby/LobbyController.cs
+    ViewScriptPath: Assets/TestApp/Mvc/Lobby/LobbyView.cs
+    ViewResourceId: LobbyController
+    ViewPrefab: {fileID: 7846704816992948672, guid: 7fb867d34bbeca048a50534ffe67f80d,
+      type: 3}
+  - ControllerScriptPath: Assets/TestApp/Mvc/Splash/SplashController.cs
+    ViewScriptPath: 
+    ViewResourceId: SplashController
+    ViewPrefab: {fileID: 240879178860548289, guid: 3091374f3c0c527468342f660648e692,
+      type: 3}
+  - ControllerScriptPath: 
+    ViewScriptPath: Packages/com.unityfx.mvc.ugui/Runtime/Extensions/MessageBox/UGUIMessageBoxView.cs
+    ViewResourceId: MessageBox
+    ViewPrefab: {fileID: 6558099709203857598, guid: 9ee3231ff7620aa4ba232ea162ef4a92,
+      type: 3}
+  _folders: []
   _popupBackgroundColor: {r: 0, g: 0, b: 0, a: 0.5}
-  _prefabs:
-  - Path: App
-    Prefab: {fileID: 2865599842196110682, guid: 03caa09d8ee99b241a82254be16bc57e,
-      type: 3}
-  - Path: Lobby
-    Prefab: {fileID: 7846704816992948672, guid: 7fb867d34bbeca048a50534ffe67f80d,
-      type: 3}
-  - Path: MessageBox
-    Prefab: {fileID: 6558099709203857598, guid: 9ee3231ff7620aa4ba232ea162ef4a92,
-      type: 3}
-  - Path: Splash
-    Prefab: {fileID: 240879178860548289, guid: 3091374f3c0c527468342f660648e692, type: 3}
-  _prefabGroups: []
-  _customPrefabs:
-  - Path: Splash
-    Prefab: {fileID: 240879178860548289, guid: 3091374f3c0c527468342f660648e692, type: 3}

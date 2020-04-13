@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -20,8 +21,16 @@ namespace UnityFx.Mvc
 		private SerializedProperty _folders;
 		private ReorderableList _foldersList;
 
+		private Regex _newControllerNamePattern = new Regex("^[_a-zA-Z][_a-zA-Z0-9]*$");
+		private string _newControllerName;
+		private string _newControllerNamespace;
+		private string _newControllerPath;
+		private bool _newControllerCreateArgs;
+		private bool _newControllerCreateCommands;
+
 		private string _lastError;
 		private string _lastWarning;
+		private bool _createControllerMode;
 		private bool _controlsOpened;
 
 		protected virtual void OnEnable()
@@ -103,6 +112,109 @@ namespace UnityFx.Mvc
 				EditorGUILayout.EndHorizontal();
 				EditorGUILayout.Space();
 
+				// Create controller controls.
+				if (_createControllerMode)
+				{
+					var basePath = string.IsNullOrWhiteSpace(_newControllerName) ? _newControllerPath : Path.Combine(_newControllerPath, _newControllerName);
+					var validateResult = true;
+
+					EditorGUILayout.BeginVertical();
+					EditorGUILayout.Separator();
+					EditorGUILayout.BeginFoldoutHeaderGroup(true, "Create new controller...");
+
+					// New controller path.
+					EditorGUI.BeginDisabledGroup(true);
+					EditorGUILayout.TextField("Path", basePath);
+					EditorGUI.EndDisabledGroup();
+
+					_newControllerName = EditorGUILayout.TextField("Controller Name", _newControllerName);
+					_newControllerNamespace = EditorGUILayout.TextField("Namespace", _newControllerNamespace);
+					_newControllerCreateArgs = EditorGUILayout.Toggle("Create PresentArgs", _newControllerCreateArgs);
+					_newControllerCreateCommands = EditorGUILayout.Toggle("Create commands enumeration", _newControllerCreateCommands);
+
+					if (string.IsNullOrWhiteSpace(_newControllerName) || !_newControllerNamePattern.IsMatch(_newControllerName))
+					{
+						validateResult = false;
+						EditorGUILayout.HelpBox($"Invalid controller name. Controller names should match {_newControllerNamePattern}.", MessageType.Error);
+					}
+					
+					if (!string.IsNullOrEmpty(_newControllerNamespace) && !_newControllerNamePattern.IsMatch(_newControllerNamespace))
+					{
+						validateResult = false;
+						EditorGUILayout.HelpBox($"Invalid namespace name. Namespace names should match {_newControllerNamePattern} (or an empty string).", MessageType.Error);
+					}
+
+					if (validateResult)
+					{
+						var controllerPath = Path.Combine(basePath, _newControllerName + "Controller.cs");
+						var viewPath = Path.Combine(basePath, _newControllerName + "View.cs");
+						var prefabPath = Path.Combine(basePath, _newControllerName + ".prefab");
+						var s = $"Assets to create:\n    - {controllerPath}\n    - {viewPath}";
+
+						if (_newControllerCreateArgs)
+						{
+							var argsPath = Path.Combine(basePath, _newControllerName + "Args.cs");
+							s += "\n    - " + argsPath;
+						}
+
+						if (_newControllerCreateCommands)
+						{
+							var argsPath = Path.Combine(basePath, _newControllerName + "Commands.cs");
+							s += "\n    - " + argsPath;
+						}
+
+						s += "\n    - " + prefabPath;
+
+						EditorGUILayout.HelpBox(s, MessageType.Info);
+						EditorGUILayout.BeginHorizontal();
+
+						if (GUILayout.Button("Create assets"))
+						{
+							var options = default(CodegenOptions);
+
+							if (_newControllerCreateArgs)
+							{
+								options |= CodegenOptions.CreateArgs;
+							}
+
+							if (_newControllerCreateCommands)
+							{
+								options |= CodegenOptions.CreateCommands;
+							}
+
+							GenerateControllerCode(_newControllerPath, new CodegenNames(_newControllerName), options, _newControllerNamespace);
+							_createControllerMode = false;
+						}
+
+						if (GUILayout.Button("Cancel"))
+						{
+							_createControllerMode = false;
+						}
+
+						EditorGUILayout.EndHorizontal();
+					}
+					else
+					{
+						if (GUILayout.Button("Close"))
+						{
+							_createControllerMode = false;
+						}
+					}
+
+					EditorGUILayout.EndFoldoutHeaderGroup();
+					EditorGUILayout.EndVertical();
+				}
+				else
+				{
+					if (GUILayout.Button("Create New Controller..."))
+					{
+						_newControllerPath = AssetDatabase.GetAssetPath(target);
+						_newControllerPath = Path.GetDirectoryName(_newControllerPath);
+						_newControllerName = null;
+						_createControllerMode = true;
+					}
+				}
+
 				// Advanced controls.
 				if (_controlsOpened = EditorGUILayout.BeginFoldoutHeaderGroup(_controlsOpened, "Advanced settings"))
 				{
@@ -125,6 +237,70 @@ namespace UnityFx.Mvc
 			EditorGUI.EndDisabledGroup();
 
 			serializedObject.ApplyModifiedProperties();
+		}
+
+		private void GenerateControllerCode(string assetPath, CodegenNames names, CodegenOptions options, string ns)
+		{
+			var numberOfSteps = 3;
+
+			if ((options & CodegenOptions.CreateArgs) != 0)
+			{
+				++numberOfSteps;
+			}
+
+			if ((options & CodegenOptions.CreateCommands) != 0)
+			{
+				++numberOfSteps;
+			}
+
+			var title = "Generating code for " + _newControllerName;
+			var step = 1f / numberOfSteps;
+			var progress = 0f;
+
+			try
+			{
+				AssetDatabase.CreateFolder(assetPath, names.BaseName);
+
+				var path = Path.Combine(assetPath, names.BaseName);
+				var pathFolder = AssetDatabase.LoadAssetAtPath<DefaultAsset>(path);
+				var controllerPath = Path.Combine(path, names.ControllerFileName);
+
+				// Controller
+				EditorUtility.DisplayProgressBar(title, controllerPath, progress);
+				File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), controllerPath), Codegen.GetControllerText(names, ns, nameof(ViewController), null, options));
+
+				progress += step;
+
+				// Args
+				if ((options & CodegenOptions.CreateArgs) != 0)
+				{
+					var argsPath = Path.Combine(path, names.ArgsFileName);
+
+					EditorUtility.DisplayProgressBar(title, argsPath, progress);
+					File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), argsPath), Codegen.GetArgsText(names, ns, options));
+
+					progress += step;
+				}
+
+				// Commands
+				if ((options & CodegenOptions.CreateCommands) != 0)
+				{
+					var commandsPath = Path.Combine(path, names.CommandsFileName);
+
+					EditorUtility.DisplayProgressBar(title, commandsPath, progress);
+					File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), commandsPath), Codegen.GetCommandsText(names, ns, options));
+
+					progress += step;
+				}
+			}
+			catch (Exception e)
+			{
+				Debug.LogException(e);
+			}
+			finally
+			{
+				EditorUtility.ClearProgressBar();
+			}
 		}
 
 		private void AddViewControllersFromPath(string path)
@@ -225,11 +401,6 @@ namespace UnityFx.Mvc
 						}
 					}
 
-					if (viewScript is null)
-					{
-						// TODO
-					}
-
 					if (viewPrefab is null)
 					{
 						var controllerFolder = Path.GetDirectoryName(controllerScriptPath);
@@ -262,15 +433,10 @@ namespace UnityFx.Mvc
 		{
 			const int padding = 5;
 
-			var itemCx = rect.width / 3 - padding;
+			var itemCx = rect.width / 2 - padding;
 			var item = _viewControllersList.serializedProperty.GetArrayElementAtIndex(index);
 			var controllerProp = item.FindPropertyRelative("ControllerScriptPath");
 			var controllerObj = AssetDatabase.LoadAssetAtPath<MonoScript>(controllerProp.stringValue);
-			var viewProp = item.FindPropertyRelative("ViewScriptPath");
-			var viewObj = AssetDatabase.LoadAssetAtPath<MonoScript>(viewProp.stringValue);
-			var prefabProp = item.FindPropertyRelative("ViewPrefab");
-			var prefabObj = prefabProp.objectReferenceValue;
-			var viewPathProp = item.FindPropertyRelative("ViewResourceId");
 
 			// Controller script.
 			EditorGUI.BeginDisabledGroup(true);
@@ -286,104 +452,18 @@ namespace UnityFx.Mvc
 			}
 			EditorGUI.EndDisabledGroup();
 
-			// View script (read-only).
-			EditorGUI.BeginDisabledGroup(true);
-			{
-				if (viewObj)
-				{
-					EditorGUI.ObjectField(
-						new Rect(rect.x + itemCx + padding, rect.y + 1, itemCx, EditorGUIUtility.singleLineHeight),
-						viewObj,
-						typeof(MonoScript),
-						false);
-				}
-			}
-			EditorGUI.EndDisabledGroup();
-
 			// Prefab reference.
+			var prefabProp = item.FindPropertyRelative("ViewPrefab");
+			var prefabObj = prefabProp.objectReferenceValue;
 			var newPrefabObj = EditorGUI.ObjectField(
-				new Rect(rect.x + 2 * (itemCx + padding), rect.y + 1, itemCx + padding, EditorGUIUtility.singleLineHeight),
+				new Rect(rect.x + itemCx + padding, rect.y + 1, itemCx + padding, EditorGUIUtility.singleLineHeight),
 				prefabObj,
 				typeof(GameObject),
 				false);
 
 			if (newPrefabObj != prefabObj)
 			{
-				if (newPrefabObj)
-				{
-					var validateResult = true;
-
-					if (controllerObj)
-					{
-						// Validate that prefab has the same view script assigned as controller requires.
-						if (viewObj)
-						{
-							var viewType = viewObj.GetClass();
-
-							if (viewType != null)
-							{
-								var view = ((GameObject)newPrefabObj).GetComponent(viewType);
-
-								if (view is null)
-								{
-									validateResult = false;
-									_lastError = $"The prefab '{newPrefabObj.name}' doesn't have component of type {viewType.Name} attached and, thus, cannot be set as view for {controllerObj.name}.";
-								}
-							}
-						}
-					}
-					else
-					{
-						// If no controller assigned, search for the view asset.
-						var view = ((GameObject)newPrefabObj).GetComponent(typeof(IView)) as MonoBehaviour;
-
-						if (view)
-						{
-							var viewScript = MonoScript.FromMonoBehaviour(view);
-
-							if (viewScript)
-							{
-								viewProp.stringValue = AssetDatabase.GetAssetPath(viewScript);
-							}
-							else
-							{
-								viewProp.stringValue = null;
-							}
-						}
-						else
-						{
-							viewProp.stringValue = null;
-						}
-					}
-
-					if (validateResult)
-					{
-						_lastError = string.Empty;
-
-						prefabProp.objectReferenceValue = newPrefabObj;
-
-						if (controllerObj)
-						{
-							viewPathProp.stringValue = MvcConfig.GetResourceId(controllerObj.GetClass());
-						}
-						else
-						{
-							viewPathProp.stringValue = newPrefabObj.name;
-						}
-					}
-				}
-				else
-				{
-					_lastError = string.Empty;
-
-					prefabProp.objectReferenceValue = null;
-					viewPathProp.stringValue = null;
-
-					if (!controllerObj)
-					{
-						viewProp.stringValue = null;
-					}
-				}
+				TryAssignPrefab(item, (GameObject)newPrefabObj, prefabProp, controllerObj?.GetClass());
 			}
 		}
 
@@ -423,6 +503,95 @@ namespace UnityFx.Mvc
 		private void OnDrawFolderHeader(Rect rect)
 		{
 			EditorGUI.LabelField(rect, "Search folders");
+		}
+
+		private bool TryAssignPrefab(SerializedProperty item, GameObject prefab, SerializedProperty prefabProp, Type controllerType)
+		{
+			var resourceIdProp = item.FindPropertyRelative("ViewResourceId");
+			var viewProp = item.FindPropertyRelative("ViewScriptPath");
+			var viewObj = AssetDatabase.LoadAssetAtPath<MonoScript>(viewProp.stringValue);
+
+			if (prefab)
+			{
+				var validateResult = true;
+
+				if (controllerType != null)
+				{
+					// Validate that prefab has the same view script assigned as controller requires.
+					if (viewObj)
+					{
+						var viewType = viewObj.GetClass();
+
+						if (viewType != null)
+						{
+							var view = prefab.GetComponent(viewType);
+
+							if (view is null)
+							{
+								validateResult = false;
+								_lastError = $"The prefab '{prefab.name}' doesn't have component of type {viewType.Name} attached and, thus, cannot be set as view for {controllerType.Name}.";
+							}
+						}
+					}
+				}
+				else
+				{
+					// If no controller assigned, search for the view asset.
+					var view = prefab.GetComponent(typeof(IView)) as MonoBehaviour;
+
+					if (view)
+					{
+						var viewScript = MonoScript.FromMonoBehaviour(view);
+
+						if (viewScript)
+						{
+							viewProp.stringValue = AssetDatabase.GetAssetPath(viewScript);
+						}
+						else
+						{
+							viewProp.stringValue = null;
+						}
+					}
+					else
+					{
+						viewProp.stringValue = null;
+					}
+				}
+
+				if (validateResult)
+				{
+					_lastError = string.Empty;
+
+					prefabProp.objectReferenceValue = prefab;
+
+					if (controllerType != null)
+					{
+						resourceIdProp.stringValue = MvcConfig.GetResourceId(controllerType);
+					}
+					else
+					{
+						resourceIdProp.stringValue = prefab.name;
+					}
+
+					return true;
+				}
+			}
+			else
+			{
+				_lastError = string.Empty;
+
+				prefabProp.objectReferenceValue = null;
+				resourceIdProp.stringValue = null;
+
+				if (controllerType == null)
+				{
+					viewProp.stringValue = null;
+				}
+
+				return true;
+			}
+
+			return false;
 		}
 	}
 }

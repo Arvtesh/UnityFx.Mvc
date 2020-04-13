@@ -108,7 +108,7 @@ namespace UnityFx.Mvc
 
 			var resourceId = GetResourceId(controllerType);
 
-			if (_prefabsMap.TryGetValue(resourceId, out var _))
+			if (_prefabsMap.ContainsKey(resourceId))
 			{
 				return resourceId;
 			}
