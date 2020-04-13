@@ -24,6 +24,12 @@ namespace UnityFx.Mvc
 #if UNITY_EDITOR
 
 		[SerializeField, HideInInspector]
+		private string _defaultNamespace;
+		[SerializeField, HideInInspector]
+		private string _baseControllerTypePath = DefaultControllerPath;
+		[SerializeField, HideInInspector]
+		private string _baseViewTypePath = DefaultViewPath;
+		[SerializeField, HideInInspector]
 		private List<string> _folders;
 
 #endif
@@ -37,6 +43,13 @@ namespace UnityFx.Mvc
 		#region interface
 
 #if UNITY_EDITOR
+
+		internal const string DefaultControllerPath = "Packages/com.unityfx.mvc/Runtime/Abstractions/Mvc/ViewController.cs";
+		internal const string DefaultViewPath = "Packages/com.unityfx.mvc/Runtime/Abstractions/Mvc/View.cs";
+
+		internal string BaseControllerPath => _baseControllerTypePath;
+
+		internal string BaseViewPath => _baseViewTypePath;
 
 		internal void AddItem(ViewControllerInfo item)
 		{

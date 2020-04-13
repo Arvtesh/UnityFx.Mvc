@@ -10,5 +10,16 @@ namespace UnityFx.Mvc
 	[CustomEditor(typeof(UGUIMvcConfig))]
 	public class UGUIMvcConfigEditor : MvcConfigEditor
 	{
+		protected override void InitPrefab(GameObject go)
+		{
+			base.InitPrefab(go);
+
+			var t = go.AddComponent<RectTransform>();
+
+			t.anchorMin = Vector2.zero;
+			t.anchorMax = Vector2.one;
+			t.anchoredPosition = Vector2.zero;
+			t.sizeDelta = Vector2.zero;
+		}
 	}
 }

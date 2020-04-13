@@ -18,6 +18,7 @@ namespace UnityFx.Mvc
 		public string ArgsFileName => _baseName + "Args.cs";
 		public string CommandsName => _baseName + "Commands";
 		public string CommandsFileName => _baseName + "Commands.cs";
+		public string PrefabName => _baseName;
 		public string PrefabFileName => _baseName + ".prefab";
 
 		public CodegenNames(string name)

@@ -47,7 +47,10 @@ namespace UnityFx.Mvc
 					text.AppendSeeAlso(names.CommandsName);
 				}
 
-				text.AppendLineFormat("[ViewController({0} = {1})]", nameof(ViewControllerAttribute.PresentOptions), presentOptions);
+				if (!string.IsNullOrEmpty(presentOptions))
+				{
+					text.AppendLineFormat("[ViewController({0} = {1})]", nameof(ViewControllerAttribute.PresentOptions), presentOptions);
+				}
 
 				if (options.HasFlag(CodegenOptions.CreateCommands))
 				{
