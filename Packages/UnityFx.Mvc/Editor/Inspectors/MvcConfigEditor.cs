@@ -33,7 +33,6 @@ namespace UnityFx.Mvc
 		private bool _newControllerCreateCommands;
 
 		private string _lastError;
-		private string _lastWarning;
 		private bool _createControllerMode;
 		private bool _controlsOpened;
 
@@ -106,7 +105,8 @@ namespace UnityFx.Mvc
 					OnCreateNewController();
 				}
 
-				// Advanced controls.
+				EditorGUILayout.Space();
+
 				if (_controlsOpened = EditorGUILayout.BeginFoldoutHeaderGroup(_controlsOpened, "Advanced settings"))
 				{
 					PresentAdvancedSettings();
@@ -213,6 +213,15 @@ namespace UnityFx.Mvc
 					DestroyImmediate(go);
 				}
 
+				// Refresh assets
+				EditorUtility.DisplayProgressBar(title, "Refreshing the assets..", progress);
+				AssetDatabase.Refresh();
+
+				// Compile the code
+				EditorUtility.DisplayProgressBar(title, "Compiling code..", 1);
+				CompilationPipeline.RequestScriptCompilation();
+				CompilationPipeline.compilationFinished += OnCompilationFinished;
+
 				_config.AddItem(new MvcConfig.ViewControllerInfo()
 				{
 					ControllerScriptPath = controllerPath,
@@ -223,14 +232,15 @@ namespace UnityFx.Mvc
 			}
 			catch (Exception e)
 			{
+				EditorUtility.ClearProgressBar();
 				Debug.LogException(e);
 			}
-			finally
-			{
-				EditorUtility.DisplayProgressBar(title, "Refreshing the assets", progress);
-				AssetDatabase.Refresh();
-				EditorUtility.ClearProgressBar();
-			}
+		}
+
+		private void OnCompilationFinished(object obj)
+		{
+			CompilationPipeline.compilationFinished -= OnCompilationFinished;
+			EditorUtility.ClearProgressBar();
 		}
 
 		private void AddViewControllersFromPath(string path)
@@ -404,6 +414,7 @@ namespace UnityFx.Mvc
 
 		private void OnViewControllerAdd(ReorderableList list)
 		{
+			Undo.RecordObject(target, "Add Item");
 			_config.AddItem(new MvcConfig.ViewControllerInfo());
 		}
 
@@ -437,7 +448,8 @@ namespace UnityFx.Mvc
 
 		private void OnResetBindings()
 		{
-			_lastWarning = string.Empty;
+			Undo.RecordObject(target, "Reset Bindings");
+
 			_lastError = string.Empty;
 			_config.Clear();
 
@@ -462,15 +474,23 @@ namespace UnityFx.Mvc
 
 		private void OnValidateBindings()
 		{
-			_lastWarning = string.Empty;
+			Undo.RecordObject(target, "Validate Bindings");
 			_lastError = string.Empty;
 
-			// TODO
+			for (var i = 0; i < _config.ViewControllers.Count; ++i)
+			{
+				var item = _config.ViewControllers[i];
+
+				if (!item.ViewPrefab || string.IsNullOrWhiteSpace(item.ViewResourceId))
+				{
+					_config.ViewControllers.RemoveAt(i--);
+				}
+			}
 		}
 
 		private void OnClearBindings()
 		{
-			_lastWarning = string.Empty;
+			Undo.RecordObject(target, "Clear Bindings");
 			_lastError = string.Empty;
 			_config.Clear();
 		}
@@ -479,7 +499,12 @@ namespace UnityFx.Mvc
 		{
 			_newControllerPath = AssetDatabase.GetAssetPath(target);
 			_newControllerPath = Path.GetDirectoryName(_newControllerPath);
-			_newControllerNamespace = _defaultNamespace.stringValue;
+
+			if (!string.IsNullOrEmpty(_defaultNamespace.stringValue))
+			{
+				_newControllerNamespace = _defaultNamespace.stringValue;
+			}
+
 			_newControllerName = null;
 			_createControllerMode = true;
 		}

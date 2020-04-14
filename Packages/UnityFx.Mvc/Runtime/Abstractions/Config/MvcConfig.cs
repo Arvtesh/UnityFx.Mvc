@@ -47,9 +47,18 @@ namespace UnityFx.Mvc
 		internal const string DefaultControllerPath = "Packages/com.unityfx.mvc/Runtime/Abstractions/Mvc/ViewController.cs";
 		internal const string DefaultViewPath = "Packages/com.unityfx.mvc/Runtime/Abstractions/Mvc/View.cs";
 
+		internal IReadOnlyList<string> SearchFolders => _folders;
+
+		internal List<ViewControllerInfo> ViewControllers => _viewControllers;
+
 		internal string BaseControllerPath => _baseControllerTypePath;
 
 		internal string BaseViewPath => _baseViewTypePath;
+
+		internal static string GetResourceId(Type controllerType)
+		{
+			return controllerType.Name;
+		}
 
 		internal void AddItem(ViewControllerInfo item)
 		{
@@ -75,19 +84,10 @@ namespace UnityFx.Mvc
 
 		}
 
-		internal IReadOnlyList<string> SearchFolders => _folders;
-
-		internal IReadOnlyList<ViewControllerInfo> ViewControllers => _viewControllers;
-
 		/// <summary>
 		/// Gets a collectino of pre-loaded view prefabs.
 		/// </summary>
 		public IReadOnlyDictionary<string, GameObject> Prefabs => _prefabsMap;
-
-		internal static string GetResourceId(Type controllerType)
-		{
-			return controllerType.Name;
-		}
 
 		#endregion
 
@@ -97,7 +97,10 @@ namespace UnityFx.Mvc
 		{
 			foreach (var item in _viewControllers)
 			{
-				_prefabsMap[item.ViewResourceId] = item.ViewPrefab;
+				if (item.ViewPrefab && !string.IsNullOrWhiteSpace(item.ViewResourceId))
+				{
+					_prefabsMap[item.ViewResourceId] = item.ViewPrefab;
+				}
 			}
 
 #if !UNITY_EDITOR
