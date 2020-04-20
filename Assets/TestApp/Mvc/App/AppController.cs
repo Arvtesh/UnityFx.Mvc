@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityFx.Mvc;
+using UnityFx.Mvc.Extensions;
 
 /// <summary>
 /// AppController
@@ -28,6 +30,12 @@ public class AppController : ViewController<AppView>
 	#endregion
 
 	#region ViewController
+
+	protected override async Task OnPresent()
+	{
+		await Context.PresentAsync<SplashController>();
+		Context.Present<LobbyController>();
+	}
 
 	/// <inheritdoc/>
 	protected override bool OnCommand(Command command, Variant args)

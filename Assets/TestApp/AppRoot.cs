@@ -30,25 +30,9 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 			.Build();
 	}
 
-	private async void Start()
+	private void Start()
 	{
-		try
-		{
-			_presenter.Present<AppController>();
-
-			await _presenter.PresentAsync<SplashController>();
-
-			_presenter.Present<LobbyController>();
-			_presenter.PresentMessageBox(MessageBoxOptions.InfoOk, "Welcome to UnityFx.Mvc sample app. This window demonstrates a message box with OK button.", "Info Box");
-		}
-		catch (OperationCanceledException)
-		{
-			// do nothing
-		}
-		catch (Exception e)
-		{
-			Debug.LogException(e);
-		}
+		_presenter.Present<AppController>();
 	}
 
 	public object GetService(Type serviceType)

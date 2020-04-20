@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace UnityFx.Mvc
@@ -96,8 +97,9 @@ namespace UnityFx.Mvc
 		/// Called when the controller has been presented. Default implementation does nothing.
 		/// </summary>
 		/// <seealso cref="OnDismiss"/>
-		protected virtual void OnPresent()
+		protected virtual Task OnPresent()
 		{
+			return Task.CompletedTask;
 		}
 
 		/// <summary>
@@ -141,10 +143,10 @@ namespace UnityFx.Mvc
 			OnDeactivate();
 		}
 
-		void IViewControllerEvents.OnPresent()
+		Task IViewControllerEvents.OnPresent()
 		{
 			Debug.Assert(!IsDismissed);
-			OnPresent();
+			return OnPresent();
 		}
 
 		void IViewControllerEvents.OnDismiss()

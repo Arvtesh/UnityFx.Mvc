@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace UnityFx.Mvc
 {
@@ -15,7 +16,7 @@ namespace UnityFx.Mvc
 		/// Called when the object is presented.
 		/// </summary>
 		/// <seealso cref="OnDismiss"/>
-		void OnPresent();
+		Task OnPresent();
 
 		/// <summary>
 		/// Called when the object is dismissed.

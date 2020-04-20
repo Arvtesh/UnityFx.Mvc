@@ -17,7 +17,7 @@ namespace UnityFx.Mvc
 		IPresentable Parent { get; }
 		bool TryActivate();
 		void Deactivate();
-		void CreateController(IView view);
+		Task PresentAsyc(IView view);
 		void Update(float frameTime);
 		void DismissCancel();
 		void Dismiss(Exception e);

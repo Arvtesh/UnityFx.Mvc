@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityFx.Mvc;
+using UnityFx.Mvc.Extensions;
 
 /// <summary>
 /// LobbyController
@@ -28,6 +29,12 @@ public class LobbyController : ViewController<LobbyView>
 	#endregion
 
 	#region ViewController
+
+	protected override Task OnPresent()
+	{
+		Context.PresentMessageBox(MessageBoxOptions.InfoOk, "Welcome to UnityFx.Mvc sample app. This window demonstrates a message box with OK button.", "Info Box");
+		return base.OnPresent();
+	}
 
 	/// <inheritdoc/>
 	protected override bool OnCommand(Command command, Variant args)

@@ -288,7 +288,12 @@ namespace UnityFx.Mvc
 				}
 				else
 				{
-					presentable.CreateController(view);
+					await presentable.PresentAsyc(view);
+
+					if (presentable.IsDismissed)
+					{
+						throw new OperationCanceledException();
+					}
 				}
 
 				_controllerMap.Add(presentable.Controller, presentable);

@@ -134,7 +134,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		public void CreateController(IView view)
+		public async Task PresentAsyc(IView view)
 		{
 			Debug.Assert(view != null);
 			Debug.Assert(_state == State.Initialized);
@@ -143,7 +143,12 @@ namespace UnityFx.Mvc
 			_scope = _controllerFactory.CreateScope(ref _serviceProvider);
 			_controller = (TController)_controllerFactory.CreateViewController(_controllerType, this, _presentArgs, _view);
 			_controllerEvents = _controller as IViewControllerEvents;
-			_controllerEvents?.OnPresent();
+
+			if (_controllerEvents != null)
+			{
+				await _controllerEvents.OnPresent();
+			}
+
 			_view.Disposed += OnDismissed;
 			_state = State.Presented;
 		}

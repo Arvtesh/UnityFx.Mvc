@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace UnityFx.Mvc
 {
@@ -33,7 +34,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		void IViewControllerEvents.OnPresent()
+		Task IViewControllerEvents.OnPresent()
 		{
 			PresentCallId = ++_callId;
 
@@ -41,6 +42,8 @@ namespace UnityFx.Mvc
 			{
 				throw new InvalidOperationException();
 			}
+
+			return Task.CompletedTask;
 		}
 
 		void IViewControllerEvents.OnDismiss()
