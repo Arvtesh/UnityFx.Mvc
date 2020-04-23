@@ -55,7 +55,8 @@ namespace UnityFx.Mvc
 		private IServiceProvider _serviceProvider;
 		private IDisposable _scope;
 		private TController _controller;
-		private IViewControllerEvents _controllerEvents;
+		private IPresentEvents _presentEvents;
+		private IActivateEvents _activateEvents;
 		private IView _view;
 
 		private LinkedList<TimerData> _timers;
@@ -105,7 +106,7 @@ namespace UnityFx.Mvc
 			{
 				try
 				{
-					_controllerEvents?.OnActivate();
+					_activateEvents?.OnActivate();
 					_state = State.Active;
 					return true;
 				}
@@ -125,7 +126,7 @@ namespace UnityFx.Mvc
 				try
 				{
 					_state = State.Presented;
-					_controllerEvents?.OnDeactivate();
+					_activateEvents?.OnDeactivate();
 				}
 				catch (Exception e)
 				{
@@ -134,7 +135,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		public async Task PresentAsyc(IView view)
+		public Task PresentAsyc(IView view)
 		{
 			Debug.Assert(view != null);
 			Debug.Assert(_state == State.Initialized);
@@ -142,15 +143,14 @@ namespace UnityFx.Mvc
 			_view = view;
 			_scope = _controllerFactory.CreateScope(ref _serviceProvider);
 			_controller = (TController)_controllerFactory.CreateViewController(_controllerType, this, _presentArgs, _view);
-			_controllerEvents = _controller as IViewControllerEvents;
+			_activateEvents = _controller as IActivateEvents;
+			_presentEvents = _controller as IPresentEvents;
 
-			if (_controllerEvents != null)
-			{
-				await _controllerEvents.OnPresent();
-			}
-
+			_presentEvents?.OnPresent();
 			_view.Disposed += OnDismissed;
 			_state = State.Presented;
+
+			return System.Threading.Tasks.Task.CompletedTask;
 		}
 
 		public void Update(float frameTime)
@@ -402,13 +402,13 @@ namespace UnityFx.Mvc
 		{
 			try
 			{
-				if (_controller is IViewControllerEvents c)
+				if (_controller is IPresentEvents c)
 				{
 					if (_state == State.Active)
 					{
 						try
 						{
-							c.OnDeactivate();
+							_activateEvents?.OnDeactivate();
 						}
 						catch (Exception e)
 						{
@@ -458,14 +458,14 @@ namespace UnityFx.Mvc
 			{
 				if (_state == State.Presented)
 				{
-					_controllerEvents?.OnActivate();
+					_activateEvents?.OnActivate();
 					_state = State.Active;
 				}
 			}
 			else if (_state == State.Active)
 			{
 				_state = State.Presented;
-				_controllerEvents?.OnDeactivate();
+				_activateEvents?.OnDeactivate();
 			}
 		}
 

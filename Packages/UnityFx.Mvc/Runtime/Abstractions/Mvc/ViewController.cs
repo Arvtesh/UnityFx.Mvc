@@ -11,7 +11,7 @@ namespace UnityFx.Mvc
 	/// Default implementation of <see cref="IViewController"/>.
 	/// </summary>
 	/// <seealso cref="ViewController{TView}"/>
-	public abstract class ViewController : IViewController, IViewControllerEvents, ICommandTarget, IUpdateTarget
+	public abstract class ViewController : IViewController, IActivateEvents, IPresentEvents, ICommandTarget, IUpdateTarget
 	{
 		#region data
 
@@ -97,9 +97,8 @@ namespace UnityFx.Mvc
 		/// Called when the controller has been presented. Default implementation does nothing.
 		/// </summary>
 		/// <seealso cref="OnDismiss"/>
-		protected virtual Task OnPresent()
+		protected virtual void OnPresent()
 		{
-			return Task.CompletedTask;
 		}
 
 		/// <summary>
@@ -129,29 +128,33 @@ namespace UnityFx.Mvc
 
 		#endregion
 
-		#region IViewControllerEvents
+		#region IPresentEvents
 
-		void IViewControllerEvents.OnActivate()
+		void IPresentEvents.OnPresent()
+		{
+			Debug.Assert(!IsDismissed);
+			OnPresent();
+		}
+
+		void IPresentEvents.OnDismiss()
+		{
+			OnDismiss();
+		}
+
+		#endregion
+
+		#region IActivateEvents
+
+		void IActivateEvents.OnActivate()
 		{
 			Debug.Assert(!IsDismissed);
 			OnActivate();
 		}
 
-		void IViewControllerEvents.OnDeactivate()
+		void IActivateEvents.OnDeactivate()
 		{
 			Debug.Assert(!IsDismissed);
 			OnDeactivate();
-		}
-
-		Task IViewControllerEvents.OnPresent()
-		{
-			Debug.Assert(!IsDismissed);
-			return OnPresent();
-		}
-
-		void IViewControllerEvents.OnDismiss()
-		{
-			OnDismiss();
 		}
 
 		#endregion

@@ -31,7 +31,7 @@ public class AppController : ViewController<AppView>
 
 	#region ViewController
 
-	protected override async Task OnPresent()
+	protected override async void OnPresent()
 	{
 		await Context.PresentAsync<SplashController>();
 		Context.Present<LobbyController>();

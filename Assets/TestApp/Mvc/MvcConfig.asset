@@ -33,5 +33,8 @@ MonoBehaviour:
     ViewResourceId: MessageBox
     ViewPrefab: {fileID: 6558099709203857598, guid: 9ee3231ff7620aa4ba232ea162ef4a92,
       type: 3}
+  _defaultNamespace: 
+  _baseControllerTypePath: Packages/com.unityfx.mvc/Runtime/Abstractions/Mvc/ViewController.cs
+  _baseViewTypePath: Packages/com.unityfx.mvc/Runtime/Abstractions/Mvc/View.cs
   _folders: []
   _popupBackgroundColor: {r: 0, g: 0, b: 0, a: 0.5}

@@ -2,28 +2,15 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Threading.Tasks;
 
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Defines event handlers for a <see cref="IViewController"/> implementation.
+	/// Activate/deactivate event handler.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
-	public interface IViewControllerEvents
+	public interface IActivateEvents
 	{
-		/// <summary>
-		/// Called when the object is presented.
-		/// </summary>
-		/// <seealso cref="OnDismiss"/>
-		Task OnPresent();
-
-		/// <summary>
-		/// Called when the object is dismissed.
-		/// </summary>
-		/// <seealso cref="OnPresent"/>
-		void OnDismiss();
-
 		/// <summary>
 		/// Called right before the object becomes active. The method may be called multiple times during the object lifetime.
 		/// </summary>

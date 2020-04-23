@@ -30,10 +30,9 @@ public class LobbyController : ViewController<LobbyView>
 
 	#region ViewController
 
-	protected override Task OnPresent()
+	protected override void OnPresent()
 	{
 		Context.PresentMessageBox(MessageBoxOptions.InfoOk, "Welcome to UnityFx.Mvc sample app. This window demonstrates a message box with OK button.", "Info Box");
-		return base.OnPresent();
 	}
 
 	/// <inheritdoc/>
