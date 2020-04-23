@@ -7,21 +7,23 @@ using System.Threading.Tasks;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Defines event handlers for a <see cref="IViewController"/> implementation.
+	/// A target for PRESENT/DISMISS async notifications.
 	/// </summary>
+	/// <seealso cref="IPresentTarget"/>
+	/// <seealso cref="IActivateTarget"/>
 	/// <seealso cref="IViewController"/>
-	public interface IPresentEvents
+	public interface IAstncPresentTarget
 	{
 		/// <summary>
 		/// Called when the object is presented.
 		/// </summary>
-		/// <seealso cref="OnDismiss"/>
-		void OnPresent();
+		/// <seealso cref="DismissAsync"/>
+		Task PresentAsync();
 
 		/// <summary>
 		/// Called when the object is dismissed.
 		/// </summary>
-		/// <seealso cref="OnPresent"/>
-		void OnDismiss();
+		/// <seealso cref="PresentAsync"/>
+		Task DismissAsync();
 	}
 }

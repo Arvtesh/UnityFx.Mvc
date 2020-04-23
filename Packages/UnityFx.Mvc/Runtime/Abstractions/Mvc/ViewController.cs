@@ -11,7 +11,7 @@ namespace UnityFx.Mvc
 	/// Default implementation of <see cref="IViewController"/>.
 	/// </summary>
 	/// <seealso cref="ViewController{TView}"/>
-	public abstract class ViewController : IViewController, IActivateEvents, IPresentEvents, ICommandTarget, IUpdateTarget
+	public abstract class ViewController : IViewController, IActivateTarget, IPresentTarget, IUpdateTarget, ICommandTarget
 	{
 		#region data
 
@@ -128,30 +128,30 @@ namespace UnityFx.Mvc
 
 		#endregion
 
-		#region IPresentEvents
+		#region IPresentTarget
 
-		void IPresentEvents.OnPresent()
+		void IPresentTarget.Present()
 		{
 			Debug.Assert(!IsDismissed);
 			OnPresent();
 		}
 
-		void IPresentEvents.OnDismiss()
+		void IPresentTarget.Dismiss()
 		{
 			OnDismiss();
 		}
 
 		#endregion
 
-		#region IActivateEvents
+		#region IActivateTarget
 
-		void IActivateEvents.OnActivate()
+		void IActivateTarget.Activate()
 		{
 			Debug.Assert(!IsDismissed);
 			OnActivate();
 		}
 
-		void IActivateEvents.OnDeactivate()
+		void IActivateTarget.Deactivate()
 		{
 			Debug.Assert(!IsDismissed);
 			OnDeactivate();

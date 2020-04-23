@@ -6,21 +6,22 @@ using System;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Activate/deactivate event handler.
+	/// A target for ACTIVATE/DEACTIVATE notifications.
 	/// </summary>
+	/// <seealso cref="IPresentTarget"/>
 	/// <seealso cref="IViewController"/>
-	public interface IActivateEvents
+	public interface IActivateTarget
 	{
 		/// <summary>
 		/// Called right before the object becomes active. The method may be called multiple times during the object lifetime.
 		/// </summary>
-		/// <seealso cref="OnDeactivate"/>
-		void OnActivate();
+		/// <seealso cref="Deactivate"/>
+		void Activate();
 
 		/// <summary>
 		/// Called when the object is about to become inactive. The method may be called multiple times during the object lifetime.
 		/// </summary>
-		/// <seealso cref="OnActivate"/>
-		void OnDeactivate();
+		/// <seealso cref="Activate"/>
+		void Deactivate();
 	}
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace UnityFx.Mvc
 {
-	public class EventsController : IViewController, IPresentEvents, IActivateEvents
+	public class EventsController : IViewController, IPresentTarget, IActivateTarget
 	{
 		private readonly IPresentContext _context;
 		private readonly ControllerEvents _throwOnEvent;
@@ -34,7 +34,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		void IPresentEvents.OnPresent()
+		void IPresentTarget.Present()
 		{
 			PresentCallId = ++_callId;
 
@@ -44,7 +44,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		void IPresentEvents.OnDismiss()
+		void IPresentTarget.Dismiss()
 		{
 			DismissCallId = ++_callId;
 
@@ -54,7 +54,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		void IActivateEvents.OnActivate()
+		void IActivateTarget.Activate()
 		{
 			ActivateCallId = ++_callId;
 
@@ -64,7 +64,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		void IActivateEvents.OnDeactivate()
+		void IActivateTarget.Deactivate()
 		{
 			DeactivateCallId = ++_callId;
 

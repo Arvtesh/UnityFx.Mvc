@@ -55,8 +55,8 @@ namespace UnityFx.Mvc
 		private IServiceProvider _serviceProvider;
 		private IDisposable _scope;
 		private TController _controller;
-		private IPresentEvents _presentEvents;
-		private IActivateEvents _activateEvents;
+		private IPresentTarget _presentEvents;
+		private IActivateTarget _activateEvents;
 		private IView _view;
 
 		private LinkedList<TimerData> _timers;
@@ -106,7 +106,7 @@ namespace UnityFx.Mvc
 			{
 				try
 				{
-					_activateEvents?.OnActivate();
+					_activateEvents?.Activate();
 					_state = State.Active;
 					return true;
 				}
@@ -126,7 +126,7 @@ namespace UnityFx.Mvc
 				try
 				{
 					_state = State.Presented;
-					_activateEvents?.OnDeactivate();
+					_activateEvents?.Deactivate();
 				}
 				catch (Exception e)
 				{
@@ -143,10 +143,10 @@ namespace UnityFx.Mvc
 			_view = view;
 			_scope = _controllerFactory.CreateScope(ref _serviceProvider);
 			_controller = (TController)_controllerFactory.CreateViewController(_controllerType, this, _presentArgs, _view);
-			_activateEvents = _controller as IActivateEvents;
-			_presentEvents = _controller as IPresentEvents;
+			_activateEvents = _controller as IActivateTarget;
+			_presentEvents = _controller as IPresentTarget;
 
-			_presentEvents?.OnPresent();
+			_presentEvents?.Present();
 			_view.Disposed += OnDismissed;
 			_state = State.Presented;
 
@@ -402,24 +402,24 @@ namespace UnityFx.Mvc
 		{
 			try
 			{
-				if (_controller is IPresentEvents c)
+				if (_controller is IPresentTarget c)
 				{
 					if (_state == State.Active)
 					{
 						try
 						{
-							_activateEvents?.OnDeactivate();
+							_activateEvents?.Deactivate();
 						}
 						catch (Exception e)
 						{
 							_presenter.ReportError(e);
 						}
 
-						c.OnDismiss();
+						c.Dismiss();
 					}
 					else if (_state == State.Presented)
 					{
-						c.OnDismiss();
+						c.Dismiss();
 					}
 				}
 			}
@@ -458,14 +458,14 @@ namespace UnityFx.Mvc
 			{
 				if (_state == State.Presented)
 				{
-					_activateEvents?.OnActivate();
+					_activateEvents?.Activate();
 					_state = State.Active;
 				}
 			}
 			else if (_state == State.Active)
 			{
 				_state = State.Presented;
-				_activateEvents?.OnDeactivate();
+				_activateEvents?.Deactivate();
 			}
 		}
 
