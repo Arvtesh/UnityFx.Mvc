@@ -8,7 +8,7 @@ namespace UnityFx.Mvc
 {
 	internal static class IPresentableExtensions
 	{
-		public static bool IsChildOf(this IPresentable p, IPresentable other)
+		public static bool IsChildOf(this IPresentableProxy p, IPresentableProxy other)
 		{
 			Debug.Assert(other != null);
 

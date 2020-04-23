@@ -8,9 +8,9 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// A target for ACTIVATE/DEACTIVATE notifications.
 	/// </summary>
-	/// <seealso cref="IPresentTarget"/>
+	/// <seealso cref="IPresentable"/>
 	/// <seealso cref="IViewController"/>
-	public interface IActivateTarget
+	public interface IActivatable
 	{
 		/// <summary>
 		/// Called right before the object becomes active. The method may be called multiple times during the object lifetime.

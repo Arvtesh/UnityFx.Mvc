@@ -8,7 +8,7 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// A target for UPDATE notifications.
 	/// </summary>
-	public interface IUpdateTarget
+	public interface IUpdatable
 	{
 		/// <summary>
 		/// Called on each frame.

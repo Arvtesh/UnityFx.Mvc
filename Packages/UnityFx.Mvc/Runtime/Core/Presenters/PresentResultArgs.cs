@@ -17,7 +17,7 @@ namespace UnityFx.Mvc
 		public int Tag;
 		public string PrefabPath;
 		
-		public IPresentable Parent;
+		public IPresentableProxy Parent;
 		public Type ControllerType;
 		public PresentOptions PresentOptions;
 		public PresentArgs PresentArgs;

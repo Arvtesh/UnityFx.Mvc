@@ -20,7 +20,7 @@ namespace UnityFx.Mvc
 	/// (via <see cref="IPresentContext"/> interface) and serves as a proxy between the controller and user.
 	/// </remarks>
 	[Preserve]
-	internal sealed class PresentResult<TController, TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TResult>, IPresentResultOf<TController, TResult>, IPresentResultOf<TController>, IPresentable, IEnumerator where TController : class, IViewController
+	internal sealed class PresentResult<TController, TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TResult>, IPresentResultOf<TController, TResult>, IPresentResultOf<TController>, IPresentableProxy, IEnumerator where TController : class, IViewController
 	{
 		#region data
 
@@ -45,7 +45,7 @@ namespace UnityFx.Mvc
 		private readonly Type _controllerType;
 		private readonly PresentArgs _presentArgs;
 		private readonly PresentOptions _presentOptions;
-		private readonly IPresentable _parent;
+		private readonly IPresentableProxy _parent;
 		private readonly int _id;
 		private readonly int _layer;
 		private readonly int _tag;
@@ -55,8 +55,8 @@ namespace UnityFx.Mvc
 		private IServiceProvider _serviceProvider;
 		private IDisposable _scope;
 		private TController _controller;
-		private IPresentTarget _presentEvents;
-		private IActivateTarget _activateEvents;
+		private IPresentable _presentEvents;
+		private IActivatable _activateEvents;
 		private IView _view;
 
 		private LinkedList<TimerData> _timers;
@@ -96,9 +96,9 @@ namespace UnityFx.Mvc
 
 		public string PrefabPath => _prefabPath;
 
-		public IPresentable Parent => _parent;
+		public IPresentableProxy Parent => _parent;
 
-		IViewController IPresentable.Controller => _controller;
+		IViewController IPresentableProxy.Controller => _controller;
 
 		public bool TryActivate()
 		{
@@ -143,8 +143,8 @@ namespace UnityFx.Mvc
 			_view = view;
 			_scope = _controllerFactory.CreateScope(ref _serviceProvider);
 			_controller = (TController)_controllerFactory.CreateViewController(_controllerType, this, _presentArgs, _view);
-			_activateEvents = _controller as IActivateTarget;
-			_presentEvents = _controller as IPresentTarget;
+			_activateEvents = _controller as IActivatable;
+			_presentEvents = _controller as IPresentable;
 
 			_presentEvents?.Present();
 			_view.Disposed += OnDismissed;
@@ -162,7 +162,7 @@ namespace UnityFx.Mvc
 				try
 				{
 					// Call controller update handler (if any).
-					if (_controller is IUpdateTarget ut)
+					if (_controller is IUpdatable ut)
 					{
 						ut.Update(frameTime);
 					}
@@ -402,7 +402,7 @@ namespace UnityFx.Mvc
 		{
 			try
 			{
-				if (_controller is IPresentTarget c)
+				if (_controller is IPresentable c)
 				{
 					if (_state == State.Active)
 					{

@@ -13,13 +13,13 @@ namespace UnityFx.Mvc
 		{
 			#region data
 
-			private readonly LinkedList<IPresentable> _presentables;
+			private readonly LinkedList<IPresentableProxy> _presentables;
 
 			#endregion
 
 			#region interface
 
-			internal ViewControllerCollection(LinkedList<IPresentable> presentables)
+			internal ViewControllerCollection(LinkedList<IPresentableProxy> presentables)
 			{
 				_presentables = presentables;
 			}

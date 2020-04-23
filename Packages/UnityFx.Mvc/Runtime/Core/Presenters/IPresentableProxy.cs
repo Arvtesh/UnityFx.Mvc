@@ -8,13 +8,13 @@ using UnityEngine;
 
 namespace UnityFx.Mvc
 {
-	internal interface IPresentable : IPresentResult
+	internal interface IPresentableProxy : IPresentResult
 	{
 		int Layer { get; }
 		string PrefabPath { get; }
 		bool IsActive { get; }
 		IViewController Controller { get; }
-		IPresentable Parent { get; }
+		IPresentableProxy Parent { get; }
 		bool TryActivate();
 		void Deactivate();
 		Task PresentAsyc(IView view);

@@ -25,11 +25,11 @@ namespace UnityFx.Mvc
 		private readonly IPresenterEventSource _eventSource;
 		private readonly ViewControllerCollection _controllers;
 
-		private LinkedList<IPresentable> _presentables = new LinkedList<IPresentable>();
-		private Dictionary<IViewController, IPresentable> _controllerMap = new Dictionary<IViewController, IPresentable>();
+		private LinkedList<IPresentableProxy> _presentables = new LinkedList<IPresentableProxy>();
+		private Dictionary<IViewController, IPresentableProxy> _controllerMap = new Dictionary<IViewController, IPresentableProxy>();
 		private List<PresentDelegate> _presentDelegates;
 		private Action<Exception> _errorDelegate;
-		private IPresentable _lastActive;
+		private IPresentableProxy _lastActive;
 
 		private int _idCounter;
 		private bool _disposed;
@@ -71,7 +71,7 @@ namespace UnityFx.Mvc
 
 		#region IPresenterInternal
 
-		IEnumerable<IPresentable> IPresenterInternal.GetChildren(IPresentable presentable)
+		IEnumerable<IPresentableProxy> IPresenterInternal.GetChildren(IPresentableProxy presentable)
 		{
 			var node = _presentables.Find(presentable)?.Next;
 
@@ -88,12 +88,12 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		IPresentResult IPresenterInternal.PresentAsync(IPresentable presentable, Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args)
+		IPresentResult IPresenterInternal.PresentAsync(IPresentableProxy presentable, Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args)
 		{
 			return PresentInternal(presentable, controllerType, presentOptions, parent, args);
 		}
 
-		void IPresenterInternal.PresentCompleted(IPresentable presentable, Exception e, bool cancelled)
+		void IPresenterInternal.PresentCompleted(IPresentableProxy presentable, Exception e, bool cancelled)
 		{
 			if (!_disposed)
 			{
@@ -152,7 +152,7 @@ namespace UnityFx.Mvc
 		{
 			var frameTime = Time.deltaTime;
 			var node = _presentables.First;
-			var newActive = default(IPresentable);
+			var newActive = default(IPresentableProxy);
 
 			// 1) Remove dismissed controllers & find active.
 			while (node != null)
@@ -247,7 +247,7 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private IPresentResult PresentInternal(IPresentable presentable, Type controllerType, PresentOptions presentOptions, Transform transform, PresentArgs args)
+		private IPresentResult PresentInternal(IPresentableProxy presentable, Type controllerType, PresentOptions presentOptions, Transform transform, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
@@ -257,7 +257,7 @@ namespace UnityFx.Mvc
 			return result;
 		}
 
-		private async void PresentInternal(IPresentable presentable, IPresentable presentableParent, Transform transform)
+		private async void PresentInternal(IPresentableProxy presentable, IPresentableProxy presentableParent, Transform transform)
 		{
 			var zIndex = GetZIndex(presentable);
 
@@ -332,7 +332,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		private IPresentable CreatePresentable(IPresentable parent, Type controllerType, PresentOptions presentOptions, PresentArgs args)
+		private IPresentableProxy CreatePresentable(IPresentableProxy parent, Type controllerType, PresentOptions presentOptions, PresentArgs args)
 		{
 			Debug.Assert(controllerType != null);
 			Debug.Assert(!_disposed);
@@ -384,14 +384,14 @@ namespace UnityFx.Mvc
 			// Instantiate the presentable.
 			// https://docs.microsoft.com/en-us/dotnet/framework/reflection-and-codedom/how-to-examine-and-instantiate-generic-types-with-reflection
 			var presentResultType = typeof(PresentResult<,>).MakeGenericType(controllerType, resultType);
-			var c = (IPresentable)Activator.CreateInstance(presentResultType, this, presentContext);
+			var c = (IPresentableProxy)Activator.CreateInstance(presentResultType, this, presentContext);
 
 			AddPresentable(c);
 
 			return c;
 		}
 
-		private void AddPresentable(IPresentable presentable)
+		private void AddPresentable(IPresentableProxy presentable)
 		{
 			Debug.Assert(presentable != null);
 			Debug.Assert(!_disposed);
@@ -432,7 +432,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		private int GetZIndex(IPresentable presentable)
+		private int GetZIndex(IPresentableProxy presentable)
 		{
 			var zIndex = 0;
 
