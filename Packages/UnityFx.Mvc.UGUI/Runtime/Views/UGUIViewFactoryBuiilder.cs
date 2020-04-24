@@ -13,7 +13,7 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="PresenterBuilder"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/Builder_pattern"/>
-	public sealed class UGUIViewFactoryBuilder
+	public sealed class UGUIViewFactoryBuilder : IViewFactoryBuilder
 	{
 		#region data
 
@@ -37,6 +37,34 @@ namespace UnityFx.Mvc
 			_gameObject = go ?? throw new ArgumentNullException(nameof(go));
 		}
 
+		#endregion
+
+		#region IViewFactoryBuilder
+
+		/// <summary>
+		/// Adds a new view layer.
+		/// </summary>
+		/// <param name="transform">A <see cref="Transform"/> to use as a view root.</param>
+		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="transform"/> is <see langword="null"/>.</exception>
+		/// <seealso cref="ViewControllerAttribute.Layer"/>
+		/// <seealso cref="AddViewPrefab(string, GameObject)"/>
+		/// <seealso cref="Build"/>
+		public IViewFactoryBuilder AddLayer(Transform transform)
+		{
+			if (transform is null)
+			{
+				throw new ArgumentNullException(nameof(transform));
+			}
+
+			if (_viewRoots is null)
+			{
+				_viewRoots = new List<Transform>();
+			}
+
+			_viewRoots.Add(transform);
+			return this;
+		}
+
 		/// <summary>
 		/// Adds a preloaded view prefab.
 		/// </summary>
@@ -45,10 +73,8 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="resourceId"/> or <paramref name="prefab"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">Thrown is <paramref name="resourceId"/> is invalid.</exception>
 		/// <seealso cref="AddLayer(Transform)"/>
-		/// <seealso cref="AddViewPrefabs(GameObject[])"/>
-		/// <seealso cref="AddViewPrefabs(string, GameObject[])"/>
 		/// <seealso cref="Build"/>
-		public UGUIViewFactoryBuilder AddViewPrefab(string resourceId, GameObject prefab)
+		public IViewFactoryBuilder AddViewPrefab(string resourceId, GameObject prefab)
 		{
 			if (resourceId is null)
 			{
@@ -75,118 +101,6 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Adds preloaded view prefabs.
-		/// </summary>
-		/// <param name="prefabs">The preloaded prefabs.</param>
-		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="prefabPath"/> or <paramref name="prefabGo"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if any of the prefabs is <see langword="null"/>.</exception>
-		/// <seealso cref="AddLayer(Transform)"/>
-		/// <seealso cref="AddViewPrefab(string, GameObject)"/>
-		/// <seealso cref="AddViewPrefabs(string, GameObject[])"/>
-		/// <seealso cref="AddViewPrefabs(string, IEnumerable{GameObject})"/>
-		/// <seealso cref="Build"/>
-		public UGUIViewFactoryBuilder AddViewPrefabs(params GameObject[] prefabs)
-		{
-			return AddViewPrefabs(null, (IEnumerable<GameObject>)prefabs);
-		}
-
-		/// <summary>
-		/// Adds preloaded view prefabs.
-		/// </summary>
-		/// <param name="namePrefix">A prefix string to add to the prefab names.</param>
-		/// <param name="prefabs">The preloaded prefabs.</param>
-		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="prefabPath"/> or <paramref name="prefabGo"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if any of the prefabs is <see langword="null"/>.</exception>
-		/// <seealso cref="AddLayer(Transform)"/>
-		/// <seealso cref="AddViewPrefab(string, GameObject)"/>
-		/// <seealso cref="AddViewPrefabs(GameObject[])"/>
-		/// <seealso cref="AddViewPrefabs(string, IEnumerable{GameObject})"/>
-		/// <seealso cref="Build"/>
-		public UGUIViewFactoryBuilder AddViewPrefabs(string namePrefix, params GameObject[] prefabs)
-		{
-			return AddViewPrefabs(namePrefix, (IEnumerable<GameObject>)prefabs);
-		}
-
-		/// <summary>
-		/// Adds preloaded view prefabs.
-		/// </summary>
-		/// <param name="namePrefix">A prefix string to add to the prefab names.</param>
-		/// <param name="prefabs">The preloaded prefabs.</param>
-		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="prefabPath"/> or <paramref name="prefabGo"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentException">Thrown if any of the prefabs is <see langword="null"/>.</exception>
-		/// <seealso cref="AddLayer(Transform)"/>
-		/// <seealso cref="AddViewPrefab(string, GameObject)"/>
-		/// <seealso cref="AddViewPrefabs(GameObject[])"/>
-		/// <seealso cref="Build"/>
-		public UGUIViewFactoryBuilder AddViewPrefabs(string namePrefix, IEnumerable<GameObject> prefabs)
-		{
-			if (prefabs is null)
-			{
-				throw new ArgumentNullException(nameof(prefabs));
-			}
-
-			if (_viewPrefabs is null)
-			{
-				_viewPrefabs = new Dictionary<string, GameObject>();
-			}
-
-			if (string.IsNullOrEmpty(namePrefix))
-			{
-				foreach (var go in prefabs)
-				{
-					if (go)
-					{
-						_viewPrefabs.Add(go.name, go);
-					}
-					else
-					{
-						throw new ArgumentException(Messages.Format_PrefabIsNull(), nameof(prefabs));
-					}
-				}
-			}
-			else
-			{
-				foreach (var go in prefabs)
-				{
-					if (go)
-					{
-						_viewPrefabs.Add(namePrefix + go.name, go);
-					}
-					else
-					{
-						throw new ArgumentException(Messages.Format_PrefabIsNull(), nameof(prefabs));
-					}
-				}
-			}
-
-			return this;
-		}
-
-		/// <summary>
-		/// Adds a new view layer.
-		/// </summary>
-		/// <param name="transform">A <see cref="Transform"/> to use as a view root.</param>
-		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="transform"/> is <see langword="null"/>.</exception>
-		/// <seealso cref="ViewControllerAttribute.Layer"/>
-		/// <seealso cref="AddViewPrefab(string, GameObject)"/>
-		/// <seealso cref="Build"/>
-		public UGUIViewFactoryBuilder AddLayer(Transform transform)
-		{
-			if (transform is null)
-			{
-				throw new ArgumentNullException(nameof(transform));
-			}
-
-			if (_viewRoots is null)
-			{
-				_viewRoots = new List<Transform>();
-			}
-
-			_viewRoots.Add(transform);
-			return this;
-		}
-
-		/// <summary>
 		/// Applies the specififed configuration.
 		/// </summary>
 		/// <param name="config">The configuration asset.</param>
@@ -194,37 +108,12 @@ namespace UnityFx.Mvc
 		/// <seealso cref="UsePopupBackgoundColor(Color)"/>
 		/// <seealso cref="AddViewPrefabs(string, IEnumerable{GameObject})"/>
 		/// <seealso cref="Build"/>
-		public UGUIViewFactoryBuilder UseConfig(MvcConfig config)
+		public IViewFactoryBuilder UseConfig(MvcConfig config)
 		{
 			if (config is null)
 			{
 				throw new ArgumentNullException(nameof(config));
 			}
-
-			foreach (var item in config.Prefabs)
-			{
-				AddViewPrefab(item.Key, item.Value);
-			}
-
-			return this;
-		}
-
-		/// <summary>
-		/// Applies the specififed configuration.
-		/// </summary>
-		/// <param name="config">The configuration asset.</param>
-		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="config"/> is <see langword="null"/>.</exception>
-		/// <seealso cref="UsePopupBackgoundColor(Color)"/>
-		/// <seealso cref="AddViewPrefabs(string, IEnumerable{GameObject})"/>
-		/// <seealso cref="Build"/>
-		public UGUIViewFactoryBuilder UseConfig(UGUIMvcConfig config)
-		{
-			if (config is null)
-			{
-				throw new ArgumentNullException(nameof(config));
-			}
-
-			_popupBackgroundColor = config.PopupBackgroundColor;
 
 			foreach (var item in config.Prefabs)
 			{
@@ -242,7 +131,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="InvalidOperationException">Thrown if the delegate is already set.</exception>
 		/// <seealso cref="UsePopupBackgoundColor(Color)"/>
 		/// <seealso cref="Build"/>
-		public UGUIViewFactoryBuilder UseLoadDelegate(Func<string, Task<GameObject>> loadPrefabDelegate)
+		public IViewFactoryBuilder UseLoadDelegate(Func<string, Task<GameObject>> loadPrefabDelegate)
 		{
 			if (_loadPrefabDelegate != null)
 			{
@@ -259,7 +148,7 @@ namespace UnityFx.Mvc
 		/// <param name="backgroundColor">The popup background color.</param>
 		/// <seealso cref="UseLoadDelegate(Func{string, Task{GameObject}})"/>
 		/// <seealso cref="Build"/>
-		public UGUIViewFactoryBuilder UsePopupBackgoundColor(Color backgroundColor)
+		public IViewFactoryBuilder UsePopupBackgoundColor(Color backgroundColor)
 		{
 			_popupBackgroundColor = backgroundColor;
 			return this;
