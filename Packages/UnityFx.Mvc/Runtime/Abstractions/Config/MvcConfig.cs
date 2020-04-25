@@ -18,6 +18,8 @@ namespace UnityFx.Mvc
 
 #pragma warning disable 0649
 
+		[SerializeField]
+		private Color _popupBackgroundColor = new Color(0, 0, 0, 0.5f);
 		[SerializeField, HideInInspector]
 		private List<ViewControllerInfo> _viewControllers;
 
@@ -83,6 +85,11 @@ namespace UnityFx.Mvc
 			public GameObject ViewPrefab;
 
 		}
+
+		/// <summary>
+		/// Gets background color of popup windows.
+		/// </summary>
+		public Color PopupBackgroundColor => _popupBackgroundColor;
 
 		/// <summary>
 		/// Gets a collectino of pre-loaded view prefabs.

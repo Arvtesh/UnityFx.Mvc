@@ -18,18 +18,11 @@ namespace UnityFx.Mvc
 		#region data
 
 #pragma warning disable 0649
-
-		[SerializeField]
-		private Color _popupBackgroundColor = new Color(0, 0, 0, 0.5f);
-
 #pragma warning restore 0649
 
 		#endregion
 
 		#region interface
-
-		public Color PopupBackgroundColor => _popupBackgroundColor;
-
 		#endregion
 	}
 }

@@ -143,7 +143,7 @@ namespace UnityFx.Mvc
 			try
 			{
 				var exclusive = (options & PresentOptions.Exclusive) != 0;
-				var modal = (options & PresentOptions.Modal) != 0;
+				var modal = (options & PresentOptions.ModalPopup) != 0;
 				var viewRoot = _viewRoots[layer];
 
 				viewProxy = CreateViewProxy(viewRoot, resourceId, zIndex, exclusive, modal);

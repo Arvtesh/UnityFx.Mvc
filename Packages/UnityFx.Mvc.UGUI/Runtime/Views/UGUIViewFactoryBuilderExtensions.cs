@@ -21,17 +21,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="config"/> is <see langword="null"/>.</exception>
 		public static IViewFactoryBuilder UseConfig(this IViewFactoryBuilder builder, UGUIMvcConfig config)
 		{
-			if (config is null)
-			{
-				throw new ArgumentNullException(nameof(config));
-			}
-
-			foreach (var item in config.Prefabs)
-			{
-				builder.AddViewPrefab(item.Key, item.Value);
-			}
-
-			return builder.UsePopupBackgoundColor(config.PopupBackgroundColor);
+			return builder.UseConfig(config);
 		}
 	}
 }

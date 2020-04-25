@@ -28,7 +28,7 @@ namespace UnityFx.Mvc
 		IViewFactory ViewFactory { get; }
 
 		/// <summary>
-		/// Gets a read-only stack of view controllers currently presented.
+		/// Gets a read-only list of view controllers currently presented.
 		/// </summary>
 		/// <seealso cref="ActiveController"/>
 		IViewControllerCollection Controllers { get; }

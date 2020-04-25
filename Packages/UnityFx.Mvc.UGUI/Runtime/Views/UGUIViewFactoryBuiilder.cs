@@ -120,7 +120,7 @@ namespace UnityFx.Mvc
 				AddViewPrefab(item.Key, item.Value);
 			}
 
-			return this;
+			return UsePopupBackgoundColor(config.PopupBackgroundColor);
 		}
 
 		/// <summary>
