@@ -13,7 +13,6 @@ namespace UnityFx.Mvc
 		int Layer { get; }
 		string PrefabPath { get; }
 		bool IsActive { get; }
-		IViewController Controller { get; }
 		IPresentableProxy Parent { get; }
 		bool TryActivate();
 		void Deactivate();

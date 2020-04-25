@@ -20,7 +20,7 @@ namespace UnityFx.Mvc
 	/// (via <see cref="IPresentContext"/> interface) and serves as a proxy between the controller and user.
 	/// </remarks>
 	[Preserve]
-	internal sealed class PresentResult<TController, TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TResult>, IPresentResultOf<TController, TResult>, IPresentResultOf<TController>, IPresentableProxy, IEnumerator where TController : class, IViewController
+	internal sealed class PresentResult<TController, TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TResult>, IPresentableProxy, IEnumerator where TController : class, IViewController
 	{
 		#region data
 
@@ -97,8 +97,6 @@ namespace UnityFx.Mvc
 		public string PrefabPath => _prefabPath;
 
 		public IPresentableProxy Parent => _parent;
-
-		IViewController IPresentableProxy.Controller => _controller;
 
 		public bool TryActivate()
 		{
@@ -205,8 +203,6 @@ namespace UnityFx.Mvc
 
 		#region IPresentContext
 
-		public IView View => _view;
-
 		public float PresentTime => _timer;
 
 		public bool IsActive => _state == State.Active;
@@ -283,7 +279,9 @@ namespace UnityFx.Mvc
 
 		Task IPresentResult.Task => Task;
 
-		public TController Controller => _controller;
+		public IViewController Controller => _controller;
+
+		public IView View => _view;
 
 		public TResult Result => Task.Result;
 

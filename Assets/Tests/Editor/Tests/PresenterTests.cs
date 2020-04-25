@@ -83,7 +83,7 @@ namespace UnityFx.Mvc
 			var presentResult = _presenter.Present<EventsController>();
 
 			Assert.NotNull(presentResult.Controller);
-			Assert.AreEqual(1, presentResult.Controller.PresentCallId);
+			Assert.AreEqual(1, ((EventsController)presentResult.Controller).PresentCallId);
 		}
 
 		[Test]
@@ -93,7 +93,7 @@ namespace UnityFx.Mvc
 			presentResult.Dispose();
 
 			Assert.NotNull(presentResult.Controller);
-			Assert.AreEqual(2, presentResult.Controller.DismissCallId);
+			Assert.AreEqual(2, ((EventsController)presentResult.Controller).DismissCallId);
 		}
 
 		[Test]
@@ -103,7 +103,7 @@ namespace UnityFx.Mvc
 			_updateLoop.Update();
 
 			Assert.NotNull(presentResult.Controller);
-			Assert.AreEqual(2, presentResult.Controller.ActivateCallId);
+			Assert.AreEqual(2, ((EventsController)presentResult.Controller).ActivateCallId);
 		}
 
 		[Test]
@@ -114,7 +114,7 @@ namespace UnityFx.Mvc
 			presentResult.Dispose();
 
 			Assert.NotNull(presentResult.Controller);
-			Assert.AreEqual(3, presentResult.Controller.DeactivateCallId);
+			Assert.AreEqual(3, ((EventsController)presentResult.Controller).DeactivateCallId);
 		}
 
 		[Test]
@@ -140,9 +140,9 @@ namespace UnityFx.Mvc
 			Assert.IsEmpty(_presenter.Controllers);
 			Assert.NotNull(presentResult);
 
-			Assert.AreEqual(0, presentResult.Controller.ActivateCallId);
-			Assert.AreEqual(0, presentResult.Controller.DeactivateCallId);
-			Assert.AreEqual(0, presentResult.Controller.DismissCallId);
+			Assert.AreEqual(0, ((EventsController)presentResult.Controller).ActivateCallId);
+			Assert.AreEqual(0, ((EventsController)presentResult.Controller).DeactivateCallId);
+			Assert.AreEqual(0, ((EventsController)presentResult.Controller).DismissCallId);
 
 			Assert.True(presentResult.IsDismissed);
 			Assert.True(presentResult.Task.IsFaulted);
@@ -170,10 +170,10 @@ namespace UnityFx.Mvc
 			_updateLoop.Update();
 			presentResult.Dispose();
 
-			Assert.AreEqual(1, presentResult.Controller.PresentCallId);
-			Assert.AreEqual(2, presentResult.Controller.ActivateCallId);
-			Assert.AreEqual(0, presentResult.Controller.DeactivateCallId);
-			Assert.AreEqual(3, presentResult.Controller.DismissCallId);
+			Assert.AreEqual(1, ((EventsController)presentResult.Controller).PresentCallId);
+			Assert.AreEqual(2, ((EventsController)presentResult.Controller).ActivateCallId);
+			Assert.AreEqual(0, ((EventsController)presentResult.Controller).DeactivateCallId);
+			Assert.AreEqual(3, ((EventsController)presentResult.Controller).DismissCallId);
 
 			Assert.True(presentResult.IsDismissed);
 			Assert.False(presentResult.Task.IsFaulted);
@@ -187,10 +187,10 @@ namespace UnityFx.Mvc
 			_updateLoop.Update();
 			presentResult.Dispose();
 
-			Assert.AreEqual(1, presentResult.Controller.PresentCallId);
-			Assert.AreEqual(2, presentResult.Controller.ActivateCallId);
-			Assert.AreEqual(3, presentResult.Controller.DeactivateCallId);
-			Assert.AreEqual(4, presentResult.Controller.DismissCallId);
+			Assert.AreEqual(1, ((EventsController)presentResult.Controller).PresentCallId);
+			Assert.AreEqual(2, ((EventsController)presentResult.Controller).ActivateCallId);
+			Assert.AreEqual(3, ((EventsController)presentResult.Controller).DeactivateCallId);
+			Assert.AreEqual(4, ((EventsController)presentResult.Controller).DismissCallId);
 
 			Assert.True(presentResult.IsDismissed);
 			Assert.False(presentResult.Task.IsFaulted);

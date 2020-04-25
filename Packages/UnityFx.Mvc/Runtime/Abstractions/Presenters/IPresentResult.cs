@@ -14,6 +14,18 @@ namespace UnityFx.Mvc
 	public interface IPresentResult : IPresentInfo, ICommandTarget, IDisposable
 	{
 		/// <summary>
+		/// Gets the view controller.
+		/// </summary>
+		/// <seealso cref="View"/>
+		IViewController Controller { get; }
+
+		/// <summary>
+		/// Gets the view.
+		/// </summary>
+		/// <seealso cref="Controller"/>
+		IView View { get; }
+
+		/// <summary>
 		/// Gets a value indicating whether the controller is dismissed.
 		/// </summary>
 		bool IsDismissed { get; }

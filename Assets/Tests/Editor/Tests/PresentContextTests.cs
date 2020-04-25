@@ -36,7 +36,7 @@ namespace UnityFx.Mvc
 		public void Tag_IsValid()
 		{
 			var controller = _presenter.Present<TagController>().Controller;
-			Assert.AreEqual(TagController.TagValue, controller.Tag);
+			Assert.AreEqual(TagController.TagValue, ((TagController)controller).Tag);
 		}
 	}
 }
