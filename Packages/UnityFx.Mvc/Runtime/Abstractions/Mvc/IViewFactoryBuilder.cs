@@ -40,15 +40,6 @@ namespace UnityFx.Mvc
 		IViewFactoryBuilder AddViewPrefab(string resourceId, GameObject prefab);
 
 		/// <summary>
-		/// Applies the specififed configuration.
-		/// </summary>
-		/// <param name="config">The configuration asset.</param>
-		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="config"/> is <see langword="null"/>.</exception>
-		/// <seealso cref="UsePopupBackgoundColor(Color)"/>
-		/// <seealso cref="Build"/>
-		IViewFactoryBuilder UseConfig(MvcConfig config);
-
-		/// <summary>
 		/// Sets a delegate to use to load prefabs.
 		/// </summary>
 		/// <param name="loadPrefabDelegate">A delegate to load a prefab for the specified path.</param>

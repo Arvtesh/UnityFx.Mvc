@@ -3,6 +3,7 @@
     "references": [
         "UnityFx.Mvc.Commands",
         "UnityFx.Mvc.Abstractions",
+        "UnityFx.Mvc",
         "UnityFx.Mvc.Editor",
         "UnityFx.Mvc.UGUI"
     ],

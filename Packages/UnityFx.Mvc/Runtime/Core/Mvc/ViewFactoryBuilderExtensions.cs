@@ -12,7 +12,7 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="IView"/>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static class IViewFactoryBuilderExtensions
+	public static class ViewFactoryBuilderExtensions
 	{
 		/// <summary>
 		/// Adds preloaded view prefabs.
@@ -58,6 +58,26 @@ namespace UnityFx.Mvc
 			}
 
 			return builder;
+		}
+
+		/// <summary>
+		/// Applies the specififed configuration.
+		/// </summary>
+		/// <param name="config">The configuration asset.</param>
+		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="config"/> is <see langword="null"/>.</exception>
+		public static IViewFactoryBuilder UseConfig(this IViewFactoryBuilder builder, MvcConfig config)
+		{
+			if (config is null)
+			{
+				throw new ArgumentNullException(nameof(config));
+			}
+
+			foreach (var item in config.Prefabs)
+			{
+				builder.AddViewPrefab(item.Key, item.Value);
+			}
+
+			return builder.UsePopupBackgoundColor(config.PopupBackgroundColor);
 		}
 	}
 }

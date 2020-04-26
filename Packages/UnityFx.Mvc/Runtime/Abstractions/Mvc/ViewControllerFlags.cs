@@ -8,7 +8,6 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// 
 	/// </summary>
-	/// <seealso cref="ViewControllerAttribute"/>
 	public enum ViewControllerFlags
 	{
 		/// <summary>

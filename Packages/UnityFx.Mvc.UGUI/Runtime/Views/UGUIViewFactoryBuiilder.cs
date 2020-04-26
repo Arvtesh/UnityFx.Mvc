@@ -101,29 +101,6 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Applies the specififed configuration.
-		/// </summary>
-		/// <param name="config">The configuration asset.</param>
-		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="config"/> is <see langword="null"/>.</exception>
-		/// <seealso cref="UsePopupBackgoundColor(Color)"/>
-		/// <seealso cref="AddViewPrefabs(string, IEnumerable{GameObject})"/>
-		/// <seealso cref="Build"/>
-		public IViewFactoryBuilder UseConfig(MvcConfig config)
-		{
-			if (config is null)
-			{
-				throw new ArgumentNullException(nameof(config));
-			}
-
-			foreach (var item in config.Prefabs)
-			{
-				AddViewPrefab(item.Key, item.Value);
-			}
-
-			return UsePopupBackgoundColor(config.PopupBackgroundColor);
-		}
-
-		/// <summary>
 		/// Sets a delegate to use to load prefabs.
 		/// </summary>
 		/// <param name="loadPrefabDelegate">A delegate to load a prefab for the specified path.</param>
