@@ -12,7 +12,7 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="IView"/>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static class ViewFactoryBuilderExtensions
+	public static class ViewServiceBuilderExtensions
 	{
 		/// <summary>
 		/// Adds preloaded view prefabs.

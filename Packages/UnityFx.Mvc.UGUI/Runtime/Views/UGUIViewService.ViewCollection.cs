@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace UnityFx.Mvc
 {
-	partial class UGUIViewFactory
+	partial class UGUIViewService
 	{
 		#region interface
 
@@ -15,13 +15,13 @@ namespace UnityFx.Mvc
 		{
 			#region data
 
-			private readonly UGUIViewFactory _factory;
+			private readonly UGUIViewService _factory;
 
 			#endregion
 
 			#region interface
 
-			internal ViewCollection(UGUIViewFactory factory)
+			internal ViewCollection(UGUIViewService factory)
 			{
 				_factory = factory;
 			}

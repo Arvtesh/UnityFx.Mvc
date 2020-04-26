@@ -12,7 +12,7 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="IView"/>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static class UGUIViewFactoryBuilderExtensions
+	public static class UGUIViewServiceBuilderExtensions
 	{
 		/// <summary>
 		/// Applies the specififed configuration.

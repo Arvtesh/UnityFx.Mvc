@@ -11,7 +11,7 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// Configuration of UGUI-based <see cref="IViewFactory"/> implementations.
 	/// </summary>
-	/// <seealso cref="UGUIViewFactoryBuilder"/>
+	/// <seealso cref="UGUIViewServiceBuilder"/>
 	[CreateAssetMenu(fileName = "MvcConfig", menuName = "UnityFx/Mvc/MVC Config (UGUI)")]
 	public sealed class UGUIMvcConfig : MvcConfig
 	{

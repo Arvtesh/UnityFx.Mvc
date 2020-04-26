@@ -20,7 +20,7 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 
 	private void Awake()
 	{
-		_viewFactory = new UGUIViewFactoryBuilder(gameObject)
+		_viewFactory = new UGUIViewServiceBuilder(gameObject)
 			.UseConfig(_viewConfig)
 			.Build();
 

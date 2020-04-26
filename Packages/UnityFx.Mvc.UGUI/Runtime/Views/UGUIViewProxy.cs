@@ -18,7 +18,7 @@ namespace UnityFx.Mvc
 		#region interface
 
 		[NonSerialized]
-		internal UGUIViewFactory Factory;
+		internal UGUIViewService Factory;
 		[NonSerialized]
 		internal GameObject Prefab;
 		[NonSerialized]

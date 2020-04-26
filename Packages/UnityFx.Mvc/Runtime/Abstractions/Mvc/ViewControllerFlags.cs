@@ -6,8 +6,9 @@ using System;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// 
+	/// View controller creation flags.
 	/// </summary>
+	/// <seealso cref="ViewControllerAttribute"/>
 	public enum ViewControllerFlags
 	{
 		/// <summary>

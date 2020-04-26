@@ -9,11 +9,11 @@ using UnityEngine;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Builder of UGUI-based <see cref="IViewFactory"/> instances.
+	/// Builder of <see cref="ViewService"/> instances.
 	/// </summary>
-	/// <seealso cref="PresenterBuilder"/>
+	/// <seealso cref="ViewService"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/Builder_pattern"/>
-	public sealed class UGUIViewFactoryBuilder : IViewFactoryBuilder
+	public abstract class ViewServiceBuilder : IViewFactoryBuilder
 	{
 		#region data
 
@@ -29,13 +29,19 @@ namespace UnityFx.Mvc
 		#region interface
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="UGUIViewFactoryBuilder"/> class.
+		/// Initializes a new instance of the <see cref="ViewServiceBuilder{T}"/> class.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
-		public UGUIViewFactoryBuilder(GameObject go)
+		protected ViewServiceBuilder(GameObject go)
 		{
 			_gameObject = go ?? throw new ArgumentNullException(nameof(go));
 		}
+
+		/// <summary>
+		/// TODO
+		/// </summary>
+		/// <seealso cref="Build"/>
+		protected abstract ViewService Build(GameObject go);
 
 		#endregion
 
@@ -136,12 +142,12 @@ namespace UnityFx.Mvc
 		/// </summary>
 		public IViewService Build()
 		{
-			var viewFactory = _gameObject.AddComponent<UGUIViewFactory>();
+			var viewFactory = Build(_gameObject);
 
 			viewFactory.SetPopupBackgrounColor(_popupBackgroundColor);
 			viewFactory.SetLoadPrefabDelegate(_loadPrefabDelegate);
 			viewFactory.SetViewPrefabs(_viewPrefabs);
-			viewFactory.SetViewRoots(_layers);
+			viewFactory.SetLayers(_layers);
 
 			return viewFactory;
 		}
