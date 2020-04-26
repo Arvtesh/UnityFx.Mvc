@@ -216,7 +216,7 @@ namespace UnityFx.Mvc
 						return true;
 					}
 
-					if ((p.PresentOptions & PresentOptions.Exclusive) != 0)
+					if ((p.CreationFlags & ViewControllerFlags.Exclusive) != 0)
 					{
 						return false;
 					}
@@ -253,11 +253,11 @@ namespace UnityFx.Mvc
 			ThrowIfInvalidControllerType(controllerType);
 
 			var result = CreatePresentable(presentable, controllerType, presentOptions, args);
-			PresentInternal(result, presentable, transform);
+			PresentInternal(result, presentable, presentOptions, transform);
 			return result;
 		}
 
-		private async void PresentInternal(IPresentableProxy presentable, IPresentableProxy presentableParent, Transform transform)
+		private async void PresentInternal(IPresentableProxy presentable, IPresentableProxy presentableParent, PresentOptions presentOptions, Transform transform)
 		{
 			var zIndex = GetZIndex(presentable);
 
@@ -273,7 +273,7 @@ namespace UnityFx.Mvc
 				}
 
 				// 2) Load the controller view.
-				var view = await _viewFactory.CreateViewAsync(presentable.PrefabPath, presentable.Layer, zIndex, presentable.PresentOptions, transform);
+				var view = await _viewFactory.PresentViewAsync(presentable.PrefabPath, presentable.Layer, zIndex, presentable.CreationFlags, transform);
 
 				if (view is null)
 				{
@@ -299,7 +299,7 @@ namespace UnityFx.Mvc
 				_controllerMap.Add(presentable.Controller, presentable);
 
 				// 4) Dismiss the specified controllers if requested.
-				if ((presentable.PresentOptions & PresentOptions.DismissAll) != 0)
+				if ((presentOptions & PresentOptions.DismissAll) != 0)
 				{
 					foreach (var p in _presentables)
 					{
@@ -309,13 +309,13 @@ namespace UnityFx.Mvc
 						}
 					}
 				}
-				else if ((presentable.PresentOptions & PresentOptions.DismissCurrent) != 0)
+				else if ((presentOptions & PresentOptions.DismissCurrent) != 0)
 				{
 					presentableParent?.DismissCancel();
 				}
 
 				// 5) Dismiss controllers of the same type if requested (for singleton controllers only).
-				if ((presentable.PresentOptions & PresentOptions.Singleton) != 0)
+				if ((presentable.CreationFlags & ViewControllerFlags.Singleton) != 0)
 				{
 					foreach (var p in _presentables)
 					{
@@ -338,7 +338,6 @@ namespace UnityFx.Mvc
 			Debug.Assert(!_disposed);
 
 			var resultType = typeof(int);
-			var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
 			var presentContext = new PresentResultArgs()
 			{
 				Id = ++_idCounter,
@@ -346,19 +345,24 @@ namespace UnityFx.Mvc
 				ControllerFactory = _controllerFactory,
 				ViewFactory = _viewFactory,
 				ControllerType = controllerType,
-				Parent = parent,
-				PrefabPath = _controllerBindings.GetViewResourceId(controllerType),
-				PresentOptions = presentOptions,
 				PresentArgs = args ?? PresentArgs.Default
 			};
 
+			var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
+
 			if (attrs != null && attrs.Length > 0)
 			{
-				var controllerAttr = attrs[0];
+				var attr = attrs[0];
 
-				presentContext.PresentOptions |= controllerAttr.PresentOptions;
-				presentContext.Layer = controllerAttr.Layer;
-				presentContext.Tag = controllerAttr.Tag;
+				presentContext.ViewResourceId = attr.ViewResourceId;
+				presentContext.CreationFlags = attr.Flags;
+				presentContext.Layer = attr.Layer;
+				presentContext.Tag = attr.Tag;
+			}
+
+			if (string.IsNullOrEmpty(presentContext.ViewResourceId))
+			{
+				presentContext.ViewResourceId = _controllerBindings.GetViewResourceId(controllerType);
 			}
 
 			// Types inherited from IViewControllerResult<> use specific result values.
@@ -367,18 +371,17 @@ namespace UnityFx.Mvc
 				resultType = t.GenericTypeArguments[0];
 			}
 
-			// If parent is going to be dismissed, use its parent instead.
-			if ((presentOptions & PresentOptions.Child) == 0)
+			// For child controller save parent reference.
+			if ((presentOptions & PresentOptions.Child) != 0)
 			{
-				presentContext.Parent = null;
-			}
-			else if ((presentOptions & PresentOptions.DismissAll) != 0)
-			{
-				presentContext.Parent = null;
-			}
-			else if ((presentOptions & PresentOptions.DismissCurrent) != 0)
-			{
-				presentContext.Parent = parent?.Parent;
+				if ((presentOptions & PresentOptions.DismissCurrent) != 0)
+				{
+					presentContext.Parent = parent?.Parent;
+				}
+				else
+				{
+					presentContext.Parent = parent;
+				}
 			}
 
 			// Instantiate the presentable.

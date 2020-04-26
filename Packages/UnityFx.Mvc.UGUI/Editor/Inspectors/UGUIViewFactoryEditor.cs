@@ -24,7 +24,7 @@ namespace UnityFx.Mvc
 			EditorGUI.BeginDisabledGroup(true);
 			EditorGUILayout.ColorField("Popup Background", _viewFactory.PopupBackgroundColor);
 
-			var viewRoots = _viewFactory.ViewRoots;
+			var viewRoots = _viewFactory.Layers;
 
 			if (viewRoots != null && viewRoots.Count > 0)
 			{

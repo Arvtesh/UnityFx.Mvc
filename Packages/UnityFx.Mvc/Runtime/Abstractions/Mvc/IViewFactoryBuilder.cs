@@ -15,6 +15,7 @@ namespace UnityFx.Mvc
 	/// similar to ASP.NET <see href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.iapplicationbuilder"/>.
 	/// </remarks>
 	/// <seealso cref="IViewFactory"/>
+	/// <seealso cref="IViewService"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/Builder_pattern"/>
 	public interface IViewFactoryBuilder
 	{
@@ -68,6 +69,6 @@ namespace UnityFx.Mvc
 		/// Builds a <see cref="IViewFactory"/> instance.
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Thrown if presenter cannot be constructed (for instance, <see cref="IViewFactory"/> is not set and cannot be located).</exception>
-		IViewFactory Build();
+		IViewService Build();
 	}
 }

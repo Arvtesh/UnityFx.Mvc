@@ -15,6 +15,14 @@ namespace UnityFx.Mvc
 	[CustomEditor(typeof(MvcConfig))]
 	public class MvcConfigEditor : Editor
 	{
+		private enum ControllerType
+		{
+			Default,
+			Exclusive,
+			Popup,
+			ModalPopup
+		}
+
 		private MvcConfig _config;
 
 		private SerializedProperty _viewControllers;
@@ -31,6 +39,7 @@ namespace UnityFx.Mvc
 		private string _newControllerPath;
 		private bool _newControllerCreateArgs;
 		private bool _newControllerCreateCommands;
+		private ControllerType _newControllerType;
 
 		private string _lastError;
 		private bool _createControllerMode;
@@ -526,6 +535,7 @@ namespace UnityFx.Mvc
 			_newControllerNamespace = EditorGUILayout.TextField("Namespace", _newControllerNamespace);
 			_newControllerCreateArgs = EditorGUILayout.Toggle("Create PresentArgs", _newControllerCreateArgs);
 			_newControllerCreateCommands = EditorGUILayout.Toggle("Create commands enumeration", _newControllerCreateCommands);
+			_newControllerType = (ControllerType)EditorGUILayout.EnumPopup("Controller type", _newControllerType);
 
 			if (string.IsNullOrWhiteSpace(_newControllerName) || !_newControllerNamePattern.IsMatch(_newControllerName))
 			{

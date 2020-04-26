@@ -12,9 +12,14 @@ namespace UnityFx.Mvc
 	public sealed class ViewControllerAttribute : Attribute
 	{
 		/// <summary>
-		/// Gets or sets default present options value.
+		/// Gets or sets controller flags.
 		/// </summary>
-		public PresentOptions PresentOptions { get; set; }
+		public ViewControllerFlags Flags { get; set; }
+
+		/// <summary>
+		/// Gets or sets view resource identifier.
+		/// </summary>
+		public string ViewResourceId { get; set; }
 
 		/// <summary>
 		/// Gets or sets controller tag.

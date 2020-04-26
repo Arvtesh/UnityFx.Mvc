@@ -44,7 +44,7 @@ namespace UnityFx.Mvc
 		private readonly IViewControllerFactory _controllerFactory;
 		private readonly Type _controllerType;
 		private readonly PresentArgs _presentArgs;
-		private readonly PresentOptions _presentOptions;
+		private readonly ViewControllerFlags _creationFlags;
 		private readonly IPresentableProxy _parent;
 		private readonly int _id;
 		private readonly int _layer;
@@ -83,9 +83,9 @@ namespace UnityFx.Mvc
 			_controllerFactory = context.ControllerFactory;
 			_controllerType = context.ControllerType;
 			_presentArgs = context.PresentArgs;
-			_presentOptions = context.PresentOptions;
+			_creationFlags = context.CreationFlags;
 			_deeplinkId = MvcUtilities.GetControllerDeeplinkId(_controllerType);
-			_prefabPath = string.IsNullOrEmpty(context.PrefabPath) ? MvcUtilities.GetControllerName(context.ControllerType) : context.PrefabPath;
+			_prefabPath = string.IsNullOrEmpty(context.ViewResourceId) ? MvcUtilities.GetControllerName(context.ControllerType) : context.ViewResourceId;
 		}
 
 		#endregion
@@ -259,7 +259,7 @@ namespace UnityFx.Mvc
 
 		public PresentArgs PresentArgs => _presentArgs;
 
-		public PresentOptions PresentOptions => _presentOptions;
+		public ViewControllerFlags CreationFlags => _creationFlags;
 
 		public bool IsDismissed => _state == State.Dismissed || _state == State.Disposed;
 

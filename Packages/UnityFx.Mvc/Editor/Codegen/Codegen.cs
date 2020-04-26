@@ -20,7 +20,7 @@ namespace UnityFx.Mvc
 
 		private static readonly Regex _classNamePattern = new Regex("^[_a-zA-Z][_a-zA-Z0-9]*$");
 
-		public static string GetControllerText(CodegenNames names, string namespaceName, string baseClassName, string presentOptions, CodegenOptions options)
+		public static string GetControllerText(CodegenNames names, string namespaceName, string baseClassName, string flags, CodegenOptions options)
 		{
 			var sb = new StringBuilder(256);
 			var text = new TextHelper(sb);
@@ -48,9 +48,9 @@ namespace UnityFx.Mvc
 					text.AppendSeeAlso(names.CommandsName);
 				}
 
-				if (!string.IsNullOrEmpty(presentOptions))
+				if (!string.IsNullOrEmpty(flags))
 				{
-					text.AppendLineFormat("[ViewController({0} = {1})]", nameof(ViewControllerAttribute.PresentOptions), presentOptions);
+					text.AppendLineFormat("[ViewController({0} = {1})]", nameof(ViewControllerAttribute.Flags), flags);
 				}
 
 				if (options.HasFlag(CodegenOptions.CreateCommands))

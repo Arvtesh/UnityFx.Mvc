@@ -8,7 +8,7 @@ using UnityFx.Mvc.Extensions;
 /// LobbyController
 /// </summary>
 /// <seealso cref="LobbyView"/>
-[ViewController(PresentOptions = PresentOptions.Exclusive)]
+[ViewController(Flags = ViewControllerFlags.Exclusive)]
 public class LobbyController : ViewController<LobbyView>
 {
 	#region data

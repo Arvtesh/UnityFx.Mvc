@@ -15,11 +15,11 @@ namespace UnityFx.Mvc
 		public int Id;
 		public int Layer;
 		public int Tag;
-		public string PrefabPath;
+		public string ViewResourceId;
 		
 		public IPresentableProxy Parent;
 		public Type ControllerType;
-		public PresentOptions PresentOptions;
+		public ViewControllerFlags CreationFlags;
 		public PresentArgs PresentArgs;
 	}
 }

@@ -43,9 +43,8 @@ namespace UnityFx.Mvc
 		PresentArgs PresentArgs { get; }
 
 		/// <summary>
-		/// Gets the present flags to use when the controller is created.
+		/// Gets the controller creation flags.
 		/// </summary>
-		/// <seealso cref="PresentArgs"/>
-		PresentOptions PresentOptions { get; }
+		ViewControllerFlags CreationFlags { get; }
 	}
 }

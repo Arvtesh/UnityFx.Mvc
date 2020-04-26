@@ -13,13 +13,13 @@ namespace UnityFx.Mvc
 	/// An UGUI-based view factory.
 	/// </summary>
 	/// <seealso cref="UGUIViewFactoryBuilder"/>
-	internal sealed partial class UGUIViewFactory : MonoBehaviour, IViewFactory
+	internal sealed partial class UGUIViewFactory : MonoBehaviour, IViewService
 	{
 		#region data
 
 		private Dictionary<string, GameObject> _viewPrefabCache;
 		private Dictionary<string, Task<GameObject>> _viewPrefabCacheTasks;
-		private IReadOnlyList<Transform> _viewRoots;
+		private IReadOnlyList<Transform> _layers;
 		private Func<string, Task<GameObject>> _loadPrefabDelegate;
 		private Color _popupBgColor;
 		private ViewCollection _views;
@@ -28,37 +28,6 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region interface
-
-		/// <summary>
-		/// Gets popup background color.
-		/// </summary>
-		public Color PopupBackgroundColor => _popupBgColor;
-
-		/// <summary>
-		/// Gets a read-only collection of view root transforms.
-		/// </summary>
-		public IReadOnlyList<Transform> ViewRoots => _viewRoots;
-
-		/// <summary>
-		/// Gets a read-only collection of loaded view prefabs.
-		/// </summary>
-		public IReadOnlyDictionary<string, GameObject> Prefabs => _viewPrefabCache;
-
-		/// <summary>
-		/// Gets a read-only collection of views.
-		/// </summary>
-		public ViewCollection Views
-		{
-			get
-			{
-				if (_views is null)
-				{
-					_views = new ViewCollection(this);
-				}
-
-				return _views;
-			}
-		}
 
 		internal void SetPopupBackgrounColor(Color color)
 		{
@@ -90,16 +59,16 @@ namespace UnityFx.Mvc
 						transforms[i] = canvases[i].transform;
 					}
 
-					_viewRoots = transforms;
+					_layers = transforms;
 				}
 				else
 				{
-					_viewRoots = new Transform[1] { transform };
+					_layers = new Transform[1] { transform };
 				}
 			}
 			else
 			{
-				_viewRoots = viewRoots;
+				_layers = viewRoots;
 			}
 		}
 
@@ -122,9 +91,32 @@ namespace UnityFx.Mvc
 
 		#endregion
 
+		#region IViewService
+
+		public Color PopupBackgroundColor => _popupBgColor;
+
+		public IReadOnlyList<Transform> Layers => _layers;
+
+		public IReadOnlyDictionary<string, GameObject> Prefabs => _viewPrefabCache;
+
+		public IReadOnlyCollection<IView> Views
+		{
+			get
+			{
+				if (_views is null)
+				{
+					_views = new ViewCollection(this);
+				}
+
+				return _views;
+			}
+		}
+
+		#endregion
+
 		#region IViewFactory
 
-		public async Task<IView> CreateViewAsync(string resourceId, int layer, int zIndex, PresentOptions options, Transform parent)
+		public async Task<GameObject> LoadViewPrefabAsync(string resourceId)
 		{
 			ThrowIfDisposed();
 
@@ -138,59 +130,64 @@ namespace UnityFx.Mvc
 				throw new ArgumentException(Messages.Format_InvalidPrefabPath(), nameof(resourceId));
 			}
 
+			if (_viewPrefabCache.TryGetValue(resourceId, out var prefab))
+			{
+				return prefab;
+			}
+
+			if (_viewPrefabCacheTasks != null && _viewPrefabCacheTasks.TryGetValue(resourceId, out var task))
+			{
+				prefab = await task;
+			}
+			else if (_loadPrefabDelegate != null)
+			{
+				task = _loadPrefabDelegate(resourceId);
+
+				if (_viewPrefabCacheTasks is null)
+				{
+					_viewPrefabCacheTasks = new Dictionary<string, Task<GameObject>>();
+				}
+
+				_viewPrefabCacheTasks.Add(resourceId, task);
+
+				try
+				{
+					prefab = await task;
+				}
+				finally
+				{
+					_viewPrefabCacheTasks.Remove(resourceId);
+				}
+			}
+			else
+			{
+				throw new InvalidOperationException(Messages.Format_PrefabCannotBeLoaded(resourceId));
+			}
+
+			if (_disposed)
+			{
+				Destroy(prefab);
+				throw new OperationCanceledException();
+			}
+
+			_viewPrefabCache.Add(resourceId, prefab);
+			return prefab;
+		}
+
+		public async Task<IView> PresentViewAsync(string resourceId, int layer, int zIndex, ViewControllerFlags flags, Transform parent)
+		{
 			UGUIViewProxy viewProxy = null;
 
 			try
 			{
-				var exclusive = (options & PresentOptions.Exclusive) != 0;
-				var modal = (options & PresentOptions.ModalPopup) != 0;
-				var viewRoot = _viewRoots[layer];
+				var exclusive = (flags & ViewControllerFlags.Exclusive) != 0;
+				var modal = (flags & ViewControllerFlags.Modal) != 0;
+				var viewRoot = _layers[layer];
+				var viewPrefab = await LoadViewPrefabAsync(resourceId);
 
 				viewProxy = CreateViewProxy(viewRoot, resourceId, zIndex, exclusive, modal);
 
-				if (_viewPrefabCache.TryGetValue(resourceId, out var viewPrefab))
-				{
-					return CreateView(resourceId, viewPrefab, viewProxy, parent);
-				}
-				else
-				{
-					if (_viewPrefabCacheTasks != null && _viewPrefabCacheTasks.TryGetValue(resourceId, out var task))
-					{
-						viewPrefab = await task;
-					}
-					else if (_loadPrefabDelegate != null)
-					{
-						task = _loadPrefabDelegate(resourceId);
-
-						if (_viewPrefabCacheTasks is null)
-						{
-							_viewPrefabCacheTasks = new Dictionary<string, Task<GameObject>>();
-						}
-
-						_viewPrefabCacheTasks.Add(resourceId, task);
-
-						try
-						{
-							viewPrefab = await task;
-						}
-						finally
-						{
-							_viewPrefabCacheTasks.Remove(resourceId);
-						}
-					}
-					else
-					{
-						throw new InvalidOperationException(Messages.Format_PrefabCannotBeLoaded(resourceId));
-					}
-
-					if (_disposed)
-					{
-						throw new OperationCanceledException();
-					}
-
-					_viewPrefabCache.Add(resourceId, viewPrefab);
-					return CreateView(resourceId, viewPrefab, viewProxy, parent);
-				}
+				return CreateView(resourceId, viewPrefab, viewProxy, parent);
 			}
 			catch
 			{

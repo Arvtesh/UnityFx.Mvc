@@ -20,7 +20,7 @@ namespace UnityFx.Mvc
 		private readonly GameObject _gameObject;
 
 		private Dictionary<string, GameObject> _viewPrefabs;
-		private List<Transform> _viewRoots;
+		private List<Transform> _layers;
 		private Func<string, Task<GameObject>> _loadPrefabDelegate;
 		private Color _popupBackgroundColor = new Color(0, 0, 0, 0.5f);
 
@@ -56,12 +56,12 @@ namespace UnityFx.Mvc
 				throw new ArgumentNullException(nameof(transform));
 			}
 
-			if (_viewRoots is null)
+			if (_layers is null)
 			{
-				_viewRoots = new List<Transform>();
+				_layers = new List<Transform>();
 			}
 
-			_viewRoots.Add(transform);
+			_layers.Add(transform);
 			return this;
 		}
 
@@ -155,16 +155,16 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Creates a <see cref="MonoBehaviour"/>-based implementation of <see cref="IViewFactory"/>.
+		/// Creates a <see cref="MonoBehaviour"/>-based implementation of <see cref="IViewService"/>.
 		/// </summary>
-		public IViewFactory Build()
+		public IViewService Build()
 		{
 			var viewFactory = _gameObject.AddComponent<UGUIViewFactory>();
 
 			viewFactory.SetPopupBackgrounColor(_popupBackgroundColor);
 			viewFactory.SetLoadPrefabDelegate(_loadPrefabDelegate);
 			viewFactory.SetViewPrefabs(_viewPrefabs);
-			viewFactory.SetViewRoots(_viewRoots);
+			viewFactory.SetViewRoots(_layers);
 
 			return viewFactory;
 		}

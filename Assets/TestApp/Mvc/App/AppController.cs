@@ -9,7 +9,7 @@ using UnityFx.Mvc.Extensions;
 /// AppController
 /// </summary>
 /// <seealso cref="AppView"/>
-[ViewController(PresentOptions = PresentOptions.Exclusive)]
+[ViewController(Flags = ViewControllerFlags.Exclusive)]
 public class AppController : ViewController<AppView>
 {
 	#region data

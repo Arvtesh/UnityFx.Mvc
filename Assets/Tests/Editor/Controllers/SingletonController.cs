@@ -5,7 +5,7 @@ using System;
 
 namespace UnityFx.Mvc
 {
-	[ViewController(PresentOptions = PresentOptions.Singleton)]
+	[ViewController(Flags = ViewControllerFlags.Singleton)]
 	public class SingletonController : IViewController
 	{
 		public IView View { get; }
