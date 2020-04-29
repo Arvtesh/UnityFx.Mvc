@@ -177,7 +177,7 @@ namespace UnityFx.Mvc
 
 				// Controller
 				EditorUtility.DisplayProgressBar(title, controllerPath, progress);
-				File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), controllerPath), Codegen.GetControllerText(names, ns, baseControllerName, null, options));
+				File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), controllerPath), Codegen.GetControllerText(names, ns, baseControllerName, GetControllerTypeStr(_newControllerType), options));
 
 				progress += step;
 
@@ -771,6 +771,23 @@ namespace UnityFx.Mvc
 			}
 
 			return false;
+		}
+
+		private static string GetControllerTypeStr(ControllerType controllerType)
+		{
+			switch (controllerType)
+			{
+				case ControllerType.Exclusive:
+					return nameof(ViewControllerFlags) + '.' + nameof(ViewControllerFlags.Exclusive);
+
+				case ControllerType.Popup:
+					return nameof(ViewControllerFlags) + '.' + nameof(ViewControllerFlags.Popup);
+
+				case ControllerType.ModalPopup:
+					return nameof(ViewControllerFlags) + '.' + nameof(ViewControllerFlags.ModalPopup);
+			}
+
+			return null;
 		}
 	}
 }

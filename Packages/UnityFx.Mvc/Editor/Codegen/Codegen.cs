@@ -27,7 +27,7 @@ namespace UnityFx.Mvc
 
 			text.AppendLine("using System;");
 			text.AppendLine("using System.Collections.Generic;");
-			text.AppendLine("using System.Therading.Tasks;");
+			text.AppendLine("using System.Threading.Tasks;");
 			text.AppendLine("using UnityEngine;");
 			text.AppendLine("using UnityFx.Mvc;");
 			text.AppendLine();
