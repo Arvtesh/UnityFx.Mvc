@@ -23,6 +23,13 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region interface
+
+#if UNITY_EDITOR
+
+		internal const string DefaultViewPath = "Packages/com.unityfx.mvc.ugui/Runtime/Views/UGUIView.cs";
+
+#endif
+
 		#endregion
 	}
 }

@@ -21,5 +21,10 @@ namespace UnityFx.Mvc
 			t.anchoredPosition = Vector2.zero;
 			t.sizeDelta = Vector2.zero;
 		}
+
+		protected override string GetDefaultViewPath()
+		{
+			return UGUIMvcConfig.DefaultViewPath;
+		}
 	}
 }

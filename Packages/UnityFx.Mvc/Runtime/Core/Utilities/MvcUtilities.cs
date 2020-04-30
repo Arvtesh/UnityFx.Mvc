@@ -53,14 +53,20 @@ namespace UnityFx.Mvc
 		/// </summary>
 		public static string GetControllerName(Type controllerType)
 		{
-			var deeplinkId = controllerType.Name;
+			return GetControllerName(controllerType.Name);
+		}
 
-			if (deeplinkId.EndsWith("Controller"))
+		/// <summary>
+		/// TODO
+		/// </summary>
+		public static string GetControllerName(string controllerTypeName)
+		{
+			if (controllerTypeName.EndsWith("Controller"))
 			{
-				deeplinkId = deeplinkId.Substring(0, deeplinkId.Length - 10);
+				return controllerTypeName.Substring(0, controllerTypeName.Length - 10);
 			}
 
-			return deeplinkId;
+			return controllerTypeName;
 		}
 
 		/// <summary>

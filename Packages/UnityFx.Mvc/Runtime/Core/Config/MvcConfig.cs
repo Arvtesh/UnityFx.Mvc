@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2018-2020 Alexander Bogarsukov.
+﻿// Copyright (C) 2020 Program-Ace, LLC. All rights reserved.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -28,9 +28,9 @@ namespace UnityFx.Mvc
 		[SerializeField, HideInInspector]
 		private string _defaultNamespace;
 		[SerializeField, HideInInspector]
-		private string _baseControllerTypePath = DefaultControllerPath;
+		private string _baseControllerTypePath;
 		[SerializeField, HideInInspector]
-		private string _baseViewTypePath = DefaultViewPath;
+		private string _baseViewTypePath;
 		[SerializeField, HideInInspector]
 		private List<string> _folders;
 
@@ -59,7 +59,12 @@ namespace UnityFx.Mvc
 
 		internal static string GetResourceId(Type controllerType)
 		{
-			return controllerType.Name;
+			return MvcUtilities.GetControllerName(controllerType);
+		}
+
+		internal static string GetResourceId(string controllerName)
+		{
+			return MvcUtilities.GetControllerName(controllerName);
 		}
 
 		internal void AddItem(ViewControllerInfo item)
@@ -102,11 +107,14 @@ namespace UnityFx.Mvc
 
 		private void OnEnable()
 		{
-			foreach (var item in _viewControllers)
+			if (_viewControllers != null)
 			{
-				if (item.ViewPrefab && !string.IsNullOrWhiteSpace(item.ViewResourceId))
+				foreach (var item in _viewControllers)
 				{
-					_prefabsMap[item.ViewResourceId] = item.ViewPrefab;
+					if (item.ViewPrefab && !string.IsNullOrWhiteSpace(item.ViewResourceId))
+					{
+						_prefabsMap[item.ViewResourceId] = item.ViewPrefab;
+					}
 				}
 			}
 
@@ -129,16 +137,8 @@ namespace UnityFx.Mvc
 				throw new ArgumentNullException(nameof(controllerType));
 			}
 
-			var resourceId = GetResourceId(controllerType);
-
-			if (_prefabsMap.ContainsKey(resourceId))
-			{
-				return resourceId;
-			}
-
 			return MvcUtilities.GetControllerName(controllerType);
 		}
-
 
 		#endregion
 	}

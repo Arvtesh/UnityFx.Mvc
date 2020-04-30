@@ -50,6 +50,16 @@ namespace UnityFx.Mvc
 			go.layer = LayerMask.NameToLayer("UI");
 		}
 
+		protected virtual string GetDefaultViewPath()
+		{
+			return MvcConfig.DefaultViewPath;
+		}
+
+		protected virtual string GetDefaultControllerPath()
+		{
+			return MvcConfig.DefaultControllerPath;
+		}
+
 		protected virtual void OnEnable()
 		{
 			_config = (MvcConfig)target;
@@ -161,8 +171,8 @@ namespace UnityFx.Mvc
 			{
 				var path = Path.Combine(assetPath, names.BaseName);
 				var fullPath = Path.Combine(Directory.GetCurrentDirectory(), path);
-				var baseControllerName = Path.GetFileNameWithoutExtension(_config.BaseControllerPath);
-				var baseViewName = Path.GetFileNameWithoutExtension(_config.BaseViewPath);
+				var baseControllerName = Path.GetFileNameWithoutExtension(string.IsNullOrEmpty(_config.BaseControllerPath) ? GetDefaultControllerPath() : _config.BaseControllerPath);
+				var baseViewName = Path.GetFileNameWithoutExtension(string.IsNullOrEmpty(_config.BaseViewPath) ? GetDefaultViewPath() : _config.BaseViewPath);
 
 				if (!Directory.Exists(fullPath))
 				{
@@ -235,7 +245,7 @@ namespace UnityFx.Mvc
 				{
 					ControllerScriptPath = controllerPath,
 					ViewScriptPath = viewPath,
-					ViewResourceId = names.ControllerName,
+					ViewResourceId = MvcConfig.GetResourceId(names.ControllerName),
 					ViewPrefab = prefab
 				});
 			}
@@ -671,12 +681,12 @@ namespace UnityFx.Mvc
 					}
 					else
 					{
-						_baseViewTypePath.stringValue = MvcConfig.DefaultViewPath;
+						_baseViewTypePath.stringValue = GetDefaultViewPath();
 					}
 				}
 				else
 				{
-					_baseViewTypePath.stringValue = MvcConfig.DefaultViewPath;
+					_baseViewTypePath.stringValue = GetDefaultViewPath();
 				}
 			}
 
