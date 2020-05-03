@@ -283,7 +283,12 @@ namespace UnityFx.Mvc
 
 				if (view is null)
 				{
-					throw new PresentException(presentable, "View is null.");
+					throw new PresentException(presentable, Messages.Format_ViewIsNull());
+				}
+
+				if (!presentable.ViewType.IsAssignableFrom(view.GetType()))
+				{
+					throw new PresentException(presentable, Messages.Format_InvalidViewType(presentable.ViewType));
 				}
 
 				// 3) Create the controller (or dispose view if the controller is dismissed at this point).
