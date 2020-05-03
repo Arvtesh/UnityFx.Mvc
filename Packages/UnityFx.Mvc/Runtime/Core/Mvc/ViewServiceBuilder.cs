@@ -13,7 +13,7 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="ViewService"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/Builder_pattern"/>
-	public abstract class ViewServiceBuilder : IViewFactoryBuilder
+	public abstract class ViewServiceBuilder
 	{
 		#region data
 
@@ -43,10 +43,6 @@ namespace UnityFx.Mvc
 		/// <seealso cref="Build"/>
 		protected abstract ViewService Build(GameObject go);
 
-		#endregion
-
-		#region IViewFactoryBuilder
-
 		/// <summary>
 		/// Adds a new view layer.
 		/// </summary>
@@ -55,7 +51,7 @@ namespace UnityFx.Mvc
 		/// <seealso cref="ViewControllerAttribute.Layer"/>
 		/// <seealso cref="AddViewPrefab(string, GameObject)"/>
 		/// <seealso cref="Build"/>
-		public IViewFactoryBuilder AddLayer(Transform transform)
+		public ViewServiceBuilder AddLayer(Transform transform)
 		{
 			if (transform is null)
 			{
@@ -80,7 +76,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentException">Thrown is <paramref name="resourceId"/> is invalid.</exception>
 		/// <seealso cref="AddLayer(Transform)"/>
 		/// <seealso cref="Build"/>
-		public IViewFactoryBuilder AddViewPrefab(string resourceId, GameObject prefab)
+		public ViewServiceBuilder AddViewPrefab(string resourceId, GameObject prefab)
 		{
 			if (resourceId is null)
 			{
@@ -114,7 +110,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="InvalidOperationException">Thrown if the delegate is already set.</exception>
 		/// <seealso cref="UsePopupBackgoundColor(Color)"/>
 		/// <seealso cref="Build"/>
-		public IViewFactoryBuilder UseLoadDelegate(Func<string, Task<GameObject>> loadPrefabDelegate)
+		public ViewServiceBuilder UseLoadDelegate(Func<string, Task<GameObject>> loadPrefabDelegate)
 		{
 			if (_loadPrefabDelegate != null)
 			{
@@ -131,7 +127,7 @@ namespace UnityFx.Mvc
 		/// <param name="backgroundColor">The popup background color.</param>
 		/// <seealso cref="UseLoadDelegate(Func{string, Task{GameObject}})"/>
 		/// <seealso cref="Build"/>
-		public IViewFactoryBuilder UsePopupBackgoundColor(Color backgroundColor)
+		public ViewServiceBuilder UsePopupBackgoundColor(Color backgroundColor)
 		{
 			_popupBackgroundColor = backgroundColor;
 			return this;

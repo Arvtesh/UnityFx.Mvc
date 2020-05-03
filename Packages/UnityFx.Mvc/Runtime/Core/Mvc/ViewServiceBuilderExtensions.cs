@@ -19,7 +19,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="prefabs">The preloaded prefabs.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="prefabs"/> is <see langword="null"/>.</exception>
-		public static IViewFactoryBuilder AddViewPrefabs(this IViewFactoryBuilder builder, params GameObject[] prefabs)
+		public static ViewServiceBuilder AddViewPrefabs(this ViewServiceBuilder builder, params GameObject[] prefabs)
 		{
 			if (prefabs is null)
 			{
@@ -42,7 +42,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="layers">The layers array.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="layers"/> is <see langword="null"/>.</exception>
-		public static IViewFactoryBuilder AddLayers(this IViewFactoryBuilder builder, params Transform[] layers)
+		public static ViewServiceBuilder AddLayers(this ViewServiceBuilder builder, params Transform[] layers)
 		{
 			if (layers is null)
 			{
@@ -65,7 +65,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="config">The configuration asset.</param>
 		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="config"/> is <see langword="null"/>.</exception>
-		public static IViewFactoryBuilder UseConfig(this IViewFactoryBuilder builder, MvcConfig config)
+		public static ViewServiceBuilder UseConfig(this ViewServiceBuilder builder, MvcConfig config)
 		{
 			if (config is null)
 			{

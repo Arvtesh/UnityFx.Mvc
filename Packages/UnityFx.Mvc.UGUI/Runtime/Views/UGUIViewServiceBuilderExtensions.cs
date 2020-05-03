@@ -19,7 +19,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="config">The configuration asset.</param>
 		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="config"/> is <see langword="null"/>.</exception>
-		public static IViewFactoryBuilder UseConfig(this IViewFactoryBuilder builder, UGUIMvcConfig config)
+		public static ViewServiceBuilder UseConfig(this ViewServiceBuilder builder, UGUIMvcConfig config)
 		{
 			return builder.UseConfig((MvcConfig)config);
 		}
