@@ -259,11 +259,11 @@ namespace UnityFx.Mvc
 			}
 
 			var result = CreatePresentable(presentable, controllerType, presentOptions, args);
-			PresentInternal(result, presentable, presentOptions, transform);
+			PresentInternal(result, presentable, args, presentOptions, transform);
 			return result;
 		}
 
-		private async void PresentInternal(IPresentableProxy presentable, IPresentableProxy presentableParent, PresentOptions presentOptions, Transform transform)
+		private async void PresentInternal(IPresentableProxy presentable, IPresentableProxy presentableParent, PresentArgs presentArgs, PresentOptions presentOptions, Transform transform)
 		{
 			var zIndex = GetZIndex(presentable);
 
@@ -294,7 +294,7 @@ namespace UnityFx.Mvc
 				}
 				else
 				{
-					await presentable.PresentAsyc(view);
+					await presentable.PresentAsyc(view, presentArgs);
 
 					if (presentable.IsDismissed)
 					{
@@ -343,15 +343,15 @@ namespace UnityFx.Mvc
 			Debug.Assert(controllerType != null);
 			Debug.Assert(!_disposed);
 
-			var resultType = typeof(int);
 			var presentContext = new PresentResultArgs()
 			{
 				Id = ++_idCounter,
 				ServiceProvider = _serviceProvider,
 				ControllerFactory = _controllerFactory,
-				ViewFactory = _viewFactory,
 				ControllerType = controllerType,
-				PresentArgs = args
+				ViewFactory = _viewFactory,
+				ViewType = typeof(IView),
+				ResultType =typeof(int)
 			};
 
 			var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
@@ -372,9 +372,15 @@ namespace UnityFx.Mvc
 			}
 
 			// Types inherited from IViewControllerResult<> use specific result values.
-			if (MvcUtilities.IsAssignableToGenericType(controllerType, typeof(IViewControllerResult<>), out var t))
+			if (MvcUtilities.IsAssignableToGenericType(controllerType, typeof(IViewControllerResult<>), out var resultType))
 			{
-				resultType = t.GenericTypeArguments[0];
+				presentContext.ResultType = resultType.GenericTypeArguments[0];
+			}
+
+			// Types inherited from IViewControllerView<> have view type restrictions.
+			if (MvcUtilities.IsAssignableToGenericType(controllerType, typeof(IViewControllerView<>), out var viewType))
+			{
+				presentContext.ViewType = viewType.GenericTypeArguments[0];
 			}
 
 			// For child controller save parent reference.
@@ -392,7 +398,7 @@ namespace UnityFx.Mvc
 
 			// Instantiate the presentable.
 			// https://docs.microsoft.com/en-us/dotnet/framework/reflection-and-codedom/how-to-examine-and-instantiate-generic-types-with-reflection
-			var presentResultType = typeof(PresentResult<,>).MakeGenericType(controllerType, resultType);
+			var presentResultType = typeof(PresentResult<,>).MakeGenericType(controllerType, presentContext.ResultType);
 			var c = (IPresentableProxy)Activator.CreateInstance(presentResultType, this, presentContext);
 
 			AddPresentable(c);

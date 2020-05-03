@@ -19,7 +19,8 @@ namespace UnityFx.Mvc
 		
 		public IPresentableProxy Parent;
 		public Type ControllerType;
+		public Type ViewType;
+		public Type ResultType;
 		public ViewControllerFlags CreationFlags;
-		public PresentArgs PresentArgs;
 	}
 }

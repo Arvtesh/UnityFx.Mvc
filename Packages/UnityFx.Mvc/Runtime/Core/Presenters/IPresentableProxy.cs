@@ -16,7 +16,7 @@ namespace UnityFx.Mvc
 		IPresentableProxy Parent { get; }
 		bool TryActivate();
 		void Deactivate();
-		Task PresentAsyc(IView view);
+		Task PresentAsyc(IView view, PresentArgs presentArgs);
 		void Update(float frameTime);
 		void DismissCancel();
 		void Dismiss(Exception e);

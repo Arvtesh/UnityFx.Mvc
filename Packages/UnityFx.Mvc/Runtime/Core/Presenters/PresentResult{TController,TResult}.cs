@@ -43,7 +43,8 @@ namespace UnityFx.Mvc
 		private readonly IPresenterInternal _presenter;
 		private readonly IViewControllerFactory _controllerFactory;
 		private readonly Type _controllerType;
-		private readonly PresentArgs _presentArgs;
+		private readonly Type _viewType;
+		private readonly Type _resultType;
 		private readonly ViewControllerFlags _creationFlags;
 		private readonly IPresentableProxy _parent;
 		private readonly int _id;
@@ -82,7 +83,8 @@ namespace UnityFx.Mvc
 			_serviceProvider = context.ServiceProvider;
 			_controllerFactory = context.ControllerFactory;
 			_controllerType = context.ControllerType;
-			_presentArgs = context.PresentArgs;
+			_resultType = context.ResultType;
+			_viewType = context.ViewType;
 			_creationFlags = context.CreationFlags;
 			_deeplinkId = MvcUtilities.GetControllerDeeplinkId(_controllerType);
 			_prefabPath = string.IsNullOrEmpty(context.ViewResourceId) ? MvcUtilities.GetControllerName(context.ControllerType) : context.ViewResourceId;
@@ -133,14 +135,14 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		public Task PresentAsyc(IView view)
+		public Task PresentAsyc(IView view, PresentArgs presentArgs)
 		{
 			Debug.Assert(view != null);
 			Debug.Assert(_state == State.Initialized);
 
 			_view = view;
 			_scope = _controllerFactory.CreateScope(ref _serviceProvider);
-			_controller = (TController)_controllerFactory.CreateViewController(_controllerType, this, _presentArgs, _view);
+			_controller = (TController)_controllerFactory.CreateViewController(_controllerType, this, presentArgs, _view);
 			_activateEvents = _controller as IActivatable;
 			_presentEvents = _controller as IPresentable;
 
@@ -257,7 +259,9 @@ namespace UnityFx.Mvc
 
 		public Type ControllerType => _controllerType;
 
-		public PresentArgs PresentArgs => _presentArgs;
+		public Type ViewType => _viewType;
+
+		public Type ResultType => _resultType;
 
 		public ViewControllerFlags CreationFlags => _creationFlags;
 

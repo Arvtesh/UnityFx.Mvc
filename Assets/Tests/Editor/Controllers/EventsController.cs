@@ -23,11 +23,6 @@ namespace UnityFx.Mvc
 		{
 			_context = context;
 
-			if (context.PresentArgs is PresentArgs<ControllerEvents> pa)
-			{
-				_throwOnEvent = pa.Value;
-			}
-
 			if (_throwOnEvent == ControllerEvents.Ctor)
 			{
 				throw new InvalidOperationException();

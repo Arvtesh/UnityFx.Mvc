@@ -37,10 +37,14 @@ namespace UnityFx.Mvc
 		Type ControllerType { get; }
 
 		/// <summary>
-		/// Gets the controller present arguments.
+		/// Gets type of the view.
 		/// </summary>
-		/// <seealso cref="PresentOptions"/>
-		PresentArgs PresentArgs { get; }
+		Type ViewType { get; }
+
+		/// <summary>
+		/// Gets type of the controller result value.
+		/// </summary>
+		Type ResultType { get; }
 
 		/// <summary>
 		/// Gets the controller creation flags.
