@@ -24,6 +24,7 @@ namespace UnityFx.Mvc
 		private readonly IViewControllerBindings _controllerBindings;
 		private readonly IPresenterEventSource _eventSource;
 		private readonly ViewControllerCollection _controllers;
+		private readonly PresentArgs _defaultPresentArgs = new PresentArgs();
 
 		private LinkedList<IPresentableProxy> _presentables = new LinkedList<IPresentableProxy>();
 		private Dictionary<IViewController, IPresentableProxy> _controllerMap = new Dictionary<IViewController, IPresentableProxy>();
@@ -252,6 +253,11 @@ namespace UnityFx.Mvc
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
+			if (args is null)
+			{
+				args = _defaultPresentArgs;
+			}
+
 			var result = CreatePresentable(presentable, controllerType, presentOptions, args);
 			PresentInternal(result, presentable, presentOptions, transform);
 			return result;
@@ -345,7 +351,7 @@ namespace UnityFx.Mvc
 				ControllerFactory = _controllerFactory,
 				ViewFactory = _viewFactory,
 				ControllerType = controllerType,
-				PresentArgs = args ?? PresentArgs.Default
+				PresentArgs = args
 			};
 
 			var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);

@@ -16,7 +16,6 @@ namespace UnityFx.Mvc
 		#region data
 
 		private static Dictionary<string, string> _emptyQuery = new Dictionary<string, string>();
-		private static PresentArgs _defaultArgs = new PresentArgs();
 
 		private readonly Dictionary<string, string> _query;
 		private readonly string _fragment;
@@ -24,11 +23,6 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region interface
-
-		/// <summary>
-		/// Gets default arguments value.
-		/// </summary>
-		public static PresentArgs Default => _defaultArgs;
 
 		/// <summary>
 		/// Gets query parameters (if any).
