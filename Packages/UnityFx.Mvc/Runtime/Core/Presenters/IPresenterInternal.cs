@@ -10,7 +10,7 @@ namespace UnityFx.Mvc
 	internal interface IPresenterInternal
 	{
 		IEnumerable<IPresentableProxy> GetChildren(IPresentableProxy presentable);
-		IPresentResult PresentAsync(IPresentableProxy presentable, Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args);
+		IPresentResult PresentAsync(IPresentableProxy presentable, Type controllerType, PresentArgs args);
 		void PresentCompleted(IPresentableProxy presentable, Exception e, bool cancelled);
 		void ReportError(Exception e);
 	}

@@ -26,6 +26,6 @@ namespace UnityFx.Mvc
 		/// <returns>An object that can be used to track the operation propress.</returns>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
 		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance, it is abstract type).</exception>
-		IPresentResult Present(Type controllerType, PresentArgs args, PresentOptions presentOptions, Transform parent);
+		IPresentResult Present(Type controllerType, PresentArgs args);
 	}
 }

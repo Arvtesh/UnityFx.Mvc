@@ -89,9 +89,9 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		IPresentResult IPresenterInternal.PresentAsync(IPresentableProxy presentable, Type controllerType, PresentOptions presentOptions, Transform parent, PresentArgs args)
+		IPresentResult IPresenterInternal.PresentAsync(IPresentableProxy presentable, Type controllerType, PresentArgs args)
 		{
-			return PresentInternal(presentable, controllerType, presentOptions, parent, args);
+			return PresentInternal(presentable, controllerType, args);
 		}
 
 		void IPresenterInternal.PresentCompleted(IPresentableProxy presentable, Exception e, bool cancelled)
@@ -140,9 +140,9 @@ namespace UnityFx.Mvc
 
 		#region IPresenter
 
-		public IPresentResult Present(Type controllerType, PresentArgs args, PresentOptions presentOptions, Transform parent)
+		public IPresentResult Present(Type controllerType, PresentArgs args)
 		{
-			return PresentInternal(null, controllerType, presentOptions, parent, args);
+			return PresentInternal(null, controllerType, args);
 		}
 
 		#endregion
@@ -248,7 +248,7 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private IPresentResult PresentInternal(IPresentableProxy presentable, Type controllerType, PresentOptions presentOptions, Transform transform, PresentArgs args)
+		private IPresentResult PresentInternal(IPresentableProxy presentable, Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
@@ -258,12 +258,12 @@ namespace UnityFx.Mvc
 				args = _defaultPresentArgs;
 			}
 
-			var result = CreatePresentable(presentable, controllerType, presentOptions, args);
-			PresentInternal(result, presentable, args, presentOptions, transform);
+			var result = CreatePresentable(presentable, controllerType, args);
+			PresentInternal(result, presentable, args);
 			return result;
 		}
 
-		private async void PresentInternal(IPresentableProxy presentable, IPresentableProxy presentableParent, PresentArgs presentArgs, PresentOptions presentOptions, Transform transform)
+		private async void PresentInternal(IPresentableProxy presentable, IPresentableProxy presentableParent, PresentArgs presentArgs)
 		{
 			var zIndex = GetZIndex(presentable);
 
@@ -279,7 +279,7 @@ namespace UnityFx.Mvc
 				}
 
 				// 2) Load the controller view.
-				var view = await _viewFactory.PresentViewAsync(presentable.PrefabPath, presentable.Layer, zIndex, presentable.CreationFlags, transform);
+				var view = await _viewFactory.PresentViewAsync(presentable.PrefabPath, presentable.Layer, zIndex, presentable.CreationFlags, presentArgs.Transform);
 
 				if (view is null)
 				{
@@ -305,7 +305,7 @@ namespace UnityFx.Mvc
 				_controllerMap.Add(presentable.Controller, presentable);
 
 				// 4) Dismiss the specified controllers if requested.
-				if ((presentOptions & PresentOptions.DismissAll) != 0)
+				if ((presentArgs.PresentOptions & PresentOptions.DismissAll) != 0)
 				{
 					foreach (var p in _presentables)
 					{
@@ -315,7 +315,7 @@ namespace UnityFx.Mvc
 						}
 					}
 				}
-				else if ((presentOptions & PresentOptions.DismissCurrent) != 0)
+				else if ((presentArgs.PresentOptions & PresentOptions.DismissCurrent) != 0)
 				{
 					presentableParent?.DismissCancel();
 				}
@@ -338,7 +338,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		private IPresentableProxy CreatePresentable(IPresentableProxy parent, Type controllerType, PresentOptions presentOptions, PresentArgs args)
+		private IPresentableProxy CreatePresentable(IPresentableProxy parent, Type controllerType, PresentArgs args)
 		{
 			Debug.Assert(controllerType != null);
 			Debug.Assert(!_disposed);
@@ -351,7 +351,7 @@ namespace UnityFx.Mvc
 				ControllerType = controllerType,
 				ViewFactory = _viewFactory,
 				ViewType = typeof(IView),
-				ResultType =typeof(int)
+				ResultType = typeof(int)
 			};
 
 			var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
@@ -384,9 +384,9 @@ namespace UnityFx.Mvc
 			}
 
 			// For child controller save parent reference.
-			if ((presentOptions & PresentOptions.Child) != 0)
+			if ((args.PresentOptions & PresentOptions.Child) != 0)
 			{
-				if ((presentOptions & PresentOptions.DismissCurrent) != 0)
+				if ((args.PresentOptions & PresentOptions.DismissCurrent) != 0)
 				{
 					presentContext.Parent = parent?.Parent;
 				}
