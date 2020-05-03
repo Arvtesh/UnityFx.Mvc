@@ -14,18 +14,12 @@ namespace UnityFx.Mvc
 	/// <typeparam name="T">Type of the nested value.</typeparam>
 	public class PresentArgs<T> : PresentArgs
 	{
-		#region data
-
-		private readonly T _value;
-
-		#endregion
-
 		#region interface
 
 		/// <summary>
-		/// Gets the value.
+		/// Gets or sets the value.
 		/// </summary>
-		public T Value => _value;
+		public T Value { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentArgs{T}"/> class.
@@ -39,25 +33,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		public PresentArgs(T value)
 		{
-			_value = value;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PresentArgs{T}"/> class.
-		/// </summary>
-		public PresentArgs(T value, IEnumerable<KeyValuePair<string, string>> query)
-			: base(query, null)
-		{
-			_value = value;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PresentArgs{T}"/> class.
-		/// </summary>
-		public PresentArgs(T value, IEnumerable<KeyValuePair<string, string>> query, string fragment)
-			: base(query, fragment)
-		{
-			_value = value;
+			Value = value;
 		}
 
 		#endregion

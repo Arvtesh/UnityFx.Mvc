@@ -15,10 +15,7 @@ namespace UnityFx.Mvc
 	{
 		#region data
 
-		private static Dictionary<string, string> _emptyQuery = new Dictionary<string, string>();
-
-		private readonly Dictionary<string, string> _query;
-		private readonly string _fragment;
+		private Dictionary<string, string> _query;
 
 		#endregion
 
@@ -27,52 +24,39 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets query parameters (if any).
 		/// </summary>
-		public IReadOnlyDictionary<string, string> Query => _query;
+		public IDictionary<string, string> Query
+		{
+			get
+			{
+				if (_query is null)
+				{
+					_query = new Dictionary<string, string>();
+				}
+
+				return _query;
+			}
+		}
 
 		/// <summary>
-		/// Gets fragment parameters (if any).
+		/// Gets or sets fragment parameters (if any).
 		/// </summary>
-		public string Fragment => _fragment;
+		public string Fragment { get; set; }
+
+		/// <summary>
+		/// Gets or sets the controller present options.
+		/// </summary>
+		public PresentOptions PresentOptions { get; set; }
+
+		/// <summary>
+		/// Gets or sets a transform to attach view to (if set).
+		/// </summary>
+		public Transform Transform { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
 		/// </summary>
 		public PresentArgs()
 		{
-			_query = _emptyQuery;
-			_fragment = string.Empty;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
-		/// </summary>
-		/// <param name="query"></param>
-		public PresentArgs(IEnumerable<KeyValuePair<string, string>> query)
-			: this(query, null)
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
-		/// </summary>
-		/// <param name="query"></param>
-		/// <param name="fragment"></param>
-		public PresentArgs(IEnumerable<KeyValuePair<string, string>> query, string fragment)
-		{
-			if (query is null)
-			{
-				throw new ArgumentNullException(nameof(query));
-			}
-
-			var data = new Dictionary<string, string>();
-
-			foreach (var item in query)
-			{
-				data.Add(item.Key, item.Value);
-			}
-
-			_query = data;
-			_fragment = fragment ?? string.Empty;
 		}
 
 		/// <summary>
@@ -88,16 +72,15 @@ namespace UnityFx.Mvc
 			}
 
 			var query = deeplink.Query;
-			var fragment = deeplink.Fragment;
-
-			if (string.IsNullOrEmpty(query))
+			var result = new PresentArgs()
 			{
-				return new PresentArgs(deeplink, _emptyQuery, fragment);
-			}
-			else
+				Fragment = deeplink.Fragment
+			};
+
+			if (!string.IsNullOrEmpty(query))
 			{
 				var args = query.Split('?');
-				var queryMap = new Dictionary<string, string>(args.Length);
+				var queryMap = result.Query;
 
 				foreach (var arg in args)
 				{
@@ -116,9 +99,9 @@ namespace UnityFx.Mvc
 						queryMap.Add(key, value);
 					}
 				}
-
-				return new PresentArgs(deeplink, queryMap, fragment);
 			}
+
+			return result;
 		}
 
 		#endregion
@@ -129,7 +112,7 @@ namespace UnityFx.Mvc
 		public override string ToString()
 		{
 			var queryNotEmpty = _query.Count > 0;
-			var fragmentNotEmpty = !string.IsNullOrEmpty(_fragment);
+			var fragmentNotEmpty = !string.IsNullOrEmpty(Fragment);
 
 			if (queryNotEmpty || fragmentNotEmpty)
 			{
@@ -162,7 +145,7 @@ namespace UnityFx.Mvc
 				if (fragmentNotEmpty)
 				{
 					text.Append('#');
-					text.Append(_fragment);
+					text.Append(Fragment);
 				}
 
 				return text.ToString();
@@ -174,13 +157,6 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region implementation
-
-		private PresentArgs(Uri deeplink, Dictionary<string, string> query, string fragment)
-		{
-			_query = query;
-			_fragment = fragment ?? string.Empty;
-		}
-
 		#endregion
 	}
 }

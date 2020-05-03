@@ -11,7 +11,8 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <param name="presenter">The presenter.</param>
 	/// <param name="controllerInfo">Information about the controller being presented.</param>
+	/// <param name="presentArgs">Controller present argument.</param>
 	/// <seealso cref="IPresenter"/>
 	/// <seealso cref="IPresenterBuilder"/>
-	public delegate Task PresentDelegate(IPresentService presenter, IPresentInfo controllerInfo);
+	public delegate Task PresentDelegate(IPresentService presenter, IPresentInfo controllerInfo, PresentArgs presentArgs);
 }

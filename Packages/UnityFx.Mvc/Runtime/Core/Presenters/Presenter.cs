@@ -274,7 +274,7 @@ namespace UnityFx.Mvc
 				{
 					foreach (var middleware in _presentDelegates)
 					{
-						await middleware(this, presentable);
+						await middleware(this, presentable, presentArgs);
 					}
 				}
 
