@@ -20,7 +20,7 @@ namespace UnityFx.Mvc
 	/// (via <see cref="IPresentContext"/> interface) and serves as a proxy between the controller and user.
 	/// </remarks>
 	[Preserve]
-	internal sealed class PresentResult<TController, TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TResult>, IPresentableProxy, IEnumerator where TController : class, IViewController
+	internal sealed class PresentResult<TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TResult>, IPresentableProxy, IEnumerator
 	{
 		#region data
 
@@ -55,7 +55,7 @@ namespace UnityFx.Mvc
 
 		private IServiceProvider _serviceProvider;
 		private IDisposable _scope;
-		private TController _controller;
+		private IViewController _controller;
 		private IPresentable _presentEvents;
 		private IActivatable _activateEvents;
 		private IView _view;
@@ -142,7 +142,7 @@ namespace UnityFx.Mvc
 
 			_view = view;
 			_scope = _controllerFactory.CreateScope(ref _serviceProvider);
-			_controller = (TController)_controllerFactory.CreateViewController(_controllerType, this, presentArgs, _view);
+			_controller = _controllerFactory.CreateViewController(_controllerType, this, presentArgs, _view);
 			_activateEvents = _controller as IActivatable;
 			_presentEvents = _controller as IPresentable;
 

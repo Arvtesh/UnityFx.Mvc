@@ -398,7 +398,7 @@ namespace UnityFx.Mvc
 
 			// Instantiate the presentable.
 			// https://docs.microsoft.com/en-us/dotnet/framework/reflection-and-codedom/how-to-examine-and-instantiate-generic-types-with-reflection
-			var presentResultType = typeof(PresentResult<,>).MakeGenericType(controllerType, presentContext.ResultType);
+			var presentResultType = typeof(PresentResult<>).MakeGenericType(presentContext.ResultType);
 			var c = (IPresentableProxy)Activator.CreateInstance(presentResultType, this, presentContext);
 
 			AddPresentable(c);

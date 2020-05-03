@@ -14,10 +14,10 @@ namespace UnityFx.Mvc
 		[Preserve]
 		private static void AotCodegenHelper()
 		{
-			// NOTE: This method is needed for AOT compiler to generate code for PresentResult<,> specializations.
+			// NOTE: This method is needed for AOT compiler to generate code for PresentResult<> specializations.
 			// It should never be executed, it's just here to mark specific type arguments as used.
-			new PresentResult<ViewController, object>(null, null);
-			new PresentResult<ViewController, int>(null, null);
+			new PresentResult<object>(null, null);
+			new PresentResult<int>(null, null);
 		}
 
 #endif

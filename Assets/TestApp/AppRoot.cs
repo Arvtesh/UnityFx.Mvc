@@ -27,6 +27,7 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 		_presenter = new PresenterBuilder(this, gameObject)
 			.UseViewFactory(_viewFactory)
 			.UseViewControllerBindings(_viewConfig)
+			.UseErrorDelegate(OnPresentError)
 			.Build();
 	}
 
@@ -43,5 +44,10 @@ public class AppRoot : MonoBehaviour, IServiceProvider
 		}
 
 		return null;
+	}
+
+	private void OnPresentError(Exception e)
+	{
+		Debug.LogException(e);
 	}
 }
