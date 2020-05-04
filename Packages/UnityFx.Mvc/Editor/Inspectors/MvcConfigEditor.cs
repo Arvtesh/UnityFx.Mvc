@@ -248,6 +248,8 @@ namespace UnityFx.Mvc
 					ViewResourceId = MvcConfig.GetResourceId(names.ControllerName),
 					ViewPrefab = prefab
 				});
+
+				EditorUtility.SetDirty(target);
 			}
 			catch (Exception e)
 			{
@@ -489,6 +491,8 @@ namespace UnityFx.Mvc
 					AddViewControllersFromPath(configPath);
 				}
 			}
+
+			EditorUtility.SetDirty(target);
 		}
 
 		private void OnValidateBindings()
@@ -510,6 +514,8 @@ namespace UnityFx.Mvc
 		private void OnClearBindings()
 		{
 			Undo.RecordObject(target, "Clear Bindings");
+			EditorUtility.SetDirty(target);
+
 			_lastError = string.Empty;
 			_config.Clear();
 		}
