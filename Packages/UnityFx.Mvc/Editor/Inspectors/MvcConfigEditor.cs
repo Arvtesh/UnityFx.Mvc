@@ -641,6 +641,12 @@ namespace UnityFx.Mvc
 			EditorGUILayout.PropertyField(_defaultNamespace);
 
 			var controllerObj = AssetDatabase.LoadAssetAtPath<MonoScript>(_baseControllerTypePath.stringValue);
+
+			if (!controllerObj)
+			{
+				controllerObj = AssetDatabase.LoadAssetAtPath<MonoScript>(GetDefaultControllerPath());
+			}
+
 			var newControllerObj = EditorGUILayout.ObjectField(
 				"Default Controller",
 				controllerObj,
@@ -669,6 +675,12 @@ namespace UnityFx.Mvc
 			}
 
 			var viewObj = AssetDatabase.LoadAssetAtPath<MonoScript>(_baseViewTypePath.stringValue);
+
+			if (!viewObj)
+			{
+				viewObj = AssetDatabase.LoadAssetAtPath<MonoScript>(GetDefaultViewPath());
+			}
+
 			var newViewObj = EditorGUILayout.ObjectField(
 				"Default View",
 				viewObj,

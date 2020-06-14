@@ -21,7 +21,7 @@ namespace UnityFx.Mvc
 		[SerializeField]
 		private Color _popupBackgroundColor = new Color(0, 0, 0, 0.5f);
 		[SerializeField, HideInInspector]
-		private List<ViewControllerInfo> _viewControllers;
+		private List<ViewControllerInfo> _viewControllers = new List<ViewControllerInfo>();
 
 #if UNITY_EDITOR
 
@@ -46,8 +46,8 @@ namespace UnityFx.Mvc
 
 #if UNITY_EDITOR
 
-		internal const string DefaultControllerPath = "Packages/com.unityfx.mvc/Runtime/Abstractions/Mvc/ViewController.cs";
-		internal const string DefaultViewPath = "Packages/com.unityfx.mvc/Runtime/Abstractions/Mvc/View.cs";
+		internal const string DefaultControllerPath = "Packages/com.unityfx.mvc/Runtime/Core/Mvc/ViewController.cs";
+		internal const string DefaultViewPath = "Packages/com.unityfx.mvc/Runtime/Core/Mvc/View.cs";
 
 		internal IReadOnlyList<string> SearchFolders => _folders;
 
