@@ -12,7 +12,7 @@ namespace UnityFx.Mvc
 	/// Extensions of <see cref="IViewControllerCollection"/> interface.
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static class IViewControllerCollectionExtensions
+	public static class ViewControllerCollectionExtensions
 	{
 		/// <summary>
 		/// Returns top element of the collection.

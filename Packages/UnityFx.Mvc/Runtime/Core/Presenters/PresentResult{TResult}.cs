@@ -267,6 +267,12 @@ namespace UnityFx.Mvc
 
 		public bool IsDismissed => _state == State.Dismissed || _state == State.Disposed;
 
+        #endregion
+
+		#region IViewControllerResultAccess
+
+		public TResult Result => Task.Result;
+
 		#endregion
 
 		#region IPresenter
@@ -286,8 +292,6 @@ namespace UnityFx.Mvc
 		public IViewController Controller => _controller;
 
 		public IView View => _view;
-
-		public TResult Result => Task.Result;
 
 		#endregion
 
