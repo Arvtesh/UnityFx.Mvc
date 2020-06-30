@@ -8,70 +8,26 @@ using UnityEngine.UI;
 namespace UnityFx.Mvc.Extensions
 {
 	/// <summary>
-	/// View for the <see cref="MessageBoxController"/>.
+	/// UGUI view for a message box.
 	/// </summary>
 	/// <seealso cref="MessageBoxController"/>
-	public class UGUIMessageBoxView : UGUIView, IConfigurable<MessageBoxArgs>
+	public class UGUIMessageBoxView : UGUIDialogView, IConfigurable<MessageBoxArgs>
 	{
-		#region data
+		#region UGUIDialogView
 
-#pragma warning disable 0649
-
-		[SerializeField]
-		private Text _title;
-		[SerializeField]
-		private Text _text;
-		[SerializeField]
-		private Text _okText;
-		[SerializeField]
-		private Button _okButton;
-		[SerializeField]
-		private Text _cancelText;
-		[SerializeField]
-		private Button _cancelButton;
-		[SerializeField]
-		private Button _closeButton;
-
-#pragma warning restore 0649
-
-		#endregion
-
-		#region MonoBehaviour
-
-		private void OnEnable()
+		protected override void OnOk()
 		{
-			if (_okButton)
-			{
-				_okButton.onClick.AddListener(OnOk);
-			}
-
-			if (_cancelButton)
-			{
-				_cancelButton.onClick.AddListener(OnCancel);
-			}
-
-			if (_closeButton)
-			{
-				_closeButton.onClick.AddListener(OnClose);
-			}
+			NotifyCommand(MessageBoxCommands.Ok);
 		}
 
-		private void OnDisable()
+		protected override void OnCancel()
 		{
-			if (_okButton)
-			{
-				_okButton.onClick.RemoveListener(OnOk);
-			}
+			NotifyCommand(MessageBoxCommands.Cancel);
+		}
 
-			if (_cancelButton)
-			{
-				_cancelButton.onClick.RemoveListener(OnCancel);
-			}
-
-			if (_closeButton)
-			{
-				_closeButton.onClick.RemoveListener(OnClose);
-			}
+		protected override void OnClose()
+		{
+			NotifyCommand(MessageBoxCommands.Close);
 		}
 
 		#endregion
@@ -81,54 +37,17 @@ namespace UnityFx.Mvc.Extensions
 		/// <inheritdoc/>
 		public void Configure(MessageBoxArgs args)
 		{
-			if (_title)
+			base.Configure(args);
+
+			if (OkButton)
 			{
-				_title.text = args.Title;
+				OkButton.gameObject.SetActive((args.Options & MessageBoxOptions.Ok) != 0);
 			}
 
-			if (_text)
+			if (CancelButton)
 			{
-				_text.text = args.Text;
+				CancelButton.gameObject.SetActive((args.Options & MessageBoxOptions.Cancel) != 0);
 			}
-
-			if (_okText && !string.IsNullOrEmpty(args.OkText))
-			{
-				_okText.text = args.OkText;
-			}
-
-			if (_cancelText && !string.IsNullOrEmpty(args.CancelText))
-			{
-				_cancelText.text = args.CancelText;
-			}
-
-			if (_okButton)
-			{
-				_okButton.gameObject.SetActive((args.Options & MessageBoxOptions.Ok) != 0);
-			}
-
-			if (_cancelButton)
-			{
-				_cancelButton.gameObject.SetActive((args.Options & MessageBoxOptions.Cancel) != 0);
-			}
-		}
-
-		#endregion
-
-		#region implementation
-
-		private void OnOk()
-		{
-			NotifyCommand(MessageBoxCommands.Ok);
-		}
-
-		private void OnCancel()
-		{
-			NotifyCommand(MessageBoxCommands.Cancel);
-		}
-
-		private void OnClose()
-		{
-			NotifyCommand(MessageBoxCommands.Close);
 		}
 
 		#endregion
