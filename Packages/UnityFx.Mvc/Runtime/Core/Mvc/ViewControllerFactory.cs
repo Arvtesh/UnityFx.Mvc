@@ -53,7 +53,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="InvalidOperationException">Thrown if <paramref name="controllerType"/> is not a valid controller type (for instance, <paramref name="controllerType"/> is abstract).</exception>
 		/// <returns>The created controller instance.</returns>
 		/// <seealso cref="ReleaseViewController(IViewController)"/>
-		public virtual IViewController CreateViewController(Type controllerType, params object[] args)
+		public virtual IViewController CreateViewController(Type controllerType, object[] args)
 		{
 			if (controllerType is null)
 			{
@@ -64,7 +64,7 @@ namespace UnityFx.Mvc
 			{
 				var constructors = controllerType.GetConstructors(BindingFlags.Instance | BindingFlags.Public);
 
-				if (constructors.Length > 0)
+				if (constructors.Length > 0 && args != null && args.Length > 0)
 				{
 					// Select the first public non-static ctor with matching arguments.
 					foreach (var ctor in constructors)

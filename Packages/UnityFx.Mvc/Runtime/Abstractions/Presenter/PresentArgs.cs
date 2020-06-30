@@ -53,10 +53,23 @@ namespace UnityFx.Mvc
 		public Transform Transform { get; set; }
 
 		/// <summary>
+		/// Gets or sets a user-defined  data.
+		/// </summary>
+		public object UserData { get; set; }
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
 		/// </summary>
 		public PresentArgs()
 		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
+		/// </summary>
+		public PresentArgs(object userData)
+		{
+			UserData = userData;
 		}
 
 		/// <summary>

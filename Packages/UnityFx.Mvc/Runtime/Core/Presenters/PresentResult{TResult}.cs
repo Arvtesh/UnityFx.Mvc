@@ -142,7 +142,7 @@ namespace UnityFx.Mvc
 
 			_view = view;
 			_scope = _controllerFactory.CreateScope(ref _serviceProvider);
-			_controller = _controllerFactory.CreateViewController(_controllerType, this, presentArgs, _view);
+			_controller = _controllerFactory.CreateViewController(_controllerType, this, _view, presentArgs, presentArgs.UserData);
 			_activateEvents = _controller as IActivatable;
 			_presentEvents = _controller as IPresentable;
 
