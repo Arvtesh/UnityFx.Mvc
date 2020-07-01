@@ -8,10 +8,11 @@ using UnityEngine.UI;
 namespace UnityFx.Mvc.Extensions
 {
 	/// <summary>
-	/// UGUI view for a message box.
+	/// UGUI view for <see cref="MessageBoxController"/>.
 	/// </summary>
 	/// <seealso cref="MessageBoxController"/>
-	public class UGUIMessageBoxView : UGUIDialogView, IConfigurable<MessageBoxArgs>
+	[ViewControllerBinding(typeof(MessageBoxController))]
+	public sealed class UGUIMessageBoxView : UGUIDialogView, IConfigurable<MessageBoxArgs>
 	{
 		#region UGUIDialogView
 

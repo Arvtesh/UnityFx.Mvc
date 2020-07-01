@@ -328,6 +328,25 @@ namespace UnityFx.Mvc
 							{
 								viewPrefabs.Add(type, new List<GameObject>() { prefab });
 							}
+
+							var controllerScript = GetControllerScript(type);
+
+							if (controllerScript)
+							{
+								var viewScript = MonoScript.FromMonoBehaviour(view as MonoBehaviour);
+
+								if (viewScript && !views.ContainsKey(type))
+								{
+									views.Add(type, viewScript);
+								}
+
+								type = controllerScript.GetClass();
+
+								if (type != null && !controllers.ContainsKey(type))
+								{
+									controllers.Add(type, controllerScript);
+								}
+							}
 						}
 
 						allPrefabs.Add(prefab);
@@ -398,24 +417,37 @@ namespace UnityFx.Mvc
 			var item = _viewControllersList.serializedProperty.GetArrayElementAtIndex(index);
 			var controllerProp = item.FindPropertyRelative("ControllerScriptPath");
 			var controllerObj = AssetDatabase.LoadAssetAtPath<MonoScript>(controllerProp.stringValue);
+			var prefabProp = item.FindPropertyRelative("ViewPrefab");
+			var prefabObj = prefabProp.objectReferenceValue;
 
 			// Controller script.
 			EditorGUI.BeginDisabledGroup(true);
 			{
+				var rc = new Rect(rect.x, rect.y + 1, itemCx, EditorGUIUtility.singleLineHeight);
+
 				if (controllerObj)
 				{
-					EditorGUI.ObjectField(
-						new Rect(rect.x, rect.y + 1, itemCx, EditorGUIUtility.singleLineHeight),
-						controllerObj,
-						typeof(MonoScript),
-						false);
+					EditorGUI.ObjectField(rc, controllerObj, typeof(MonoScript), false);
+				}
+				else
+				{
+					var viewProp = item.FindPropertyRelative("ViewScriptPath");
+					var viewObj = AssetDatabase.LoadAssetAtPath<MonoScript>(viewProp.stringValue);
+
+					if (viewObj)
+					{
+						controllerObj = GetControllerScript(viewObj.GetClass());
+
+						if (controllerObj)
+						{
+							EditorGUI.ObjectField(rc, controllerObj, typeof(MonoScript), false);
+						}
+					}
 				}
 			}
 			EditorGUI.EndDisabledGroup();
 
 			// Prefab reference.
-			var prefabProp = item.FindPropertyRelative("ViewPrefab");
-			var prefabObj = prefabProp.objectReferenceValue;
 			var newPrefabObj = EditorGUI.ObjectField(
 				new Rect(rect.x + itemCx + padding, rect.y + 1, itemCx + padding, EditorGUIUtility.singleLineHeight),
 				prefabObj,
@@ -790,7 +822,7 @@ namespace UnityFx.Mvc
 				prefabProp.objectReferenceValue = null;
 				resourceIdProp.stringValue = null;
 
-				if (controllerType == null)
+				if (controllerType is null)
 				{
 					viewProp.stringValue = null;
 				}
@@ -799,6 +831,29 @@ namespace UnityFx.Mvc
 			}
 
 			return false;
+		}
+
+		private static MonoScript GetControllerScript(Type viewType)
+		{
+			if (viewType != null)
+			{
+				var attrs = (ViewControllerBindingAttribute[])viewType.GetCustomAttributes(typeof(ViewControllerBindingAttribute), true);
+
+				if (attrs != null && attrs.Length > 0 && attrs[0].ControllerType != null)
+				{
+					var type = attrs[0].ControllerType;
+
+					foreach (var script in Resources.FindObjectsOfTypeAll<MonoScript>())
+					{
+						if (script.GetClass() == type)
+						{
+							return script;
+						}
+					}
+				}
+			}
+
+			return null;
 		}
 
 		private static string GetControllerTypeStr(ControllerType controllerType)

@@ -10,7 +10,7 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IView"/>
-	public class ViewControllerBindings : IViewControllerBindings
+	internal class ViewControllerBindings : IViewControllerBindings
 	{
 		#region data
 		#endregion

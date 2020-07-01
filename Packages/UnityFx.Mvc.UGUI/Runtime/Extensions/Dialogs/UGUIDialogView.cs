@@ -123,9 +123,6 @@ namespace UnityFx.Mvc.Extensions
 		#endregion
 
 		#region implementation
-
-		
-
 		#endregion
 	}
 }
