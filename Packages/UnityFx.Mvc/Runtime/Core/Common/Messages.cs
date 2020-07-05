@@ -7,6 +7,21 @@ namespace UnityFx.Mvc
 {
 	internal static class Messages
 	{
+		public static string Format_ControllerAlreadyPresented(Type controllerType)
+		{
+			return $"Controller of the same type is already presented. Use {ViewControllerFlags.AllowMultipleInstances} flag to allow this behavior.";
+		}
+
+		public static string Format_ControllerTypeIsAbstract(Type controllerType)
+		{
+			return $"Cannot instantiate abstract type {controllerType.Name}.";
+		}
+
+		public static string Format_ControllerTypeIsNotController(Type controllerType)
+		{
+			return $"A view controller is expected to implement {typeof(IViewController).Name}.";
+		}
+
 		public static string Format_InvalidPrefabPath()
 		{
 			return "Invalid prefab path.";

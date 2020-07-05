@@ -115,7 +115,14 @@ namespace UnityFx.Mvc
 			}
 			else
 			{
-				return $"Failed to present controller {controllerType.Name}: {message}.";
+				var s = $"Failed to present controller {controllerType.Name}: {message}";
+
+				if (s[s.Length - 1] != '.')
+				{
+					s += '.';
+				}
+
+				return s;
 			}
 		}
 

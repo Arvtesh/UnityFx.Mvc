@@ -265,8 +265,6 @@ namespace UnityFx.Mvc
 
 		public ViewControllerFlags CreationFlags => _creationFlags;
 
-		public bool IsDismissed => _state == State.Dismissed || _state == State.Disposed;
-
         #endregion
 
 		#region IViewControllerResultAccess
@@ -292,6 +290,10 @@ namespace UnityFx.Mvc
 		public IViewController Controller => _controller;
 
 		public IView View => _view;
+
+		public bool IsPresented => _state == State.Presented || _state == State.Active;
+
+		public bool IsDismissed => _state == State.Dismissed || _state == State.Disposed;
 
 		#endregion
 

@@ -40,8 +40,13 @@ namespace UnityFx.Mvc
 		ModalPopup = Modal | Popup,
 
 		/// <summary>
+		/// If set, multiple simultaneous instances of the same controller type are allowed.
+		/// </summary>
+		AllowMultipleInstances = 0x10,
+
+		/// <summary>
 		/// If set, presenting the controller would dismiss all other controllers of the same type.
 		/// </summary>
-		Singleton = 0x10,
+		Singleton = 0x20,
 	}
 }

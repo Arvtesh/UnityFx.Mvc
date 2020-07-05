@@ -248,7 +248,7 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private IPresentResult PresentInternal(IPresentableProxy presentable, Type controllerType, PresentArgs args)
+		private IPresentResult PresentInternal(IPresentableProxy parent, Type controllerType, PresentArgs args)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
@@ -258,8 +258,8 @@ namespace UnityFx.Mvc
 				args = _defaultPresentArgs;
 			}
 
-			var result = CreatePresentable(presentable, controllerType, args);
-			PresentInternal(result, presentable, args);
+			var result = CreatePresentable(parent, controllerType, args);
+			PresentInternal(result, parent, args);
 			return result;
 		}
 
@@ -369,6 +369,15 @@ namespace UnityFx.Mvc
 				presentContext.CreationFlags = attr.Flags;
 				presentContext.Layer = attr.Layer;
 				presentContext.Tag = attr.Tag;
+
+				if ((attr.Flags & ViewControllerFlags.AllowMultipleInstances) == 0)
+				{
+					ThrowIfControllerPresented(controllerType, _presentables);
+				}
+			}
+			else
+			{
+				ThrowIfControllerPresented(controllerType, _presentables);
 			}
 
 			if (string.IsNullOrEmpty(presentContext.ViewResourceId))
@@ -479,6 +488,17 @@ namespace UnityFx.Mvc
 			}
 		}
 
+		private static void ThrowIfControllerPresented(Type controllerType, LinkedList<IPresentableProxy> presentables)
+		{
+			foreach (var p in presentables)
+			{
+				if (p.ControllerType == controllerType)
+				{
+					throw new PresentException(controllerType, Messages.Format_ControllerAlreadyPresented(controllerType));
+				}
+			}
+		}
+		
 		private static void ThrowIfInvalidControllerType(Type controllerType)
 		{
 			if (controllerType is null)
@@ -488,12 +508,12 @@ namespace UnityFx.Mvc
 
 			if (controllerType.IsAbstract)
 			{
-				throw new ArgumentException($"Cannot instantiate abstract type {controllerType.Name}.", nameof(controllerType));
+				throw new ArgumentException(Messages.Format_ControllerTypeIsAbstract(controllerType), nameof(controllerType));
 			}
 
 			if (!typeof(IViewController).IsAssignableFrom(controllerType))
 			{
-				throw new ArgumentException($"A view controller is expected to implement {typeof(IViewController).Name}.", nameof(controllerType));
+				throw new ArgumentException(Messages.Format_ControllerTypeIsNotController(controllerType), nameof(controllerType));
 			}
 		}
 

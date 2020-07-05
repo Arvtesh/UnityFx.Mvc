@@ -26,8 +26,15 @@ namespace UnityFx.Mvc
 		IView View { get; }
 
 		/// <summary>
+		/// Gets a value indicating whether the controller has been presented and not yet dismissed.
+		/// </summary>
+		/// <seealso cref="IsDismissed"/>
+		bool IsPresented { get; }
+
+		/// <summary>
 		/// Gets a value indicating whether the controller is dismissed.
 		/// </summary>
+		/// <seealso cref="IsPresented"/>
 		bool IsDismissed { get; }
 
 		/// <summary>

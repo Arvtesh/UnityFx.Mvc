@@ -44,7 +44,15 @@ namespace UnityFx.Mvc
 
 				foreach (var c in controllers)
 				{
-					EditorGUILayout.LabelField("#" + controllerId.ToString(), c.GetType().Name);
+					if (c is null)
+					{
+						EditorGUILayout.LabelField("#" + controllerId.ToString(), "null");
+					}
+					else
+					{
+						EditorGUILayout.LabelField("#" + controllerId.ToString(), c.GetType().Name);
+					}
+
 					controllerId++;
 				}
 
