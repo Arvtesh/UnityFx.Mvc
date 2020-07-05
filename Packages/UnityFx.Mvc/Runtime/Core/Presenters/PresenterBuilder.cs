@@ -18,6 +18,7 @@ namespace UnityFx.Mvc
 
 		private readonly IServiceProvider _serviceProvider;
 		private readonly GameObject _gameObject;
+		private readonly bool _useServiceProvider;
 
 		private IViewFactory _viewFactory;
 		private IViewControllerFactory _viewControllerFactory;
@@ -43,6 +44,20 @@ namespace UnityFx.Mvc
 		{
 			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			_gameObject = gameObject;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PresenterBuilder"/> class.
+		/// </summary>
+		/// <param name="serviceProvider">A service provider to resolve controller dependencies.</param>
+		/// <param name="gameObject">A <see cref="GameObject"/> to attach presenter to. Can be <see langword="null"/>.</param>
+		/// <param name="useServiceProvider">If <see langword="true"/>, the class might use <see cref="ServiceProvider"/> before presenter is constructed.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="serviceProvider"/> is <see langword="null"/>.</exception>
+		public PresenterBuilder(IServiceProvider serviceProvider, GameObject gameObject, bool useServiceProvider)
+		{
+			_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			_gameObject = gameObject;
+			_useServiceProvider = useServiceProvider;
 		}
 
 		#endregion
@@ -170,7 +185,10 @@ namespace UnityFx.Mvc
 
 				if (_viewFactory is null)
 				{
-					_viewFactory = _serviceProvider.GetService(typeof(IViewFactory)) as IViewFactory;
+					if (_useServiceProvider)
+					{
+						_viewFactory = _serviceProvider.GetService(typeof(IViewFactory)) as IViewFactory;
+					}
 
 					if (_viewFactory is null)
 					{
@@ -185,7 +203,10 @@ namespace UnityFx.Mvc
 
 				if (_viewControllerFactory is null)
 				{
-					_viewControllerFactory = _serviceProvider.GetService(typeof(IViewControllerFactory)) as IViewControllerFactory;
+					if (_useServiceProvider)
+					{
+						_viewControllerFactory = _serviceProvider.GetService(typeof(IViewControllerFactory)) as IViewControllerFactory;
+					}
 
 					if (_viewControllerFactory is null)
 					{
@@ -195,7 +216,10 @@ namespace UnityFx.Mvc
 
 				if (_viewControllerBindings is null)
 				{
-					_viewControllerBindings = _serviceProvider.GetService(typeof(IViewControllerBindings)) as IViewControllerBindings;
+					if (_useServiceProvider)
+					{
+						_viewControllerBindings = _serviceProvider.GetService(typeof(IViewControllerBindings)) as IViewControllerBindings;
+					}
 
 					if (_viewControllerBindings is null)
 					{

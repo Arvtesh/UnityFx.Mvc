@@ -33,7 +33,7 @@ namespace UnityFx.Mvc
 		private SerializedProperty _baseControllerTypePath;
 		private SerializedProperty _baseViewTypePath;
 
-		private Regex _newControllerNamePattern = new Regex("^[_a-zA-Z][_a-zA-Z0-9]*$");
+		private Regex _newControllerNamePattern = new Regex("^[_a-zA-Z][_a-zA-Z0-9.]*$");
 		private string _newControllerName;
 		private string _newControllerNamespace;
 		private string _newControllerPath;
@@ -571,101 +571,101 @@ namespace UnityFx.Mvc
 			var basePath = string.IsNullOrWhiteSpace(_newControllerName) ? _newControllerPath : Path.Combine(_newControllerPath, _newControllerName);
 			var validateResult = true;
 
-			EditorGUILayout.BeginVertical();
-			EditorGUILayout.BeginFoldoutHeaderGroup(true, "Create new controller...");
-
-			// New controller path.
-			EditorGUI.BeginDisabledGroup(true);
-			EditorGUILayout.TextField("Path", basePath);
-			EditorGUI.EndDisabledGroup();
-
-			_newControllerName = EditorGUILayout.TextField("Controller Name", _newControllerName);
-			_newControllerNamespace = EditorGUILayout.TextField("Namespace", _newControllerNamespace);
-			_newControllerCreateArgs = EditorGUILayout.Toggle("Create PresentArgs", _newControllerCreateArgs);
-			_newControllerCreateCommands = EditorGUILayout.Toggle("Create commands enumeration", _newControllerCreateCommands);
-			_newControllerType = (ControllerType)EditorGUILayout.EnumPopup("Controller type", _newControllerType);
-
-			if (string.IsNullOrWhiteSpace(_newControllerName) || !_newControllerNamePattern.IsMatch(_newControllerName))
+			using (new EditorGUILayout.VerticalScope())
 			{
-				validateResult = false;
-				EditorGUILayout.HelpBox($"Invalid controller name. Controller names should match pattern {_newControllerNamePattern}.", MessageType.Error);
-			}
-			else
-			{
-				var folder = Path.Combine(Directory.GetCurrentDirectory(), Path.Combine(_newControllerPath, _newControllerName));
-
-				if (Directory.Exists(folder))
+				using (new EditorGUILayout.ToggleGroupScope("Create new controller...", true))
 				{
-					validateResult = false;
-					EditorGUILayout.HelpBox($"Folder with name {_newControllerName} already exists. Please choose another controller name.", MessageType.Error);
-				}
-			}
+					// New controller path.
+					EditorGUI.BeginDisabledGroup(true);
+					EditorGUILayout.TextField("Path", basePath);
+					EditorGUI.EndDisabledGroup();
 
-			if (!string.IsNullOrEmpty(_newControllerNamespace) && !_newControllerNamePattern.IsMatch(_newControllerNamespace))
-			{
-				validateResult = false;
-				EditorGUILayout.HelpBox($"Invalid namespace name. Namespace names should match pattern {_newControllerNamePattern} (or an empty string).", MessageType.Error);
-			}
+					_newControllerName = EditorGUILayout.TextField("Controller Name", _newControllerName);
+					_newControllerNamespace = EditorGUILayout.TextField("Namespace", _newControllerNamespace);
+					_newControllerCreateArgs = EditorGUILayout.Toggle("Create PresentArgs", _newControllerCreateArgs);
+					_newControllerCreateCommands = EditorGUILayout.Toggle("Create commands enumeration", _newControllerCreateCommands);
+					_newControllerType = (ControllerType)EditorGUILayout.EnumPopup("Controller type", _newControllerType);
 
-			if (validateResult)
-			{
-				var controllerPath = Path.Combine(basePath, _newControllerName + "Controller.cs");
-				var viewPath = Path.Combine(basePath, _newControllerName + "View.cs");
-				var prefabPath = Path.Combine(basePath, _newControllerName + ".prefab");
-				var s = $"Assets to create:\n    - {controllerPath}\n    - {viewPath}";
-
-				if (_newControllerCreateArgs)
-				{
-					var argsPath = Path.Combine(basePath, _newControllerName + "Args.cs");
-					s += "\n    - " + argsPath;
-				}
-
-				if (_newControllerCreateCommands)
-				{
-					var argsPath = Path.Combine(basePath, _newControllerName + "Commands.cs");
-					s += "\n    - " + argsPath;
-				}
-
-				s += "\n    - " + prefabPath;
-
-				EditorGUILayout.HelpBox(s, MessageType.Info);
-				EditorGUILayout.BeginHorizontal();
-
-				if (GUILayout.Button("Create assets"))
-				{
-					var options = default(CodegenOptions);
-
-					if (_newControllerCreateArgs)
+					if (string.IsNullOrWhiteSpace(_newControllerName) || !_newControllerNamePattern.IsMatch(_newControllerName))
 					{
-						options |= CodegenOptions.CreateArgs;
+						validateResult = false;
+						EditorGUILayout.HelpBox($"Invalid controller name. Controller names should match pattern {_newControllerNamePattern}.", MessageType.Error);
+					}
+					else
+					{
+						var folder = Path.Combine(Directory.GetCurrentDirectory(), Path.Combine(_newControllerPath, _newControllerName));
+
+						if (Directory.Exists(folder))
+						{
+							validateResult = false;
+							EditorGUILayout.HelpBox($"Folder with name {_newControllerName} already exists. Please choose another controller name.", MessageType.Error);
+						}
 					}
 
-					if (_newControllerCreateCommands)
+					if (!string.IsNullOrEmpty(_newControllerNamespace) && !_newControllerNamePattern.IsMatch(_newControllerNamespace))
 					{
-						options |= CodegenOptions.CreateCommands;
+						validateResult = false;
+						EditorGUILayout.HelpBox($"Invalid namespace name. Namespace names should match pattern {_newControllerNamePattern} (or an empty string).", MessageType.Error);
 					}
 
-					GenerateControllerCode(_newControllerPath, new CodegenNames(_newControllerName), options, _newControllerNamespace);
-					_createControllerMode = false;
-				}
+					if (validateResult)
+					{
+						var controllerPath = Path.Combine(basePath, _newControllerName + "Controller.cs");
+						var viewPath = Path.Combine(basePath, _newControllerName + "View.cs");
+						var prefabPath = Path.Combine(basePath, _newControllerName + ".prefab");
+						var s = $"Assets to create:\n    - {controllerPath}\n    - {viewPath}";
 
-				if (GUILayout.Button("Cancel"))
-				{
-					_createControllerMode = false;
-				}
+						if (_newControllerCreateArgs)
+						{
+							var argsPath = Path.Combine(basePath, _newControllerName + "Args.cs");
+							s += "\n    - " + argsPath;
+						}
 
-				EditorGUILayout.EndHorizontal();
+						if (_newControllerCreateCommands)
+						{
+							var argsPath = Path.Combine(basePath, _newControllerName + "Commands.cs");
+							s += "\n    - " + argsPath;
+						}
+
+						s += "\n    - " + prefabPath;
+
+						EditorGUILayout.HelpBox(s, MessageType.Info);
+
+						using (new EditorGUILayout.HorizontalScope())
+						{
+							if (GUILayout.Button("Create assets"))
+							{
+								var options = default(CodegenOptions);
+
+								if (_newControllerCreateArgs)
+								{
+									options |= CodegenOptions.CreateArgs;
+								}
+
+								if (_newControllerCreateCommands)
+								{
+									options |= CodegenOptions.CreateCommands;
+								}
+
+								GenerateControllerCode(_newControllerPath, new CodegenNames(_newControllerName), options, _newControllerNamespace);
+								_createControllerMode = false;
+							}
+
+							if (GUILayout.Button("Cancel"))
+							{
+								_createControllerMode = false;
+							}
+						}
+					}
+					else
+					{
+						if (GUILayout.Button("Close"))
+						{
+							_createControllerMode = false;
+						}
+					}
+				}
 			}
-			else
-			{
-				if (GUILayout.Button("Close"))
-				{
-					_createControllerMode = false;
-				}
-			}
-
-			EditorGUILayout.EndFoldoutHeaderGroup();
-			EditorGUILayout.EndVertical();
 		}
 
 		private void PresentAdvancedSettings()
