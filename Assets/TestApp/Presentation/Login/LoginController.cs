@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityFx.Mvc;
+using UnityFx.Mvc.Extensions;
 
 namespace TestApp.Presentation
 {
@@ -11,10 +12,13 @@ namespace TestApp.Presentation
 	/// <summary>
 	/// <seealso cref="LoginView"/>
 	/// <seealso cref="LoginCommands"/>
-	[ViewController(Flags = ViewControllerFlags.Exclusive)]
+	[ViewController(Flags = ViewControllerFlags.ModalPopup)]
 	public class LoginController : ViewController<LoginView>, ICommandTarget<LoginCommands>
 	{
 		#region data
+
+		private readonly IWebApi _webApi;
+
 		#endregion
 
 		#region interface
@@ -22,11 +26,10 @@ namespace TestApp.Presentation
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LoginController"/> class.
 		/// <summary>
-		public LoginController(IPresentContext context)
+		public LoginController(IPresentContext context, IWebApi webApi)
 			: base(context)
 		{
-			// TODO: Initialize the controller view here. Add arguments to the Configure() as needed.
-			View.Configure();
+			_webApi = webApi;
 		}
 
 		#endregion
@@ -51,10 +54,13 @@ namespace TestApp.Presentation
 		/// <inheritdoc/>
 		public bool InvokeCommand(LoginCommands command, Variant args)
 		{
-			// TODO: Process constroller-specific commands here.
 			switch (command)
 			{
-				case LoginCommands.Close:
+				case LoginCommands.Login:
+					OnLogin(View.Email, View.Password);
+					return true;
+
+				case LoginCommands.Dismiss:
 					Dismiss();
 					return true;
 			}
@@ -65,6 +71,25 @@ namespace TestApp.Presentation
 		#endregion
 
 		#region implementation
+
+		private async void OnLogin(string email, string password)
+		{
+			try
+			{
+				if (_webApi.ActiveUser is null)
+				{
+					var userInfo = await _webApi.LoginAsync(email, password);
+					Debug.Log($"Login successful: {userInfo}.");
+				}
+
+				Dismiss();
+			}
+			catch (Exception e)
+			{
+				Context.PresentMessageBox(MessageBoxOptions.AlertOk, $"Login failed: {e.Message}.");
+			}
+		}
+
 		#endregion
 	}
 }

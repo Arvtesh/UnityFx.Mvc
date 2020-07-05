@@ -90,7 +90,7 @@ namespace UnityFx.Mvc
 				{
 					var p = node.Value;
 
-					if (!p.IsDismissed)
+					if (!p.IsDismissed && p.Controller != null)
 					{
 						yield return p.Controller;
 					}

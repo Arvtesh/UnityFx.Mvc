@@ -59,6 +59,15 @@ namespace TestApp
 
 		#endregion
 
+		#region Object
+
+		public override string ToString()
+		{
+			return $"{{Name={DisplayName}, Nick={NickName}, Email={Email}, Id={_id}}}";
+		}
+
+		#endregion
+
 		#region implementation
 		#endregion
 	}

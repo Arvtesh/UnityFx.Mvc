@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace TestApp.Presentation
 {
@@ -9,6 +9,7 @@ namespace TestApp.Presentation
 	/// <seealso cref="LoginView"/>
 	public enum LoginCommands
 	{
-		Close
+		Login,
+		Dismiss
 	}
 }

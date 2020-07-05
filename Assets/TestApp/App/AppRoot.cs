@@ -66,6 +66,7 @@ namespace TestApp.Presentation
 			_presenter = new PresenterBuilder(this, gameObject)
 				.UseViewFactory(_viewFactory)
 				.UseViewControllerBindings(_viewConfig)
+				.UsePresentDelegate(OnPresent)
 				.UseErrorDelegate(OnPresentError)
 				.Build();
 
@@ -114,6 +115,21 @@ namespace TestApp.Presentation
 		protected Task InitializeAsync()
 		{
 			return Task.CompletedTask;
+		}
+
+		protected async Task OnPresent(IPresentService presenter, IPresentInfo controllerInfo, PresentArgs presentArgs)
+		{
+			if (controllerInfo.ControllerType != typeof(AppController) && 
+				controllerInfo.ControllerType != typeof(SplashController) &&
+				(controllerInfo.CreationFlags & ViewControllerFlags.Popup) == 0)
+			{
+				var webApi = _services.GetRequiredService<IWebApi>();
+
+				if (webApi.ActiveUser is null)
+				{
+					await presenter.PresentAsync<LoginController>();
+				}
+			}
 		}
 
 		private void OnPresentError(Exception e)

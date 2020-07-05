@@ -51,6 +51,11 @@ namespace TestApp.Infrastructure
 				throw new ArgumentException("Invalid device identifier.", nameof(deviceId));
 			}
 
+			if (_user != null)
+			{
+				throw new InvalidOperationException();
+			}
+
 			await SimulateWebRequest();
 
 			var userId = _rnd.Next(1, 100000);
@@ -83,6 +88,11 @@ namespace TestApp.Infrastructure
 			if (string.IsNullOrWhiteSpace(email) || !email.Contains("@"))
 			{
 				throw new ArgumentException("Invalid e-mail.", nameof(email));
+			}
+
+			if (_user != null)
+			{
+				throw new InvalidOperationException();
 			}
 
 			await SimulateWebRequest();
