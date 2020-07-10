@@ -12,7 +12,7 @@ namespace UnityFx.Mvc
 	/// Configuration of MVC application.
 	/// </summary>
 	[CreateAssetMenu(fileName = "MvcConfig", menuName = "UnityFx/Mvc/MVC Config")]
-	public class MvcConfig : ScriptableObject, IViewControllerBindings
+	public class MvcConfig : ScriptableObject, IPrefabRepository, IViewControllerBindings
 	{
 		#region data
 
@@ -38,7 +38,7 @@ namespace UnityFx.Mvc
 
 #pragma warning restore 0649
 
-		private Dictionary<string, GameObject> _prefabsMap = new Dictionary<string, GameObject>();
+		private Dictionary<string, GameObject> _prefabs = new Dictionary<string, GameObject>();
 
 		#endregion
 
@@ -96,11 +96,6 @@ namespace UnityFx.Mvc
 		/// </summary>
 		public Color PopupBackgroundColor => _popupBackgroundColor;
 
-		/// <summary>
-		/// Gets a collectino of pre-loaded view prefabs.
-		/// </summary>
-		public IReadOnlyDictionary<string, GameObject> Prefabs => _prefabsMap;
-
 		#endregion
 
 		#region ScriptableObject
@@ -113,7 +108,7 @@ namespace UnityFx.Mvc
 				{
 					if (item.ViewPrefab && !string.IsNullOrWhiteSpace(item.ViewResourceId))
 					{
-						_prefabsMap[item.ViewResourceId] = item.ViewPrefab;
+						_prefabs[item.ViewResourceId] = item.ViewPrefab;
 					}
 				}
 			}
@@ -123,6 +118,35 @@ namespace UnityFx.Mvc
 			_viewControllers = null;
 
 #endif
+		}
+
+		#endregion
+
+		#region IPrefabRepository
+
+		/// <inheritdoc/>
+		public IReadOnlyDictionary<string, GameObject> Prefabs => _prefabs;
+
+		/// <inheritdoc/>
+		public Task<GameObject> LoadPrefabAsync(string resourceId)
+		{
+			if (resourceId is null)
+			{
+				throw new ArgumentNullException(nameof(resourceId));
+			}
+
+			if (_prefabs.TryGetValue(resourceId, out var prefab))
+			{
+				return Task.FromResult(prefab);
+			}
+
+			throw new KeyNotFoundException();
+		}
+
+		/// <inheritdoc/>
+		public void UnloadPrefab(string resourceId)
+		{
+			// Do nothing.
 		}
 
 		#endregion
