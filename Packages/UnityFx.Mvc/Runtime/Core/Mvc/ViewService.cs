@@ -25,8 +25,6 @@ namespace UnityFx.Mvc
 
 		#region interface
 
-		internal IDictionary<string, GameObject> Prefabs => _prefabRepository.Prefabs;
-
 		internal void SetPopupBackgrounColor(Color color)
 		{
 			_popupBgColor = color;
@@ -70,7 +68,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets the prefab repository.
 		/// </summary>
-		protected IPrefabRepository PrefabRepository => _prefabRepository;
+		protected internal IPrefabRepository PrefabRepository => _prefabRepository;
 
 		/// <summary>
 		/// Creates a view collection.

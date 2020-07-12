@@ -162,6 +162,7 @@ namespace UnityFx.Mvc
 			if (_prefabs.TryGetValue(resourceId, out var prefab))
 			{
 				Destroy(prefab);
+				_prefabs.Remove(resourceId);
 			}
 		}
 

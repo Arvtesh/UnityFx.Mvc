@@ -31,6 +31,16 @@ namespace UnityFx.Mvc
 		/// Initializes a new instance of the <see cref="ViewServiceBuilder"/> class.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
+		protected ViewServiceBuilder(GameObject go)
+		{
+			_gameObject = go ?? throw new ArgumentNullException(nameof(go));
+			_prefabRepository = new SimplePrefabRepository();
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ViewServiceBuilder"/> class.
+		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
 		protected ViewServiceBuilder(GameObject go, IPrefabRepository prefabRepository)
 		{
 			_gameObject = go ?? throw new ArgumentNullException(nameof(go));
