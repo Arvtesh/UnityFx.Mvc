@@ -39,6 +39,7 @@ namespace UnityFx.Mvc
 #pragma warning restore 0649
 
 		private Dictionary<string, GameObject> _prefabs = new Dictionary<string, GameObject>();
+		private bool _disposed;
 
 		#endregion
 
@@ -120,16 +121,23 @@ namespace UnityFx.Mvc
 #endif
 		}
 
+		private void OnDestroy()
+		{
+			_disposed = true;
+		}
+
 		#endregion
 
 		#region IPrefabRepository
 
 		/// <inheritdoc/>
-		public IReadOnlyDictionary<string, GameObject> Prefabs => _prefabs;
+		public IDictionary<string, GameObject> Prefabs => _prefabs;
 
 		/// <inheritdoc/>
 		public Task<GameObject> LoadPrefabAsync(string resourceId)
 		{
+			ThrowIfDisposed();
+
 			if (resourceId is null)
 			{
 				throw new ArgumentNullException(nameof(resourceId));
@@ -146,7 +154,15 @@ namespace UnityFx.Mvc
 		/// <inheritdoc/>
 		public void UnloadPrefab(string resourceId)
 		{
-			// Do nothing.
+			if (resourceId is null)
+			{
+				return;
+			}
+
+			if (_prefabs.TryGetValue(resourceId, out var prefab))
+			{
+				Destroy(prefab);
+			}
 		}
 
 		#endregion
@@ -162,6 +178,41 @@ namespace UnityFx.Mvc
 			}
 
 			return MvcUtilities.GetControllerName(controllerType);
+		}
+
+		#endregion
+
+		#region IDisposable
+
+		/// <inheritdoc/>
+		public void Dispose()
+		{
+			if (!_disposed)
+			{
+				_disposed = true;
+
+				foreach (var prefab in _prefabs.Values)
+				{
+					Destroy(prefab);
+				}
+
+				if (this)
+				{
+					Destroy(this);
+				}
+			}
+		}
+
+		#endregion
+
+		#region implementation
+
+		private void ThrowIfDisposed()
+		{
+			if (_disposed)
+			{
+				throw new ObjectDisposedException(GetType().Name);
+			}
 		}
 
 		#endregion

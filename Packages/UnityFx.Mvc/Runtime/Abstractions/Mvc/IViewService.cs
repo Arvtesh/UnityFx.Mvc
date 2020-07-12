@@ -29,10 +29,5 @@ namespace UnityFx.Mvc
 		/// Gets a read-only collection of presented views.
 		/// </summary>
 		IReadOnlyCollection<IView> Views { get; }
-
-		/// <summary>
-		/// Gets a read-only collection of loaded view prefabs.
-		/// </summary>
-		IReadOnlyDictionary<string, GameObject> Prefabs { get; }
 	}
 }

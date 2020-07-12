@@ -18,9 +18,18 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Initializes a new instance of the <see cref="UGUIViewServiceBuilder"/> class.
 		/// </summary>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
-		public UGUIViewServiceBuilder(GameObject go)
-			: base(go)
+		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="go"/> or <paramref name="prefabRepository"/> is <see langword="null"/>.</exception>
+		public UGUIViewServiceBuilder(GameObject go, IPrefabRepository prefabRepository)
+			: base(go, prefabRepository)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="UGUIViewServiceBuilder"/> class.
+		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="go"/> or <paramref name="config"/> is <see langword="null"/>.</exception>
+		public UGUIViewServiceBuilder(GameObject go, UGUIMvcConfig config)
+			: base(go, config)
 		{
 		}
 

@@ -41,8 +41,10 @@ namespace UnityFx.Mvc
 
 		#region IViewFactory
 
-		public async override Task<IView> PresentViewAsync(string resourceId, int layer, int zIndex, ViewControllerFlags flags, Transform parent)
+		public async override Task<IView> CreateViewAsync(string resourceId, int layer, int zIndex, ViewControllerFlags flags, Transform parent)
 		{
+			ThrowIfDisposed();
+
 			UGUIViewProxy viewProxy = null;
 
 			try
@@ -53,7 +55,7 @@ namespace UnityFx.Mvc
 
 				viewProxy = CreateViewProxy(viewRoot, resourceId, zIndex, exclusive, modal);
 
-				var viewPrefab = await LoadViewPrefabAsync(resourceId);
+				var viewPrefab = await PrefabRepository.LoadPrefabAsync(resourceId);
 				return CreateView(resourceId, viewPrefab, viewProxy, parent);
 			}
 			catch
@@ -65,6 +67,12 @@ namespace UnityFx.Mvc
 
 				throw;
 			}
+		}
+
+		public override void DestroyView(IView view)
+		{
+			// TODO: Unload view prefab if there are no views instantieted from it.
+			view?.Dispose();
 		}
 
 		#endregion

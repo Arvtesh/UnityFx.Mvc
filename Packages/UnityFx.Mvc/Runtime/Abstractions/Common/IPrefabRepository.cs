@@ -11,12 +11,12 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// A prefab repository.
 	/// </summary>
-	public interface IPrefabRepository
+	public interface IPrefabRepository : IDisposable
 	{
 		/// <summary>
 		/// Gets a read-only collection of cached prefabs.
 		/// </summary>
-		IReadOnlyDictionary<string, GameObject> Prefabs { get; }
+		IDictionary<string, GameObject> Prefabs { get; }
 
 		/// <summary>
 		/// Loads prefab with the specified identifier.

@@ -18,10 +18,9 @@ namespace UnityFx.Mvc
 		#region data
 
 		private readonly GameObject _gameObject;
+		private readonly IPrefabRepository _prefabRepository;
 
-		private Dictionary<string, GameObject> _viewPrefabs;
 		private List<Transform> _layers;
-		private Func<string, Task<GameObject>> _loadPrefabDelegate;
 		private Color _popupBackgroundColor = new Color(0, 0, 0, 0.5f);
 
 		#endregion
@@ -29,12 +28,24 @@ namespace UnityFx.Mvc
 		#region interface
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="ViewServiceBuilder{T}"/> class.
+		/// Initializes a new instance of the <see cref="ViewServiceBuilder"/> class.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
-		protected ViewServiceBuilder(GameObject go)
+		protected ViewServiceBuilder(GameObject go, IPrefabRepository prefabRepository)
 		{
 			_gameObject = go ?? throw new ArgumentNullException(nameof(go));
+			_prefabRepository = prefabRepository ?? throw new ArgumentNullException(nameof(prefabRepository));
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ViewServiceBuilder"/> class.
+		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
+		protected ViewServiceBuilder(GameObject go, MvcConfig config)
+		{
+			_gameObject = go ?? throw new ArgumentNullException(nameof(go));
+			_prefabRepository = config ?? throw new ArgumentNullException(nameof(config));
+			_popupBackgroundColor = config.PopupBackgroundColor;
 		}
 
 		/// <summary>
@@ -93,31 +104,7 @@ namespace UnityFx.Mvc
 				throw new ArgumentNullException(nameof(prefab));
 			}
 
-			if (_viewPrefabs is null)
-			{
-				_viewPrefabs = new Dictionary<string, GameObject>();
-			}
-
-			_viewPrefabs.Add(resourceId, prefab);
-			return this;
-		}
-
-		/// <summary>
-		/// Sets a delegate to use to load prefabs.
-		/// </summary>
-		/// <param name="loadPrefabDelegate">A delegate to load a prefab for the specified path.</param>
-		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="loadPrefabDelegate"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Thrown if the delegate is already set.</exception>
-		/// <seealso cref="UsePopupBackgoundColor(Color)"/>
-		/// <seealso cref="Build"/>
-		public ViewServiceBuilder UseLoadDelegate(Func<string, Task<GameObject>> loadPrefabDelegate)
-		{
-			if (_loadPrefabDelegate != null)
-			{
-				throw new InvalidOperationException();
-			}
-
-			_loadPrefabDelegate = loadPrefabDelegate ?? throw new ArgumentNullException(nameof(loadPrefabDelegate));
+			_prefabRepository.Prefabs.Add(resourceId, prefab);
 			return this;
 		}
 
@@ -140,9 +127,8 @@ namespace UnityFx.Mvc
 		{
 			var viewFactory = Build(_gameObject);
 
+			viewFactory.SetPrefabRepository(_prefabRepository);
 			viewFactory.SetPopupBackgrounColor(_popupBackgroundColor);
-			viewFactory.SetLoadPrefabDelegate(_loadPrefabDelegate);
-			viewFactory.SetViewPrefabs(_viewPrefabs);
 			viewFactory.SetLayers(_layers);
 
 			return viewFactory;

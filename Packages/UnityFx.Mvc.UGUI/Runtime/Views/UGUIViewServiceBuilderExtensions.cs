@@ -14,14 +14,5 @@ namespace UnityFx.Mvc
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class UGUIViewServiceBuilderExtensions
 	{
-		/// <summary>
-		/// Applies the specififed configuration.
-		/// </summary>
-		/// <param name="config">The configuration asset.</param>
-		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="config"/> is <see langword="null"/>.</exception>
-		public static ViewServiceBuilder UseConfig(this ViewServiceBuilder builder, UGUIMvcConfig config)
-		{
-			return builder.UseConfig((MvcConfig)config);
-		}
 	}
 }

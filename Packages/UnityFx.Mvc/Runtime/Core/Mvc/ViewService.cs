@@ -15,11 +15,9 @@ namespace UnityFx.Mvc
 	{
 		#region data
 
-		private Dictionary<string, GameObject> _viewPrefabCache;
-		private Dictionary<string, Task<GameObject>> _viewPrefabCacheTasks;
+		private IPrefabRepository _prefabRepository;
 		private IReadOnlyList<Transform> _layers;
 		private IReadOnlyCollection<IView> _views;
-		private Func<string, Task<GameObject>> _loadPrefabDelegate;
 		private Color _popupBgColor;
 		private bool _disposed;
 
@@ -27,23 +25,16 @@ namespace UnityFx.Mvc
 
 		#region interface
 
+		internal IDictionary<string, GameObject> Prefabs => _prefabRepository.Prefabs;
+
 		internal void SetPopupBackgrounColor(Color color)
 		{
 			_popupBgColor = color;
 		}
 
-		internal void SetLoadPrefabDelegate(Func<string, Task<GameObject>> prefabDelegate)
+		internal void SetPrefabRepository(IPrefabRepository prefabRepository)
 		{
-			Debug.Assert(_loadPrefabDelegate is null);
-
-			_loadPrefabDelegate = prefabDelegate;
-		}
-
-		internal void SetViewPrefabs(Dictionary<string, GameObject> prefabs)
-		{
-			Debug.Assert(_viewPrefabCache is null);
-
-			_viewPrefabCache = prefabs ?? new Dictionary<string, GameObject>();
+			_prefabRepository = prefabRepository;
 		}
 
 		internal void SetLayers(IReadOnlyList<Transform> layers)
@@ -75,6 +66,11 @@ namespace UnityFx.Mvc
 				_layers = layers;
 			}
 		}
+
+		/// <summary>
+		/// Gets the prefab repository.
+		/// </summary>
+		protected IPrefabRepository PrefabRepository => _prefabRepository;
 
 		/// <summary>
 		/// Creates a view collection.
@@ -118,8 +114,6 @@ namespace UnityFx.Mvc
 
 		public IReadOnlyList<Transform> Layers => _layers;
 
-		public IReadOnlyDictionary<string, GameObject> Prefabs => _viewPrefabCache;
-
 		public IReadOnlyCollection<IView> Views
 		{
 			get
@@ -137,65 +131,9 @@ namespace UnityFx.Mvc
 
 		#region IViewFactory
 
-		public async Task<GameObject> LoadViewPrefabAsync(string resourceId)
-		{
-			ThrowIfDisposed();
+		public abstract Task<IView> CreateViewAsync(string resourceId, int layer, int zIndex, ViewControllerFlags flags, Transform parent);
 
-			if (resourceId is null)
-			{
-				throw new ArgumentNullException(nameof(resourceId));
-			}
-
-			if (string.IsNullOrWhiteSpace(resourceId))
-			{
-				throw new ArgumentException(Messages.Format_InvalidPrefabPath(), nameof(resourceId));
-			}
-
-			if (_viewPrefabCache.TryGetValue(resourceId, out var prefab))
-			{
-				return prefab;
-			}
-
-			if (_viewPrefabCacheTasks != null && _viewPrefabCacheTasks.TryGetValue(resourceId, out var task))
-			{
-				prefab = await task;
-			}
-			else if (_loadPrefabDelegate != null)
-			{
-				task = _loadPrefabDelegate(resourceId);
-
-				if (_viewPrefabCacheTasks is null)
-				{
-					_viewPrefabCacheTasks = new Dictionary<string, Task<GameObject>>();
-				}
-
-				_viewPrefabCacheTasks.Add(resourceId, task);
-
-				try
-				{
-					prefab = await task;
-				}
-				finally
-				{
-					_viewPrefabCacheTasks.Remove(resourceId);
-				}
-			}
-			else
-			{
-				throw new InvalidOperationException(Messages.Format_PrefabCannotBeLoaded(resourceId));
-			}
-
-			if (_disposed)
-			{
-				Destroy(prefab);
-				throw new OperationCanceledException();
-			}
-
-			_viewPrefabCache.Add(resourceId, prefab);
-			return prefab;
-		}
-
-		public abstract Task<IView> PresentViewAsync(string resourceId, int layer, int zIndex, ViewControllerFlags flags, Transform parent);
+		public abstract void DestroyView(IView view);
 
 		#endregion
 

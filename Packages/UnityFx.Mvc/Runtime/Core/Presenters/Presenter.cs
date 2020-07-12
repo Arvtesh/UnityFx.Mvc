@@ -278,35 +278,8 @@ namespace UnityFx.Mvc
 					}
 				}
 
-				// 2) Load the controller view.
-				var view = await _viewFactory.PresentViewAsync(presentable.PrefabPath, presentable.Layer, zIndex, presentable.CreationFlags, presentArgs.Transform);
-
-				if (view is null)
-				{
-					throw new PresentException(presentable, Messages.Format_ViewIsNull());
-				}
-
-				if (!presentable.ViewType.IsAssignableFrom(view.GetType()))
-				{
-					throw new PresentException(presentable, Messages.Format_InvalidViewType(presentable.ViewType));
-				}
-
-				// 3) Create the controller (or dispose view if the controller is dismissed at this point).
-				if (presentable.IsDismissed)
-				{
-					view.Dispose();
-					throw new OperationCanceledException();
-				}
-				else
-				{
-					await presentable.PresentAsyc(view, presentArgs);
-
-					if (presentable.IsDismissed)
-					{
-						throw new OperationCanceledException();
-					}
-				}
-
+				// 2) Present the controller.
+				await presentable.PresentAsyc(zIndex, presentArgs);
 				_controllerMap.Add(presentable.Controller, presentable);
 
 				// 4) Dismiss the specified controllers if requested.

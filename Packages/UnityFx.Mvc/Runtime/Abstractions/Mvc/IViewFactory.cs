@@ -15,19 +15,19 @@ namespace UnityFx.Mvc
 	public interface IViewFactory
 	{
 		/// <summary>
-		/// Loads view prefab.
-		/// </summary>
-		/// <param name="resourceId">Resource identifier of the view prefab.</param>
-		Task<GameObject> LoadViewPrefabAsync(string resourceId);
-
-		/// <summary>
 		/// Creates a view for a controller of the specified type.
 		/// </summary>
 		/// <param name="resourceId">Resource identifier of the view prefab.</param>
 		/// <param name="layer"></param>
 		/// <param name="zIndex">Z-order index.</param>
-		/// <param name="options">Present options.</param>
+		/// <param name="flags">Present options.</param>
 		/// <param name="parent">Parent transform for the view (or <see langword="null"/>).</param>
-		Task<IView> PresentViewAsync(string resourceId, int layer, int zIndex, ViewControllerFlags flags, Transform parent);
+		Task<IView> CreateViewAsync(string resourceId, int layer, int zIndex, ViewControllerFlags flags, Transform parent);
+
+		/// <summary>
+		/// Destroys the specified view.
+		/// </summary>
+		/// <param name="view">The view to destroy.</param>
+		void DestroyView(IView view);
 	}
 }

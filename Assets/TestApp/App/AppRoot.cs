@@ -59,8 +59,7 @@ namespace TestApp.Presentation
 				_serviceRoot.transform.SetParent(transform, false);
 			}
 
-			_viewFactory = new UGUIViewServiceBuilder(gameObject)
-				.UseConfig(_viewConfig)
+			_viewFactory = new UGUIViewServiceBuilder(gameObject, _viewConfig)
 				.Build();
 
 			_presenter = new PresenterBuilder(this, gameObject)

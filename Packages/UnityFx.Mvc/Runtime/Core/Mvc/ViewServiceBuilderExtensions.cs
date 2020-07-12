@@ -59,25 +59,5 @@ namespace UnityFx.Mvc
 
 			return builder;
 		}
-
-		/// <summary>
-		/// Applies the specififed configuration.
-		/// </summary>
-		/// <param name="config">The configuration asset.</param>
-		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="config"/> is <see langword="null"/>.</exception>
-		public static ViewServiceBuilder UseConfig(this ViewServiceBuilder builder, MvcConfig config)
-		{
-			if (config is null)
-			{
-				throw new ArgumentNullException(nameof(config));
-			}
-
-			foreach (var item in config.Prefabs)
-			{
-				builder.AddViewPrefab(item.Key, item.Value);
-			}
-
-			return builder.UsePopupBackgoundColor(config.PopupBackgroundColor);
-		}
 	}
 }

@@ -42,6 +42,7 @@ namespace UnityFx.Mvc
 
 		private readonly IPresenterInternal _presenter;
 		private readonly IViewControllerFactory _controllerFactory;
+		private readonly IViewFactory _viewFactory;
 		private readonly Type _controllerType;
 		private readonly Type _viewType;
 		private readonly Type _resultType;
@@ -84,6 +85,7 @@ namespace UnityFx.Mvc
 			_controllerFactory = context.ControllerFactory;
 			_controllerType = context.ControllerType;
 			_resultType = context.ResultType;
+			_viewFactory = context.ViewFactory;
 			_viewType = context.ViewType;
 			_creationFlags = context.CreationFlags;
 			_deeplinkId = MvcUtilities.GetControllerDeeplinkId(_controllerType);
@@ -135,10 +137,25 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		public Task PresentAsyc(IView view, PresentArgs presentArgs)
+		public async Task PresentAsyc(int zIndex, PresentArgs presentArgs)
 		{
-			Debug.Assert(view != null);
-			Debug.Assert(_state == State.Initialized);
+			var view = await _viewFactory.CreateViewAsync(_prefabPath, _layer, zIndex, _creationFlags, presentArgs.Transform);
+
+			if (view is null)
+			{
+				throw new PresentException(this, Messages.Format_ViewIsNull());
+			}
+
+			if (!_viewType.IsAssignableFrom(view.GetType()))
+			{
+				throw new PresentException(this, Messages.Format_InvalidViewType(_viewType));
+			}
+
+			if (IsDismissed)
+			{
+				view.Dispose();
+				throw new OperationCanceledException();
+			}
 
 			_view = view;
 			_scope = _controllerFactory.CreateScope(ref _serviceProvider);
@@ -149,8 +166,6 @@ namespace UnityFx.Mvc
 			_presentEvents?.Present();
 			_view.Disposed += OnDismissed;
 			_state = State.Presented;
-
-			return System.Threading.Tasks.Task.CompletedTask;
 		}
 
 		public void Update(float frameTime)
@@ -378,7 +393,7 @@ namespace UnityFx.Mvc
 				try
 				{
 					_controllerFactory.ReleaseViewController(_controller);
-					_view?.Dispose();
+					_viewFactory.DestroyView(_view);
 					_scope?.Dispose();
 				}
 				catch (Exception e)
