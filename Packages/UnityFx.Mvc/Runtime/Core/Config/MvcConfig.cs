@@ -38,7 +38,12 @@ namespace UnityFx.Mvc
 
 #pragma warning restore 0649
 
+		private Dictionary<string, GameObject> _preloadedPrefabs = new Dictionary<string, GameObject>();
 		private Dictionary<string, GameObject> _prefabs = new Dictionary<string, GameObject>();
+
+		private Func<string, Task<GameObject>> _loadPrefabDelegate;
+		private Dictionary<string, Task<GameObject>> _loadTasks;
+
 		private bool _disposed;
 
 		#endregion
@@ -97,6 +102,11 @@ namespace UnityFx.Mvc
 		/// </summary>
 		public Color PopupBackgroundColor => _popupBackgroundColor;
 
+		/// <summary>
+		/// Gets or sets a delegate used for loading view prefabs.
+		/// </summary>
+		public Func<string, Task<GameObject>> LoadPrefabDelegate { get => _loadPrefabDelegate; set => _loadPrefabDelegate = value; }
+
 		#endregion
 
 		#region ScriptableObject
@@ -109,6 +119,7 @@ namespace UnityFx.Mvc
 				{
 					if (item.ViewPrefab && !string.IsNullOrWhiteSpace(item.ViewResourceId))
 					{
+						_preloadedPrefabs[item.ViewResourceId] = item.ViewPrefab;
 						_prefabs[item.ViewResourceId] = item.ViewPrefab;
 					}
 				}
@@ -134,7 +145,7 @@ namespace UnityFx.Mvc
 		public IDictionary<string, GameObject> Prefabs => _prefabs;
 
 		/// <inheritdoc/>
-		public Task<GameObject> LoadPrefabAsync(string resourceId)
+		public async Task<GameObject> LoadPrefabAsync(string resourceId)
 		{
 			ThrowIfDisposed();
 
@@ -145,7 +156,44 @@ namespace UnityFx.Mvc
 
 			if (_prefabs.TryGetValue(resourceId, out var prefab))
 			{
-				return Task.FromResult(prefab);
+				return prefab;
+			}
+
+			if (_preloadedPrefabs.TryGetValue(resourceId, out prefab))
+			{
+				return prefab;
+			}
+
+			if (_loadPrefabDelegate != null)
+			{
+				if (_loadTasks is null)
+				{
+					_loadTasks = new Dictionary<string, Task<GameObject>>();
+				}
+				
+				if (_loadTasks.TryGetValue(resourceId, out var task))
+				{
+					prefab = await task;
+					TryAddPrefab(resourceId, prefab);
+					return prefab;
+				}
+				else
+				{
+					task = _loadPrefabDelegate(resourceId);
+
+					_loadTasks.Add(resourceId, task);
+
+					try
+					{
+						prefab = await task;
+						TryAddPrefab(resourceId, prefab);
+						return prefab;
+					}
+					finally
+					{
+						_loadTasks.Remove(resourceId);
+					}
+				}
 			}
 
 			throw new KeyNotFoundException();
@@ -161,7 +209,7 @@ namespace UnityFx.Mvc
 
 			if (_prefabs.TryGetValue(resourceId, out var prefab))
 			{
-				Destroy(prefab);
+				TryDestroyPrefab(resourceId, prefab);
 				_prefabs.Remove(resourceId);
 			}
 		}
@@ -192,10 +240,12 @@ namespace UnityFx.Mvc
 			{
 				_disposed = true;
 
-				foreach (var prefab in _prefabs.Values)
+				foreach (var kvp in _prefabs)
 				{
-					Destroy(prefab);
+					TryDestroyPrefab(kvp.Key, kvp.Value);
 				}
+
+				_prefabs.Clear();
 
 				if (this)
 				{
@@ -207,6 +257,34 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region implementation
+
+		private void TryAddPrefab(string resourceId, GameObject prefab)
+		{
+			if (!_disposed)
+			{
+				if (_prefabs.TryGetValue(resourceId, out var existingPrefab))
+				{
+					if (existingPrefab != prefab)
+					{
+						Debug.LogWarning($"A prefab '{resourceId}' was manually aded while loading operation was pending. The existing prefab '{existingPrefab.name}' will be replaced with the loaded one '{prefab.name}'.");
+						_prefabs[resourceId] = prefab;
+					}
+				}
+				else
+				{
+					_prefabs.Add(resourceId, prefab);
+				}
+			}
+		}
+
+		private void TryDestroyPrefab(string resourceId, GameObject prefab)
+		{
+			// Should not destroy preloaded prefabs.
+			if (!_preloadedPrefabs.ContainsKey(resourceId))
+			{
+				Destroy(prefab);
+			}
+		}
 
 		private void ThrowIfDisposed()
 		{

@@ -9,7 +9,7 @@ using UnityEngine;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Arguments for <see cref="IPresenter"/> methods.
+	/// Runtime arguments for <see cref="IPresenter"/> methods.
 	/// </summary>
 	public class PresentArgs
 	{
