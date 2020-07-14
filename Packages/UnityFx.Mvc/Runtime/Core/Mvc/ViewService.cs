@@ -129,7 +129,7 @@ namespace UnityFx.Mvc
 
 		#region IViewFactory
 
-		public abstract Task<IView> CreateViewAsync(string resourceId, int layer, int zIndex, ViewControllerFlags flags, Transform parent);
+		public abstract Task<IView> CreateViewAsync(string resourceId, int layer, ViewControllerFlags flags, Transform parent);
 
 		public abstract void DestroyView(IView view);
 

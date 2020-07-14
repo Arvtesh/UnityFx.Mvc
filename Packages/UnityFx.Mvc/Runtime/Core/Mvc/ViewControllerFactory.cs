@@ -52,7 +52,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if <paramref name="controllerType"/> is not a valid controller type (for instance, <paramref name="controllerType"/> is abstract).</exception>
 		/// <returns>The created controller instance.</returns>
-		/// <seealso cref="ReleaseViewController(IViewController)"/>
+		/// <seealso cref="DestroyViewController(IViewController)"/>
 		public virtual IViewController CreateViewController(Type controllerType, object[] args)
 		{
 			if (controllerType is null)
@@ -94,7 +94,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="controller">The controller to be disposed.</param>
 		/// <seealso cref="CreateViewController(Type, object[])"/>
-		public virtual void ReleaseViewController(IViewController controller)
+		public virtual void DestroyViewController(IViewController controller)
 		{
 			if (controller is IDisposable d)
 			{

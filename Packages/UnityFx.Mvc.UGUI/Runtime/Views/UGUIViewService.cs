@@ -41,7 +41,7 @@ namespace UnityFx.Mvc
 
 		#region IViewFactory
 
-		public async override Task<IView> CreateViewAsync(string resourceId, int layer, int zIndex, ViewControllerFlags flags, Transform parent)
+		public async override Task<IView> CreateViewAsync(string resourceId, int layer, ViewControllerFlags flags, Transform parent)
 		{
 			ThrowIfDisposed();
 
@@ -53,7 +53,7 @@ namespace UnityFx.Mvc
 				var modal = (flags & ViewControllerFlags.Modal) != 0;
 				var viewRoot = Layers[layer];
 
-				viewProxy = CreateViewProxy(viewRoot, resourceId, zIndex, exclusive, modal);
+				viewProxy = CreateViewProxy(viewRoot, resourceId, exclusive, modal);
 
 				var viewPrefab = await PrefabRepository.LoadPrefabAsync(resourceId);
 				return CreateView(resourceId, viewPrefab, viewProxy, parent);
@@ -105,7 +105,7 @@ namespace UnityFx.Mvc
 			return view;
 		}
 
-		private UGUIViewProxy CreateViewProxy(Transform viewRoot, string viewName, int zIndex, bool exclusive, bool modal)
+		private UGUIViewProxy CreateViewProxy(Transform viewRoot, string viewName, bool exclusive, bool modal)
 		{
 			Debug.Assert(viewName != null);
 
@@ -113,15 +113,6 @@ namespace UnityFx.Mvc
 			var viewProxy = go.AddComponent<UGUIViewProxy>();
 
 			go.transform.SetParent(viewRoot, false);
-
-			if (zIndex < 0)
-			{
-				go.transform.SetAsFirstSibling();
-			}
-			else if (zIndex < viewRoot.childCount)
-			{
-				go.transform.SetSiblingIndex(zIndex);
-			}
 
 			if (modal)
 			{

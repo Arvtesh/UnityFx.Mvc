@@ -21,7 +21,7 @@ namespace UnityFx.Mvc
 	public interface IViewController
 	{
 		/// <summary>
-		/// Gets a view managed by the controller. Should never returns <see langword="null"/>.
+		/// Gets a view managed by the controller. Should never return <see langword="null"/>.
 		/// </summary>
 		IView View { get; }
 	}

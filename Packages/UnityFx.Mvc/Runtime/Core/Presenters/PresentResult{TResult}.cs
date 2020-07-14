@@ -137,9 +137,9 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		public async Task PresentAsyc(int zIndex, PresentArgs presentArgs)
+		public async Task PresentAsyc(PresentArgs presentArgs)
 		{
-			var view = await _viewFactory.CreateViewAsync(_prefabPath, _layer, zIndex, _creationFlags, presentArgs.Transform);
+			var view = await _viewFactory.CreateViewAsync(_prefabPath, _layer, _creationFlags, presentArgs.Transform);
 
 			if (view is null)
 			{
@@ -397,7 +397,7 @@ namespace UnityFx.Mvc
 
 				try
 				{
-					_controllerFactory.ReleaseViewController(_controller);
+					_controllerFactory.DestroyViewController(_controller);
 					_viewFactory.DestroyView(_view);
 					_scope?.Dispose();
 				}

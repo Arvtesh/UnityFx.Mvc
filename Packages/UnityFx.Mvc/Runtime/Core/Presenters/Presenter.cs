@@ -265,8 +265,6 @@ namespace UnityFx.Mvc
 
 		private async void PresentInternal(IPresentableProxy presentable, IPresentableProxy presentableParent, PresentArgs presentArgs)
 		{
-			var zIndex = GetZIndex(presentable);
-
 			try
 			{
 				// 1) Execute the middleware chain. Order is important here.
@@ -279,7 +277,7 @@ namespace UnityFx.Mvc
 				}
 
 				// 2) Present the controller.
-				await presentable.PresentAsyc(zIndex, presentArgs);
+				await presentable.PresentAsyc(presentArgs);
 				_controllerMap.Add(presentable.Controller, presentable);
 
 				// 4) Dismiss the specified controllers if requested.
@@ -432,25 +430,6 @@ namespace UnityFx.Mvc
 				node.Value.DismissCancel();
 				node = node.Previous;
 			}
-		}
-
-		private int GetZIndex(IPresentableProxy presentable)
-		{
-			var zIndex = 0;
-
-			foreach (var p in _presentables)
-			{
-				if (p == presentable)
-				{
-					break;
-				}
-				else if (p.Layer == presentable.Layer)
-				{
-					++zIndex;
-				}
-			}
-
-			return zIndex;
 		}
 
 		private void ThrowIfDisposed()
