@@ -27,6 +27,11 @@ namespace UnityFx.Mvc
 		protected IPresentContext Context => _context;
 
 		/// <summary>
+		/// Gets the presenter.
+		/// </summary>
+		protected IPresenter Presenter => (IPresenter)_context.GetService(typeof(IPresenter));
+
+		/// <summary>
 		/// Gets a value indicating whether the controller is dismissed.
 		/// </summary>
 		/// <seealso cref="Dismiss"/>

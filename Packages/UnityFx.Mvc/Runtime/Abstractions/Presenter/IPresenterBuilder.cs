@@ -53,11 +53,6 @@ namespace UnityFx.Mvc
 		IServiceProvider ServiceProvider { get; }
 
 		/// <summary>
-		/// Gets a key/value collection that can be used to share data between middleware.
-		/// </summary>
-		IDictionary<string, object> Properties { get; }
-
-		/// <summary>
 		/// Sets a <see cref="IViewFactory"/> instace to use. The factory should be set before calling <see cref="Build"/>.
 		/// </summary>
 		/// <param name="viewFactory">A view factory to use.</param>

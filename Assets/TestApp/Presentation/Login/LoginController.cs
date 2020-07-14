@@ -86,7 +86,7 @@ namespace TestApp.Presentation
 			}
 			catch (Exception e)
 			{
-				Context.PresentMessageBox(MessageBoxOptions.AlertOk, $"Login failed: {e.Message}.");
+				Presenter.PresentMessageBox(MessageBoxOptions.AlertOk, $"Login failed: {e.Message}.");
 			}
 		}
 

@@ -34,7 +34,7 @@ namespace TestApp.Presentation
 
 		protected override void OnPresent()
 		{
-			Context.PresentMessageBox(MessageBoxOptions.InfoOk, "Welcome to UnityFx.Mvc sample app. This window demonstrates a message box with OK button.", "Info Box");
+			Presenter.PresentMessageBox(MessageBoxOptions.InfoOk, "Welcome to UnityFx.Mvc sample app. This window demonstrates a message box with OK button.", "Info Box");
 		}
 
 		/// <inheritdoc/>

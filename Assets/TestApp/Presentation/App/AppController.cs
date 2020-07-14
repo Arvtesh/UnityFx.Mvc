@@ -35,8 +35,8 @@ namespace TestApp.Presentation
 
 		protected override async void OnPresent()
 		{
-			await Context.PresentAsync<SplashController>();
-			Context.Present<LobbyController>();
+			await Presenter.PresentAsync<SplashController>();
+			Presenter.Present<LobbyController>();
 		}
 
 		/// <inheritdoc/>

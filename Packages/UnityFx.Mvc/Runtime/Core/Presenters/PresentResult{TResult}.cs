@@ -20,7 +20,7 @@ namespace UnityFx.Mvc
 	/// (via <see cref="IPresentContext"/> interface) and serves as a proxy between the controller and user.
 	/// </remarks>
 	[Preserve]
-	internal sealed class PresentResult<TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TResult>, IPresentableProxy, IEnumerator
+	internal sealed class PresentResult<TResult> : TaskCompletionSource<TResult>, IPresentContext<TResult>, IPresentResult<TResult>, IPresenter, IPresentableProxy, IEnumerator
 	{
 		#region data
 
@@ -335,7 +335,10 @@ namespace UnityFx.Mvc
 
 		public object GetService(Type serviceType)
 		{
-			if (serviceType == typeof(IPresentContext) || serviceType == typeof(IPresenter) || serviceType == typeof(IServiceProvider))
+			if (serviceType == typeof(IPresenter) ||
+				serviceType == typeof(IPresentContext) ||
+				serviceType == typeof(IPresentContext<TResult>) ||
+				serviceType == typeof(IServiceProvider))
 			{
 				return this;
 			}

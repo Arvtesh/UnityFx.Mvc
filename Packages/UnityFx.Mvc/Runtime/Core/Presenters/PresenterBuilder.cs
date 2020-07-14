@@ -26,7 +26,6 @@ namespace UnityFx.Mvc
 		private IPresenterEventSource _eventSource;
 		private List<PresentDelegate> _presentDelegates;
 		private Action<Exception> _errorDelegate;
-		private Dictionary<string, object> _properties;
 
 		private Presenter _presenter;
 
@@ -66,20 +65,6 @@ namespace UnityFx.Mvc
 
 		/// <inheritdoc/>
 		public IServiceProvider ServiceProvider => _serviceProvider;
-
-		/// <inheritdoc/>
-		public IDictionary<string, object> Properties
-		{
-			get
-			{
-				if (_properties is null)
-				{
-					_properties = new Dictionary<string, object>();
-				}
-
-				return _properties;
-			}
-		}
 
 		/// <inheritdoc/>
 		public IPresenterBuilder UseViewFactory(IViewFactory viewFactory)
