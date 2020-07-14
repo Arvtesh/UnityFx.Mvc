@@ -206,7 +206,6 @@ namespace UnityFx.Mvc
 			Assert.True(presentResult.IsDismissed);
 			Assert.False(presentResult2.IsDismissed);
 			Assert.AreEqual(1, _presenter.Controllers.Count);
-			Assert.AreEqual(presentResult2.Controller, _presenter.Controllers.Peek());
 		}
 
 		[Test]

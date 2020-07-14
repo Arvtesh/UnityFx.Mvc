@@ -19,16 +19,6 @@ namespace UnityFx.Mvc
 	public interface IView : IDisposable
 	{
 		/// <summary>
-		/// Raised when the view is disposed.
-		/// </summary>
-		event EventHandler Disposed;
-
-		/// <summary>
-		/// Gets identifier of a resource (asset) this view is loaded from.
-		/// </summary>
-		string ResourceId { get; }
-
-		/// <summary>
 		/// Gets the <see cref="Transform"/> this view is attached to.
 		/// </summary>
 		Transform Transform { get; }

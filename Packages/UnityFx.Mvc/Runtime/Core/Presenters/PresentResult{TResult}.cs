@@ -164,7 +164,12 @@ namespace UnityFx.Mvc
 			_presentEvents = _controller as IPresentable;
 
 			_presentEvents?.Present();
-			_view.Disposed += OnDismissed;
+
+			if (_view is INotifyDisposed nd)
+			{
+				nd.Disposed += OnDismissed;
+			}
+
 			_state = State.Presented;
 		}
 

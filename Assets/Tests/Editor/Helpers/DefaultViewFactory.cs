@@ -12,12 +12,6 @@ namespace UnityFx.Mvc
 	{
 		public Task<IView> CreateViewAsync(string prefabPath, int layer, int zIndex, ViewControllerFlags flags, Transform parent)
 		{
-			switch (prefabPath)
-			{
-				case "MessageBox":
-					return Task.FromResult<IView>(new MessageBoxView());
-			}
-
 			return Task.FromResult<IView>(new DefaultView());
 		}
 

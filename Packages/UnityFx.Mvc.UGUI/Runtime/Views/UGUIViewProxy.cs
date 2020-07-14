@@ -11,7 +11,7 @@ namespace UnityFx.Mvc
 	{
 		#region data
 
-		private IView _view;
+		private UGUIView _view;
 
 		#endregion
 
@@ -28,7 +28,7 @@ namespace UnityFx.Mvc
 		[NonSerialized]
 		internal bool Modal;
 
-		public IView View
+		public UGUIView View
 		{
 			get
 			{

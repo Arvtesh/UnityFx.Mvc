@@ -10,24 +10,15 @@ namespace UnityFx.Mvc
 	/// A <see cref="MonoBehaviour"/>-based view.
 	/// </summary>
 	/// <seealso cref="ViewController"/>
-	public class View : MonoBehaviour, IView, INotifyCommand
+	public class View : MonoBehaviour, IView, INotifyDisposed, INotifyCommand
 	{
 		#region data
 
-		private string _resourceId;
 		private bool _disposed;
 
 		#endregion
 
 		#region interface
-
-		/// <summary>
-		/// Sets value of <see cref="ResourceId"/>.
-		/// </summary>
-		internal void SetResourceId(string resourceId)
-		{
-			_resourceId = resourceId;
-		}
 
 		/// <summary>
 		/// Gets a value indicating whether the view is disposed.
@@ -102,18 +93,6 @@ namespace UnityFx.Mvc
 		#region IView
 
 		/// <summary>
-		/// Represents the method that handles the dispose event of the view.
-		/// </summary>
-		/// <seealso cref="Dispose"/>
-		/// <seealso cref="OnDispose"/>
-		public event EventHandler Disposed;
-
-		/// <summary>
-		/// Gets identifier of a resource (asset) this view is loaded from.
-		/// </summary>
-		public string ResourceId => _resourceId;
-
-		/// <summary>
 		/// Gets the <see cref="Transform"/> this view is attached to.
 		/// </summary>
 		public Transform Transform => transform;
@@ -144,6 +123,17 @@ namespace UnityFx.Mvc
 		/// <seealso cref="NotifyCommand{TCommand}(TCommand)"/>
 		/// <seealso cref="NotifyCommand{TCommand, TArgs}(TCommand, TArgs)"/>
 		public event EventHandler<CommandEventArgs> Command;
+
+		#endregion
+
+		#region INotifyDisposed
+
+		/// <summary>
+		/// Represents the method that handles the dispose event of the view.
+		/// </summary>
+		/// <seealso cref="Dispose"/>
+		/// <seealso cref="OnDispose"/>
+		public event EventHandler Disposed;
 
 		#endregion
 

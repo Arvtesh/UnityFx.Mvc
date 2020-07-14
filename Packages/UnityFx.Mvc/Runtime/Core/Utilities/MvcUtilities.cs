@@ -14,7 +14,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// TODO
 		/// </summary>
-		public static TView InstantiateViewPrefab<TView>(GameObject prefab, Transform parent, string resourceId) where TView : View
+		public static TView InstantiateViewPrefab<TView>(GameObject prefab, Transform parent) where TView : View
 		{
 			if (prefab is null)
 			{
@@ -29,7 +29,6 @@ namespace UnityFx.Mvc
 				view = go.AddComponent<TView>();
 			}
 
-			view.SetResourceId(resourceId);
 			return view;
 		}
 

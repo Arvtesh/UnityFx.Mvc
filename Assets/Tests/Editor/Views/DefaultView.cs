@@ -10,15 +10,10 @@ namespace UnityFx.Mvc
 {
 	public class DefaultView : IView
 	{
-		private bool _disposed;
-
-		public event EventHandler Disposed;
 		public event EventHandler<CommandEventArgs> Command;
 
-		public string ResourceId => null;
 		public Transform Transform => null;
 		public bool Enabled { get; set; } = true;
-		public ISite Site { get; set; }
 
 		public void OnCommand()
 		{
@@ -27,11 +22,6 @@ namespace UnityFx.Mvc
 
 		public void Dispose()
 		{
-			if (!_disposed)
-			{
-				_disposed = true;
-				Disposed?.Invoke(this, EventArgs.Empty);
-			}
 		}
 	}
 }
