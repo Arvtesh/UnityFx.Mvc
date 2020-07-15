@@ -59,7 +59,7 @@ namespace UnityFx.Mvc
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="viewFactory"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if a view factory is already set.</exception>
 		/// <seealso cref="UseViewControllerFactory(IViewControllerFactory)"/>
-		/// <seealso cref="UseViewControllerBindings(IViewControllerBindings)"/>
+		/// <seealso cref="UseBindings(IViewControllerBindings)"/>
 		/// <seealso cref="UseEventSource(IPresenterEventSource)"/>
 		/// <seealso cref="Build"/>
 		IPresenterBuilder UseViewFactory(IViewFactory viewFactory);
@@ -70,7 +70,7 @@ namespace UnityFx.Mvc
 		/// <param name="viewControllerFactory">A view controller factory to use.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="viewControllerFactory"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if a view controller factory is already set.</exception>
-		/// <seealso cref="UseViewControllerBindings(IViewControllerBindings)"/>
+		/// <seealso cref="UseBindings(IViewControllerBindings)"/>
 		/// <seealso cref="UseViewFactory(IViewFactory)"/>
 		/// <seealso cref="Build"/>
 		IPresenterBuilder UseViewControllerFactory(IViewControllerFactory viewControllerFactory);
@@ -84,7 +84,7 @@ namespace UnityFx.Mvc
 		/// <seealso cref="UseViewControllerFactory(IViewControllerFactory)"/>
 		/// <seealso cref="UseViewFactory(IViewFactory)"/>
 		/// <seealso cref="Build"/>
-		IPresenterBuilder UseViewControllerBindings(IViewControllerBindings viewControllerBindings);
+		IPresenterBuilder UseBindings(IViewControllerBindings viewControllerBindings);
 
 		/// <summary>
 		/// Sets an event source instance to use. If not called, a default provider is used.
@@ -96,8 +96,6 @@ namespace UnityFx.Mvc
 		/// <seealso cref="Build"/>
 		IPresenterBuilder UseEventSource(IPresenterEventSource eventSource);
 
-#if UNITY_2019_3_OR_NEWER
-
 		/// <summary>
 		/// Sets a <see cref="UnityEngine.LowLevel.PlayerLoop"/>-based event source. Requires Unity 2019.3 or newer.
 		/// </summary>
@@ -105,8 +103,6 @@ namespace UnityFx.Mvc
 		/// <seealso cref="UseEventSource(IPresenterEventSource)"/>
 		/// <seealso cref="Build"/>
 		IPresenterBuilder UsePlayerLoop();
-
-#endif
 
 		/// <summary>
 		/// Adds a <see cref="PresentDelegate"/> to presenter middleware chain.

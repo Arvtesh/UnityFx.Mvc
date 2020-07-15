@@ -91,7 +91,7 @@ namespace UnityFx.Mvc
 		}
 
 		// <inheritdoc/>
-		public IPresenterBuilder UseViewControllerBindings(IViewControllerBindings viewControllerBindings)
+		public IPresenterBuilder UseBindings(IViewControllerBindings viewControllerBindings)
 		{
 			if (_viewControllerBindings != null)
 			{
@@ -114,8 +114,6 @@ namespace UnityFx.Mvc
 			return this;
 		}
 
-#if UNITY_2019_3_OR_NEWER
-
 		/// <inheritdoc/>
 		public IPresenterBuilder UsePlayerLoop()
 		{
@@ -127,8 +125,6 @@ namespace UnityFx.Mvc
 			_eventSource = new PlayerLoopEventSource();
 			return this;
 		}
-
-#endif
 
 		/// <inheritdoc/>
 		public IPresenterBuilder UsePresentDelegate(PresentDelegate presentDelegate)

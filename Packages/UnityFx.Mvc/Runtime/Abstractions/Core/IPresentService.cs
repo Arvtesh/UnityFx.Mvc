@@ -23,11 +23,6 @@ namespace UnityFx.Mvc
 		IServiceProvider ServiceProvider { get; }
 
 		/// <summary>
-		/// Gets the <see cref="IViewFactory"/> attached.
-		/// </summary>
-		IViewFactory ViewFactory { get; }
-
-		/// <summary>
 		/// Gets a read-only list of view controllers currently presented.
 		/// </summary>
 		/// <seealso cref="ActiveController"/>
@@ -42,7 +37,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets an information associated with the specified <paramref name="controller"/>.
 		/// </summary>
-		/// <param name="controller">The controller to query information for</param>
+		/// <param name="controller">The controller to query information for.</param>
 		/// <param name="info">When this method returns, contains the value associated with the specified <paramref name="controller"/>, if the controller is found; otherwise, <see langword="null"/>. This parameter is passed uninitialized.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controller"/> is <see langword="null"/>.</exception>
 		/// <returns>Returns <see langword="true"/> if the <paramref name="controller"/> is presented and the info is available; <see langword="false"/> otherwise.</returns>

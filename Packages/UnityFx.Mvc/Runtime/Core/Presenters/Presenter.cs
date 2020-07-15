@@ -118,8 +118,6 @@ namespace UnityFx.Mvc
 
 		public IServiceProvider ServiceProvider => _serviceProvider;
 
-		public IViewFactory ViewFactory => _viewFactory;
-
 		public IViewControllerCollection Controllers => _controllers;
 
 		public IViewController ActiveController => _lastActive?.Controller;

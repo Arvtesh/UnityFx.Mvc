@@ -64,7 +64,7 @@ namespace TestApp.Presentation
 
 			_presenter = new PresenterBuilder(this, gameObject)
 				.UseViewFactory(_viewFactory)
-				.UseViewControllerBindings(_viewConfig)
+				.UseBindings(_viewConfig)
 				.UsePresentDelegate(OnPresent)
 				.UseErrorDelegate(OnPresentError)
 				.Build();

@@ -44,7 +44,6 @@ namespace UnityFx.Mvc
 		public void InitialStateIsValid()
 		{
 			Assert.AreEqual(_serviceProvider, _presenter.ServiceProvider);
-			Assert.AreEqual(_viewFactory, _presenter.ViewFactory);
 			Assert.IsNull(_presenter.ActiveController);
 			Assert.IsEmpty(_presenter.Controllers);
 		}

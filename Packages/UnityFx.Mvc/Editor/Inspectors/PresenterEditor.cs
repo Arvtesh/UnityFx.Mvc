@@ -28,11 +28,6 @@ namespace UnityFx.Mvc
 				EditorGUILayout.ObjectField("Service Provider", o, typeof(UnityEngine.Object), true);
 			}
 
-			if (_presenter.ViewFactory is UnityEngine.Object o2)
-			{
-				EditorGUILayout.ObjectField("View Factory", o2, typeof(UnityEngine.Object), true);
-			}
-
 			var controllers = _presenter.Controllers;
 
 			if (controllers != null && controllers.Count > 0)

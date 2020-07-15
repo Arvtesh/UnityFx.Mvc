@@ -6,8 +6,6 @@ using UnityEngine;
 
 namespace UnityFx.Mvc
 {
-#if UNITY_2019_3_OR_NEWER
-
 	using PlayerLoop = UnityEngine.LowLevel.PlayerLoop;
 	using PlayerLoopSystem = UnityEngine.LowLevel.PlayerLoopSystem;
 	using PlayerLoopTypes = UnityEngine.PlayerLoop;
@@ -100,6 +98,4 @@ namespace UnityFx.Mvc
 		#region implementation
 		#endregion
 	}
-
-#endif
 }
