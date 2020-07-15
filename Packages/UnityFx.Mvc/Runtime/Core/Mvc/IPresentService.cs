@@ -41,7 +41,7 @@ namespace UnityFx.Mvc
 		/// <param name="info">When this method returns, contains the value associated with the specified <paramref name="controller"/>, if the controller is found; otherwise, <see langword="null"/>. This parameter is passed uninitialized.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controller"/> is <see langword="null"/>.</exception>
 		/// <returns>Returns <see langword="true"/> if the <paramref name="controller"/> is presented and the info is available; <see langword="false"/> otherwise.</returns>
-		/// <seealso cref="IPresentInfo"/>
-		bool TryGetInfo(IViewController controller, out IPresentInfo info);
+		/// <seealso cref="IViewControllerInfo"/>
+		bool TryGetInfo(IViewController controller, out IViewControllerInfo info);
 	}
 }

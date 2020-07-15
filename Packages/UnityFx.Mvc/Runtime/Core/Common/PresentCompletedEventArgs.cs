@@ -14,12 +14,12 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets the present info.
 		/// </summary>
-		public IPresentInfo PresentInfo { get; }
+		public IViewControllerInfo PresentInfo { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentCompletedEventArgs"/> class.
 		/// </summary>
-		public PresentCompletedEventArgs(IPresentInfo controllerInfo, Exception error, bool cancelled)
+		public PresentCompletedEventArgs(IViewControllerInfo controllerInfo, Exception error, bool cancelled)
 			: base(error, cancelled || error is OperationCanceledException, controllerInfo)
 		{
 			PresentInfo = controllerInfo;

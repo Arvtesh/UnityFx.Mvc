@@ -12,7 +12,7 @@ namespace UnityFx.Mvc
 	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IPresentResult"/>
 	/// <seealso cref="IPresentContext"/>
-	public interface IPresentInfo
+	public interface IViewControllerInfo
 	{
 		/// <summary>
 		/// Gets unique identifier of the controller.

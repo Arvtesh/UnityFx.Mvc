@@ -9,27 +9,29 @@ using UnityEngine;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// A prefab repository.
+	/// A generic prefab storage.
 	/// </summary>
 	public interface IPrefabRepository : IDisposable
 	{
 		/// <summary>
 		/// Gets a read-only collection of cached prefabs.
 		/// </summary>
-		IDictionary<string, GameObject> Prefabs { get; }
+		IDictionary<string, GameObject> PrefabCache { get; }
 
 		/// <summary>
-		/// Loads prefab with the specified identifier.
+		/// Loads a prefab with the specified identifier and adds it to <see cref="PrefabCache"/>.
 		/// </summary>
 		/// <param name="resourceId">Resource identifier of the prefab.</param>
 		/// <seealso cref="UnloadPrefab(string)"/>
+		/// <seealso cref="PrefabCache"/>
 		Task<GameObject> LoadPrefabAsync(string resourceId);
 
 		/// <summary>
-		/// Unloads the specified prefab. It can be loaded back with <see cref="LoadPrefabAsync(string)"/>.
+		/// Unloads the specified prefab and removes it from <see cref="PrefabCache"/>. Does nothing if prefab is not cached.
 		/// </summary>
 		/// <param name="resourceId">Resource identifier of the prefab.</param>
 		/// <seealso cref="LoadPrefabAsync(string)"/>
+		/// <seealso cref="PrefabCache"/>
 		void UnloadPrefab(string resourceId);
 	}
 }

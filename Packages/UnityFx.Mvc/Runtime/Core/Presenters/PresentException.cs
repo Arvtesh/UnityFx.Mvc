@@ -56,7 +56,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentException"/> class.
 		/// </summary>
-		public PresentException(IPresentInfo presentInfo)
+		public PresentException(IViewControllerInfo presentInfo)
 			: base(GetMessage(presentInfo, null))
 		{
 			_controllerType = presentInfo.ControllerType;
@@ -65,7 +65,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentException"/> class.
 		/// </summary>
-		public PresentException(IPresentInfo controllerInfo, string message)
+		public PresentException(IViewControllerInfo controllerInfo, string message)
 			: base(GetMessage(controllerInfo, message))
 		{
 			_controllerType = controllerInfo.ControllerType;
@@ -74,7 +74,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PresentException"/> class.
 		/// </summary>
-		public PresentException(IPresentInfo controllerInfo, Exception innerException)
+		public PresentException(IViewControllerInfo controllerInfo, Exception innerException)
 			: base(GetMessage(controllerInfo, null), innerException)
 		{
 			_controllerType = controllerInfo.ControllerType;
@@ -126,7 +126,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		private static string GetMessage(IPresentInfo controllerInfo, string message)
+		private static string GetMessage(IViewControllerInfo controllerInfo, string message)
 		{
 			if (controllerInfo is null)
 			{

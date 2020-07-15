@@ -39,7 +39,7 @@ namespace UnityFx.Mvc
 				EditorGUI.indentLevel -= 1;
 			}
 
-			var prefabs = _viewFactory.PrefabRepository.Prefabs;
+			var prefabs = _viewFactory.PrefabRepository.PrefabCache;
 
 			if (prefabs != null && prefabs.Count > 0)
 			{

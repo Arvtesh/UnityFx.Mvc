@@ -19,7 +19,7 @@ namespace UnityFx.Mvc
 
 		#region IPrefabRepository
 
-		public IDictionary<string, GameObject> Prefabs => _prefabs;
+		public IDictionary<string, GameObject> PrefabCache => _prefabs;
 
 		public Task<GameObject> LoadPrefabAsync(string resourceId)
 		{

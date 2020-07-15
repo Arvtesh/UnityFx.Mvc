@@ -122,7 +122,7 @@ namespace UnityFx.Mvc
 
 		public IViewController ActiveController => _lastActive?.Controller;
 
-		public bool TryGetInfo(IViewController controller, out IPresentInfo info)
+		public bool TryGetInfo(IViewController controller, out IViewControllerInfo info)
 		{
 			if (_controllerMap.TryGetValue(controller, out var result))
 			{

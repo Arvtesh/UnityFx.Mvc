@@ -6,7 +6,7 @@ using System;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Notifies clients of a Dispose call.
+	/// Notifies clients of dispose event.
 	/// </summary>
 	public interface INotifyDisposed
 	{
