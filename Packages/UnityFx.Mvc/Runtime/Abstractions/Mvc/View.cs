@@ -83,7 +83,11 @@ namespace UnityFx.Mvc
 
 		#region MonoBehaviour
 
-		private void OnDestroy()
+		/// <summary>
+		/// Called by Unity when the view is destroyed. Use <see cref="OnDispose"/> instead.
+		/// </summary>
+		/// <seealso cref="OnDispose"/>
+		protected void OnDestroy()
 		{
 			Dispose();
 		}
@@ -151,15 +155,8 @@ namespace UnityFx.Mvc
 			if (!_disposed)
 			{
 				_disposed = true;
-
-				try
-				{
-					OnDispose();
-				}
-				finally
-				{
-					Disposed?.Invoke(this, EventArgs.Empty);
-				}
+				OnDispose();
+				Disposed?.Invoke(this, EventArgs.Empty);
 			}
 		}
 

@@ -170,6 +170,11 @@ namespace UnityFx.Mvc
 				nd.Disposed += OnDismissed;
 			}
 
+			if (_view is INotifyCommand nc)
+			{
+				nc.Command += OnCommand;
+			}
+
 			_state = State.Presented;
 		}
 
@@ -321,7 +326,7 @@ namespace UnityFx.Mvc
 
 		public bool InvokeCommand(Command command, Variant args)
 		{
-			if ((_state == State.Presented || _state == State.Active) && _controller is ICommandTarget ct)
+			if ((_state == State.Presented || _state == State.Active) && !command.IsNull && _controller is ICommandTarget ct)
 			{
 				return ct.InvokeCommand(command, args);
 			}
@@ -514,6 +519,14 @@ namespace UnityFx.Mvc
 				}
 
 				_presenter.ReportError(e);
+			}
+		}
+
+		private void OnCommand(object sender, CommandEventArgs e)
+		{
+			if (e != null)
+			{
+				InvokeCommand(e.Command, e.Args);
 			}
 		}
 

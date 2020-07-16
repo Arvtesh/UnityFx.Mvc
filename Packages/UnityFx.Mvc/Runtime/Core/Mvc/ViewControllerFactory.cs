@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Reflection;
-using System.Runtime.ExceptionServices;
 
 namespace UnityFx.Mvc
 {
@@ -59,7 +57,7 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Releases a controller after it has been dismissed. Default implementation calls <see cref="IDisposable.Dispose"/> if controller supports it.
+		/// Destroys the <paramref name="controller"/> passed. Default implementation disposes the <paramref name="controller"/> (if it implements <see cref="IDisposable"/>).
 		/// </summary>
 		/// <param name="controller">The controller to be disposed.</param>
 		/// <seealso cref="CreateViewController(Type, object[])"/>

@@ -45,11 +45,6 @@ namespace UnityFx.Mvc
 		protected ViewController(IPresentContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
-
-			if (_context.View is INotifyCommand nc)
-			{
-				nc.Command += OnCommand;
-			}
 		}
 
 		/// <summary>
@@ -184,28 +179,12 @@ namespace UnityFx.Mvc
 		/// <returns>Returns <see langword="true"/> if the command has been handled; <see langword="false"/> otherwise.</returns>
 		public bool InvokeCommand(Command command, Variant args)
 		{
-			if (!command.IsNull && !_context.IsDismissed)
-			{
-				return OnCommand(command, args);
-			}
-
-			return false;
+			return OnCommand(command, args);
 		}
 
 		#endregion
 
 		#region implementation
-
-		private void OnCommand(object sender, CommandEventArgs e)
-		{
-			Debug.Assert(sender == _context.View);
-
-			if (e != null && !_context.IsDismissed)
-			{
-				OnCommand(e.Command, e.Args);
-			}
-		}
-
 		#endregion
 	}
 }
