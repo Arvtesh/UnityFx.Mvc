@@ -9,20 +9,20 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// A target for PRESENT/DISMISS notifications.
 	/// </summary>
-	/// <seealso cref="IActivatable"/>
+	/// <seealso cref="IActivateEvents"/>
 	/// <seealso cref="IViewController"/>
-	public interface IPresentable
+	public interface IPresentEvents
 	{
 		/// <summary>
 		/// Called when the object is presented.
 		/// </summary>
-		/// <seealso cref="Dismiss"/>
-		void Present();
+		/// <seealso cref="OnDismiss"/>
+		void OnPresent();
 
 		/// <summary>
 		/// Called when the object is dismissed.
 		/// </summary>
-		/// <seealso cref="Present"/>
-		void Dismiss();
+		/// <seealso cref="OnPresent"/>
+		void OnDismiss();
 	}
 }

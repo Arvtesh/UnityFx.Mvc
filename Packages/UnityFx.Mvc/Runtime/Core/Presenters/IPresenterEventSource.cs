@@ -9,18 +9,18 @@ namespace UnityFx.Mvc
 	/// Provider of events for <see cref="IPresenter"/>.
 	/// </summary>
 	/// <seealso cref="IPresenter"/>
-	/// <seealso cref="IPresenterEvents"/>
+	/// <seealso cref="IPlayerLoopEvents"/>
 	/// <seealso cref="IPresenterBuilder"/>
 	public interface IPresenterEventSource
 	{
 		/// <summary>
 		/// Adds a presenter events.
 		/// </summary>
-		void AddPresenter(IPresenterEvents presenter);
+		void AddPresenter(IPlayerLoopEvents presenter);
 
 		/// <summary>
 		/// Removes a presenter events.
 		/// </summary>
-		void RemovePresenter(IPresenterEvents presenter);
+		void RemovePresenter(IPlayerLoopEvents presenter);
 	}
 }

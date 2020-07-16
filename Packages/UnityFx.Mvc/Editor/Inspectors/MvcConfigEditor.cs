@@ -362,7 +362,7 @@ namespace UnityFx.Mvc
 					var viewScript = default(MonoScript);
 					var viewPrefab = default(GameObject);
 
-					if (MvcUtilities.IsAssignableToGenericType(controllerType, typeof(IViewControllerView<>), out var t))
+					if (PresentUtilities.IsAssignableToGenericType(controllerType, typeof(IViewControllerView<>), out var t))
 					{
 						var viewType = t.GenericTypeArguments[0];
 
@@ -384,7 +384,7 @@ namespace UnityFx.Mvc
 					if (viewPrefab is null)
 					{
 						var controllerFolder = Path.GetDirectoryName(controllerScriptPath);
-						var controllerName = MvcUtilities.GetControllerName(controllerType);
+						var controllerName = PresentUtilities.GetControllerName(controllerType);
 
 						foreach (var go in allPrefabs)
 						{

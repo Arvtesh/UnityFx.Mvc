@@ -7,14 +7,14 @@ using UnityEngine;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Reflection helpers.
+	/// Present utilities.
 	/// </summary>
-	public static class MvcUtilities
+	public static class PresentUtilities
 	{
 		/// <summary>
-		/// TODO
+		/// Instantiates a view prefab making sure it has a view attached.
 		/// </summary>
-		public static TView InstantiateViewPrefab<TView>(GameObject prefab, Transform parent) where TView : View
+		public static TView InstantiateViewPrefab<TView>(GameObject prefab, Transform parent) where TView : Component, IView
 		{
 			if (prefab is null)
 			{
@@ -33,7 +33,7 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// TODO
+		/// Gets default deeplink identifier for the controller type specified.
 		/// </summary>
 		public static string GetControllerDeeplinkId(Type controllerType)
 		{
@@ -48,7 +48,7 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// TODO
+		/// Gets default controller identifier for the type specified.
 		/// </summary>
 		public static string GetControllerName(Type controllerType)
 		{
@@ -56,7 +56,7 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// TODO
+		/// Gets default controller identifier for the type name specified.
 		/// </summary>
 		public static string GetControllerName(string controllerTypeName)
 		{
@@ -69,37 +69,35 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// TODO
+		/// Checks if <paramref name="genericType"/> is assignable to <paramref name="type"/> and, if it is, returnes closed generic type.
 		/// </summary>
-		public static bool IsAssignableToGenericType(Type givenType, Type genericType, out Type closedGenericType)
+		/// <seealso href="https://stackoverflow.com/questions/5461295/using-isassignablefrom-with-open-generic-types"/>
+		public static bool IsAssignableToGenericType(Type type, Type genericType, out Type resultType)
 		{
-			// NOTE: See https://stackoverflow.com/questions/5461295/using-isassignablefrom-with-open-generic-types for details.
-			var interfaceTypes = givenType.GetInterfaces();
-
-			foreach (var it in interfaceTypes)
+			foreach (var it in type.GetInterfaces())
 			{
 				if (it.IsGenericType && it.GetGenericTypeDefinition() == genericType)
 				{
-					closedGenericType = it;
+					resultType = it;
 					return true;
 				}
 			}
 
-			if (givenType.IsGenericType && givenType.GetGenericTypeDefinition() == genericType)
+			if (type.IsGenericType && type.GetGenericTypeDefinition() == genericType)
 			{
-				closedGenericType = givenType;
+				resultType = type;
 				return true;
 			}
 
-			var baseType = givenType.BaseType;
+			var baseType = type.BaseType;
 
 			if (baseType == null)
 			{
-				closedGenericType = null;
+				resultType = null;
 				return false;
 			}
 
-			return IsAssignableToGenericType(baseType, genericType, out closedGenericType);
+			return IsAssignableToGenericType(baseType, genericType, out resultType);
 		}
 	}
 }

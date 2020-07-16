@@ -20,14 +20,14 @@ namespace UnityFx.Mvc
 
 		#region IPresenterEventSource
 
-		public void AddPresenter(IPresenterEvents presenter)
+		public void AddPresenter(IPlayerLoopEvents presenter)
 		{
 			var success = false;
 			var loop = PlayerLoop.GetCurrentPlayerLoop();
 			var presentSystem = new PlayerLoopSystem()
 			{
 				type = typeof(Presenter),
-				updateDelegate = presenter.Update
+				updateDelegate = presenter.OnUpdate
 			};
 
 			for (var i = 0; i < loop.subSystemList.Length; i++)
@@ -58,7 +58,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		public void RemovePresenter(IPresenterEvents presenter)
+		public void RemovePresenter(IPlayerLoopEvents presenter)
 		{
 			var loop = PlayerLoop.GetCurrentPlayerLoop();
 

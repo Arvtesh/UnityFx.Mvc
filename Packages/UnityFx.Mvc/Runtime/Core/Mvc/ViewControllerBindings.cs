@@ -28,7 +28,7 @@ namespace UnityFx.Mvc
 				throw new ArgumentNullException(nameof(controllerType));
 			}
 
-			return MvcUtilities.GetControllerName(controllerType);
+			return PresentUtilities.GetControllerName(controllerType);
 		}
 
 		#endregion

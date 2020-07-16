@@ -32,7 +32,7 @@ namespace UnityFx.Mvc
 		{
 			if (_presenter != null && _presenter.NeedEventSource)
 			{
-				_presenter.Update();
+				_presenter.OnUpdate();
 			}
 		}
 

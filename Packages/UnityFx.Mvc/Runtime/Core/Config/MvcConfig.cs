@@ -65,12 +65,12 @@ namespace UnityFx.Mvc
 
 		internal static string GetResourceId(Type controllerType)
 		{
-			return MvcUtilities.GetControllerName(controllerType);
+			return PresentUtilities.GetControllerName(controllerType);
 		}
 
 		internal static string GetResourceId(string controllerName)
 		{
-			return MvcUtilities.GetControllerName(controllerName);
+			return PresentUtilities.GetControllerName(controllerName);
 		}
 
 		internal void AddItem(ViewControllerInfo item)
@@ -226,7 +226,7 @@ namespace UnityFx.Mvc
 				throw new ArgumentNullException(nameof(controllerType));
 			}
 
-			return MvcUtilities.GetControllerName(controllerType);
+			return PresentUtilities.GetControllerName(controllerType);
 		}
 
 		#endregion

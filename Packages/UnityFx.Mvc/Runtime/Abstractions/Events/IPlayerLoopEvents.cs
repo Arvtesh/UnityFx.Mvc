@@ -6,16 +6,13 @@ using System;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Defines events of <see cref="IPresenter"/>.
+	/// Defines player loop events.
 	/// </summary>
-	/// <seealso cref="IPresenter"/>
-	/// <seealso cref="IPresenterEventSource"/>
-	/// <seealso cref="IPresenterBuilder"/>
-	public interface IPresenterEvents
+	public interface IPlayerLoopEvents
 	{
 		/// <summary>
 		/// Update event. Called on each frame.
 		/// </summary>
-		void Update();
+		void OnUpdate();
 	}
 }

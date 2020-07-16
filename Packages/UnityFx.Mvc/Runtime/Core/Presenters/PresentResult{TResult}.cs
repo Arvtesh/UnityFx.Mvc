@@ -57,8 +57,8 @@ namespace UnityFx.Mvc
 		private IServiceProvider _serviceProvider;
 		private IDisposable _scope;
 		private IViewController _controller;
-		private IPresentable _presentEvents;
-		private IActivatable _activateEvents;
+		private IPresentEvents _presentEvents;
+		private IActivateEvents _activateEvents;
 		private IView _view;
 
 		private LinkedList<TimerData> _timers;
@@ -88,8 +88,8 @@ namespace UnityFx.Mvc
 			_viewFactory = context.ViewFactory;
 			_viewType = context.ViewType;
 			_creationFlags = context.CreationFlags;
-			_deeplinkId = MvcUtilities.GetControllerDeeplinkId(_controllerType);
-			_prefabPath = string.IsNullOrEmpty(context.ViewResourceId) ? MvcUtilities.GetControllerName(context.ControllerType) : context.ViewResourceId;
+			_deeplinkId = PresentUtilities.GetControllerDeeplinkId(_controllerType);
+			_prefabPath = string.IsNullOrEmpty(context.ViewResourceId) ? PresentUtilities.GetControllerName(context.ControllerType) : context.ViewResourceId;
 		}
 
 		#endregion
@@ -108,7 +108,7 @@ namespace UnityFx.Mvc
 			{
 				try
 				{
-					_activateEvents?.Activate();
+					_activateEvents?.OnActivate();
 					_state = State.Active;
 					return true;
 				}
@@ -128,7 +128,7 @@ namespace UnityFx.Mvc
 				try
 				{
 					_state = State.Presented;
-					_activateEvents?.Deactivate();
+					_activateEvents?.OnDeactivate();
 				}
 				catch (Exception e)
 				{
@@ -160,10 +160,10 @@ namespace UnityFx.Mvc
 			_view = view;
 			_scope = _controllerFactory.CreateScope(ref _serviceProvider);
 			_controller = _controllerFactory.CreateViewController(_controllerType, this, _view, presentArgs, presentArgs.UserData);
-			_activateEvents = _controller as IActivatable;
-			_presentEvents = _controller as IPresentable;
+			_activateEvents = _controller as IActivateEvents;
+			_presentEvents = _controller as IPresentEvents;
 
-			_presentEvents?.Present();
+			_presentEvents?.OnPresent();
 
 			if (_view is INotifyDisposed nd)
 			{
@@ -433,24 +433,24 @@ namespace UnityFx.Mvc
 		{
 			try
 			{
-				if (_controller is IPresentable c)
+				if (_controller is IPresentEvents c)
 				{
 					if (_state == State.Active)
 					{
 						try
 						{
-							_activateEvents?.Deactivate();
+							_activateEvents?.OnDeactivate();
 						}
 						catch (Exception e)
 						{
 							_presenter.ReportError(e);
 						}
 
-						c.Dismiss();
+						c.OnDismiss();
 					}
 					else if (_state == State.Presented)
 					{
-						c.Dismiss();
+						c.OnDismiss();
 					}
 				}
 			}
@@ -489,14 +489,14 @@ namespace UnityFx.Mvc
 			{
 				if (_state == State.Presented)
 				{
-					_activateEvents?.Activate();
+					_activateEvents?.OnActivate();
 					_state = State.Active;
 				}
 			}
 			else if (_state == State.Active)
 			{
 				_state = State.Presented;
-				_activateEvents?.Deactivate();
+				_activateEvents?.OnDeactivate();
 			}
 		}
 

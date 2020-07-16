@@ -14,7 +14,7 @@ namespace UnityFx.Mvc
 	/// Implementation of <see cref="IPresentService"/>.
 	/// </summary>
 	/// <seealso cref="PresenterBuilder"/>
-	internal sealed partial class Presenter : IPresentService, IPresenterEvents, IPresenterInternal
+	internal sealed partial class Presenter : IPresentService, IPlayerLoopEvents, IPresenterInternal
 	{
 		#region data
 
@@ -147,7 +147,7 @@ namespace UnityFx.Mvc
 
 		#region IPresenterEvents
 
-		public void Update()
+		public void OnUpdate()
 		{
 			var frameTime = Time.deltaTime;
 			var node = _presentables.First;
@@ -355,13 +355,13 @@ namespace UnityFx.Mvc
 			}
 
 			// Types inherited from IViewControllerResult<> use specific result values.
-			if (MvcUtilities.IsAssignableToGenericType(controllerType, typeof(IViewControllerResult<>), out var resultType))
+			if (PresentUtilities.IsAssignableToGenericType(controllerType, typeof(IViewControllerResult<>), out var resultType))
 			{
 				presentContext.ResultType = resultType.GenericTypeArguments[0];
 			}
 
 			// Types inherited from IViewControllerView<> have view type restrictions.
-			if (MvcUtilities.IsAssignableToGenericType(controllerType, typeof(IViewControllerView<>), out var viewType))
+			if (PresentUtilities.IsAssignableToGenericType(controllerType, typeof(IViewControllerView<>), out var viewType))
 			{
 				presentContext.ViewType = viewType.GenericTypeArguments[0];
 			}
