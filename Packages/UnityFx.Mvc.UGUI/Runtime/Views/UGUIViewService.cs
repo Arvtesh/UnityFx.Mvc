@@ -88,7 +88,7 @@ namespace UnityFx.Mvc
 
 			if (prefab)
 			{
-				view = PresentUtilities.InstantiateViewPrefab<UGUIView>(prefab, parent ?? viewProxy.transform);
+				view = ActivatorUtilities.InstantiateViewPrefab<UGUIView>(prefab, parent ?? viewProxy.transform);
 				go = view.gameObject;
 			}
 			else

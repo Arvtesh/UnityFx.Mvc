@@ -56,6 +56,7 @@ namespace UnityFx.Mvc
 		/// Dismissses this controller.
 		/// </summary>
 		/// <seealso cref="IsDismissed"/>
+		/// <seealso cref="ThrowIfDismissed"/>
 		protected void Dismiss()
 		{
 			_context.Dismiss();
@@ -64,7 +65,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Throws an <see cref="ObjectDisposedException"/> if the controller is disposed.
 		/// </summary>
-		/// <seealso cref="Dispose()"/>
+		/// <seealso cref="Dismiss()"/>
 		protected void ThrowIfDismissed()
 		{
 			if (_context.IsDismissed)
@@ -133,7 +134,7 @@ namespace UnityFx.Mvc
 
 		#endregion
 
-		#region IActivatable
+		#region IActivateEvents
 
 		void IActivateEvents.OnActivate()
 		{
@@ -149,7 +150,7 @@ namespace UnityFx.Mvc
 
 		#endregion
 
-		#region IPresentable
+		#region IPresentEvents
 
 		void IPresentEvents.OnPresent()
 		{

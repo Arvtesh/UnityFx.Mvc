@@ -39,7 +39,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="serviceProvider">A <see cref="IServiceProvider"/> used to resolve controller dependencies.</param>
 		/// <returns>A disposable scope created or <see langword="null"/>.</returns>
-		public virtual IDisposable CreateScope(ref IServiceProvider serviceProvider)
+		public IDisposable CreateScope(ref IServiceProvider serviceProvider)
 		{
 			return null;
 		}
@@ -53,40 +53,9 @@ namespace UnityFx.Mvc
 		/// <exception cref="InvalidOperationException">Thrown if <paramref name="controllerType"/> is not a valid controller type (for instance, <paramref name="controllerType"/> is abstract).</exception>
 		/// <returns>The created controller instance.</returns>
 		/// <seealso cref="DestroyViewController(IViewController)"/>
-		public virtual IViewController CreateViewController(Type controllerType, object[] args)
+		public IViewController CreateViewController(Type controllerType, object[] args)
 		{
-			if (controllerType is null)
-			{
-				throw new ArgumentNullException(nameof(controllerType));
-			}
-
-			try
-			{
-				var constructors = controllerType.GetConstructors(BindingFlags.Instance | BindingFlags.Public);
-
-				if (constructors.Length > 0)
-				{
-					// Select the first public non-static ctor with matching arguments.
-					foreach (var ctor in constructors)
-					{
-						if (PresentUtilities.TryGetMethodArguments(ctor, _serviceProvider, args, out var argValues))
-						{
-							return (IViewController)ctor.Invoke(argValues);
-						}
-					}
-
-					throw new InvalidOperationException($"A suitable constructor for type '{controllerType}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.");
-				}
-				else
-				{
-					return (IViewController)Activator.CreateInstance(controllerType);
-				}
-			}
-			catch (TargetInvocationException e)
-			{
-				ExceptionDispatchInfo.Capture(e.InnerException).Throw();
-				throw e.InnerException;
-			}
+			return (IViewController)ActivatorUtilities.CreateInstance(controllerType, _serviceProvider, args);
 		}
 
 		/// <summary>
@@ -94,7 +63,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="controller">The controller to be disposed.</param>
 		/// <seealso cref="CreateViewController(Type, object[])"/>
-		public virtual void DestroyViewController(IViewController controller)
+		public void DestroyViewController(IViewController controller)
 		{
 			if (controller is IDisposable d)
 			{
