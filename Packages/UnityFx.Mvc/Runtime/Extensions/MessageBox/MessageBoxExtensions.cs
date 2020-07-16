@@ -38,7 +38,7 @@ namespace UnityFx.Mvc.Extensions
 		/// <seealso cref="MessageBoxController"/>
 		public static Task<MessageBoxResult> PresentMessageBoxAsync(this IPresenter presenter, MessageBoxOptions options, string text)
 		{
-			return ((IPresentResult<MessageBoxResult>)presenter.Present(typeof(MessageBoxController), new MessageBoxArgs(options, text))).Task;
+			return presenter.Present(typeof(MessageBoxController), new MessageBoxArgs(options, text)).GetResultAsync<MessageBoxResult>();
 		}
 
 		/// <summary>
@@ -66,7 +66,7 @@ namespace UnityFx.Mvc.Extensions
 		/// <seealso cref="MessageBoxController"/>
 		public static Task<MessageBoxResult> PresentMessageBoxAsync(this IPresenter presenter, MessageBoxOptions options, string text, string title)
 		{
-			return ((IPresentResult<MessageBoxResult>)presenter.Present(typeof(MessageBoxController), new MessageBoxArgs(options, text, title))).Task;
+			return presenter.Present(typeof(MessageBoxController), new MessageBoxArgs(options, text, title)).GetResultAsync<MessageBoxResult>();
 		}
 
 		/// <summary>
@@ -98,7 +98,7 @@ namespace UnityFx.Mvc.Extensions
 		/// <seealso cref="MessageBoxController"/>
 		public static Task<MessageBoxResult> PresentMessageBoxAsync(this IPresenter presenter, MessageBoxOptions options, string text, string title, string okText, string cancelText)
 		{
-			return ((IPresentResult<MessageBoxResult>)presenter.Present(typeof(MessageBoxController), new MessageBoxArgs(options, text, title, okText, cancelText))).Task;
+			return presenter.Present(typeof(MessageBoxController), new MessageBoxArgs(options, text, title, okText, cancelText)).GetResultAsync<MessageBoxResult>();
 		}
 	}
 }
