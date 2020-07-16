@@ -21,30 +21,61 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Instantiates a prefab making sure it has a component of type <typeparamref name="TComponent"/> attached.
 		/// </summary>
-		public static TComponent InstantiatePrefab<TComponent>(GameObject prefab, Transform parent) where TComponent : Component
+		/// <typeparam name="TComponent">Component type to instantiate.</typeparam>
+		/// <param name="prefab">The prefab to instantiate.</param>
+		/// <param name="parent">A transform to parent the created game object to (or <see langword="null"/>).</param>
+		/// <param name="serviceProvider">A service provider to get component dependencies from (or <see langword="null"/>).</param>
+		/// <param name="args">Aguments to get component dependencies from (or <see langword="null"/>).</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="prefab"/> is <see langword="null"/>.</exception>
+		/// <returns>Returns the component instance created.</returns>
+		/// <seealso cref="InstantiatePrefab(Type, GameObject, Transform, IServiceProvider, object[])"/>
+		public static TComponent InstantiatePrefab<TComponent>(GameObject prefab, Transform parent, IServiceProvider serviceProvider = null, object[] args = null) where TComponent : Component
 		{
+			return (TComponent)InstantiatePrefab(typeof(TComponent), prefab, parent, serviceProvider, args);
+		}
+
+		/// <summary>
+		/// Instantiates a prefab making sure it has a component of type <paramref name="componentType"/> attached.
+		/// </summary>
+		/// <param name="componentType">Type of the component to instantiate.</param>
+		/// <param name="prefab">The prefab to instantiate.</param>
+		/// <param name="parent">A transform to parent the created game object to (or <see langword="null"/>).</param>
+		/// <param name="serviceProvider">A service provider to get component dependencies from (or <see langword="null"/>).</param>
+		/// <param name="args">Aguments to get component dependencies from (or <see langword="null"/>).</param>
+		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="componentType"/> or <paramref name="prefab"/> is <see langword="null"/>.</exception>
+		/// <returns>Returns the component instance created.</returns>
+		/// <seealso cref="InstantiatePrefab{TComponent}(GameObject, Transform, IServiceProvider, object[])"/>
+		public static Component InstantiatePrefab(Type componentType, GameObject prefab, Transform parent, IServiceProvider serviceProvider = null, object[] args = null)
+		{
+			if (componentType is null)
+			{
+				throw new ArgumentNullException(nameof(componentType));
+			}
+
 			if (prefab is null)
 			{
 				throw new ArgumentNullException(nameof(prefab));
 			}
 
 			var go = GameObject.Instantiate(prefab, parent, false);
-			var view = go.GetComponent<TComponent>();
+			var c = go.GetComponent(componentType);
 
-			if (view is null)
+			if (c is null)
 			{
-				view = go.AddComponent<TComponent>();
+				c = go.AddComponent(componentType);
 			}
 
-			return view;
-		}
+			if (serviceProvider != null)
+			{
+				var initMethod = componentType.GetMethod(InitializeMethodName, BindingFlags.Instance | BindingFlags.Public);
 
-		/// <summary>
-		/// Instantiates a view prefab making sure it has a view attached.
-		/// </summary>
-		public static TView InstantiateViewPrefab<TView>(GameObject prefab, Transform parent) where TView : Component, IView
-		{
-			return InstantiatePrefab<TView>(prefab, parent);
+				if (initMethod != null && TryGetMethodArguments(initMethod, serviceProvider, args, out var argValues))
+				{
+					initMethod.Invoke(c, argValues);
+				}
+			}
+
+			return c;
 		}
 
 		/// <summary>
@@ -55,11 +86,12 @@ namespace UnityFx.Mvc
 		/// <typeparam name="T">The type to instantiate.</typeparam>
 		/// <param name="serviceProvider">A service provider to get argument values from.</param>
 		/// <param name="args">Agument values to use.</param>
-		/// <exception cref="ArgumentNullException">Thrown if either of <paramref name="type"/>, <paramref name="go"/> or <paramref name="serviceProvider"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
 		/// <returns>Returns the component created.</returns>
-		public static TComponent CreateInstance<TComponent>(GameObject go, IServiceProvider serviceProvider, object[] args) where TComponent : Component
+		/// <seealso cref="CreateComponent(Type, GameObject, IServiceProvider, object[])"/>
+		public static TComponent CreateComponent<TComponent>(GameObject go, IServiceProvider serviceProvider = null, object[] args = null) where TComponent : Component
 		{
-			return (TComponent)CreateInstance(typeof(TComponent), go, serviceProvider, args);
+			return (TComponent)CreateComponent(typeof(TComponent), go, serviceProvider, args);
 		}
 
 		/// <summary>
@@ -70,9 +102,10 @@ namespace UnityFx.Mvc
 		/// <param name="type">Type to instantiate.</param>
 		/// <param name="serviceProvider">A service provider to get argument values from.</param>
 		/// <param name="args">Agument values to use.</param>
-		/// <exception cref="ArgumentNullException">Thrown if either of <paramref name="type"/>, <paramref name="go"/> or <paramref name="serviceProvider"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="type"/> or <paramref name="go"/> is <see langword="null"/>.</exception>
 		/// <returns>Returns the component created.</returns>
-		public static Component CreateInstance(Type type, GameObject go, IServiceProvider serviceProvider, object[] args)
+		/// <seealso cref="CreateComponent{TComponent}(GameObject, IServiceProvider, object[])"/>
+		public static Component CreateComponent(Type type, GameObject go, IServiceProvider serviceProvider = null, object[] args = null)
 		{
 			if (go is null)
 			{
@@ -80,11 +113,15 @@ namespace UnityFx.Mvc
 			}
 
 			var c = go.AddComponent(type);
-			var initMethod = type.GetMethod(InitializeMethodName, BindingFlags.Instance | BindingFlags.Public);
 
-			if (initMethod != null && TryGetMethodArguments(initMethod, serviceProvider, args, out var argValues))
+			if (serviceProvider != null)
 			{
-				initMethod.Invoke(c, argValues);
+				var initMethod = type.GetMethod(InitializeMethodName, BindingFlags.Instance | BindingFlags.Public);
+
+				if (initMethod != null && TryGetMethodArguments(initMethod, serviceProvider, args, out var argValues))
+				{
+					initMethod.Invoke(c, argValues);
+				}
 			}
 
 			return c;
@@ -113,7 +150,7 @@ namespace UnityFx.Mvc
 		/// <param name="args">Agument values to use.</param>
 		/// <exception cref="ArgumentNullException">Thrown if either <paramref name="type"/> or <paramref name="serviceProvider"/> is <see langword="null"/>.</exception>
 		/// <returns>Returns the instance created.</returns>
-		public static object CreateInstance(Type type, IServiceProvider serviceProvider, object[] args)
+		public static object CreateInstance(Type type, IServiceProvider serviceProvider, object[] args = null)
 		{
 			if (type is null)
 			{
