@@ -14,6 +14,11 @@ namespace UnityFx.Mvc
 	public static class ActivatorUtilities
 	{
 		/// <summary>
+		/// Name of the initialize method.
+		/// </summary>
+		public const string InitializeMethodName = "Initialize";
+
+		/// <summary>
 		/// Instantiates a prefab making sure it has a component of type <typeparamref name="TComponent"/> attached.
 		/// </summary>
 		public static TComponent InstantiatePrefab<TComponent>(GameObject prefab, Transform parent) where TComponent : Component
@@ -40,6 +45,49 @@ namespace UnityFx.Mvc
 		public static TView InstantiateViewPrefab<TView>(GameObject prefab, Transform parent) where TView : Component, IView
 		{
 			return InstantiatePrefab<TView>(prefab, parent);
+		}
+
+		/// <summary>
+		/// Creates an instance of the specified <typeparamref name="TComponent"/>, attaches it to the specified game object, then
+		/// initializes it using values from <paramref name="serviceProvider"/> and <paramref name="args"/> as arguments.
+		/// Values from <paramref name="args"/> have priority over values retrieved from <paramref name="serviceProvider"/>.
+		/// </summary>
+		/// <typeparam name="T">The type to instantiate.</typeparam>
+		/// <param name="serviceProvider">A service provider to get argument values from.</param>
+		/// <param name="args">Agument values to use.</param>
+		/// <exception cref="ArgumentNullException">Thrown if either of <paramref name="type"/>, <paramref name="go"/> or <paramref name="serviceProvider"/> is <see langword="null"/>.</exception>
+		/// <returns>Returns the component created.</returns>
+		public static TComponent CreateInstance<TComponent>(GameObject go, IServiceProvider serviceProvider, object[] args) where TComponent : Component
+		{
+			return (TComponent)CreateInstance(typeof(TComponent), go, serviceProvider, args);
+		}
+
+		/// <summary>
+		/// Creates an instance of the specified <paramref name="type"/>, attaches it to the specified game object, then
+		/// initializes it using values from <paramref name="serviceProvider"/> and <paramref name="args"/> as arguments.
+		/// Values from <paramref name="args"/> have priority over values retrieved from <paramref name="serviceProvider"/>.
+		/// </summary>
+		/// <param name="type">Type to instantiate.</param>
+		/// <param name="serviceProvider">A service provider to get argument values from.</param>
+		/// <param name="args">Agument values to use.</param>
+		/// <exception cref="ArgumentNullException">Thrown if either of <paramref name="type"/>, <paramref name="go"/> or <paramref name="serviceProvider"/> is <see langword="null"/>.</exception>
+		/// <returns>Returns the component created.</returns>
+		public static Component CreateInstance(Type type, GameObject go, IServiceProvider serviceProvider, object[] args)
+		{
+			if (go is null)
+			{
+				throw new ArgumentNullException(nameof(go));
+			}
+
+			var c = go.AddComponent(type);
+			var initMethod = type.GetMethod(InitializeMethodName, BindingFlags.Instance | BindingFlags.Public);
+
+			if (initMethod != null && TryGetMethodArguments(initMethod, serviceProvider, args, out var argValues))
+			{
+				initMethod.Invoke(c, argValues);
+			}
+
+			return c;
 		}
 
 		/// <summary>

@@ -2,14 +2,15 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using UnityEngine;
 
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Provides methods for creation and disposal of view controllers.
+	/// Default implementation of a controller factory.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
-	public class ViewControllerFactory : IViewControllerFactory
+	public sealed class ViewControllerFactory : IViewControllerFactory
 	{
 		#region data
 
