@@ -24,10 +24,15 @@ namespace UnityFx.Mvc
 		{
 			var success = false;
 			var loop = PlayerLoop.GetCurrentPlayerLoop();
-			var presentSystem = new PlayerLoopSystem()
+			var updateSystem = new PlayerLoopSystem()
 			{
 				type = typeof(Presenter),
 				updateDelegate = presenter.OnUpdate
+			};
+			var laterUpdateSystem = new PlayerLoopSystem()
+			{
+				type = typeof(Presenter),
+				updateDelegate = presenter.OnLateUpdate
 			};
 
 			for (var i = 0; i < loop.subSystemList.Length; i++)
@@ -40,11 +45,19 @@ namespace UnityFx.Mvc
 					var newSubSystems = new PlayerLoopSystem[system.subSystemList.Length + 1];
 					system.subSystemList.CopyTo(newSubSystems, 1);
 					system.subSystemList = newSubSystems;
-					system.subSystemList[0] = presentSystem;
+					system.subSystemList[0] = updateSystem;
 					loop.subSystemList[i] = system;
 					success = true;
-
-					break;
+				}
+				else if (system.type == typeof(PlayerLoopTypes.PreLateUpdate))
+				{
+					// Add new update system right at the start of the group.
+					var newSubSystems = new PlayerLoopSystem[system.subSystemList.Length + 1];
+					system.subSystemList.CopyTo(newSubSystems, 1);
+					system.subSystemList = newSubSystems;
+					system.subSystemList[0] = laterUpdateSystem;
+					loop.subSystemList[i] = system;
+					success = true;
 				}
 			}
 

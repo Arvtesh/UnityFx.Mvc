@@ -14,5 +14,10 @@ namespace UnityFx.Mvc
 		/// Update event. Called on each frame.
 		/// </summary>
 		void OnUpdate();
+
+		/// <summary>
+		/// LateUpdate event. Called on each frame.
+		/// </summary>
+		void OnLateUpdate();
 	}
 }

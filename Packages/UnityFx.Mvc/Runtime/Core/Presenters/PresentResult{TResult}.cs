@@ -189,7 +189,7 @@ namespace UnityFx.Mvc
 					// Call controller update handler (if any).
 					if (_controller is IUpdatable ut)
 					{
-						ut.Update(frameTime);
+						ut.Update();
 					}
 
 					// Call timer updates (if any).

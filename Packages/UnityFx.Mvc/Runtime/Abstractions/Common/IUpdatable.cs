@@ -13,6 +13,6 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Called on each frame.
 		/// </summary>
-		void Update(float frameTime);
+		void Update();
 	}
 }

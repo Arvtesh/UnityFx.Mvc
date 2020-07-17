@@ -145,7 +145,7 @@ namespace UnityFx.Mvc
 
 		#endregion
 
-		#region IPresenterEvents
+		#region IPlayerLoopEvents
 
 		public void OnUpdate()
 		{
@@ -189,6 +189,10 @@ namespace UnityFx.Mvc
 				node.Value.Update(frameTime);
 				node = node.Next;
 			}
+		}
+
+		public void OnLateUpdate()
+		{
 		}
 
 		#endregion

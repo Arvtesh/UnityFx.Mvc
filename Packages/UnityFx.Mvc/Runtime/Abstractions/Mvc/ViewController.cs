@@ -114,7 +114,7 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Called on each frame. Default implementation does nothing.
 		/// </summary>
-		protected virtual void OnUpdate(float frameTime)
+		protected virtual void OnUpdate()
 		{
 		}
 
@@ -162,10 +162,10 @@ namespace UnityFx.Mvc
 
 		#region IUpdatable
 
-		void IUpdatable.Update(float frameTime)
+		void IUpdatable.Update()
 		{
 			Debug.Assert(!IsDismissed);
-			OnUpdate(frameTime);
+			OnUpdate();
 		}
 
 		#endregion

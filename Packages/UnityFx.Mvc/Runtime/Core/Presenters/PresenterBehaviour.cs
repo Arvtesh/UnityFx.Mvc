@@ -36,6 +36,14 @@ namespace UnityFx.Mvc
 			}
 		}
 
+		private void LateUpdate()
+		{
+			if (_presenter != null && _presenter.NeedEventSource)
+			{
+				_presenter.OnLateUpdate();
+			}
+		}
+
 		private void OnDestroy()
 		{
 			_presenter?.Dispose();
@@ -43,7 +51,7 @@ namespace UnityFx.Mvc
 
 		private void OnApplicationQuit()
 		{
-			// NOTE: Do not dispose presenter when the app is being shout down.
+			// NOTE: Do not dispose presenter when the app is being shut down.
 			_presenter = null;
 		}
 
