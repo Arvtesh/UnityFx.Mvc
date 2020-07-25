@@ -11,7 +11,7 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// A generic prefab storage.
 	/// </summary>
-	public interface IPrefabRepository : IDisposable
+	public interface IPrefabRepository
 	{
 		/// <summary>
 		/// Gets a read-only collection of cached prefabs.

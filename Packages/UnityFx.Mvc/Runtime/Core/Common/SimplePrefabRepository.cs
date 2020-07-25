@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityFx.Mvc
 {
-	internal class SimplePrefabRepository : IPrefabRepository
+	internal class SimplePrefabRepository : IPrefabRepository, IDisposable
 	{
 		#region data
 

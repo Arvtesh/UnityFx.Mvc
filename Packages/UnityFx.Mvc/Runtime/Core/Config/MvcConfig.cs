@@ -231,31 +231,6 @@ namespace UnityFx.Mvc
 
 		#endregion
 
-		#region IDisposable
-
-		/// <inheritdoc/>
-		public void Dispose()
-		{
-			if (!_disposed)
-			{
-				_disposed = true;
-
-				foreach (var kvp in _prefabs)
-				{
-					TryDestroyPrefab(kvp.Key, kvp.Value);
-				}
-
-				_prefabs.Clear();
-
-				if (this)
-				{
-					Destroy(this);
-				}
-			}
-		}
-
-		#endregion
-
 		#region implementation
 
 		private void TryAddPrefab(string resourceId, GameObject prefab)
