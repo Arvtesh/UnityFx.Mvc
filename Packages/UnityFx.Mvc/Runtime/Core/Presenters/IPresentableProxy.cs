@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityFx.Mvc
 {
-	internal interface IPresentableProxy : IPresentResult
+	internal interface IPresentableProxy : IPresentResult, IViewControllerInfo
 	{
 		int Layer { get; }
 		string PrefabPath { get; }

@@ -10,7 +10,7 @@ namespace UnityFx.Mvc
 	/// </summary>
 	/// <seealso cref="IPresentContext{TResult}"/>
 	/// <seealso cref="IViewController"/>
-	public interface IPresentContext : IViewControllerInfo, IServiceProvider
+	public interface IPresentContext : IServiceProvider
 	{
 		/// <summary>
 		/// Gets time elapsed since the controller has been created (in seconds).
@@ -33,6 +33,11 @@ namespace UnityFx.Mvc
 		/// Gets the controller view.
 		/// </summary>
 		IView View { get; }
+
+		/// <summary>
+		/// Gets the controller tag. The meaning of this field is defined by user. Typically used to group controllers.
+		/// </summary>
+		int Tag { get; }
 
 		/// <summary>
 		/// Schedules a callback to be called in the specified <paramref name="timeout"/>.

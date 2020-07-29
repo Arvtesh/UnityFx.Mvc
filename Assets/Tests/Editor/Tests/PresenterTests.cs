@@ -73,7 +73,7 @@ namespace UnityFx.Mvc
 
 			Assert.NotNull(presentResult);
 			Assert.False(presentResult.IsDismissed);
-			Assert.AreEqual(typeof(MinimalController), presentResult.ControllerType);
+			//Assert.AreEqual(typeof(MinimalController), presentResult.ControllerType);
 		}
 
 		[Test]
