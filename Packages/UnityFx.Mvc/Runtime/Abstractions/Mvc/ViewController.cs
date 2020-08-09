@@ -34,7 +34,8 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Gets a value indicating whether the controller is dismissed.
 		/// </summary>
-		/// <seealso cref="Dismiss"/>
+		/// <seealso cref="Dismiss()"/>
+		/// <seealso cref="Dismiss(Exception)"/>
 		protected bool IsDismissed => _context.IsDismissed;
 
 		/// <summary>
@@ -51,6 +52,7 @@ namespace UnityFx.Mvc
 		/// Dismissses this controller.
 		/// </summary>
 		/// <seealso cref="IsDismissed"/>
+		/// <seealso cref="Dismiss(Exception)"/>
 		/// <seealso cref="ThrowIfDismissed"/>
 		protected void Dismiss()
 		{
@@ -58,9 +60,21 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
+		/// Dismissses this controller.
+		/// </summary>
+		/// <seealso cref="IsDismissed"/>
+		/// <seealso cref="Dismiss()"/>
+		/// <seealso cref="ThrowIfDismissed"/>
+		protected void Dismiss(Exception e)
+		{
+			_context.Dismiss(e);
+		}
+
+		/// <summary>
 		/// Throws an <see cref="ObjectDisposedException"/> if the controller is disposed.
 		/// </summary>
 		/// <seealso cref="Dismiss()"/>
+		/// <seealso cref="Dismiss(Exception)"/>
 		protected void ThrowIfDismissed()
 		{
 			if (_context.IsDismissed)

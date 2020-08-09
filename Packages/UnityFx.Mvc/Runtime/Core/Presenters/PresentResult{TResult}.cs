@@ -57,7 +57,6 @@ namespace UnityFx.Mvc
 		private IServiceProvider _serviceProvider;
 		private IDisposable _scope;
 		private IViewController _controller;
-		private IPresentEvents _presentEvents;
 		private IActivateEvents _activateEvents;
 		private IView _view;
 
@@ -161,9 +160,11 @@ namespace UnityFx.Mvc
 			_scope = _controllerFactory.CreateScope(ref _serviceProvider);
 			_controller = _controllerFactory.CreateViewController(_controllerType, this, _view, presentArgs, presentArgs.UserData);
 			_activateEvents = _controller as IActivateEvents;
-			_presentEvents = _controller as IPresentEvents;
 
-			_presentEvents?.OnPresent();
+			if (_controller is IPresentEvents pe)
+			{
+				pe.OnPresent();
+			}
 
 			if (_view is INotifyDisposed nd)
 			{
@@ -438,24 +439,27 @@ namespace UnityFx.Mvc
 		{
 			try
 			{
-				if (_controller is IPresentEvents c)
+				if (_state == State.Active)
 				{
-					if (_state == State.Active)
+					try
 					{
-						try
-						{
-							_activateEvents?.OnDeactivate();
-						}
-						catch (Exception e)
-						{
-							_presenter.ReportError(e);
-						}
-
-						c.OnDismiss();
+						_activateEvents?.OnDeactivate();
 					}
-					else if (_state == State.Presented)
+					catch (Exception e)
 					{
-						c.OnDismiss();
+						_presenter.ReportError(e);
+					}
+					finally
+					{
+						_state = State.Presented;
+					}
+				}
+
+				if (_state == State.Presented)
+				{
+					if (_controller is IPresentEvents presentEvents)
+					{
+						presentEvents.OnDismiss();
 					}
 				}
 			}
@@ -485,23 +489,6 @@ namespace UnityFx.Mvc
 			finally
 			{
 				_state = State.Dismissed;
-			}
-		}
-
-		private void UpdateActive(bool isTop)
-		{
-			if (isTop)
-			{
-				if (_state == State.Presented)
-				{
-					_activateEvents?.OnActivate();
-					_state = State.Active;
-				}
-			}
-			else if (_state == State.Active)
-			{
-				_state = State.Presented;
-				_activateEvents?.OnDeactivate();
 			}
 		}
 
