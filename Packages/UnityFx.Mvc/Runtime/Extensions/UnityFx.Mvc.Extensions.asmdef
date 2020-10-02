@@ -1,15 +1,15 @@
 {
     "name": "UnityFx.Mvc.Extensions",
     "references": [
-        "UnityFx.Mvc.Abstractions",
-        "UnityFx.Mvc.Commands"
+        "UnityFx.Mvc.Abstractions"
     ],
-    "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": []
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

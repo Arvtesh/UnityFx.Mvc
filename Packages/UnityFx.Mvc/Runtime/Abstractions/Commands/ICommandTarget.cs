@@ -9,13 +9,14 @@ namespace UnityFx.Mvc
 	/// Represents an object capable of command processing.
 	/// </summary>
 	/// <seealso cref="INotifyCommand"/>
-	public interface ICommandTarget<T>
+	public interface ICommandTarget
 	{
 		/// <summary>
 		/// Invokes a command. An implementation might choose to ignore the command, in this case the method should return <see langword="false"/>.
 		/// </summary>
 		/// <param name="command">Command to invoke.</param>
+		/// <param name="args">The command arguments.</param>
 		/// <returns>Returns <see langword="true"/> if the command has been handled; <see langword="false"/> otherwise.</returns>
-		bool InvokeCommand(T command, Variant args);
+		bool InvokeCommand(Command command, Variant args);
 	}
 }

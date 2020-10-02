@@ -34,10 +34,34 @@ namespace UnityFx.Mvc
 		/// <param name="command">A generic command.</param>
 		/// <seealso cref="NotifyCommand{TCommand, TArgs}(TCommand, TArgs)"/>
 		/// <seealso cref="Command"/>
-		protected void NotifyCommand<TCommand>(TCommand command)
+		protected void NotifyCommand(string command)
 		{
-			var cmd = Mvc.Command.FromType(command);
-			Command?.Invoke(this, new CommandEventArgs(cmd, new Variant()));
+			Command?.Invoke(this, new CommandEventArgs(Mvc.Command.FromString(command), default));
+		}
+
+		/// <summary>
+		/// Raises <see cref="Command"/> event.
+		/// </summary>
+		/// <typeparam name="TArgs">Type of the <paramref name="command"/> arguments.</typeparam>
+		/// <param name="command">A generic command.</param>
+		/// <param name="args">Command arguments.</param>
+		/// <seealso cref="NotifyCommand{TCommand}(TCommand)"/>
+		/// <seealso cref="Command"/>
+		protected void NotifyCommand<TArgs>(string command, TArgs args)
+		{
+			Command?.Invoke(this, new CommandEventArgs(Mvc.Command.FromString(command), new Variant(args)));
+		}
+
+		/// <summary>
+		/// Raises <see cref="Command"/> event.
+		/// </summary>
+		/// <typeparam name="TCommand">Type of the command.</typeparam>
+		/// <param name="command">A generic command.</param>
+		/// <seealso cref="NotifyCommand{TCommand, TArgs}(TCommand, TArgs)"/>
+		/// <seealso cref="Command"/>
+		protected void NotifyCommand<TCommand>(TCommand command) where TCommand : struct, Enum
+		{
+			Command?.Invoke(this, new CommandEventArgs(Mvc.Command.FromEnum(command), default));
 		}
 
 		/// <summary>
@@ -49,11 +73,9 @@ namespace UnityFx.Mvc
 		/// <param name="args">Command arguments.</param>
 		/// <seealso cref="NotifyCommand{TCommand}(TCommand)"/>
 		/// <seealso cref="Command"/>
-		protected void NotifyCommand<TCommand, TArgs>(TCommand command, TArgs args)
+		protected void NotifyCommand<TCommand, TArgs>(TCommand command, TArgs args) where TCommand : struct, Enum
 		{
-			var cmd = Mvc.Command.FromType(command);
-			var v = new Variant(args);
-			Command?.Invoke(this, new CommandEventArgs(cmd, v));
+			Command?.Invoke(this, new CommandEventArgs(Mvc.Command.FromEnum(command), new Variant(args)));
 		}
 
 		/// <summary>

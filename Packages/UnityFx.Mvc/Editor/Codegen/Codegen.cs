@@ -119,7 +119,7 @@ namespace UnityFx.Mvc
 					{
 						if (options.HasFlag(CodegenOptions.CreateCommands))
 						{
-							text.AppendLineFormat("if (command.{0}(out {1} cmd))", nameof(Command.TryUnpackEnum), names.CommandsName);
+							text.AppendLineFormat("if (command.{0}(out {1} cmd))", nameof(Command.TryParse), names.CommandsName);
 							text.AppendLine("{");
 							text.Indent += 1;
 							{
