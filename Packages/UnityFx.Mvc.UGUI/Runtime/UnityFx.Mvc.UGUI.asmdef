@@ -2,7 +2,6 @@
     "name": "UnityFx.Mvc.UGUI",
     "references": [
         "UnityEngine.UI",
-        "UnityFx.Mvc.Commands",
         "UnityFx.Mvc.Abstractions",
         "UnityFx.Mvc",
         "UnityFx.Mvc.Extensions"
