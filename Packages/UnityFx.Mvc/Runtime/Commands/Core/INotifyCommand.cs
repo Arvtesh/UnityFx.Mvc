@@ -12,7 +12,7 @@ namespace UnityFx.Mvc
 	public interface INotifyCommand
 	{
 		/// <summary>
-		/// Raised when a user issues a command.
+		/// Raised when a command is triggered.
 		/// </summary>
 		event EventHandler<CommandEventArgs> Command;
 	}

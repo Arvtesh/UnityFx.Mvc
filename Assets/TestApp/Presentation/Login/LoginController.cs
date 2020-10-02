@@ -39,7 +39,7 @@ namespace TestApp.Presentation
 		/// <inheritdoc/>
 		protected override bool OnCommand(Command command, Variant args)
 		{
-			if (command.TryUnpackEnum(out LoginCommands cmd))
+			if (command.TryParse(out LoginCommands cmd))
 			{
 				return InvokeCommand(cmd, args);
 			}

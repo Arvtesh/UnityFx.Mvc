@@ -68,7 +68,7 @@ namespace UnityFx.Mvc.Extensions
 		/// <inheritdoc/>
 		protected override bool OnCommand(Command command, Variant args)
 		{
-			if (command.TryUnpackEnum(out MessageBoxCommands cmd))
+			if (command.TryParse(out MessageBoxCommands cmd))
 			{
 				OnCommand(cmd);
 				return true;
