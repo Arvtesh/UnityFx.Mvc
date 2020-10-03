@@ -9,7 +9,7 @@ namespace UnityFx.Mvc
 	/// Tag interface for all <see cref="IViewController"/> implementations that have a specific view type assigned.
 	/// </summary>
 	/// <seealso cref="IViewController"/>
-	public interface IViewControllerView<TView>
+	public interface IViewControllerView<TView> where TView : IView
 	{
 	}
 }

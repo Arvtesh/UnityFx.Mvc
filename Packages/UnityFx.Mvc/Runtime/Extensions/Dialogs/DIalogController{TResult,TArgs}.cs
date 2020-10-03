@@ -13,7 +13,7 @@ namespace UnityFx.Mvc.Extensions
 	/// Can work with any view that implements <see cref="IConfigurable{T}"/>.
 	/// </remarks>
 	/// <seealso cref="DialogArgs"/>
-	public abstract class DialogController<TResult,TArgs> : IViewController, IViewControllerResult<TResult>, ICommandTarget where TArgs : DialogArgs
+	public abstract class DialogController<TResult, TArgs> : IViewController, IViewControllerResult<TResult>, IViewControllerArgs<TArgs>, ICommandTarget where TArgs : DialogArgs
 	{
 		#region data
 
@@ -40,11 +40,6 @@ namespace UnityFx.Mvc.Extensions
 		protected DialogController(IPresentContext<TResult> context, TArgs args)
 		{
 			_context = context;
-
-			if (context.View is INotifyCommand nc)
-			{
-				nc.Command += OnCommand;
-			}
 
 			if (context.View is IConfigurable<TArgs> c)
 			{
