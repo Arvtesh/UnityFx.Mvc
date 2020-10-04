@@ -41,7 +41,7 @@ namespace UnityFx.Mvc
 
 		#region IViewFactory
 
-		public async override Task<IView> CreateViewAsync(string resourceId, int layer, ViewControllerFlags flags, Transform parent)
+		public async override Task<IView> CreateViewAsync(string resourceId, Transform parent)
 		{
 			ThrowIfDisposed();
 
@@ -49,9 +49,9 @@ namespace UnityFx.Mvc
 
 			try
 			{
-				var exclusive = (flags & ViewControllerFlags.Exclusive) != 0;
-				var modal = (flags & ViewControllerFlags.Modal) != 0;
-				var viewRoot = Layers[layer];
+				var exclusive = false;//(flags & ViewControllerFlags.Exclusive) != 0;
+				var modal = true;//(flags & ViewControllerFlags.Modal) != 0;
+				var viewRoot = Layers[0];//Layers[layer];
 
 				viewProxy = CreateViewProxy(viewRoot, resourceId, exclusive, modal);
 
@@ -67,12 +67,6 @@ namespace UnityFx.Mvc
 
 				throw;
 			}
-		}
-
-		public override void DestroyView(IView view)
-		{
-			// TODO: Unload view prefab if there are no views instantieted from it.
-			view?.Dispose();
 		}
 
 		#endregion

@@ -48,7 +48,6 @@ namespace UnityFx.Mvc.Extensions
 	/// <seealso cref="MessageBoxArgs"/>
 	/// <seealso cref="MessageBoxOptions"/>
 	/// <seealso cref="MessageBoxResult"/>
-	[ViewController(Flags = ViewControllerFlags.ModalPopup)]
 	public class MessageBoxController : DialogController<MessageBoxResult, MessageBoxArgs>, ICommandTarget<MessageBoxCommands>
 	{
 		#region interface

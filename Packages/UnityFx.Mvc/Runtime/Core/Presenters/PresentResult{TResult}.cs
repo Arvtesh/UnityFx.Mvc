@@ -33,23 +33,15 @@ namespace UnityFx.Mvc
 			Disposed
 		}
 
-		private struct TimerData
-		{
-			public float Timeout;
-			public float Timer;
-			public Action<float> Callback;
-		}
-
 		private readonly IPresenterInternal _presenter;
 		private readonly IViewControllerFactory _controllerFactory;
 		private readonly IViewFactory _viewFactory;
 		private readonly Type _controllerType;
 		private readonly Type _viewType;
 		private readonly Type _resultType;
-		private readonly ViewControllerFlags _creationFlags;
+		private readonly Type _argsType;
 		private readonly IPresentableProxy _parent;
 		private readonly int _id;
-		private readonly int _layer;
 		private readonly int _tag;
 		private readonly string _prefabPath;
 		private readonly string _deeplinkId;
@@ -60,7 +52,6 @@ namespace UnityFx.Mvc
 		private IActivateEvents _activateEvents;
 		private IView _view;
 
-		private LinkedList<TimerData> _timers;
 		private float _timer;
 
 		private List<Exception> _exceptions;
@@ -78,15 +69,14 @@ namespace UnityFx.Mvc
 			_presenter = presenter;
 			_id = context.Id;
 			_tag = context.Tag;
-			_layer = context.Layer;
 			_parent = context.Parent;
 			_serviceProvider = context.ServiceProvider;
 			_controllerFactory = context.ControllerFactory;
 			_controllerType = context.ControllerType;
 			_resultType = context.ResultType;
+			_argsType = context.ArgsType;
 			_viewFactory = context.ViewFactory;
 			_viewType = context.ViewType;
-			_creationFlags = context.CreationFlags;
 			_deeplinkId = PresentUtilities.GetControllerDeeplinkId(_controllerType);
 			_prefabPath = string.IsNullOrEmpty(context.ViewResourceId) ? PresentUtilities.GetControllerName(context.ControllerType) : context.ViewResourceId;
 		}
@@ -94,8 +84,6 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region IPresentable
-
-		public int Layer => _layer;
 
 		public string PrefabPath => _prefabPath;
 
@@ -138,7 +126,7 @@ namespace UnityFx.Mvc
 
 		public async Task PresentAsyc(PresentArgs presentArgs)
 		{
-			var view = await _viewFactory.CreateViewAsync(_prefabPath, _layer, _creationFlags, presentArgs.Transform);
+			var view = await _viewFactory.CreateViewAsync(_prefabPath, presentArgs.Transform);
 
 			if (view is null)
 			{
@@ -160,6 +148,11 @@ namespace UnityFx.Mvc
 			_scope = _controllerFactory.CreateScope(ref _serviceProvider);
 			_controller = _controllerFactory.CreateViewController(_controllerType, this, _view, presentArgs, presentArgs.UserData);
 			_activateEvents = _controller as IActivateEvents;
+
+			if (view is IAsyncPresentable asyncPresentable)
+			{
+				await asyncPresentable.PresentAsync();
+			}
 
 			if (_controller is IPresentEvents pe)
 			{
@@ -192,27 +185,6 @@ namespace UnityFx.Mvc
 					{
 						ut.Update();
 					}
-
-					// Call timer updates (if any).
-					if (_timers != null)
-					{
-						var node = _timers.First;
-
-						while (node != null)
-						{
-							var timerData = node.Value;
-							timerData.Timer += frameTime;
-							node.Value = timerData;
-
-							if (timerData.Timer >= timerData.Timeout)
-							{
-								_timers.Remove(node);
-								timerData.Callback(timerData.Timer);
-							}
-
-							node = node.Next;
-						}
-					}
 				}
 				catch (Exception e)
 				{
@@ -234,28 +206,6 @@ namespace UnityFx.Mvc
 		public float PresentTime => _timer;
 
 		public bool IsActive => _state == State.Active;
-
-		public void Schedule(Action<float> timerCallback, float timeout)
-		{
-			ThrowIfDisposed();
-
-			if (timerCallback is null)
-			{
-				throw new ArgumentNullException(nameof(timerCallback));
-			}
-
-			if (timeout < 0)
-			{
-				throw new ArgumentOutOfRangeException(nameof(timeout));
-			}
-
-			if (_timers == null)
-			{
-				_timers = new LinkedList<TimerData>();
-			}
-
-			_timers.AddLast(new TimerData() { Timeout = timeout, Callback = timerCallback });
-		}
 
 		public void Dismiss(TResult result)
 		{
@@ -289,9 +239,9 @@ namespace UnityFx.Mvc
 
 		public Type ResultType => _resultType;
 
-		public ViewControllerFlags CreationFlags => _creationFlags;
+		public Type ArgsType => _argsType;
 
-        #endregion
+		#endregion
 
 		#region IViewControllerResultAccess
 
@@ -407,7 +357,7 @@ namespace UnityFx.Mvc
 				try
 				{
 					_controllerFactory.DestroyViewController(_controller);
-					_viewFactory.DestroyView(_view);
+					_view?.Dispose();
 					_scope?.Dispose();
 				}
 				catch (Exception e)

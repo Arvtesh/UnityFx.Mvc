@@ -42,6 +42,11 @@ namespace UnityFx.Mvc
 			return "View is null.";
 		}
 
+		public static string Format_InvalidArgsType(Type expectedType)
+		{
+			return $"Invalid arguments type, {expectedType.Name} is expected.";
+		}
+
 		public static string Format_InvalidViewType(Type expectedType)
 		{
 			return $"Invalid view type, {expectedType.Name} is expected. Make sure view prefab has the correct view attached.";

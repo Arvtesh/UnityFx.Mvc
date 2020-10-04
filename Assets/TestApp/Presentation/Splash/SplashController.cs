@@ -7,18 +7,23 @@ using UnityFx.Mvc;
 
 namespace TestApp.Presentation
 {
-	[ViewController(Flags = ViewControllerFlags.Exclusive)]
 	public class SplashController : ViewController
 	{
+		private float _timer;
+
 		public SplashController(IPresentContext context)
 			: base(context)
 		{
-			context.Schedule(OnTimer, 5);
 		}
 
-		private void OnTimer(float t)
+		protected override void OnUpdate()
 		{
-			Dismiss();
+			_timer += Time.deltaTime;
+
+			if (_timer > 3)
+			{
+				Dismiss();
+			}
 		}
 	}
 }

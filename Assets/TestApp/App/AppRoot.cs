@@ -119,8 +119,7 @@ namespace TestApp.Presentation
 		protected async Task OnPresent(IPresentService presenter, IViewControllerInfo controllerInfo, PresentArgs presentArgs)
 		{
 			if (controllerInfo.ControllerType != typeof(AppController) && 
-				controllerInfo.ControllerType != typeof(SplashController) &&
-				(controllerInfo.CreationFlags & ViewControllerFlags.Popup) == 0)
+				controllerInfo.ControllerType != typeof(SplashController))
 			{
 				var webApi = _services.GetRequiredService<IWebApi>();
 

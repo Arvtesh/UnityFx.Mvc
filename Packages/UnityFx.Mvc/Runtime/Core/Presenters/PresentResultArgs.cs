@@ -13,7 +13,6 @@ namespace UnityFx.Mvc
 		public IViewFactory ViewFactory;
 
 		public int Id;
-		public int Layer;
 		public int Tag;
 		public string ViewResourceId;
 		
@@ -21,6 +20,6 @@ namespace UnityFx.Mvc
 		public Type ControllerType;
 		public Type ViewType;
 		public Type ResultType;
-		public ViewControllerFlags CreationFlags;
+		public Type ArgsType;
 	}
 }

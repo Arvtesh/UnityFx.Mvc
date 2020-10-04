@@ -10,7 +10,6 @@ namespace TestApp.Presentation
 	/// LobbyController
 	/// </summary>
 	/// <seealso cref="LobbyView"/>
-	[ViewController(Flags = ViewControllerFlags.Exclusive)]
 	public class LobbyController : ViewController<LobbyView>
 	{
 		#region data

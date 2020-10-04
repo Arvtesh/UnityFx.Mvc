@@ -42,13 +42,13 @@ namespace UnityFx.Mvc
 		Type ViewType { get; }
 
 		/// <summary>
+		/// Gets type of the arguments.
+		/// </summary>
+		Type ArgsType { get; }
+
+		/// <summary>
 		/// Gets type of the controller result value.
 		/// </summary>
 		Type ResultType { get; }
-
-		/// <summary>
-		/// Gets the controller creation flags.
-		/// </summary>
-		ViewControllerFlags CreationFlags { get; }
 	}
 }

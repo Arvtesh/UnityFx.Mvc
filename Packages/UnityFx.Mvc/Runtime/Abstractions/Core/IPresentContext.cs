@@ -40,13 +40,6 @@ namespace UnityFx.Mvc
 		int Tag { get; }
 
 		/// <summary>
-		/// Schedules a callback to be called in the specified <paramref name="timeout"/>.
-		/// </summary>
-		/// <param name="timerCallback">The callback to be called when the time is out.</param>
-		/// <param name="timeout">Timeout value in seconds.</param>
-		void Schedule(Action<float> timerCallback, float timeout);
-
-		/// <summary>
 		/// Dismisses the controller with exception.
 		/// </summary>
 		/// <seealso cref="IsDismissed"/>

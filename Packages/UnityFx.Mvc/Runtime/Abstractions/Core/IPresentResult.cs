@@ -41,5 +41,10 @@ namespace UnityFx.Mvc
 		/// Gets a <see cref="System.Threading.Tasks.Task"/> instance that can be used to await the operation completion (i.e. until the controller is dismissed).
 		/// </summary>
 		Task Task { get; }
+
+		/// <summary>
+		/// Dismisses the controller.
+		/// </summary>
+		void Dismiss();
 	}
 }

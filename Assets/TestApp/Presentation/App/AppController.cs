@@ -11,7 +11,6 @@ namespace TestApp.Presentation
 	/// AppController
 	/// </summary>
 	/// <seealso cref="AppView"/>
-	[ViewController(Flags = ViewControllerFlags.Exclusive)]
 	public class AppController : ViewController<AppView>
 	{
 		#region data

@@ -10,7 +10,6 @@ namespace UnityFx.Mvc
 {
 	internal interface IPresentableProxy : IPresentResult, IViewControllerInfo
 	{
-		int Layer { get; }
 		string PrefabPath { get; }
 		bool IsActive { get; }
 		IPresentableProxy Parent { get; }

@@ -3,14 +3,13 @@
 
 using System;
 
-namespace UnityFx.Mvc
+namespace UnityFx.Mvc.UseCases
 {
-	[ViewController(Flags = ViewControllerFlags.Singleton)]
-	public class SingletonController : IViewController
+	public class MyViewController : IViewController
 	{
 		public IView View { get; }
 
-		public SingletonController(IView view)
+		public MyViewController(IView view)
 		{
 			View = view;
 		}

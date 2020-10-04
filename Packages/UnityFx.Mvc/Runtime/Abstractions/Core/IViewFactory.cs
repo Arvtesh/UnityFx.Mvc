@@ -19,14 +19,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="resourceId">Resource identifier of the view prefab.</param>
 		/// <param name="layer"></param>
-		/// <param name="flags">Present options.</param>
 		/// <param name="parent">Parent transform for the view (or <see langword="null"/>).</param>
-		Task<IView> CreateViewAsync(string resourceId, int layer, ViewControllerFlags flags, Transform parent);
-
-		/// <summary>
-		/// Destroys the specified view.
-		/// </summary>
-		/// <param name="view">The view to destroy.</param>
-		void DestroyView(IView view);
+		Task<IView> CreateViewAsync(string resourceId, Transform parent);
 	}
 }

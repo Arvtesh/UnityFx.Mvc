@@ -12,7 +12,6 @@ namespace TestApp.Presentation
 	/// <summary>
 	/// <seealso cref="LoginView"/>
 	/// <seealso cref="LoginCommands"/>
-	[ViewController(Flags = ViewControllerFlags.ModalPopup)]
 	public class LoginController : ViewController<LoginView>, ICommandTarget<LoginCommands>
 	{
 		#region data

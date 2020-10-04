@@ -197,17 +197,6 @@ namespace UnityFx.Mvc
 		}
 
 		[Test]
-		public void Present_MaintainsTheOnlyInstanceOfSingletonController()
-		{
-			var presentResult = _presenter.Present<SingletonController>();
-			var presentResult2 = _presenter.Present<SingletonController>();
-
-			Assert.True(presentResult.IsDismissed);
-			Assert.False(presentResult2.IsDismissed);
-			Assert.AreEqual(1, _presenter.Controllers.Count);
-		}
-
-		[Test]
 		public void Dispose_CanBeCalledMultipleTimes()
 		{
 			_presenter.Dispose();

@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -49,6 +50,22 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <param name="presenter">The presenter.</param>
 		/// <param name="controllerType">Type of the view controller to present.</param>
+		/// <param name="cancellationToken">A token that can be used to dismiss (cancel) the controller.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		/// <seealso cref="Present(Type)"/>
+		public static Task PresentAsync(this IPresenter presenter, Type controllerType, CancellationToken cancellationToken)
+		{
+			return presenter.Present(controllerType, null).WithCancellation(cancellationToken).Task;
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <param name="presenter">The presenter.</param>
+		/// <param name="controllerType">Type of the view controller to present.</param>
 		/// <param name="args">Controller arguments.</param>
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
@@ -58,6 +75,23 @@ namespace UnityFx.Mvc
 		public static Task PresentAsync(this IPresenter presenter, Type controllerType, PresentArgs args)
 		{
 			return presenter.Present(controllerType, args).Task;
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <param name="presenter">The presenter.</param>
+		/// <param name="controllerType">Type of the view controller to present.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <param name="cancellationToken">A token that can be used to dismiss (cancel) the controller.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="controllerType"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="controllerType"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		/// <seealso cref="Present(Type)"/>
+		public static Task PresentAsync(this IPresenter presenter, Type controllerType, PresentArgs args, CancellationToken cancellationToken)
+		{
+			return presenter.Present(controllerType, args).WithCancellation(cancellationToken).Task;
 		}
 
 		/// <summary>
@@ -157,6 +191,20 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
 		/// <param name="presenter">The presenter.</param>
+		/// <param name="cancellationToken">A token that can be used to dismiss(cancel) the controller.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		public static Task PresentAsync<TController>(this IPresenter presenter, CancellationToken cancellationToken) where TController : IViewController
+		{
+			return presenter.Present(typeof(TController), null).WithCancellation(cancellationToken).Task;
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
+		/// <param name="presenter">The presenter.</param>
 		/// <param name="args">Controller arguments.</param>
 		/// <returns>An object that can be used to track the operation progress.</returns>
 		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
@@ -178,6 +226,21 @@ namespace UnityFx.Mvc
 		public static Task PresentAsync<TController>(this IPresenter presenter, PresentArgs args) where TController : IViewController
 		{
 			return presenter.Present(typeof(TController), args).Task;
+		}
+
+		/// <summary>
+		/// Presents a controller of the specified type.
+		/// </summary>
+		/// <typeparam name="TController">Type of the controller to instantiate.</typeparam>
+		/// <param name="presenter">The presenter.</param>
+		/// <param name="args">Controller arguments.</param>
+		/// <param name="cancellationToken">A token that can be used to dismiss(cancel) the controller.</param>
+		/// <returns>An object that can be used to track the operation progress.</returns>
+		/// <exception cref="ArgumentException">Thrown if <typeparamref name="TController"/> cannot be used to instantiate the controller (for instance it is abstract type).</exception>
+		/// <exception cref="ObjectDisposedException">Thrown if the presenter is disposed.</exception>
+		public static Task PresentAsync<TController>(this IPresenter presenter, PresentArgs args, CancellationToken cancellationToken) where TController : IViewController
+		{
+			return presenter.Present(typeof(TController), args).WithCancellation(cancellationToken).Task;
 		}
 
 		/// <summary>

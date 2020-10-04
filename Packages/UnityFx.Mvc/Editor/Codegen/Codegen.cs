@@ -48,10 +48,10 @@ namespace UnityFx.Mvc
 					text.AppendSeeAlso(names.CommandsName);
 				}
 
-				if (!string.IsNullOrEmpty(flags))
-				{
-					text.AppendLineFormat("[ViewController({0} = {1})]", nameof(ViewControllerAttribute.Flags), flags);
-				}
+				//if (!string.IsNullOrEmpty(flags))
+				//{
+				//	text.AppendLineFormat("[ViewController({0} = {1})]", nameof(ViewControllerAttribute.Flags), flags);
+				//}
 
 				if (options.HasFlag(CodegenOptions.CreateCommands))
 				{

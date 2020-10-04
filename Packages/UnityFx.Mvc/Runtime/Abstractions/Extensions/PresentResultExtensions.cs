@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -14,10 +15,12 @@ namespace UnityFx.Mvc
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class PresentResultExtensions
 	{
+		private static Action<object> _cancelledCallback;
+
 		/// <summary>
 		/// Returns result value of the view controller if it's available.
 		/// </summary>
-		/// <typeparam name="TResult">Type of the result value.</typeparam>
+		/// <typeparam name="TResult">Type of the controller result value.</typeparam>
 		public static TResult GetResult<TResult>(this IPresentResult presentResult)
 		{
 			return ((IViewControllerResultAccess<TResult>)presentResult).Result;
@@ -26,10 +29,52 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Returns result value of the view controller when it's available.
 		/// </summary>
-		/// <typeparam name="TResult">Type of the result value.</typeparam>
+		/// <typeparam name="TResult">Type of the controller result value.</typeparam>
 		public static Task<TResult> GetResultAsync<TResult>(this IPresentResult presentResult)
 		{
 			return ((IViewControllerResultAccess<TResult>)presentResult).Task;
+		}
+
+		/// <summary>
+		/// Dismisses the controller as soon as the <paramref name="cancellationToken"/> is cancelled.
+		/// </summary>
+		public static IPresentResult WithCancellation(this IPresentResult presentResult, CancellationToken cancellationToken)
+		{
+			if (cancellationToken.CanBeCanceled)
+			{
+				if (_cancelledCallback is null)
+				{
+					_cancelledCallback = OnCancelled;
+				}
+
+				cancellationToken.Register(_cancelledCallback, presentResult, true);
+			}
+
+			return presentResult;
+		}
+
+		/// <summary>
+		/// Dismisses the controller as soon as the <paramref name="cancellationToken"/> is cancelled.
+		/// </summary>
+		/// <typeparam name="TResult">Type of the controller result value.</typeparam>
+		public static IPresentResult<TResult> WithCancellation<TResult>(this IPresentResult<TResult> presentResult, CancellationToken cancellationToken)
+		{
+			if (cancellationToken.CanBeCanceled)
+			{
+				if (_cancelledCallback is null)
+				{
+					_cancelledCallback = OnCancelled;
+				}
+
+				cancellationToken.Register(_cancelledCallback, presentResult, true);
+			}
+
+			return presentResult;
+		}
+
+		private static void OnCancelled(object presentResult)
+		{
+			(presentResult as IPresentResult)?.Dismiss();
 		}
 	}
 }

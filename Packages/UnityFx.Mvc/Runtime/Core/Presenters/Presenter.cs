@@ -219,10 +219,10 @@ namespace UnityFx.Mvc
 						return true;
 					}
 
-					if ((p.CreationFlags & ViewControllerFlags.Exclusive) != 0)
-					{
-						return false;
-					}
+					//if ((p.CreationFlags & ViewControllerFlags.Exclusive) != 0)
+					//{
+					//	return false;
+					//}
 
 					node = node.Previous;
 				}
@@ -250,18 +250,18 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private IPresentResult PresentInternal(IPresentableProxy parent, Type controllerType, PresentArgs args)
+		private IPresentResult PresentInternal(IPresentableProxy parent, Type controllerType, PresentArgs presentArgs)
 		{
 			ThrowIfDisposed();
 			ThrowIfInvalidControllerType(controllerType);
 
-			if (args is null)
+			if (presentArgs is null)
 			{
-				args = _defaultPresentArgs;
+				presentArgs = _defaultPresentArgs;
 			}
 
-			var result = CreatePresentable(parent, controllerType, args);
-			PresentInternal(result, parent, args);
+			var result = CreatePresentable(parent, controllerType, presentArgs);
+			PresentInternal(result, parent, presentArgs);
 			return result;
 		}
 
@@ -297,18 +297,6 @@ namespace UnityFx.Mvc
 				{
 					presentableParent?.DismissCancel();
 				}
-
-				// 5) Dismiss controllers of the same type if requested (for singleton controllers only).
-				if ((presentable.CreationFlags & ViewControllerFlags.Singleton) != 0)
-				{
-					foreach (var p in _presentables)
-					{
-						if (p != presentable && p.ControllerType == presentable.ControllerType)
-						{
-							p.DismissCancel();
-						}
-					}
-				}
 			}
 			catch (Exception e)
 			{
@@ -316,7 +304,7 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		private IPresentableProxy CreatePresentable(IPresentableProxy parent, Type controllerType, PresentArgs args)
+		private IPresentableProxy CreatePresentable(IPresentableProxy parent, Type controllerType, PresentArgs presentArgs)
 		{
 			Debug.Assert(controllerType != null);
 			Debug.Assert(!_disposed);
@@ -329,7 +317,8 @@ namespace UnityFx.Mvc
 				ControllerType = controllerType,
 				ViewFactory = _viewFactory,
 				ViewType = typeof(IView),
-				ResultType = typeof(int)
+				ResultType = typeof(int),
+				ArgsType = typeof(PresentArgs)
 			};
 
 			var attrs = (ViewControllerAttribute[])controllerType.GetCustomAttributes(typeof(ViewControllerAttribute), false);
@@ -339,14 +328,12 @@ namespace UnityFx.Mvc
 				var attr = attrs[0];
 
 				presentContext.ViewResourceId = attr.ViewResourceId;
-				presentContext.CreationFlags = attr.Flags;
-				presentContext.Layer = attr.Layer;
 				presentContext.Tag = attr.Tag;
 
-				if ((attr.Flags & ViewControllerFlags.AllowMultipleInstances) == 0)
-				{
-					ThrowIfControllerPresented(controllerType, _presentables);
-				}
+				//if ((attr.Flags & ViewControllerFlags.AllowMultipleInstances) == 0)
+				//{
+				//	ThrowIfControllerPresented(controllerType, _presentables);
+				//}
 			}
 			else
 			{
@@ -370,10 +357,21 @@ namespace UnityFx.Mvc
 				presentContext.ViewType = viewType.GenericTypeArguments[0];
 			}
 
-			// For child controller save parent reference.
-			if ((args.PresentOptions & PresentOptions.Child) != 0)
+			// Types inherited from IViewControllerArgs<> have args type restrictions.
+			if (PresentUtilities.IsAssignableToGenericType(controllerType, typeof(IViewControllerArgs<>), out var argsType))
 			{
-				if ((args.PresentOptions & PresentOptions.DismissCurrent) != 0)
+				if (presentArgs.GetType() != argsType)
+				{
+					throw new ArgumentException(Messages.Format_InvalidArgsType(argsType), nameof(presentArgs));
+				}
+
+				presentContext.ArgsType = argsType.GenericTypeArguments[0];
+			}
+
+			// For child controller save parent reference.
+			if ((presentArgs.PresentOptions & PresentOptions.Child) != 0)
+			{
+				if ((presentArgs.PresentOptions & PresentOptions.DismissCurrent) != 0)
 				{
 					presentContext.Parent = parent?.Parent;
 				}
@@ -452,7 +450,7 @@ namespace UnityFx.Mvc
 				}
 			}
 		}
-		
+
 		private static void ThrowIfInvalidControllerType(Type controllerType)
 		{
 			if (controllerType is null)

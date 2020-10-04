@@ -12,11 +12,6 @@ namespace UnityFx.Mvc
 	public sealed class ViewControllerAttribute : Attribute
 	{
 		/// <summary>
-		/// Gets or sets controller flags.
-		/// </summary>
-		public ViewControllerFlags Flags { get; set; }
-
-		/// <summary>
 		/// Gets or sets view resource identifier.
 		/// </summary>
 		public string ViewResourceId { get; set; }
@@ -25,10 +20,5 @@ namespace UnityFx.Mvc
 		/// Gets or sets controller tag.
 		/// </summary>
 		public int Tag { get; set; }
-
-		/// <summary>
-		/// Gets or sets layer index.
-		/// </summary>
-		public int Layer { get; set; }
 	}
 }
