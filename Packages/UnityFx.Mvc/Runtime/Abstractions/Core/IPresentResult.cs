@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace UnityFx.Mvc
@@ -43,8 +44,16 @@ namespace UnityFx.Mvc
 		Task Task { get; }
 
 		/// <summary>
+		/// Dismisses the controller with the specific <paramref name="cancellationToken"/>.
+		/// </summary>
+		/// <seealso cref="Dismiss()"/>
+		void Dismiss(CancellationToken cancellationToken);
+
+		/// <summary>
 		/// Dismisses the controller.
 		/// </summary>
+		/// <seealso cref="Dismiss(CancellationToken)"/>
 		void Dismiss();
+	
 	}
 }

@@ -14,5 +14,9 @@ namespace UnityFx.Mvc
 		{
 			return Task.FromResult<IView>(new DefaultView());
 		}
+
+		public void ReleaseView(IView view)
+		{
+		}
 	}
 }

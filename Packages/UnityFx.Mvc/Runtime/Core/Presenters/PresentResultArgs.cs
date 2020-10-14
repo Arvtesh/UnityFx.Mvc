@@ -8,15 +8,11 @@ namespace UnityFx.Mvc
 {
 	internal class PresentResultArgs
 	{
-		public IServiceProvider ServiceProvider;
-		public IViewControllerFactory ControllerFactory;
-		public IViewFactory ViewFactory;
-
 		public int Id;
 		public int Tag;
-		public string ViewResourceId;
+		public int Queue;
 		
-		public IPresentableProxy Parent;
+		public PresentResult Parent;
 		public Type ControllerType;
 		public Type ViewType;
 		public Type ResultType;

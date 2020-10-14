@@ -37,14 +37,9 @@ namespace UnityFx.Mvc.Extensions
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DialogController"/> class.
 		/// </summary>
-		protected DialogController(IPresentContext<TResult> context, TArgs args)
+		protected DialogController(IPresentContext<TResult> context)
 		{
 			_context = context;
-
-			if (context.View is IConfigurable<TArgs> c)
-			{
-				c.Configure(args);
-			}
 		}
 
 		/// <summary>

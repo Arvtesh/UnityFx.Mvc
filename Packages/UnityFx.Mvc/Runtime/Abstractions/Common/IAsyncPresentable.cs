@@ -14,6 +14,11 @@ namespace UnityFx.Mvc
 		/// <summary>
 		/// Initiates an asynchronous PRESENT operation.
 		/// </summary>
-		Task PresentAsync();
+		Task FadeInAsync(PresentOptions presentOptions);
+
+		/// <summary>
+		/// Initiates an asynchronous DISMISS operation.
+		/// </summary>
+		Task FadeOutAsync();
 	}
 }

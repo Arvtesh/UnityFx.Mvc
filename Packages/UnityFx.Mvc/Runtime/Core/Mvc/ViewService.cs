@@ -131,6 +131,8 @@ namespace UnityFx.Mvc
 
 		public abstract Task<IView> CreateViewAsync(string resourceId, Transform parent);
 
+		public abstract void ReleaseView(IView view);
+
 		#endregion
 
 		#region IDisposable

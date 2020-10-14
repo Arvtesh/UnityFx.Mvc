@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Reflection;
 using UnityEngine;
 
 namespace UnityFx.Mvc
@@ -45,6 +46,29 @@ namespace UnityFx.Mvc
 			}
 
 			return controllerTypeName;
+		}
+
+		/// <summary>
+		/// Attempts to configure an object.
+		/// </summary>
+		/// <seealso cref="IConfigurable{T}"/>
+		public static bool TryConfigure(object obj, object args)
+		{
+			var configurableType = typeof(IConfigurable<>).MakeGenericType(args.GetType());
+			var viewType = obj.GetType();
+
+			if (configurableType.IsAssignableFrom(viewType))
+			{
+				var method = viewType.GetMethod("Configure", BindingFlags.Public | BindingFlags.Instance);
+
+				if (method != null)
+				{
+					method.Invoke(obj, new object[] { args });
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		/// <summary>

@@ -16,7 +16,7 @@ namespace UnityFx.Mvc
 	/// <seealso cref="IViewController"/>
 	/// <seealso cref="IViewFactory"/>
 	/// <seealso href="https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller"/>
-	public interface IView : IDisposable
+	public interface IView
 	{
 		/// <summary>
 		/// Gets the <see cref="Transform"/> this view is attached to.
@@ -24,7 +24,7 @@ namespace UnityFx.Mvc
 		Transform Transform { get; }
 
 		/// <summary>
-		/// Gets or sets a value indicating whether the view is enabled.
+		/// Gets or sets a value indicating whether the view is enabled (visible).
 		/// </summary>
 		bool Enabled { get; set; }
 	}

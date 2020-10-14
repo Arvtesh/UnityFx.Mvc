@@ -10,7 +10,7 @@ namespace UnityFx.Mvc
 	/// A <see cref="MonoBehaviour"/>-based view.
 	/// </summary>
 	/// <seealso cref="ViewController"/>
-	public class View : MonoBehaviour, IView, INotifyDisposed, INotifyCommand
+	public class View : MonoBehaviour, IView, INotifyDisposed, INotifyCommand, IDisposable
 	{
 		#region data
 

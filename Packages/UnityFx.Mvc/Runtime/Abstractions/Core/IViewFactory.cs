@@ -18,8 +18,15 @@ namespace UnityFx.Mvc
 		/// Creates a view for a controller of the specified type.
 		/// </summary>
 		/// <param name="resourceId">Resource identifier of the view prefab.</param>
-		/// <param name="layer"></param>
 		/// <param name="parent">Parent transform for the view (or <see langword="null"/>).</param>
+		/// <seealso cref="ReleaseView(IView)"/>
 		Task<IView> CreateViewAsync(string resourceId, Transform parent);
+
+		/// <summary>
+		/// Releases the view.
+		/// </summary>
+		/// <param name="view">The view to release.</param>
+		/// <seealso cref="CreateViewAsync(string, Transform)"/>
+		void ReleaseView(IView view);
 	}
 }

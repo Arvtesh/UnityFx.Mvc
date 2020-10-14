@@ -69,6 +69,14 @@ namespace UnityFx.Mvc
 			}
 		}
 
+		public override void ReleaseView(IView view)
+		{
+			if (view is IDisposable d)
+			{
+				d.Dispose();
+			}
+		}
+
 		#endregion
 
 		#region implementation

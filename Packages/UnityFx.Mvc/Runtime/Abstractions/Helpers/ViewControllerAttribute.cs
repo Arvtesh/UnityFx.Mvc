@@ -6,19 +6,19 @@ using System;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Marks a class as a view controller.
+	/// Defines view controller static properties.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
 	public sealed class ViewControllerAttribute : Attribute
 	{
 		/// <summary>
-		/// Gets or sets view resource identifier.
-		/// </summary>
-		public string ViewResourceId { get; set; }
-
-		/// <summary>
 		/// Gets or sets controller tag.
 		/// </summary>
 		public int Tag { get; set; }
+
+		/// <summary>
+		/// Gets or sets controller queue identifier.
+		/// </summary>
+		public int Queue { get; set; }
 	}
 }

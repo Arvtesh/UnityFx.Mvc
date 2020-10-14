@@ -15,8 +15,6 @@ namespace UnityFx.Mvc
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class PresentResultExtensions
 	{
-		private static Action<object> _cancelledCallback;
-
 		/// <summary>
 		/// Returns result value of the view controller if it's available.
 		/// </summary>
@@ -42,12 +40,12 @@ namespace UnityFx.Mvc
 		{
 			if (cancellationToken.CanBeCanceled)
 			{
-				if (_cancelledCallback is null)
-				{
-					_cancelledCallback = OnCancelled;
-				}
-
-				cancellationToken.Register(_cancelledCallback, presentResult, true);
+				cancellationToken.Register(
+					() =>
+					{
+						presentResult.Dismiss(cancellationToken);
+					},
+					true);
 			}
 
 			return presentResult;
@@ -61,20 +59,15 @@ namespace UnityFx.Mvc
 		{
 			if (cancellationToken.CanBeCanceled)
 			{
-				if (_cancelledCallback is null)
-				{
-					_cancelledCallback = OnCancelled;
-				}
-
-				cancellationToken.Register(_cancelledCallback, presentResult, true);
+				cancellationToken.Register(
+					() =>
+					{
+						presentResult.Dismiss(cancellationToken);
+					},
+					true);
 			}
 
 			return presentResult;
-		}
-
-		private static void OnCancelled(object presentResult)
-		{
-			(presentResult as IPresentResult)?.Dismiss();
 		}
 	}
 }
