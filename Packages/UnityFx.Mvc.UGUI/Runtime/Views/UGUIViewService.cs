@@ -41,7 +41,7 @@ namespace UnityFx.Mvc
 
 		#region IViewFactory
 
-		public async override Task<IView> CreateViewAsync(string resourceId, Transform parent)
+		public async override Task<IView> CreateViewAsync(object viewKey, Transform parent)
 		{
 			ThrowIfDisposed();
 
@@ -53,10 +53,10 @@ namespace UnityFx.Mvc
 				var modal = true;//(flags & ViewControllerFlags.Modal) != 0;
 				var viewRoot = Layers[0];//Layers[layer];
 
-				viewProxy = CreateViewProxy(viewRoot, resourceId, exclusive, modal);
+				viewProxy = CreateViewProxy(viewRoot, viewKey, exclusive, modal);
 
-				var viewPrefab = await PrefabRepository.LoadPrefabAsync(resourceId);
-				return CreateView(resourceId, viewPrefab, viewProxy, parent);
+				var viewPrefab = await PrefabRepository.LoadPrefabAsync(viewKey);
+				return CreateView(viewKey, viewPrefab, viewProxy, parent);
 			}
 			catch
 			{
@@ -81,7 +81,7 @@ namespace UnityFx.Mvc
 
 		#region implementation
 
-		private IView CreateView(string resourceId, GameObject prefab, UGUIViewProxy viewProxy, Transform parent)
+		private IView CreateView(object viewKey, GameObject prefab, UGUIViewProxy viewProxy, Transform parent)
 		{
 			Debug.Assert(viewProxy);
 
@@ -107,11 +107,9 @@ namespace UnityFx.Mvc
 			return view;
 		}
 
-		private UGUIViewProxy CreateViewProxy(Transform viewRoot, string viewName, bool exclusive, bool modal)
+		private UGUIViewProxy CreateViewProxy(Transform viewRoot, object viewKey, bool exclusive, bool modal)
 		{
-			Debug.Assert(viewName != null);
-
-			var go = new GameObject(viewName);
+			var go = new GameObject(viewKey.ToString());
 			var viewProxy = go.AddComponent<UGUIViewProxy>();
 
 			go.transform.SetParent(viewRoot, false);

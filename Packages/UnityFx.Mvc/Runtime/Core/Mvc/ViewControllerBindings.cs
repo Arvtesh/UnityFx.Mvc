@@ -21,11 +21,11 @@ namespace UnityFx.Mvc
 		#region IViewControllerBindings
 
 		/// <inheritdoc/>
-		public virtual string GetViewResourceId(Type controllerType)
+		public virtual object GetViewKey(Type controllerType)
 		{
 			if (controllerType is null)
 			{
-				throw new ArgumentNullException(nameof(controllerType));
+				return null;
 			}
 
 			return PresentUtilities.GetControllerName(controllerType);

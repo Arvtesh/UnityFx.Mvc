@@ -9,15 +9,15 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// 
 	/// </summary>
-	public interface IAsyncPresentable
+	public interface IFadeable
 	{
 		/// <summary>
-		/// Initiates an asynchronous PRESENT operation.
+		/// Initiates an asynchronous fade-in operation.
 		/// </summary>
 		Task FadeInAsync(PresentOptions presentOptions);
 
 		/// <summary>
-		/// Initiates an asynchronous DISMISS operation.
+		/// Initiates an asynchronous fade-out operation.
 		/// </summary>
 		Task FadeOutAsync();
 	}

@@ -12,20 +12,27 @@ namespace UnityFx.Mvc
 	{
 		#region data
 
-		private readonly Dictionary<string, GameObject> _prefabs = new Dictionary<string, GameObject>();
+		private readonly Dictionary<object, GameObject> _prefabs = new Dictionary<object, GameObject>();
 		private bool _disposed;
+
+		#endregion
+
+		#region interface
+
+		public void AddPrefab(object key, GameObject prefab)
+		{
+			_prefabs.Add(key, prefab);
+		}
 
 		#endregion
 
 		#region IPrefabRepository
 
-		public IDictionary<string, GameObject> PrefabCache => _prefabs;
-
-		public Task<GameObject> LoadPrefabAsync(string resourceId)
+		public Task<GameObject> LoadPrefabAsync(object key)
 		{
-			if (resourceId is null)
+			if (key is null)
 			{
-				throw new ArgumentNullException(nameof(resourceId));
+				throw new ArgumentNullException(nameof(key));
 			}
 
 			if (_disposed)
@@ -33,7 +40,7 @@ namespace UnityFx.Mvc
 				throw new ObjectDisposedException(GetType().Name);
 			}
 
-			if (_prefabs.TryGetValue(resourceId, out var prefab))
+			if (_prefabs.TryGetValue(key, out var prefab))
 			{
 				return Task.FromResult(prefab);
 			}
@@ -41,18 +48,9 @@ namespace UnityFx.Mvc
 			throw new KeyNotFoundException();
 		}
 
-		public void UnloadPrefab(string resourceId)
+		public void ReleasePrefab(GameObject prefab)
 		{
-			if (resourceId is null)
-			{
-				return;
-			}
-
-			if (_prefabs.TryGetValue(resourceId, out var prefab))
-			{
-				GameObject.Destroy(prefab);
-				_prefabs.Remove(resourceId);
-			}
+			// Do nothing.
 		}
 
 		#endregion

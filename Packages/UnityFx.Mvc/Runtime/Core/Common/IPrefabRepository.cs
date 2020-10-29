@@ -14,24 +14,17 @@ namespace UnityFx.Mvc
 	public interface IPrefabRepository
 	{
 		/// <summary>
-		/// Gets a read-only collection of cached prefabs.
+		/// Loads a prefab with the specified identifier.
 		/// </summary>
-		IDictionary<string, GameObject> PrefabCache { get; }
+		/// <param name="key">Resource identifier of the prefab.</param>
+		/// <seealso cref="ReleasePrefab(GameObject)"/>
+		Task<GameObject> LoadPrefabAsync(object key);
 
 		/// <summary>
-		/// Loads a prefab with the specified identifier and adds it to <see cref="PrefabCache"/>.
+		/// Unloads the specified prefab.
 		/// </summary>
 		/// <param name="resourceId">Resource identifier of the prefab.</param>
-		/// <seealso cref="UnloadPrefab(string)"/>
-		/// <seealso cref="PrefabCache"/>
-		Task<GameObject> LoadPrefabAsync(string resourceId);
-
-		/// <summary>
-		/// Unloads the specified prefab and removes it from <see cref="PrefabCache"/>. Does nothing if prefab is not cached.
-		/// </summary>
-		/// <param name="resourceId">Resource identifier of the prefab.</param>
-		/// <seealso cref="LoadPrefabAsync(string)"/>
-		/// <seealso cref="PrefabCache"/>
-		void UnloadPrefab(string resourceId);
+		/// <seealso cref="LoadPrefabAsync(object)"/>
+		void ReleasePrefab(GameObject prefab);
 	}
 }

@@ -129,7 +129,7 @@ namespace UnityFx.Mvc
 
 		#region IViewFactory
 
-		public abstract Task<IView> CreateViewAsync(string resourceId, Transform parent);
+		public abstract Task<IView> CreateViewAsync(object viewKey, Transform parent);
 
 		public abstract void ReleaseView(IView view);
 

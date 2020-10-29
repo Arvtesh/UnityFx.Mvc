@@ -114,7 +114,7 @@ namespace UnityFx.Mvc
 				throw new ArgumentNullException(nameof(prefab));
 			}
 
-			_prefabRepository.PrefabCache.Add(resourceId, prefab);
+			//_prefabRepository.PrefabCache.Add(resourceId, prefab);
 			return this;
 		}
 

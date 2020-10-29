@@ -37,7 +37,7 @@ namespace UnityFx.Mvc
 		private readonly Type _argsType;
 		private readonly int _id;
 		private readonly int _tag;
-		private readonly string _prefabPath;
+		private readonly object _viewKey;
 		private readonly string _deeplinkId;
 
 		private IServiceProvider _serviceProvider;
@@ -83,7 +83,7 @@ namespace UnityFx.Mvc
 			_argsType = context.ArgsType;
 			_viewType = context.ViewType;
 			_deeplinkId = PresentUtilities.GetControllerDeeplinkId(_controllerType);
-			_prefabPath = presenter.ControllerBindings.GetViewResourceId(_controllerType);
+			_viewKey = presenter.ControllerBindings.GetViewKey(_controllerType);
 		}
 
 		internal bool TryActivate()
@@ -124,7 +124,7 @@ namespace UnityFx.Mvc
 		internal async Task PresentAsyc(PresentArgs presentArgs)
 		{
 			// 1) Create view.
-			_view = await _presenter.ViewFactory.CreateViewAsync(_prefabPath, presentArgs.Transform);
+			_view = await _presenter.ViewFactory.CreateViewAsync(_viewKey, presentArgs.Transform);
 
 			// 1.1) Validate the reference returned.
 			if (_view is null)
@@ -152,7 +152,7 @@ namespace UnityFx.Mvc
 			_activateEvents = _controller as IActivateEvents;
 
 			// 4) Fade-in the view.
-			if (_view is IAsyncPresentable asyncPresentable)
+			if (_view is IFadeable asyncPresentable)
 			{
 				await asyncPresentable.FadeInAsync(presentArgs.PresentOptions);
 			}
@@ -234,7 +234,7 @@ namespace UnityFx.Mvc
 				}
 
 				// Fade-out view
-				if (animated && _view is IAsyncPresentable asyncPresentable)
+				if (animated && _view is IFadeable asyncPresentable)
 				{
 					try
 					{

@@ -39,24 +39,6 @@ namespace UnityFx.Mvc
 				EditorGUI.indentLevel -= 1;
 			}
 
-			var prefabs = _viewFactory.PrefabRepository.PrefabCache;
-
-			if (prefabs != null && prefabs.Count > 0)
-			{
-				var prefabId = 0;
-
-				EditorGUILayout.LabelField("View Prefabs");
-				EditorGUI.indentLevel += 1;
-
-				foreach (var prefab in prefabs)
-				{
-					EditorGUILayout.LabelField("#" + prefabId.ToString(), prefab.Key);
-					prefabId++;
-				}
-
-				EditorGUI.indentLevel -= 1;
-			}
-
 			var views = _viewFactory.Views;
 
 			if (views != null && views.Count > 0)
