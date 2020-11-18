@@ -19,6 +19,37 @@ namespace UnityFx.Mvc
 		public const string InitializeMethodName = "Initialize";
 
 		/// <summary>
+		/// Name of the configure method.
+		/// </summary>
+		public const string ConfigureMethodName = "Configure";
+
+		/// <summary>
+		/// Attempts to configure an object, i.e. call <see cref="IConfigurable{T}.Configure(T)"/> method on the <paramref name="obj"/>.
+		/// </summary>
+		/// <seealso cref="IConfigurable{T}"/>
+		public static bool TryConfigure(object obj, object args)
+		{
+			if (obj != null && args != null)
+			{
+				var configurableType = typeof(IConfigurable<>).MakeGenericType(args.GetType());
+				var viewType = obj.GetType();
+
+				if (configurableType.IsAssignableFrom(viewType))
+				{
+					var method = viewType.GetMethod(ConfigureMethodName, BindingFlags.Public | BindingFlags.Instance);
+
+					if (method != null)
+					{
+						method.Invoke(obj, new object[] { args });
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		/// <summary>
 		/// Instantiates a prefab making sure it has a component of type <typeparamref name="TComponent"/> attached.
 		/// </summary>
 		/// <typeparam name="TComponent">Component type to instantiate.</typeparam>

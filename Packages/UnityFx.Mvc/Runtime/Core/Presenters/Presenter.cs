@@ -353,17 +353,17 @@ namespace UnityFx.Mvc
 			}
 
 			// For child controller save parent reference.
-			if ((presentArgs.PresentOptions & PresentOptions.Child) != 0)
-			{
-				if ((presentArgs.PresentOptions & PresentOptions.DismissCurrent) != 0)
-				{
-					presentContext.Parent = parent?.Parent;
-				}
-				else
-				{
-					presentContext.Parent = parent;
-				}
-			}
+			//if ((presentArgs.PresentOptions & PresentOptions.Child) != 0)
+			//{
+			//	if ((presentArgs.PresentOptions & PresentOptions.DismissCurrent) != 0)
+			//	{
+			//		presentContext.Parent = parent?.Parent;
+			//	}
+			//	else
+			//	{
+			//		presentContext.Parent = parent;
+			//	}
+			//}
 
 			// Instantiate the presentable.
 			// https://docs.microsoft.com/en-us/dotnet/framework/reflection-and-codedom/how-to-examine-and-instantiate-generic-types-with-reflection

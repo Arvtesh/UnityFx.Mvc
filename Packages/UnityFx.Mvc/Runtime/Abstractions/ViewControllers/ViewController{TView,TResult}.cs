@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2020 Alexander Bogarsukov.
+﻿// Copyright (c) 2018-2020 Alexander Bogarsukov.
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -12,7 +12,7 @@ namespace UnityFx.Mvc
 	/// Note that minimal controller implementation should implement <see cref="IViewController"/>.
 	/// </summary>
 	/// <seealso cref="ViewController"/>
-	public abstract class ViewController<TView, TResult> : ViewController<TView>, IViewControllerResult<TResult> where TView : class, IView
+	public abstract class ViewController<TView, TResult> : ViewController, IViewControllerView<TView>, IViewControllerResult<TResult> where TView : class, IView
 	{
 		#region data
 		#endregion
@@ -23,6 +23,11 @@ namespace UnityFx.Mvc
 		/// Gets the controller context.
 		/// </summary>
 		protected new IPresentContext<TResult> Context => (IPresentContext<TResult>)base.Context;
+
+		/// <summary>
+		/// Gets a view managed by the controller. Never returns <see langword="null"/>.
+		/// </summary>
+		protected new TView View => (TView)base.View;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ViewController{TView, TResult}"/> class.

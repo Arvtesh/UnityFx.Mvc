@@ -49,29 +49,6 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Attempts to configure an object.
-		/// </summary>
-		/// <seealso cref="IConfigurable{T}"/>
-		public static bool TryConfigure(object obj, object args)
-		{
-			var configurableType = typeof(IConfigurable<>).MakeGenericType(args.GetType());
-			var viewType = obj.GetType();
-
-			if (configurableType.IsAssignableFrom(viewType))
-			{
-				var method = viewType.GetMethod("Configure", BindingFlags.Public | BindingFlags.Instance);
-
-				if (method != null)
-				{
-					method.Invoke(obj, new object[] { args });
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		/// <summary>
 		/// Checks if <paramref name="genericType"/> is assignable to <paramref name="type"/> and, if it is, returnes closed generic type.
 		/// </summary>
 		/// <seealso href="https://stackoverflow.com/questions/5461295/using-isassignablefrom-with-open-generic-types"/>

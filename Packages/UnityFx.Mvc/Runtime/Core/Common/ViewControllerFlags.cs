@@ -34,6 +34,11 @@ namespace UnityFx.Mvc
 		Modal = 0x4,
 
 		/// <summary>
+		/// Parents the presented controller to the caller. Child controllers are dismissed with their parent.
+		/// </summary>
+		Child = 0x8,
+
+		/// <summary>
 		/// Marks the controller as modal. Modal controllers do not forward unprocessed commands to controllers below them is the stack.
 		/// Cannot be combined with <see cref="Exclusive"/>.
 		/// </summary>

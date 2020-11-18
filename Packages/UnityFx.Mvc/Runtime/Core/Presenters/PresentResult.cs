@@ -43,7 +43,7 @@ namespace UnityFx.Mvc
 		private IServiceProvider _serviceProvider;
 		private IDisposable _scope;
 		private IViewController _controller;
-		private IActivateEvents _activateEvents;
+		private IPresentEvents _presentEvents;
 		private IView _view;
 
 		private float _timer;
@@ -92,7 +92,7 @@ namespace UnityFx.Mvc
 			{
 				try
 				{
-					_activateEvents?.OnActivate();
+					_presentEvents?.OnActivate();
 					_state = State.Active;
 					return true;
 				}
@@ -112,7 +112,7 @@ namespace UnityFx.Mvc
 				try
 				{
 					_state = State.Presented;
-					_activateEvents?.OnDeactivate();
+					_presentEvents?.OnDeactivate();
 				}
 				catch (Exception e)
 				{
@@ -144,12 +144,12 @@ namespace UnityFx.Mvc
 			}
 
 			// 2) Configure the created view.
-			PresentUtilities.TryConfigure(_view, presentArgs);
+			ActivatorUtilities.TryConfigure(_view, presentArgs);
 
 			// 3) Create the controller.
 			_scope = _presenter.ControllerFactory.CreateScope(ref _serviceProvider);
 			_controller = _presenter.ControllerFactory.CreateViewController(_controllerType, this, _view, presentArgs, presentArgs.UserData);
-			_activateEvents = _controller as IActivateEvents;
+			_presentEvents = _controller as IPresentEvents;
 
 			// 4) Fade-in the view.
 			if (_view is IFadeable asyncPresentable)
@@ -158,10 +158,7 @@ namespace UnityFx.Mvc
 			}
 
 			// 5) Finish present flow.
-			if (_controller is IPresentEvents pe)
-			{
-				pe.OnPresent();
-			}
+			_presentEvents?.OnPresent();
 
 			if (_view is INotifyDisposed nd)
 			{
@@ -186,7 +183,7 @@ namespace UnityFx.Mvc
 			{
 				try
 				{
-					_activateEvents?.OnDeactivate();
+					_presentEvents?.OnDeactivate();
 				}
 				catch (Exception e)
 				{
