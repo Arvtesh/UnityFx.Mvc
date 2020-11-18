@@ -10,6 +10,7 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// A variant data type.
 	/// </summary>
+	/// <seealso cref="Command"/>
 	[StructLayout(LayoutKind.Explicit)]
 	public readonly struct Variant : IEquatable<Variant>, IComparable<Variant>, IConvertible, IFormattable
 	{

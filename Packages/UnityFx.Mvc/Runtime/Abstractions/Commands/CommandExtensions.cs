@@ -2,14 +2,15 @@
 // Licensed under the MIT license. See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// Extensions of <see cref="ICommandTarget"/>.
+	/// Extensions of command-related entities.
 	/// </summary>
-	/// <seealso cref="ICommandTarget"/>
-	public static class ICommandTargetExtensions
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static class CommandExtensions
 	{
 		/// <summary>
 		/// Invokes a command. An implementation might choose to ignore the command, in this case the method should return <see langword="false"/>.

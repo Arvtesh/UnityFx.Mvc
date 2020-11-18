@@ -6,8 +6,9 @@ using System;
 namespace UnityFx.Mvc
 {
 	/// <summary>
-	/// A generic packed command.
+	/// A generic non-mutable command. Basically just a convenient wrapper over string.
 	/// </summary>
+	/// <seealso cref="Variant"/>
 	public readonly struct Command : IEquatable<Command>, IEquatable<string>
 	{
 		#region data

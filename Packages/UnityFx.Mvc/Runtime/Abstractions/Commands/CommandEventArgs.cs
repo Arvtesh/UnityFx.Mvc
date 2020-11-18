@@ -8,6 +8,8 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// Event arguments for an arbitraty action.
 	/// </summary>
+	/// <seealso cref="Command"/>
+	/// <seealso cref="Variant"/>
 	public class CommandEventArgs : EventArgs
 	{
 		/// <summary>
