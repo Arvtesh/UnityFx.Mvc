@@ -11,14 +11,14 @@ using NUnit.Framework;
 
 namespace UnityFx.Mvc
 {
-	[Category("Presenter"), TestOf(typeof(IPresentService))]
+	[Category("Presenter"), TestOf(typeof(Presenter))]
 	public class PresenterTests : IDisposable
 	{
 		private DefaultViewFactory _viewFactory;
 		private DefaultServiceProvider _serviceProvider;
 		private ManualUpdateLoop _updateLoop;
 		private GameObject _go;
-		private IPresentService _presenter;
+		private Presenter _presenter;
 
 		[SetUp]
 		public void Init()
@@ -44,7 +44,6 @@ namespace UnityFx.Mvc
 		public void InitialStateIsValid()
 		{
 			Assert.AreEqual(_serviceProvider, _presenter.ServiceProvider);
-			Assert.IsNull(_presenter.ActiveController);
 			Assert.IsEmpty(_presenter.Controllers);
 		}
 
@@ -119,7 +118,7 @@ namespace UnityFx.Mvc
 		[Test]
 		public void Present_FailsIf_ControllerCtorThrows()
 		{
-			var presentResult = _presenter.Present<EventsController>(new PresentArgs(ControllerEvents.Ctor));
+			var presentResult = _presenter.Present<EventsController>(new PresentArgs() { UserData = ControllerEvents.Ctor });
 
 			Assert.IsEmpty(_presenter.Controllers);
 			Assert.NotNull(presentResult);
@@ -133,7 +132,7 @@ namespace UnityFx.Mvc
 		[Test]
 		public void Present_FailsIf_OnPresentThrows()
 		{
-			var presentResult = _presenter.Present<EventsController>(new PresentArgs(ControllerEvents.Present));
+			var presentResult = _presenter.Present<EventsController>(new PresentArgs() { UserData = ControllerEvents.Present });
 			_updateLoop.Update();
 
 			Assert.IsEmpty(_presenter.Controllers);
@@ -151,7 +150,7 @@ namespace UnityFx.Mvc
 		[Test]
 		public void Present_FailsIf_OnDismissThrows()
 		{
-			var presentResult = _presenter.Present<EventsController>(new PresentArgs(ControllerEvents.Dismiss));
+			var presentResult = _presenter.Present<EventsController>(new PresentArgs() { UserData = ControllerEvents.Dismiss });
 			presentResult.Dispose();
 
 			Assert.IsEmpty(_presenter.Controllers);
@@ -165,7 +164,7 @@ namespace UnityFx.Mvc
 		[Test]
 		public void Present_DoesNotFailIf_OnActivateThrows()
 		{
-			var presentResult = _presenter.Present<EventsController>(new PresentArgs(ControllerEvents.Activate));
+			var presentResult = _presenter.Present<EventsController>(new PresentArgs() { UserData = ControllerEvents.Activate });
 			_updateLoop.Update();
 			presentResult.Dispose();
 
@@ -182,7 +181,7 @@ namespace UnityFx.Mvc
 		[Test]
 		public void Present_DoesNotFailIf_OnDeactivateThrows()
 		{
-			var presentResult = _presenter.Present<EventsController>(new PresentArgs(ControllerEvents.Deactivate));
+			var presentResult = _presenter.Present<EventsController>(new PresentArgs() { UserData = ControllerEvents.Deactivate });
 			_updateLoop.Update();
 			presentResult.Dispose();
 

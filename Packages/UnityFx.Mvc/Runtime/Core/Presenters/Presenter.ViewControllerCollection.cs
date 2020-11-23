@@ -9,7 +9,7 @@ namespace UnityFx.Mvc
 {
 	partial class Presenter
 	{
-		private class ViewControllerCollection : IViewControllerCollection
+		public class ViewControllerCollection : IReadOnlyCollection<IViewController>
 		{
 			#region data
 
@@ -23,10 +23,6 @@ namespace UnityFx.Mvc
 			{
 				_presentables = presentables;
 			}
-
-			#endregion
-
-			#region IViewControllerCollection
 
 			public bool TryPeek(out IViewController controller)
 			{

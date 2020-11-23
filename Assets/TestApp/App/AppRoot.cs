@@ -43,7 +43,7 @@ namespace TestApp.Presentation
 #pragma warning restore 0649
 
 		private IViewFactory _viewFactory;
-		private IPresentService _presenter;
+		private Presenter _presenter;
 
 		private ServiceProvider _services;
 
@@ -116,7 +116,7 @@ namespace TestApp.Presentation
 			return Task.CompletedTask;
 		}
 
-		protected async Task OnPresent(IPresentService presenter, IViewControllerInfo controllerInfo, PresentArgs presentArgs)
+		protected async Task OnPresent(Presenter presenter, IViewControllerInfo controllerInfo, PresentArgs presentArgs)
 		{
 			if (controllerInfo.ControllerType != typeof(AppController) && 
 				controllerInfo.ControllerType != typeof(SplashController))

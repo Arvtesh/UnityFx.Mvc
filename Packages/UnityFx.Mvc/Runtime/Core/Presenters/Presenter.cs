@@ -14,7 +14,7 @@ namespace UnityFx.Mvc
 	/// Implementation of <see cref="IPresentService"/>.
 	/// </summary>
 	/// <seealso cref="PresenterBuilder"/>
-	internal sealed partial class Presenter : IPresentService, IPlayerLoopEvents
+	public sealed partial class Presenter : IPlayerLoopEvents, IPresenter, ICommandTarget, IDisposable
 	{
 		#region data
 
@@ -38,6 +38,10 @@ namespace UnityFx.Mvc
 		#endregion
 
 		#region interface
+
+		public IServiceProvider ServiceProvider => _serviceProvider;
+
+		public ViewControllerCollection Controllers => _controllers;
 
 		internal bool NeedEventSource => _eventSource is null;
 
@@ -119,32 +123,7 @@ namespace UnityFx.Mvc
 			if (!_disposed)
 			{
 				_presentables.Remove(presentResult);
-				PresentCompleted?.Invoke(this, new PresentCompletedEventArgs(presentResult, presentResult.Exception, presentResult.IsCancelled));
 			}
-		}
-
-		#endregion
-
-		#region IPresentService
-
-		public event EventHandler<PresentCompletedEventArgs> PresentCompleted;
-
-		public IServiceProvider ServiceProvider => _serviceProvider;
-
-		public IViewControllerCollection Controllers => _controllers;
-
-		public IViewController ActiveController => _lastActive?.Controller;
-
-		public bool TryGetInfo(IViewController controller, out IViewControllerInfo info)
-		{
-			if (_controllerMap.TryGetValue(controller, out var result))
-			{
-				info = result;
-				return true;
-			}
-
-			info = null;
-			return false;
 		}
 
 		#endregion

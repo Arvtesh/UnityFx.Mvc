@@ -18,7 +18,7 @@ namespace UnityFx.Mvc
 		private GameObject _go;
 		private DefaultServiceProvider _serviceProvider;
 		private IViewFactory _viewFactory;
-		private IPresentService _presenter;
+		private Presenter _presenter;
 
 		[SetUp]
 		public void Init()

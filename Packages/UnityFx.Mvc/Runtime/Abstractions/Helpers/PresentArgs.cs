@@ -9,46 +9,21 @@ namespace UnityFx.Mvc
 	/// <summary>
 	/// Runtime arguments for <see cref="IPresenter"/> methods.
 	/// </summary>
-	public class PresentArgs : IPresentArgs
+	public class PresentArgs
 	{
-		#region data
-		#endregion
+		/// <summary>
+		/// Gets or sets peprent transform.
+		/// </summary>
+		public Transform Transform { get; set; }
 
-		#region interface
+		/// <summary>
+		/// Gets or sets runtime present options.
+		/// </summary>
+		public PresentOptions PresentOptions { get; set; }
 
 		/// <summary>
 		/// Gets or sets a user-defined  data.
 		/// </summary>
 		public object UserData { get; set; }
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
-		/// </summary>
-		public PresentArgs()
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PresentArgs"/> class.
-		/// </summary>
-		public PresentArgs(object userData)
-		{
-			UserData = userData;
-		}
-
-		#endregion
-
-		#region IPresentArgs
-
-		/// <inheritdoc/>
-		public PresentOptions PresentOptions { get; set; }
-
-		/// <inheritdoc/>
-		public Transform Transform { get; set; }
-
-		#endregion
-
-		#region implementation
-		#endregion
 	}
 }

@@ -10,7 +10,7 @@ namespace UnityFx.Mvc
 	[CustomEditor(typeof(PresenterBehaviour), true)]
 	public class PresenterEditor : Editor
 	{
-		private IPresentService _presenter;
+		private Presenter _presenter;
 
 		private void OnEnable()
 		{

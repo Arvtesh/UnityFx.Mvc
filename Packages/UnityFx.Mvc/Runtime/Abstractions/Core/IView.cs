@@ -19,11 +19,6 @@ namespace UnityFx.Mvc
 	public interface IView
 	{
 		/// <summary>
-		/// Gets the <see cref="Transform"/> this view is attached to.
-		/// </summary>
-		Transform Transform { get; }
-
-		/// <summary>
 		/// Gets or sets a value indicating whether the view is enabled (visible).
 		/// </summary>
 		bool Enabled { get; set; }

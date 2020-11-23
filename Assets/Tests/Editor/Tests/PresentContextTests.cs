@@ -16,7 +16,7 @@ namespace UnityFx.Mvc
 	{
 		private DefaultViewFactory _viewFactory;
 		private DefaultServiceProvider _serviceProvider;
-		private IPresentService _presenter;
+		private Presenter _presenter;
 
 		[SetUp]
 		public void Init()

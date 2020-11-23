@@ -16,7 +16,7 @@ namespace UnityFx.Mvc
 
 		#region interface
 
-		public IPresentService Presenter => _presenter;
+		public Presenter Presenter => _presenter;
 
 		internal void Initialize(Presenter presenter)
 		{

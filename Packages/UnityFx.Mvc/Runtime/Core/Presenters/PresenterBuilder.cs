@@ -241,7 +241,7 @@ namespace UnityFx.Mvc
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Thrown if presenter cannot be constructed (for instance, <see cref="IViewFactory"/> is not set and cannot be located).</exception>
 		/// <seealso cref="UseViewFactory(IViewFactory)"/>
-		public IPresentService Build()
+		public Presenter Build()
 		{
 			if (_presenter is null)
 			{

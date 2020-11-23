@@ -16,7 +16,7 @@ namespace UnityFx.Mvc
 	{
 		private DefaultViewFactory _viewFactory;
 		private DefaultServiceProvider _serviceProvider;
-		private IPresentService _presenter;
+		private Presenter _presenter;
 
 		[SetUp]
 		public void Init()
@@ -47,7 +47,6 @@ namespace UnityFx.Mvc
 			presentResult.Dispose();
 
 			Assert.True(presentResult.IsDismissed);
-			Assert.IsNull(_presenter.ActiveController);
 			Assert.IsEmpty(_presenter.Controllers);
 		}
 	}

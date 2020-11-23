@@ -119,11 +119,6 @@ namespace UnityFx.Mvc
 		#region IView
 
 		/// <summary>
-		/// Gets the <see cref="Transform"/> this view is attached to.
-		/// </summary>
-		public Transform Transform => transform;
-
-		/// <summary>
 		/// Gets or sets a value indicating whether the view <see cref="GameObject"/> is active.
 		/// </summary>
 		public bool Enabled
