@@ -14,7 +14,7 @@ namespace UnityFx.Mvc
 	/// Implementation of <see cref="IPresentService"/>.
 	/// </summary>
 	/// <seealso cref="PresenterBuilder"/>
-	public sealed partial class Presenter : IPlayerLoopEvents, IPresenter, ICommandTarget, IDisposable
+	public sealed partial class Presenter : IPresenter, ICommandTarget, IDisposable
 	{
 		#region data
 
@@ -22,7 +22,6 @@ namespace UnityFx.Mvc
 		private readonly IViewFactory _viewFactory;
 		private readonly IViewControllerFactory _controllerFactory;
 		private readonly IViewControllerBindings _controllerBindings;
-		private readonly IPresenterEventSource _eventSource;
 		private readonly ViewControllerCollection _controllers;
 		private readonly PresentArgs _defaultPresentArgs = new PresentArgs();
 
@@ -43,15 +42,13 @@ namespace UnityFx.Mvc
 
 		public ViewControllerCollection Controllers => _controllers;
 
-		internal bool NeedEventSource => _eventSource is null;
-
 		internal IViewFactory ViewFactory => _viewFactory;
 
 		internal IViewControllerFactory ControllerFactory => _controllerFactory;
 
 		internal IViewControllerBindings ControllerBindings => _controllerBindings;
 
-		internal Presenter(IServiceProvider serviceProvider, IViewFactory viewFactory, IViewControllerFactory controllerFactory, IViewControllerBindings controllerBindings, IPresenterEventSource eventSource)
+		internal Presenter(IServiceProvider serviceProvider, IViewFactory viewFactory, IViewControllerFactory controllerFactory, IViewControllerBindings controllerBindings)
 		{
 			Debug.Assert(serviceProvider != null);
 			Debug.Assert(viewFactory != null);
@@ -62,10 +59,7 @@ namespace UnityFx.Mvc
 			_viewFactory = viewFactory;
 			_controllerFactory = controllerFactory;
 			_controllerBindings = controllerBindings;
-			_eventSource = eventSource;
 			_controllers = new ViewControllerCollection(_presentables);
-
-			_eventSource?.AddPresenter(this);
 		}
 
 		internal void SetMiddleware(List<PresentDelegate> middleware)
@@ -110,36 +104,7 @@ namespace UnityFx.Mvc
 			return result;
 		}
 
-		internal void ReportError(Exception e)
-		{
-			if (!_disposed)
-			{
-				_errorDelegate?.Invoke(e);
-			}
-		}
-
-		internal void OnPresentCompleted(PresentResult presentResult)
-		{
-			if (!_disposed)
-			{
-				_presentables.Remove(presentResult);
-			}
-		}
-
-		#endregion
-
-		#region IPresenter
-
-		public IPresentResult Present(Type controllerType, PresentArgs args)
-		{
-			return PresentAsync(null, controllerType, args);
-		}
-
-		#endregion
-
-		#region IPlayerLoopEvents
-
-		public void OnUpdate()
+		internal void Update()
 		{
 			var node = _presentables.First;
 			var newActive = default(PresentResult);
@@ -182,8 +147,29 @@ namespace UnityFx.Mvc
 			}
 		}
 
-		public void OnLateUpdate()
+		internal void ReportError(Exception e)
 		{
+			if (!_disposed)
+			{
+				_errorDelegate?.Invoke(e);
+			}
+		}
+
+		internal void OnPresentCompleted(PresentResult presentResult)
+		{
+			if (!_disposed)
+			{
+				_presentables.Remove(presentResult);
+			}
+		}
+
+		#endregion
+
+		#region IPresenter
+
+		public IPresentResult Present(Type controllerType, PresentArgs args)
+		{
+			return PresentAsync(null, controllerType, args);
 		}
 
 		#endregion
@@ -231,8 +217,6 @@ namespace UnityFx.Mvc
 			if (!_disposed)
 			{
 				_disposed = true;
-				_eventSource?.RemovePresenter(this);
-
 				DismissPresentables();
 			}
 		}

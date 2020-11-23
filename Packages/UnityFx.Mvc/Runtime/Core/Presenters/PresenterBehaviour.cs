@@ -30,18 +30,7 @@ namespace UnityFx.Mvc
 
 		private void Update()
 		{
-			if (_presenter != null && _presenter.NeedEventSource)
-			{
-				_presenter.OnUpdate();
-			}
-		}
-
-		private void LateUpdate()
-		{
-			if (_presenter != null && _presenter.NeedEventSource)
-			{
-				_presenter.OnLateUpdate();
-			}
+			_presenter?.Update();
 		}
 
 		private void OnDestroy()

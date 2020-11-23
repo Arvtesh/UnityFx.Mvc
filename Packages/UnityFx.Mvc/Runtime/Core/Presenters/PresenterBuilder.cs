@@ -57,7 +57,6 @@ namespace UnityFx.Mvc
 		private IViewFactory _viewFactory;
 		private IViewControllerFactory _viewControllerFactory;
 		private IViewControllerBindings _viewControllerBindings;
-		private IPresenterEventSource _eventSource;
 		private List<PresentDelegate> _presentDelegates;
 		private Action<Exception> _errorDelegate;
 
@@ -160,42 +159,6 @@ namespace UnityFx.Mvc
 		}
 
 		/// <summary>
-		/// Sets an event source instance to use. If not called, a default provider is used.
-		/// </summary>
-		/// <param name="eventSource">An event source to use.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="eventSource"/> is <see langword="null"/>.</exception>
-		/// <exception cref="InvalidOperationException">Thrown if an event source is already set.</exception>
-		/// <seealso cref="UseViewFactory(IViewFactory)"/>
-		/// <seealso cref="Build"/>
-		public PresenterBuilder UseEventSource(IPresenterEventSource eventSource)
-		{
-			if (_eventSource != null)
-			{
-				throw new InvalidOperationException();
-			}
-
-			_eventSource = eventSource ?? throw new ArgumentNullException(nameof(eventSource));
-			return this;
-		}
-
-		/// <summary>
-		/// Sets a <see cref="UnityEngine.LowLevel.PlayerLoop"/>-based event source. Requires Unity 2019.3 or newer.
-		/// </summary>
-		/// <exception cref="InvalidOperationException">Thrown if an event source is already set, either with this method or with <see cref="UseEventSource(IPresenterEventSource)"/>.</exception>
-		/// <seealso cref="UseEventSource(IPresenterEventSource)"/>
-		/// <seealso cref="Build"/>
-		public PresenterBuilder UsePlayerLoop()
-		{
-			if (_eventSource != null)
-			{
-				throw new InvalidOperationException();
-			}
-
-			_eventSource = new PlayerLoopEventSource();
-			return this;
-		}
-
-		/// <summary>
 		/// Adds a <see cref="PresentDelegate"/> to presenter middleware chain.
 		/// </summary>
 		/// <param name="presentDelegate">The middleware to add.</param>
@@ -245,7 +208,7 @@ namespace UnityFx.Mvc
 		{
 			if (_presenter is null)
 			{
-				if (_eventSource is null && _gameObject is null)
+				if (_gameObject is null)
 				{
 					throw new InvalidOperationException("No event source is set. Presenter requires update notifications in order to function properly.");
 				}
@@ -294,7 +257,7 @@ namespace UnityFx.Mvc
 					}
 				}
 
-				_presenter = new Presenter(_serviceProvider, _viewFactory, _viewControllerFactory, _viewControllerBindings, _eventSource);
+				_presenter = new Presenter(_serviceProvider, _viewFactory, _viewControllerFactory, _viewControllerBindings);
 				_presenter.SetMiddleware(_presentDelegates);
 				_presenter.SetErrorHandler(_errorDelegate);
 

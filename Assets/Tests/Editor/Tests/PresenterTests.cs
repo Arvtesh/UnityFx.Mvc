@@ -16,7 +16,6 @@ namespace UnityFx.Mvc
 	{
 		private DefaultViewFactory _viewFactory;
 		private DefaultServiceProvider _serviceProvider;
-		private ManualUpdateLoop _updateLoop;
 		private GameObject _go;
 		private Presenter _presenter;
 
@@ -25,12 +24,10 @@ namespace UnityFx.Mvc
 		{
 			_serviceProvider = new DefaultServiceProvider();
 			_viewFactory = new DefaultViewFactory();
-			_updateLoop = new ManualUpdateLoop();
 			_go = new GameObject("PresenterTests");
 
 			_presenter = new PresenterBuilder(_serviceProvider, _go)
 				.UseViewFactory(_viewFactory)
-				.UseEventSource(_updateLoop)
 				.Build();
 		}
 
@@ -98,7 +95,6 @@ namespace UnityFx.Mvc
 		public void Present_Calls_OnActivate()
 		{
 			var presentResult = _presenter.Present<EventsController>();
-			_updateLoop.Update();
 
 			Assert.NotNull(presentResult.Controller);
 			Assert.AreEqual(2, ((EventsController)presentResult.Controller).ActivateCallId);
@@ -108,7 +104,6 @@ namespace UnityFx.Mvc
 		public void Present_Calls_OnDeactivate()
 		{
 			var presentResult = _presenter.Present<EventsController>();
-			_updateLoop.Update();
 			presentResult.Dispose();
 
 			Assert.NotNull(presentResult.Controller);
@@ -133,7 +128,6 @@ namespace UnityFx.Mvc
 		public void Present_FailsIf_OnPresentThrows()
 		{
 			var presentResult = _presenter.Present<EventsController>(new PresentArgs() { UserData = ControllerEvents.Present });
-			_updateLoop.Update();
 
 			Assert.IsEmpty(_presenter.Controllers);
 			Assert.NotNull(presentResult);
@@ -165,7 +159,6 @@ namespace UnityFx.Mvc
 		public void Present_DoesNotFailIf_OnActivateThrows()
 		{
 			var presentResult = _presenter.Present<EventsController>(new PresentArgs() { UserData = ControllerEvents.Activate });
-			_updateLoop.Update();
 			presentResult.Dispose();
 
 			Assert.AreEqual(1, ((EventsController)presentResult.Controller).PresentCallId);
@@ -182,7 +175,6 @@ namespace UnityFx.Mvc
 		public void Present_DoesNotFailIf_OnDeactivateThrows()
 		{
 			var presentResult = _presenter.Present<EventsController>(new PresentArgs() { UserData = ControllerEvents.Deactivate });
-			_updateLoop.Update();
 			presentResult.Dispose();
 
 			Assert.AreEqual(1, ((EventsController)presentResult.Controller).PresentCallId);
